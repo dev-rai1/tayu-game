@@ -1,0 +1,19 @@
+{
+  "name": "tayu-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tayu — a browser-based multiplayer financial-literacy game for K–5 students",
+  "author": "Ayush Ranjan",
+  "license": "MIT",
+  "scripts": {
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "dev": "concurrently -n frontend,backend -c cyan,magenta \"npm --prefix frontend run dev\" \"npm --prefix backend run dev\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix frontend test && npm --prefix backend test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

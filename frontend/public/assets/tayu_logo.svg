@@ -1,0 +1,26 @@
+<svg width="360" height="360" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TAYU">
+  <defs>
+    <linearGradient id="tg" x1="40" y1="40" x2="320" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7850F0"/>
+      <stop offset="0.5" stop-color="#1464F0"/>
+      <stop offset="1" stop-color="#00DCA0"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="120" y1="96" x2="240" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE58A"/>
+      <stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+  </defs>
+  <!-- rounded app-icon backdrop -->
+  <rect x="20" y="20" width="320" height="320" rx="76" fill="url(#tg)"/>
+  <rect x="20" y="20" width="320" height="320" rx="76" fill="white" fill-opacity="0.06"/>
+  <!-- glossy coin mascot -->
+  <circle cx="180" cy="156" r="66" fill="url(#coin)" stroke="#E0A92E" stroke-width="6"/>
+  <circle cx="180" cy="156" r="66" fill="white" fill-opacity="0.12"/>
+  <ellipse cx="158" cy="132" rx="22" ry="14" fill="white" fill-opacity="0.5"/>
+  <text x="180" y="184" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-weight="800" font-size="78" fill="#0F6B3A">$</text>
+  <!-- little eyes on the coin -->
+  <circle cx="163" cy="150" r="6" fill="#0F6B3A"/>
+  <circle cx="197" cy="150" r="6" fill="#0F6B3A"/>
+  <!-- wordmark -->
+  <text x="180" y="288" text-anchor="middle" font-family="Montserrat, Poppins, system-ui, sans-serif" font-weight="800" font-size="70" letter-spacing="4" fill="#ffffff">TAYU</text>
+</svg>
