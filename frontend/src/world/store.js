@@ -1073,17 +1073,15 @@ export const useGame = create((set, get) => ({
     const [hx, hz] = btWorld('house')
     set((x) => ({
       bt: { ...x.bt, needsSpent: x.bt.needsSpent + RENT_COST, fx: { ...x.bt.fx, houseLit: true, houseAt: Date.now() } },
-      scenarioLocked: true, near: null,
+      near: null,
       coinBatches: [...x.coinBatches, { id: `rent-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: hx, y: 1.2, z: hz }, count: 5 }],
     }))
+    // R13 Part 1: the outcome plays while the child stays FREE to walk (Market
+    // model) - movement is NEVER locked during the Budget Town day
     playTimeline([
-      { at: 300, run: () => get().setTint('#fff3d6', 1200) },
-      { at: 1400, run: () => { sparkleBurst([hx, hz], 1.8, 12); get().setToast('The lights come on - the family waves!') } },
-      { at: 3000, run: () => get().setToast(STOPS.house.takeaway), hold: 600 },
-    ], () => {
-      set({ scenarioLocked: false })
-      get()._btAdvance('grocery')
-    })
+      { at: 400, run: () => { sparkleBurst([hx, hz], 1.8, 12); get().setToast('The lights come on - the family waves!') } },
+      { at: 1800, run: () => get().setToast(STOPS.house.takeaway), hold: 400 },
+    ], () => get()._btAdvance('grocery'))
   },
   btGroceryDone: (ids) => {
     const g = get()
@@ -1094,17 +1092,13 @@ export const useGame = create((set, get) => ({
     const [gx, gz] = btWorld('grocery')
     set((x) => ({
       bt: { ...x.bt, basket: ids, foodSpent: cost, needsSpent: x.bt.needsSpent + cost, fx: { ...x.bt.fx, basketAt: Date.now() } },
-      scenarioLocked: true, near: null,
+      near: null,
       coinBatches: [...x.coinBatches, { id: `food-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: gx, y: 1.2, z: gz }, count: 4 }],
     }))
     playTimeline([
-      { at: 300, run: () => get().setTint('#e8f8e0', 1200) },
-      { at: 1300, run: () => { sparkleBurst([gx, gz], 1.6, 10); get().setToast('Basket packed! The bags line up out front.') } },
-      { at: 2900, run: () => get().setToast(STOPS.grocery.takeaway), hold: 600 },
-    ], () => {
-      set({ scenarioLocked: false })
-      get()._btAdvance('bus')
-    })
+      { at: 400, run: () => { sparkleBurst([gx, gz], 1.6, 10); get().setToast('Basket packed! The bags line up out front.') } },
+      { at: 1800, run: () => get().setToast(STOPS.grocery.takeaway), hold: 400 },
+    ], () => get()._btAdvance('bus'))
   },
   btBusGo: () => {
     const g = get()
@@ -1112,16 +1106,13 @@ export const useGame = create((set, get) => ({
     const [bx2, bz2] = btWorld('bus')
     set((x) => ({
       bt: { ...x.bt, needsSpent: x.bt.needsSpent + BUS_COST, fx: { ...x.bt.fx, busAt: Date.now() } },
-      scenarioLocked: true, near: null,
+      near: null,
     }))
     playTimeline([
       { at: 400, run: () => get().setToast('Here comes the school bus...') },
-      { at: 2600, run: () => { sparkleBurst([bx2, bz2], 1.6, 8); get().setToast('All aboard! The kids wave as it rolls away.') } },
-      { at: 5200, run: () => get().setToast(STOPS.bus.takeaway), hold: 800 },
-    ], () => {
-      set({ scenarioLocked: false })
-      get()._btAdvance('clinic')
-    })
+      { at: 2400, run: () => { sparkleBurst([bx2, bz2], 1.6, 8); get().setToast('All aboard! The kids wave as it rolls away.') } },
+      { at: 4200, run: () => get().setToast(STOPS.bus.takeaway), hold: 500 },
+    ], () => get()._btAdvance('clinic'))
   },
   btClinicPay: () => {
     const g = get()
@@ -1129,17 +1120,13 @@ export const useGame = create((set, get) => ({
     const [cx2, cz2] = btWorld('clinic')
     set((x) => ({
       bt: { ...x.bt, needsSpent: x.bt.needsSpent + CLINIC_COST, fx: { ...x.bt.fx, clinicAt: Date.now() } },
-      scenarioLocked: true, near: null,
+      near: null,
       coinBatches: [...x.coinBatches, { id: `clin-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: cx2 + 1, y: 0.6, z: cz2 + 1.35 }, count: 3 }],
     }))
     playTimeline([
-      { at: 300, run: () => get().setTint('#fde8e8', 1000) },
-      { at: 1400, run: () => { sparkleBurst([cx2, cz2], 1.5, 8); get().setToast('The doctor gives a thumbs-up!') } },
-      { at: 2900, run: () => get().setToast(STOPS.clinic.takeaway), hold: 600 },
-    ], () => {
-      set({ scenarioLocked: false })
-      get()._btAdvance('fun')
-    })
+      { at: 400, run: () => { sparkleBurst([cx2, cz2], 1.5, 8); get().setToast('The doctor gives a thumbs-up!') } },
+      { at: 1800, run: () => get().setToast(STOPS.clinic.takeaway), hold: 400 },
+    ], () => get()._btAdvance('fun'))
   },
   btFun: (ride) => {
     const g = get()
@@ -1148,14 +1135,14 @@ export const useGame = create((set, get) => ({
       g._btSpend(FUN_COST)
       set((x) => ({
         bt: { ...x.bt, funSpent: FUN_COST, fx: { ...x.bt.fx, wheelAt: Date.now() } },
-        scenarioLocked: true, near: null,
+        near: null,
       }))
       playTimeline([
-        { at: 300, run: () => { sparkleBurst([fx2, fz2], 2, 14); get().setTint('#f3e0ff', 1400) } },
-        { at: 2200, run: () => get().setToast('Wheee! The wheel spins and everyone cheers!') },
-        { at: 4200, run: () => get().setToast(STOPS.fun.takeawayRide), hold: 600 },
+        { at: 300, run: () => sparkleBurst([fx2, fz2], 2, 14) },
+        { at: 1600, run: () => get().setToast('Wheee! The wheel spins and everyone cheers!') },
+        { at: 3000, run: () => get().setToast(STOPS.fun.takeawayRide), hold: 400 },
       ], () => {
-        set({ scenarioLocked: false, bt: { ...get().bt, stage: 'options' } })
+        set({ bt: { ...get().bt, stage: 'options' } })
         get().persist()
         get().btSummary()
       })
@@ -1250,15 +1237,16 @@ export const useGame = create((set, get) => ({
       get().persist()
       return
     }
-    set({ scenarioLocked: true, near: null })
+    set({ near: null })
     set((x) => ({ split: { ...x.split, pocket: r2(x.split.pocket - EMERGENCY_EVENT.cost) }, bt: { ...x.bt, split: { ...x.bt.split, pocket: r2(x.bt.split.pocket - EMERGENCY_EVENT.cost) } } }))
+    // R13 Part 1: even the tire cutscene never locks movement
     playTimeline([
-      { at: 300, run: () => { get().setTint('#fde8e8', 1200); get().setToast(`${EMERGENCY_EVENT.label} It costs $${EMERGENCY_EVENT.cost}.`) } },
-      { at: 1800, run: () => { placeNpc('theo', [playerPos.x + 3, playerPos.z + 2]); npcWalkTo('theo', [playerPos.x + 1, playerPos.z + 1], { emote: '🔧', face: true }) } },
-      { at: 3400, run: () => { sparkleBurst([playerPos.x + 1, playerPos.z + 1], 1.6, 10); get().setToast('Tire fixed! Paid from your pocket cash.') } },
-      { at: 4400, run: () => npcHome('theo'), hold: 500 },
+      { at: 300, run: () => get().setToast(`${EMERGENCY_EVENT.label} It costs $${EMERGENCY_EVENT.cost}.`) },
+      { at: 1500, run: () => { placeNpc('theo', [playerPos.x + 3, playerPos.z + 2]); npcWalkTo('theo', [playerPos.x + 1, playerPos.z + 1], { emote: '🔧', face: true }) } },
+      { at: 3000, run: () => { sparkleBurst([playerPos.x + 1, playerPos.z + 1], 1.6, 10); get().setToast('Tire fixed! Paid from your pocket cash.') } },
+      { at: 4000, run: () => npcHome('theo'), hold: 400 },
     ], () => {
-      set((x) => ({ scenarioLocked: false, bt: { ...x.bt, stage: 'handoff' } }))
+      set((x) => ({ bt: { ...x.bt, stage: 'handoff' } }))
       get().persist()
       get().pushCards([
         { id: 'btem', speaker: 'The Budget Keeper', text: EMERGENCY_PRAISE, learn: 'budgeting', buttons: [{ label: 'Phew! What is next?', act: null }] },

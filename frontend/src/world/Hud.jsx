@@ -188,7 +188,7 @@ function DockedControls() {
   if (week !== 5 || !mg || mg.phase !== 'adjust' || cards.length > 0 || dialog || panelPortfolio) return null
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-5 z-[180] flex justify-center gap-3">
-      <button onClick={openPortfolio} className="min-h-[64px] rounded-2xl bg-white px-6 text-lg font-extrabold text-navy shadow-2xl transition active:scale-95">
+      <button onClick={openPortfolio} className="tayu-action-pulse min-h-[64px] rounded-2xl bg-white px-6 text-lg font-extrabold text-navy shadow-2xl transition active:scale-95">
         My Portfolio
       </button>
       <button onClick={startTheWeek} className="min-h-[64px] rounded-2xl bg-electric px-6 text-lg font-extrabold text-white shadow-2xl transition hover:bg-teal hover:text-navy active:scale-95">
@@ -310,7 +310,7 @@ function BottomSheet() {
   }, [card, setToast])
   if (!card || dialog) return null
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[320] flex justify-center p-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[320] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
         {card.speaker && <div className="text-sm font-extrabold uppercase tracking-wide text-electric">{card.speaker}</div>}
         <p className="mt-1 text-xl font-bold leading-snug text-navy">{card.text}</p>
@@ -540,7 +540,7 @@ function DialogPanel() {
   if (!dialog) return null
   const last = dialog.index + 1 >= dialog.lines.length
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[300] flex justify-center p-4">
+    <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[300] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
         <div className="text-sm font-extrabold uppercase tracking-wide text-electric">{dialog.name}</div>
         <p className="mt-1 text-xl font-bold leading-snug text-navy">{dialog.lines[dialog.index]}</p>

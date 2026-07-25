@@ -311,6 +311,11 @@ export function MoneyGarden() {
         return (
           <group key={id} position={[lx, 0, lz]}>
             <Front />
+            {/* R13 6.3: a readable, correctly-proportioned name sign matching
+                the other district signs (navy pill, billboarded, 3.2 aspect) */}
+            <Billboard position={[0, 5.3, 0]}>
+              <mesh><planeGeometry args={[3.4, 1.0625]} /><meshBasicMaterial map={labelTexture(COMPANIES[id].name.toUpperCase(), { bg: '#071748', color: '#ffffff', accent: COMPANIES[id].color })} transparent toneMapped={false} depthTest={false} /></mesh>
+            </Billboard>
             <CompanyCard id={id} />
             <LessonFx id={id} />
           </group>

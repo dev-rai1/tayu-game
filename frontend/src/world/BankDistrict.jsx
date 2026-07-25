@@ -222,10 +222,8 @@ export function BankDistrict() {
             </mesh>
           ))}
         </group>
-        {/* teller counter where Bea works */}
-        <RoundedBox args={[3, 1.05, 0.7]} radius={0.08} smoothness={2} position={[0, 0.52, -2.6]} castShadow>
-          <meshStandardMaterial color="#1464F0" roughness={0.5} />
-        </RoundedBox>
+        {/* R13 6.3: the stray electric-blue teller counter is GONE - the three
+            labeled teller windows are the counters now */}
         <Billboard position={[0, 6, 0]}>
           <mesh>
             <planeGeometry args={[7, 2.19]} />
