@@ -5,7 +5,7 @@ character, walk a circular town, and learn real money skills through five
 playable modules — earning, budgeting, banking, and investing — with a
 printable certificate at the end.
 
-**Live:** https://tayu-rho.vercel.app
+**Live:** https://tayufinance.app (also on Firebase: https://tayu-financial-literacy.firebaseapp.com)
 
 ## The five modules
 
