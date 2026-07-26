@@ -12,6 +12,7 @@ import { MuteButton } from '../components/MuteButton.jsx'
 import { say } from '../services/speech.js'
 import { BudgetPanel } from './BudgetPanels.jsx'
 import { TrustMeter } from './BankPanels.jsx'
+import { shouldShowInteractionPrompt } from './interactionPrompt.js'
 
 const JAR_LABEL = { spend: 'SPEND', save: 'SAVE', give: 'GIVE' }
 const JAR_TEXT = { spend: 'text-electric', save: 'text-teal', give: 'text-brandpurple' }
@@ -1055,17 +1056,17 @@ const MODULES = [
   { n: 6, title: 'Finale Area', desc: 'CELEBRATE: music, dancing, and your certificate!' },
 ]
 
-const DESKTOP_HINT = 'Use WASD or the up and down arrow keys to walk. Use the left and right arrow keys, or hold the right mouse button and drag, to look around. Press E or click the blue action button to act. Follow the arrows to see where to go.'
+const DESKTOP_HINT = 'Walk with W, A, S, D or the up and down arrow keys. Look around by holding right-click and dragging, or by using the left and right arrow keys. Press E or click the blue action button to interact. Follow the arrows to see where to go.'
 const TOUCH_HINT = 'Use the stick in the corner to walk. Drag anywhere to look around. Tap the blue button to do things. Follow the arrows - they show you where to go next!'
 
 function ControlsTab() {
   const rows = IS_TOUCH
     ? [['Walk', 'Use the stick in the corner to walk'], ['Look around', 'Drag anywhere to look around'], ['Act', 'Tap the blue button to do things'], ['Where to go', 'Follow the arrows!']]
     : [
-        ['Walk', 'Use WASD or the up and down arrow keys'],
-        ['Look around', 'Use the left and right arrow keys, or hold right-click and drag'],
-        ['Act', 'Press E or click the blue action button'],
-        ['Where to go', 'Follow the arrows'],
+        ['Walk', 'W, A, S, D or the up and down arrow keys'],
+        ['Look around', 'Hold right-click and drag, or use the left and right arrow keys'],
+        ['Interact', 'Press E or click the blue action button'],
+        ['Where to go', 'Follow the arrows'], 
       ]
   return (
     <div className="mt-3 flex flex-col gap-2 text-left">
@@ -1298,7 +1299,7 @@ export function Hud({ playerName, onContinue }) {
     : objective === 'store' ? (bramTalked ? 'Choose a healthy food and drink, then check out' : 'Follow the arrow and talk to Mr. Bram first')
     : 'Week complete!'
 
-  const promptOpen = near && !panelJar && !panelItem && !dialog && !weekComplete && !scenarioLocked && lessons.length === 0 && cards.length === 0
+  const promptOpen = shouldShowInteractionPrompt(near) && !panelJar && !panelItem && !dialog && !weekComplete && !scenarioLocked && lessons.length === 0 && cards.length === 0
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] select-none font-body">
