@@ -1,10 +1,16 @@
 import { useNavigate } from 'react-router-dom'
-import { loadWallet } from '../services/walletStore.js'
+import { loadProfile, loadWallet } from '../services/walletStore.js'
+import { startGuestSession } from '../services/auth.js'
 
 export default function GuestModeButton() {
   const navigate = useNavigate()
 
   const playAsGuest = () => {
+    startGuestSession()
+    if (!loadProfile()?.assessment?.pre) {
+      navigate('/assessment/pre')
+      return
+    }
     navigate(loadWallet() ? '/world' : '/avatar')
   }
 
