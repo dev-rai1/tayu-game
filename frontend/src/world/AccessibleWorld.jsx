@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { tickTimelines } from '../anim/timeline.js'
+import { flushTimelines } from '../anim/timeline.js'
 import { useGame } from './store.js'
 import { SHOPKEEPER, STORE_ITEMS } from './config.js'
 
@@ -35,11 +35,10 @@ function Action({ children, onClick, secondary = false }) {
 }
 
 export function AccessibleWorld() {
-  // In 3D mode ConsequenceStage advances the game's frame-driven timelines.
-  // Accessible mode has no Three.js frame loop, so advance the same state
-  // machine here or every acted-out lesson will stop permanently.
+  // The choreography is invisible without the 3D scene. Finish it immediately
+  // while preserving every state transition and follow-up lesson.
   useEffect(() => {
-    const timer = window.setInterval(() => tickTimelines(0.1), 16)
+    const timer = window.setInterval(flushTimelines, 50)
     return () => window.clearInterval(timer)
   }, [])
 
