@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Billboard } from '@react-three/drei'
 import { useGame } from './store.js'
 import { JARS, KITCHEN, TAYU } from './config.js'
-import { labelTexture } from './textures.js'
+import { cardTexture } from './textures.js'
 
 const JAR_DEFS = [
   { key: 'spend', label: 'SPEND', color: TAYU.electric },
@@ -14,10 +14,13 @@ const JAR_DEFS = [
 const JAR_FULL = 15 // visual "full" amount ($30 split across jars)
 
 function Jar({ jarKey, label, color, pos }) {
+  const amount = useGame((s) => s.allocations[jarKey])
   const body = useRef()
   const fill = useRef()
   const ghost = useRef()
-  const labelTex = labelTexture(label, { bg: color, color: '#ffffff', accent: '#ffffff' })
+  // Keep the player's choice attached to the object it affects. This is much
+  // easier to scan than matching the jars to a separate HUD legend.
+  const labelTex = cardTexture(`$${amount}`, label, { bg: '#ffffff', color: TAYU.navy, accent: color })
   useFrame(() => {
     const st = useGame.getState()
     const amt = st.allocations[jarKey]
@@ -62,10 +65,9 @@ function Jar({ jarKey, label, color, pos }) {
         <meshBasicMaterial color={TAYU.gold} transparent opacity={0.3} depthWrite={false} />
       </mesh>
       <mesh position={[0, 0.38, 0]}><cylinderGeometry args={[0.32, 0.32, 0.07, 18]} /><meshStandardMaterial color="#8B6914" /></mesh>
-      {/* always-visible SPEND / SAVE / GIVE pill, billboarded - sized up for
-          legibility (comment 35: the Give jar was hard to read) */}
-      <Billboard position={[0, 1.02, 0]}>
-        <mesh><planeGeometry args={[1.28, 0.4]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
+      {/* The amount sits directly above each jar, with its purpose underneath. */}
+      <Billboard position={[0, 1.18, 0]}>
+        <mesh><planeGeometry args={[1.3, 0.65]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
       </Billboard>
     </group>
   )
