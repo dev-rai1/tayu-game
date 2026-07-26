@@ -24,6 +24,7 @@ async function client() {
 // ---- local demo store ----
 const LKEY = 'tayu-accounts-v1'
 const SKEY = 'tayu-session-v1'
+const GKEY = 'tayu-guest-progress-v1'
 const DEMO_ADMIN_CREDENTIAL_VERSION = 2
 const readAccounts = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '{}') } catch { return {} } }
 const writeAccounts = (a) => localStorage.setItem(LKEY, JSON.stringify(a))
@@ -64,9 +65,26 @@ export function currentUser() {
   try { return JSON.parse(localStorage.getItem(SKEY) || 'null') } catch { return null }
 }
 
+function readGuestProgress() {
+  try { return JSON.parse(localStorage.getItem(GKEY) || 'null') } catch { return null }
+}
+
+function saveGuestProgress() {
+  const snapshot = { wallet: loadWallet(), profile: loadProfile(), savedAt: new Date().toISOString() }
+  try { localStorage.setItem(GKEY, JSON.stringify(snapshot)) } catch { /* storage unavailable */ }
+  return snapshot
+}
+
 export function startGuestSession() {
+  // Guest/demo progress belongs to the device, not to whichever account was
+  // used most recently. Capture an active guest before changing the session,
+  // then restore its dedicated snapshot whenever demo mode is reopened.
+  if (currentUser()?.guest) saveGuestProgress()
+  const saved = readGuestProgress()
   const guest = { role: 'guest', cloud: false, guest: true }
   setSession(guest)
+  if (saved?.wallet) saveWallet(saved.wallet)
+  if (saved?.profile) saveProfile(saved.profile)
   return guest
 }
 
@@ -148,6 +166,10 @@ export async function syncUp() {
   const u = currentUser()
   if (!u) return
   const snapshot = { wallet: loadWallet(), profile: loadProfile(), savedAt: new Date().toISOString() }
+  if (u.guest) {
+    try { localStorage.setItem(GKEY, JSON.stringify(snapshot)) } catch { /* storage unavailable */ }
+    return
+  }
   const c = await client()
   if (c && u.id) {
     await c.from('progress').upsert({ user_id: u.id, data: snapshot, updated_at: snapshot.savedAt })
