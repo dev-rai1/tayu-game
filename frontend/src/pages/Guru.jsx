@@ -279,10 +279,10 @@ export default function Guru() {
           <button onClick={download} className="btn-primary min-h-[56px] px-6">Download PDF</button>
           <button onClick={() => window.print()} className="min-h-[56px] rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">Print</button>
           <button onClick={share} className="min-h-[56px] rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">{copied ? 'Link copied!' : 'Share'}</button>
-          <a href="https://docs.google.com/forms/d/1YxoquHQ_pj_tu5ffnb24tOjtalUAaHwn4i8-Nk1W9L4/viewform" target="_blank" rel="noopener" className="grid min-h-[56px] place-items-center rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4IgEETBk_Serp_OM0FQNH0o91OAOvbsjWK_DAGMVtz64aEw/viewform" target="_blank" rel="noopener" className="grid min-h-[56px] place-items-center rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">
             Teacher Feedback
           </a>
-          <a href="https://docs.google.com/forms/d/1I8zohjlDqjsqDhavcija_1B7pOpulSozYtAwAd9G8vI/viewform" target="_blank" rel="noopener" className="grid min-h-[56px] place-items-center rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfko_Uc7k7xuMRDY_ZO1mzOrqK72cgybKUjy5Mk7OkS-9w_w/viewform" target="_blank" rel="noopener" className="grid min-h-[56px] place-items-center rounded-2xl bg-white px-6 font-bold text-navy transition active:scale-95">
             Student Feedback
           </a>
         </div>

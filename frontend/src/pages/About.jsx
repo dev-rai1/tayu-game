@@ -25,6 +25,11 @@ const TEAM = [
   { file: 'gaamaa_hishigsuren.png', name: 'Gaamaa Hishigsuren', role: 'Project Advisor', li: 'https://linkedin.com/in/gaamaa' },
 ]
 
+// R13 11.5: corporate sponsors - add {name, org?, logo?} entries here to list more
+const SPONSORS = [
+  { name: 'Michael Darcy', org: 'DG Fuel' },
+]
+
 const STATS = [
   {
     big: 'Age 7',
@@ -117,9 +122,13 @@ export default function About() {
           <section>
             <h1 className="font-display text-3xl font-extrabold text-navy">Who we are</h1>
             <p className="mt-3 text-lg leading-relaxed text-navy/80">
-              TAYU is our DECA project: a game that teaches elementary students how money
-              works by letting them play it. We built it because the research is loud and
-              clear about when money learning has to start.
+              TAYU is our DECA project: a 3D game that teaches money skills across three
+              school levels &mdash; elementary, middle, and high school &mdash; by letting kids play it.
+            </p>
+            <p className="mt-3 text-lg font-semibold leading-relaxed text-navy">
+              We are focused on building a strong foundation from elementary school, closing the
+              existing gap, and offering more enhanced and gamified content for middle and high
+              school students to complement any existing content they may be able to access.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {STATS.map((s) => (
@@ -131,6 +140,11 @@ export default function About() {
                 </div>
               ))}
             </div>
+            <p className="mt-6 text-lg font-semibold leading-relaxed text-navy">
+              Providing financial literacy at an early age, including from the elementary school
+              level, and strengthening it through middle and high school, will contribute to more
+              financially responsible citizens and a better economy.
+            </p>
           </section>
 
           {/* A2 - Meet the Team */}
@@ -166,7 +180,7 @@ export default function About() {
                   children&rsquo;s book about investing. We brought it into elementary classrooms
                   ourselves through our Cash Classroom sessions, reading with students and running
                   live financial-literacy lessons. Then we took it global: the book was translated
-                  into <b>five languages</b> (English, Hindi, Marathi, Chinese, and Mongolian) and
+                  into <b>seven languages</b> (English, Hindi, Marathi, Chinese, Mongolian, Spanish, and Russian) and
                   distributed to students and schools across <b>five countries</b> (the United
                   States, India, China, Kazakhstan, and Australia), including a donation campaign
                   into Fairfax County Public Schools elementary libraries.
@@ -175,13 +189,23 @@ export default function About() {
                   <a href="https://www.amazon.com/Seed-That-Grew-Story-Investing/dp/B0FZ9CNLJV/" target="_blank" rel="noopener" className="rounded-2xl bg-navy px-4 py-2 text-sm font-bold text-white hover:bg-electric">
                     View on Amazon
                   </a>
-                  <a href="https://canva.link/v949azs43cxusn2" target="_blank" rel="noopener" className="rounded-2xl bg-electric px-4 py-2 text-sm font-bold text-white hover:bg-teal hover:text-navy">
-                    Preview the book
-                  </a>
                 </div>
                 <p className="mt-4 rounded-2xl bg-navy px-4 py-3 font-display text-base font-extrabold text-white">
                   The book taught kids by reading. TAYU teaches them by playing.
                 </p>
+              </div>
+            </div>
+            {/* R13 11.4: the Fox interview, embedded inline */}
+            <div className="mt-6">
+              <h3 className="font-display text-lg font-extrabold text-navy">As seen on Fox</h3>
+              <div className="mt-2 overflow-hidden rounded-2xl shadow-md" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                <iframe
+                  src="https://www.youtube.com/embed/HjfuUGCowW4"
+                  title="TAYU on Fox"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </section>
@@ -242,9 +266,30 @@ export default function About() {
             <a href="/avatar" className="btn-primary mt-4 inline-block min-h-[56px] px-10 text-lg leading-[56px]">Play the Game</a>
             <p className="mt-4 text-sm font-bold text-navy/60">After you play, share your feedback:</p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
-              <a href="https://docs.google.com/forms/d/1YxoquHQ_pj_tu5ffnb24tOjtalUAaHwn4i8-Nk1W9L4/viewform" target="_blank" rel="noopener" className="rounded-xl bg-electric px-5 py-3 text-sm font-extrabold text-white active:scale-95">Teacher Feedback</a>
-              <a href="https://docs.google.com/forms/d/1I8zohjlDqjsqDhavcija_1B7pOpulSozYtAwAd9G8vI/viewform" target="_blank" rel="noopener" className="rounded-xl bg-brandpurple px-5 py-3 text-sm font-extrabold text-white active:scale-95">Student Feedback</a>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4IgEETBk_Serp_OM0FQNH0o91OAOvbsjWK_DAGMVtz64aEw/viewform" target="_blank" rel="noopener" className="rounded-xl bg-electric px-5 py-3 text-sm font-extrabold text-white active:scale-95">Teacher Feedback</a>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfko_Uc7k7xuMRDY_ZO1mzOrqK72cgybKUjy5Mk7OkS-9w_w/viewform" target="_blank" rel="noopener" className="rounded-xl bg-brandpurple px-5 py-3 text-sm font-extrabold text-white active:scale-95">Student Feedback</a>
             </div>
+          </section>
+
+          {/* R13 11.5: corporate sponsors - anyone contributing over $200 can be listed */}
+          <section className="rounded-3xl bg-white p-6 text-center shadow-md">
+            <h2 className="font-display text-2xl font-extrabold text-navy">Our sponsors</h2>
+            <p className="mx-auto mt-2 max-w-xl text-navy/70">
+              TAYU is supported by generous sponsors. Contributors of more than $200 are proudly listed here.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-4">
+              {SPONSORS.map((sp) => (
+                <div key={sp.name} className="rounded-2xl border-2 border-navy/10 bg-navy/5 px-6 py-4">
+                  {sp.logo
+                    ? <img src={sp.logo} alt={sp.name} className="mx-auto h-12 object-contain" />
+                    : <div className="font-display text-lg font-extrabold text-navy">{sp.name}</div>}
+                  {sp.org && <div className="mt-1 text-sm font-bold text-electric">{sp.org}</div>}
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-sm text-navy/60">
+              Interested in sponsoring? <a href="mailto:tayu.finance@gmail.com" className="font-bold text-electric underline underline-offset-2">Get in touch.</a>
+            </p>
           </section>
 
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
