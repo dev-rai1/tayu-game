@@ -32,6 +32,19 @@ export const COMPANIES = {
 }
 export const COMPANY_IDS = ['toy', 'snack', 'game']
 
+export function weeklyMarketUpdate(previous, current) {
+  return COMPANY_IDS.map((id) => {
+    const before = previous[id].price
+    const after = current[id].price
+    const direction = after > before
+      ? `rose from ${before} to ${after}`
+      : after < before
+        ? `fell from ${before} to ${after}`
+        : `held at ${after}`
+    return `${COMPANIES[id].name} ${direction}`
+  }).join(' · ')
+}
+
 export function initCompanies() {
   const out = {}
   for (const id of COMPANY_IDS) {
