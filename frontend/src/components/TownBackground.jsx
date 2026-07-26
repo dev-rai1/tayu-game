@@ -133,7 +133,7 @@ export function TownBackground({ theme = 'play', scrim = 0 }) {
     function frame(ts) {
       raf = requestAnimationFrame(frame)
       if (paused) return
-      if (ts - last < 33) return // ~30fps cap
+      if (ts - last < 50) return // Decorative canvas is smooth enough at 20fps and leaves time for the UI.
       const dt = Math.min((ts - last) / 1000, 0.1)
       last = ts
       const t = ts / 1000
