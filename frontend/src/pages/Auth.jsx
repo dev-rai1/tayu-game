@@ -16,7 +16,7 @@ export default function Auth() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const [ok, setOk] = useState(null)
-  const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'student', gradeLevels: '', foundVia: '', organizationName: '', organizationEmail: '' })
+  const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'teacher', gradeLevels: '', foundVia: '', organizationName: '' })
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
   const submit = async () => {
@@ -72,11 +72,11 @@ export default function Auth() {
             <label className={LABEL}>Confirm password
               <input className={FIELD} type="password" autoComplete="new-password" value={f.confirm} onChange={set('confirm')} />
             </label>
-            <label className={LABEL}>Are you a teacher or a student?
+            <label className={LABEL}>Which best describes you?
               <select className={FIELD} value={f.role} onChange={set('role')}>
-                <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
-                <option value="parent">Parent / other</option>
+                <option value="student">Student</option>
+                <option value="other">Other</option>
               </select>
             </label>
             {(f.role === 'teacher' || f.role === 'student') && (
@@ -84,19 +84,18 @@ export default function Auth() {
                 <input className={FIELD} value={f.organizationName} onChange={set('organizationName')} placeholder="e.g. Lincoln Elementary School" />
               </label>
             )}
-            <label className={LABEL}>Organization email <span className="text-white/50">(optional)</span>
-              <input className={FIELD} type="email" value={f.organizationEmail} onChange={set('organizationEmail')} placeholder="office@school.org" />
-            </label>
-            <label className={LABEL}>{f.role === 'teacher' ? 'What grade level(s) do you teach?' : 'What grade level(s)?'}
-              <select className={FIELD} value={f.gradeLevels} onChange={set('gradeLevels')}>
-                <option value="">Choose a grade range...</option>
-                <option value="K-2">Elementary (K–2)</option>
-                <option value="3-5">Elementary (3–5)</option>
-                <option value="6-8">Middle school (6–8)</option>
-                <option value="9-12">High school (9–12)</option>
-                <option value="mixed">Mixed / multiple grades</option>
-              </select>
-            </label>
+            {(f.role === 'teacher' || f.role === 'student') && (
+              <label className={LABEL}>{f.role === 'teacher' ? 'What grade level(s) do you teach?' : 'What grade level(s) are you in?'}
+                <select className={FIELD} value={f.gradeLevels} onChange={set('gradeLevels')}>
+                  <option value="">Choose a grade range...</option>
+                  <option value="K-2">Elementary (K–2)</option>
+                  <option value="3-5">Elementary (3–5)</option>
+                  <option value="6-8">Middle school (6–8)</option>
+                  <option value="9-12">High school (9–12)</option>
+                  <option value="mixed">Mixed / multiple grades</option>
+                </select>
+              </label>
+            )}
             <label className={LABEL}>How did you find TAYU?
               <select className={FIELD} value={f.foundVia} onChange={set('foundVia')}>
                 <option value="">Choose one...</option>
