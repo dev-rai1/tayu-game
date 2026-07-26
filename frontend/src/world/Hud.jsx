@@ -1240,13 +1240,6 @@ function WeekDots() {
   )
 }
 
-function ModuleTransition() {
-  const transition = useGame((state) => state.moduleTransition)
-  const dismiss = useGame((state) => state.dismissModuleTransition)
-  if (!transition) return null
-  return <div className="pointer-events-auto absolute inset-0 z-[360] flex items-center justify-center bg-navy/75 p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" className="pop-in w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><div className="text-sm font-extrabold uppercase text-teal">{transition.from}</div><h2 className="mt-2 font-display text-3xl font-extrabold text-navy">Moving to {transition.to}</h2><p className="mt-3 text-lg font-bold leading-relaxed text-navy/75">{transition.summary}</p><button className="btn-primary mt-6 min-h-[60px] w-full text-lg" onClick={dismiss}>Continue to {transition.to}</button></div></div>
-}
-
 function HelpButton() {
   const setOpen = useGame((s) => s.setHelpOpen)
   return (
@@ -1387,7 +1380,6 @@ export function Hud({ playerName, onContinue }) {
         </div>
       )}
 
-      <ModuleTransition />
       <HelpCard />
       <TintOverlay />
       <SunSweep />
