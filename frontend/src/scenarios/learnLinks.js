@@ -1,6 +1,6 @@
-// ROUND 8 PART 5: the Learning Library. Every concept gets a UNIQUE, real,
+// ROUND 8 PART 5: the learning resources. Every concept gets a UNIQUE, real,
 // free, verified resource (all URLs curl-checked 200 on 7/17). The '?' menu's
-// Library tab groups them BY MODULE; teaching cards carry per-concept
+// Learning Resources tab groups them BY MODULE; teaching cards carry per-concept
 // Learn More buttons that open these in a new tab.
 
 export const LEARN = {
@@ -26,11 +26,11 @@ export const LEARN = {
   finbasics: { label: 'Investing basics (FINRA)', url: 'https://www.finra.org/investors/investing/investing-basics' },
 }
 
-// The Library tab: resources organized BY MODULE (the advisor's roadmap).
-export const LIBRARY = [
-  { module: 'Phase 1: The Market', items: ['jars', 'needswants'] },
-  { module: 'Phase 2: The Lemonade Stand', items: ['business', 'earn', 'budgeting'] },
-  { module: 'Phase 3: Budget Town', items: ['allocation', 'compound'] },
-  { module: 'Phase 4: The Bank', items: ['banks', 'cd', 'debitcredit', 'carddebt', 'debthelp', 'scams'] },
-  { module: 'Phase 5: The Money Garden', items: ['stocks', 'diversify', 'research', 'risk', 'longterm', 'finbasics'] },
+// Resources organized BY MODULE (the advisor's roadmap).
+export const LEARNING_RESOURCES = [
+  { module: 'Module 1: The Market', items: ['jars', 'needswants'] },
+  { module: 'Module 2: The Lemonade Stand', items: ['business', 'earn', 'budgeting'] },
+  { module: 'Module 3: Budget Town', items: ['allocation', 'compound'] },
+  { module: 'Module 4: The Bank', items: ['banks', 'cd', 'debitcredit', 'carddebt', 'debthelp', 'scams'] },
+  { module: 'Module 5: The Money Garden', items: ['stocks', 'diversify', 'research', 'risk', 'longterm', 'finbasics'] },
 ]
