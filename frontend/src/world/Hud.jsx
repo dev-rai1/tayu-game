@@ -1067,10 +1067,10 @@ function HelpCard() {
   return (
     <div className="pointer-events-auto absolute inset-0 z-[290] flex items-end justify-center bg-navy/30 p-4 sm:items-center">
       <div role="dialog" aria-modal="true" aria-label="Game help" className="glass--navy pop-in max-h-[92vh] w-full max-w-md overflow-y-auto p-5 text-center">
-        <div className="flex justify-center gap-1.5" role="tablist" aria-label="Help sections">
+        <div className="grid grid-cols-3 gap-1.5" role="tablist" aria-label="Help sections">
           {[['controls', 'CONTROLS'], ['modules', 'MODULES'], ['resources', 'LEARNING RESOURCES']].map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={tab === id} aria-controls={`help-panel-${id}`} onClick={() => setTab(id)}
-              className={`rounded-xl px-3 text-xs font-extrabold transition active:scale-95 ${id === 'controls' ? 'min-h-[48px] px-5 text-sm' : 'min-h-[40px]'} ${tab === id ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
+            <button key={id} type="button" role="tab" aria-selected={tab === id} aria-controls={`help-panel-${id}`} onClick={() => setTab(id)}
+              className={`min-w-0 rounded-xl px-1 text-[10px] font-extrabold leading-tight transition active:scale-95 sm:px-3 sm:text-xs ${id === 'controls' ? 'min-h-[48px] sm:px-5 sm:text-sm' : 'min-h-[40px]'} ${tab === id ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
               {label}
             </button>
           ))}
