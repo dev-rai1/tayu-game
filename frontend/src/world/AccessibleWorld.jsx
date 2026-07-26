@@ -21,6 +21,14 @@ const MODULE_NAMES = {
   5: 'The Money Garden',
 }
 
+const MODULE_INTROS = {
+  1: 'Give every dollar a job, then practice choosing needs before wants.',
+  2: 'Build a lemonade business and discover how price, cost, and profit connect.',
+  3: 'Make one day of real-life money choices and protect what matters most.',
+  4: 'Try bank accounts, cards, interest, and scam spotting in a safe place.',
+  5: 'Grow a patient, balanced investment garden through changing weeks.',
+}
+
 function Action({ children, onClick, secondary = false }) {
   return (
     <button
@@ -29,6 +37,7 @@ function Action({ children, onClick, secondary = false }) {
         secondary ? 'border-2 border-white/25 bg-white/10 text-white hover:bg-white/20' : 'bg-electric text-white hover:bg-teal hover:text-navy'
       }`}
     >
+      <span aria-hidden="true" className="mr-2 text-teal">→</span>
       {children}
     </button>
   )
@@ -92,19 +101,27 @@ export function AccessibleWorld() {
   return (
     <main className="absolute inset-0 overflow-y-auto bg-gradient-to-b from-[#123a78] via-navy to-[#07112f] px-4 pb-32 pt-24 text-white">
       <div className="mx-auto max-w-xl">
-        <div className="rounded-3xl border-2 border-teal/50 bg-navy/90 p-5 shadow-2xl">
-          <div className="inline-flex rounded-full bg-teal px-3 py-1 text-xs font-extrabold text-navy">
-            ACCESSIBLE 2D MODE
+        <div className="pop-in rounded-3xl border-2 border-teal/50 bg-navy/90 p-5 shadow-2xl">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="inline-flex rounded-full bg-teal px-3 py-1 text-xs font-extrabold text-navy">
+              ACCESSIBLE 2D MODE
+            </div>
+            <div aria-label={`Module ${week} of 5`} className="rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white">
+              MODULE {week} / 5
+            </div>
           </div>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">{MODULE_NAMES[week] || 'TAYU'}</h1>
+          <h1 aria-live="polite" className="mt-3 font-display text-3xl font-extrabold">{MODULE_NAMES[week] || 'TAYU'}</h1>
+          <p className="mt-2 rounded-2xl bg-teal/10 px-4 py-3 text-base font-bold leading-relaxed text-teal">
+            {MODULE_INTROS[week]}
+          </p>
           <p className="mt-2 text-base font-semibold leading-relaxed text-white/85">
-            Your device cannot display the 3D town, so walking has been replaced with clear destination buttons. All lessons, choices, money, progress, and rewards are unchanged.
+            Walking is replaced with clear destination buttons. Your lessons, choices, money, progress, and rewards work the same way.
           </p>
         </div>
 
         {!busy && actions.length > 0 && (
-          <section aria-labelledby="next-step-title" className="mt-4 rounded-3xl bg-white/10 p-5">
-            <h2 id="next-step-title" className="font-display text-xl font-extrabold text-teal">Choose your next step</h2>
+          <section aria-labelledby="next-step-title" className="pop-in mt-4 rounded-3xl bg-white/10 p-5">
+            <h2 id="next-step-title" className="font-display text-xl font-extrabold text-teal">Your next step</h2>
             <div className="mt-3 flex flex-col gap-3">
               {actions.map(([label, action, secondary]) => (
                 <Action key={label} onClick={action} secondary={secondary}>{label}</Action>
