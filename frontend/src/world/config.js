@@ -34,9 +34,9 @@ export const KITCHEN = sc([8.6, -31.6]) // jar table, in front of the house
 export const JARS = {
   // Give each jar its own interaction space. In the first usability session,
   // players repeatedly selected SAVE while trying to move to another jar.
-  spend: sc([7.0, -31.8]),
+  spend: sc([6.4, -31.8]),
   save: sc([8.6, -31.8]),
-  give: sc([10.2, -31.8]),
+  give: sc([10.8, -31.8]),
 }
 export const HOME = sc([4.6, -35]) // the house, behind the jar table
 export const STORE = sc([16.7, -42.6]) // TAYU MARKET - open front faces the ring
