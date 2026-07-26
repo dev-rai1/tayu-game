@@ -443,7 +443,6 @@ export function ConsequenceStage() {
       <ToyProp />
       <EmoteField />
       <SparkleField />
-      <BubbleLayer />
       <Ticker />
       <AmbientScheduler />
     </group>

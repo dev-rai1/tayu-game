@@ -37,7 +37,7 @@ const itemById = (id) => STORE_ITEMS.find((i) => i.id === id)
 const r2 = (n) => Math.round(n * 100) / 100
 const fmtMoney = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })
 
-let guideTimer, bannerTimer, tintTimer, glowTimer
+let guideTimer, actorTimer, bannerTimer, tintTimer, glowTimer
 
 export const useGame = create((set, get) => ({
   wallet: 0,
@@ -115,6 +115,7 @@ export const useGame = create((set, get) => ({
   // FX
   helpOpen: false, // E2: the '?' help card
   guide: null,
+  actorCaption: null,
   banner: null,
   tint: null,
   sunKey: 0,
@@ -1725,6 +1726,11 @@ export const useGame = create((set, get) => ({
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
+  sayActor: (actor, line, ms = 3400) => {
+    clearTimeout(actorTimer)
+    set({ actorCaption: { actor, line } })
+    actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
+  },
   clearGuide: () => { clearTimeout(guideTimer); set({ guide: null }) },
   setBanner: (text, ms = 2600) => {
     clearTimeout(bannerTimer)
@@ -1760,7 +1766,7 @@ export const useGame = create((set, get) => ({
     lemCumProfit: 0, lemPoolSeen: false, lemHistory: [], lemTipHistory: [], lemTip: null,
     mg: null, mgPhase: null, mgHighlight: null, panelPortfolio: false, gameComplete: false, enterParty: false, split: null, _finaleParty: false,
     bt: null, btPanel: null, bk: null, bkPanel: null, helpOpen: false,
-    guide: null, banner: null, tint: null, sunKey: 0, hudShakeKey: 0, jarGlow: null, playerSpeedMult: 1, playerPose: 'idle',
+    guide: null, actorCaption: null, banner: null, tint: null, sunKey: 0, hudShakeKey: 0, jarGlow: null, playerSpeedMult: 1, playerPose: 'idle',
   }),
 
   initWorld: () => {

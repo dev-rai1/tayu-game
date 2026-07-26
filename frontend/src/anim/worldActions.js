@@ -34,11 +34,10 @@ export function npcEmote(actor, symbol, count = 4) {
   for (let i = 0; i < count; i++) stage.emotes.push({ id: ++stage._eid, actor, symbol, t: -i * 0.14, dur: 1.3, dx: (i - (count - 1) / 2) * 0.22 })
 }
 export function npcPose(id, pose) { const a = stage.actors[id]; if (a) { a.pose = pose; a.poseT = 0 } }
-// R9 Part 6: a speech bubble over an acting NPC's head (tiny in-animation
-// pop-up - the learning happens in the world, not in a text block).
+// Send acting NPC lines to the fixed HUD caption. Keeping text in screen space
+// makes it readable without covering the character or the object they act on.
 export function npcSay(id, text, dur = 3.4) {
-  stage.bubbles = stage.bubbles.filter((b) => b.actor !== id)
-  stage.bubbles.push({ id: ++stage._eid, actor: id, text, t: 0, dur })
+  g().sayActor(id, text, dur * 1000)
 }
 export function npcFace(id, target) { const a = stage.actors[id]; if (a) a.rotY = Math.atan2(target[0] - a.x, target[1] - a.z) }
 export function npcHome(id) { const a = stage.actors[id]; if (a) { a.tx = a.homeX; a.tz = a.homeZ; a.moving = true; a.pose = 'idle'; a.onArrive = () => { a.moving = false } } }

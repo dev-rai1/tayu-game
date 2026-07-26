@@ -591,6 +591,29 @@ function DialogPanel() {
   )
 }
 
+const ACTOR_NAMES = {
+  player: 'You', penny: 'Penny', theo: 'Theo', mia: 'Mia', bea: 'Banker Bea',
+  teller: 'Teller Tom', clerk: 'Clerk Cleo', mailer: 'Postal Pat',
+  scammer: 'Sneaky Sam', helper: 'Helper Hana', bram: 'Mr. Bram',
+  sprout: 'Mr. Sprout', scoop: 'Scoop', wanderer: 'Milo', nea: 'Nea',
+}
+
+// Animation dialogue stays in one predictable screen-space location rather
+// than floating above (and obscuring) characters and nearby learning props.
+function ActorCaption() {
+  const caption = useGame((s) => s.actorCaption)
+  if (!caption) return null
+  const name = ACTOR_NAMES[caption.actor] || caption.actor
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-24 z-[220] flex justify-center px-4 sm:bottom-20">
+      <div className="pop-in w-full max-w-lg rounded-2xl border-2 border-electric bg-white px-5 py-3 text-center shadow-2xl">
+        <div className="text-xs font-extrabold uppercase tracking-wide text-electric">{name}</div>
+        <p className="mt-1 text-lg font-bold leading-snug text-navy">{caption.line}</p>
+      </div>
+    </div>
+  )
+}
+
 // Penny's small auto guide bubble (short-lived, non-blocking).
 function GuideBubble() {
   const guide = useGame((s) => s.guide)
@@ -1319,6 +1342,7 @@ export function Hud({ playerName, onContinue }) {
       {banner && <Confetti />}
       <JarPanel />
       <DialogPanel />
+      <ActorCaption />
       <GuideBubble />
       <ProductPanel />
       <RecapPanel />
