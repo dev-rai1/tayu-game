@@ -8,6 +8,7 @@ import AvatarCustomizer from '../components/AvatarCustomizer.jsx'
 import AvatarPreview from '../components/AvatarPreview.jsx'
 import { DEFAULT_AVATAR, randomAvatar } from '../constants/avatarOptions.js'
 import { isValidName } from '../utils/validators.js'
+import { hasWebGL } from '../utils/webgl.js'
 
 // Self-contained 3D character creator: options (left) · live 3D preview (center)
 // · name + actions (right). Fully customizable, works on any device/network.
@@ -17,6 +18,7 @@ export default function AvatarCreate() {
   const [avatar, setAvatar] = useState(state.avatar || DEFAULT_AVATAR)
   const [name, setName] = useState(state.player.name || '')
   const [nameTouched, setNameTouched] = useState(false)
+  const [use3D] = useState(hasWebGL)
 
   const patch = (p) => setAvatar((a) => ({ ...a, ...p }))
 
@@ -54,7 +56,17 @@ export default function AvatarCreate() {
 
         {/* Center - 3D preview */}
         <div className="min-h-[52vh] overflow-hidden rounded-3xl shadow-xl lg:min-h-[74vh]">
-          <AvatarPreview avatar={avatar} />
+          {use3D ? (
+            <AvatarPreview avatar={avatar} />
+          ) : (
+            <div className="flex h-full min-h-[52vh] flex-col items-center justify-center bg-navy/90 p-6 text-center">
+              <div className="grid h-32 w-32 place-items-center rounded-full bg-teal/20 text-6xl" aria-hidden="true">●</div>
+              <h2 className="mt-5 font-display text-2xl font-extrabold text-teal">Your character is ready</h2>
+              <p className="mt-2 max-w-sm font-semibold text-white/80">
+                This device cannot show the 3D preview. Your selected appearance is still saved, and the game will use accessible 2D navigation.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Right - name + actions */}
