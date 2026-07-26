@@ -85,42 +85,61 @@ function JarHud() {
   )
 }
 
-// A persistent, direct way to choose a jar. Players no longer have to steer
-// precisely up to three similar objects just to make an allocation.
-function JarChooser() {
-  const week = useGame((s) => s.week)
+// A single, close-to-the-action view of the whole allocation. It also lets a
+// player switch jars directly instead of trying to steer between three nearby
+// 3D interaction zones.
+function JarAllocationBoard() {
+  const objective = useGame((s) => s.objective)
   const state = useGame((s) => s.scenarioState)
+  const locked = useGame((s) => s.scenarioLocked)
   const wallet = useGame((s) => s.wallet)
   const alloc = useGame((s) => s.allocations)
-  const panelJar = useGame((s) => s.panelJar)
-  const dialog = useGame((s) => s.dialog)
-  const lessons = useGame((s) => s.lessons)
   const open = useGame((s) => s.openPanel)
-  if (week !== 1 || state !== 'ALLOCATING' || panelJar || dialog || lessons.length > 0 || wallet <= 0) return null
-
+  if (objective !== 'kitchen' || state !== 'ALLOCATING' || locked) return null
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-4 z-[240] flex justify-center px-3">
-      <div className="glass--navy w-full max-w-xl rounded-3xl p-3 shadow-2xl">
-        <p className="mb-2 text-center text-sm font-extrabold text-white">Choose a jar to put money in</p>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.keys(JAR_LABEL).map((jar) => (
-            <button
-              key={jar}
-              onClick={() => open(jar)}
-              className="min-h-[64px] rounded-2xl border-2 bg-white px-2 py-2 text-navy shadow-lg transition hover:-translate-y-0.5 active:scale-95"
-              style={{ borderColor: JAR_HEX[jar] }}
-              aria-label={`Choose ${JAR_LABEL[jar]} jar, currently $${fmt(alloc[jar])}`}
-            >
-              <span className="block text-sm font-extrabold" style={{ color: JAR_HEX[jar] }}>{JAR_LABEL[jar]}</span>
-              <span className="block text-xl font-extrabold">${fmt(alloc[jar])}</span>
-            </button>
-          ))}
+    <div className="pointer-events-auto absolute left-1/2 top-[72px] z-[170] w-[min(94vw,30rem)] -translate-x-1/2 rounded-2xl border border-white/20 bg-navy/90 p-3 text-white shadow-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-xs font-extrabold uppercase tracking-wide text-teal">Your $30 plan</div>
+          <div className="text-sm font-bold">Choose each jar. Use all $30.</div>
         </div>
+        <div className="rounded-xl bg-white/10 px-3 py-1 text-center">
+          <div className="text-[10px] font-bold text-white/60">LEFT</div>
+          <div className="text-xl font-extrabold text-sun">${fmt(wallet)}</div>
+        </div>
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {Object.keys(JAR_LABEL).map((key) => (
+          <button key={key} onClick={() => open(key)} disabled={wallet <= 0}
+            aria-label={`Choose ${JAR_LABEL[key]} jar, currently $${fmt(alloc[key])}`}
+            className="min-h-[56px] rounded-xl border-2 bg-white/10 px-2 py-1 text-center transition active:scale-95 disabled:opacity-60"
+            style={{ borderColor: JAR_HEX[key] }}>
+            <span className="block text-[11px] font-extrabold" style={{ color: JAR_HEX[key] }}>{JAR_LABEL[key]}</span>
+            <span className="block text-xl font-extrabold">${fmt(alloc[key])}</span>
+          </button>
+        ))}
       </div>
     </div>
   )
 }
 
+function MarketMissionBar() {
+  const week = useGame((s) => s.week)
+  const objective = useGame((s) => s.objective)
+  const talked = useGame((s) => s.bramTalked)
+  const spend = useGame((s) => s.allocations.spend)
+  const bought = useGame((s) => s.bought)
+  if (week !== 1 || objective !== 'store' || !talked) return null
+  return (
+    <div className="absolute left-1/2 top-[72px] z-[165] w-[min(94vw,32rem)] -translate-x-1/2 rounded-2xl bg-navy/90 px-4 py-3 text-center text-white shadow-xl">
+      <div className="font-extrabold">Pick 1 healthy food + 1 healthy drink</div>
+      <div className="mt-1 text-sm font-bold text-white/75">
+        SPEND money left: <span className="text-sun">${fmt(spend)}</span> · Basket: {bought.length} item{bought.length === 1 ? '' : 's'}
+      </div>
+      <div className="text-xs text-teal">You may spend it or save what is left for later.</div>
+    </div>
+  )
+}
 // The always-visible money readout for Weeks 2 and 3 (comments 33/28):
 // ONE simple number - never make the player guess what they have.
 function MoneyPill() {
@@ -578,7 +597,10 @@ function DialogPanel() {
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[300] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div role="dialog" aria-modal="true" aria-labelledby="tayu-dialog-speaker" aria-describedby="tayu-dialog-line" className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
-        <div id="tayu-dialog-speaker" className="text-sm font-extrabold uppercase tracking-wide text-electric">{dialog.name}</div>
+        <div id="tayu-dialog-speaker" className="flex items-center justify-between gap-2 text-sm font-extrabold uppercase tracking-wide text-electric">
+          <span>{dialog.name}</span>
+          <span className="text-navy/45">{dialog.index + 1} of {dialog.lines.length}</span>
+        </div>
         <p id="tayu-dialog-line" className="mt-1 text-xl font-bold leading-snug text-navy">{dialog.lines[dialog.index]}</p>
         <SpeakButton text={dialog.lines[dialog.index]} />
         <div className="mt-3 flex justify-end">
@@ -1285,7 +1307,8 @@ export function Hud({ playerName, onContinue }) {
       </div>
 
       <JarHud />
-      <JarChooser />
+      <JarAllocationBoard />
+      <MarketMissionBar />
       <MoneyPill />
       <SeedProgress />
       <DayBudgetBar />
