@@ -4,6 +4,7 @@
 // All cheap useFrame animation on plain meshes - no re-renders, no physics.
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { playerPos } from './store.js'
 import { AMBIENT_NPCS, LAKE } from './config.js'
 
 // v8 Section 4: reduced-motion stills all decorative life
@@ -19,6 +20,8 @@ function Villager({ npc, phase }) {
   useFrame(() => {
     const g = body.current
     if (!g) return
+    const dx = playerPos.x - npc.pos[0], dz = playerPos.z - npc.pos[1]
+    if (dx * dx + dz * dz > 1225) return // R13c: freeze distant park folk (35u)
     const t = Date.now() * 0.004 + phase
     if (npc.kind === 'dance') {
       g.position.y = Math.abs(Math.sin(t)) * 0.26
@@ -65,6 +68,8 @@ function Duck({ r, speed, phase, dir = 1 }) {
   useFrame(() => {
     const g = ref.current
     if (!g) return
+    const dx = playerPos.x - LAKE.x, dz = playerPos.z - LAKE.z
+    if (dx * dx + dz * dz > 1600) return // R13c: freeze ducks when away from the lake
     const t = Date.now() * 0.001 * speed * dir + phase
     g.position.set(LAKE.x + Math.cos(t) * r, 0.12 + Math.sin(t * 6) * 0.02, LAKE.z + Math.sin(t) * r)
     g.rotation.y = -t - dir * Math.PI / 2
@@ -83,6 +88,8 @@ function Bunny({ x, z, phase }) {
   useFrame(() => {
     const g = ref.current
     if (!g) return
+    const dx = playerPos.x - x, dz = playerPos.z - z
+    if (dx * dx + dz * dz > 1225) return // R13c: freeze distant bunnies
     const t = Date.now() * 0.0016 + phase
     const hop = Math.abs(Math.sin(t * 3))
     g.position.set(x + Math.sin(t) * 1.6, hop * 0.3, z + Math.cos(t * 0.7) * 1.2)

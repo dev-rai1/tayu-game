@@ -52,9 +52,15 @@ function StageNpc({ id, name, accent, avatar }) {
 
   useFrame((_, dRaw) => {
     const d = Math.min(dRaw, 0.05)
-    idle.current += d
     const a = stage.actors[id]
     if (!a) return
+    // R13c PERF: a distant, idle NPC does not need per-frame animation - it
+    // stays rendered at rest. Only animate anyone mid-walk or near the player.
+    if (!a.moving) {
+      const pdx = playerPos.x - a.x, pdz = playerPos.z - a.z
+      if (pdx * pdx + pdz * pdz > 900) { if (root.current) { root.current.position.x = a.x; root.current.position.z = a.z } return }
+    }
+    idle.current += d
 
     if (a.moving) {
       const dx = a.tx - a.x, dz = a.tz - a.z

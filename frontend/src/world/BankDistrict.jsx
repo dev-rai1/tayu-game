@@ -37,7 +37,7 @@ function TellerWindow({ x, z, label, accent, locked }) {
 function CheckingGauge() {
   const bk = useGame((s) => s.bk)
   const bar = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 4) return;
     if (!bar.current || !bk) return
     const total = Math.max(1, bk.vault + bk.savings + bk.cd + bk.checking + bk.bankAmount)
     const f = Math.max(0.04, Math.min(1, bk.checking / total))
@@ -62,7 +62,7 @@ function CheckingGauge() {
 function SnackStall() {
   const fx = useGame((s) => s.bk?.fx)
   const card = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 4) return;
     if (!card.current) return
     const t = Math.min(since(fx?.swipeAt), since(fx?.swipe2At))
     card.current.visible = t < 1.6
@@ -101,7 +101,7 @@ function DebtBlobs() {
   const calm = useRef()
   const SPOTS = [[2.2, 3.2], [3.2, 4.6], [4.4, 3.4], [2.6, 5.4], [4.6, 5.2], [3.6, 2.6]]
   const CENTER = [3.5, 4.2]
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 4) return;
     const tGrow = since(fx?.debtAt)
     const tMerge = since(fx?.debtMergeAt)
     const merging = tMerge < 1.4
@@ -151,7 +151,7 @@ function DebtBlobs() {
 function Shield() {
   const fx = useGame((s) => s.bk?.fx)
   const ref = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 4) return;
     const g = ref.current
     if (!g) return
     const t = since(fx?.shieldAt)
@@ -174,7 +174,7 @@ export function BankDistrict() {
   const bk = useGame((s) => s.bk)
   const wheel = useRef()
   const vaultPulse = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 4) return;
     const spun = since(bk?.fx?.vaultAt)
     if (wheel.current) wheel.current.rotation.z += spun < 2 ? 0.25 : Math.sin(Date.now() * 0.0006) * 0.002
     if (vaultPulse.current) {

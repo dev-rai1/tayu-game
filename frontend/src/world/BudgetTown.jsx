@@ -25,7 +25,7 @@ function Sign({ text, accent = '#00DCA0', y = 2.9, w = 2 }) {
 // a tiny standing figure (family member / doctor / rider) that can wave
 function Figure({ color = '#e05252', wave = false, scale = 1, ...p }) {
   const arm = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 3) return;
     if (arm.current) arm.current.rotation.z = wave ? 2.4 + Math.sin(Date.now() * 0.012) * 0.5 : 0.4
   })
   return (
@@ -40,7 +40,7 @@ function Figure({ color = '#e05252', wave = false, scale = 1, ...p }) {
 function House() {
   const fx = useGame((s) => s.bt?.fx)
   const win = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 3) return;
     if (win.current) win.current.material.emissiveIntensity = fx?.houseLit ? 0.75 + Math.sin(Date.now() * 0.004) * 0.2 : 0.05
   })
   const waving = since(fx?.houseAt) < 6
@@ -99,7 +99,7 @@ function BusStop() {
   const fx = useGame((s) => s.bt?.fx)
   const bus = useRef()
   const wheels = useRef([])
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 3) return;
     const g = bus.current
     if (!g) return
     const t = since(fx?.busAt)
@@ -148,7 +148,7 @@ function BusStop() {
 function Clinic() {
   const fx = useGame((s) => s.bt?.fx)
   const cross = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 3) return;
     if (cross.current) cross.current.material.emissiveIntensity = since(fx?.clinicAt) < 6 ? 0.9 + Math.sin(Date.now() * 0.008) * 0.3 : 0.25
   })
   return (
@@ -175,7 +175,7 @@ function FunPark() {
   const fx = useGame((s) => s.bt?.fx)
   const wheel = useRef()
   const speed = useRef(0.12)
-  useFrame((_, d) => {
+  useFrame((_, d) => { if (useGame.getState().week !== 3) return;
     const party = since(fx?.wheelAt) < 10
     speed.current += ((party ? 1.6 : 0.12) - speed.current) * 0.04
     if (wheel.current) wheel.current.rotation.z += speed.current * d * 2

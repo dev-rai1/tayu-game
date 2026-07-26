@@ -28,7 +28,7 @@ function Sparkline({ id }) {
     state.current.tex = new THREE.CanvasTexture(c)
   }, [])
 
-  useFrame((_, d) => {
+  useFrame((_, d) => { if (useGame.getState().week !== 5) return;
     const st = useGame.getState()
     const mg = st.mg
     if (!mg || !meshRef.current) return
@@ -85,7 +85,7 @@ function CompanyCard({ id }) {
   const spec = COMPANIES[id]
   const nameTex = cardTexture(spec.name.toUpperCase(), null, { accent: spec.color })
 
-  useFrame((_, d) => {
+  useFrame((_, d) => { if (useGame.getState().week !== 5) return;
     const st = useGame.getState()
     const mg = st.mg
     if (!mg) return
@@ -152,7 +152,7 @@ function CompanyCard({ id }) {
 function useSquash(id) {
   const ref = useRef()
   const last = useRef({ price: null, squash: 0 })
-  useFrame((_, d) => {
+  useFrame((_, d) => { if (useGame.getState().week !== 5) return;
     const mg = useGame.getState().mg
     if (!mg || !ref.current) return
     const price = mg.companies[id].price
@@ -171,7 +171,7 @@ function useSquash(id) {
 function ToyTown() {
   const root = useSquash('toy')
   const arm = useRef()
-  useFrame((_, d) => { if (arm.current) arm.current.rotation.z = 0.4 + Math.sin(Date.now() * 0.002) * 0.35 })
+  useFrame((_, d) => { if (useGame.getState().week !== 5) return; if (arm.current) arm.current.rotation.z = 0.4 + Math.sin(Date.now() * 0.002) * 0.35 })
   return (
     <group ref={root}>
       <RoundedBox args={[3.4, 2.4, 2.4]} radius={0.12} smoothness={3} position={[0, 1.2, 0]} castShadow>
@@ -199,7 +199,7 @@ function ToyTown() {
 function SnackShack() {
   const root = useSquash('snack')
   const awning = useRef()
-  useFrame(() => { if (awning.current) awning.current.scale.z = 1 + Math.sin(Date.now() * 0.0025) * 0.04 })
+  useFrame(() => { if (useGame.getState().week !== 5) return; if (awning.current) awning.current.scale.z = 1 + Math.sin(Date.now() * 0.0025) * 0.04 })
   return (
     <group ref={root}>
       <RoundedBox args={[3, 1.6, 1.8]} radius={0.12} smoothness={3} position={[0, 0.8, 0]} castShadow>
@@ -232,7 +232,7 @@ function SnackShack() {
 function GameLand() {
   const root = useSquash('game')
   const sign = useRef()
-  useFrame(() => { if (sign.current) sign.current.material.emissiveIntensity = 0.45 + Math.sin(Date.now() * 0.003) * 0.3 })
+  useFrame(() => { if (useGame.getState().week !== 5) return; if (sign.current) sign.current.material.emissiveIntensity = 0.45 + Math.sin(Date.now() * 0.003) * 0.3 })
   return (
     <group ref={root}>
       <RoundedBox args={[3.4, 2.8, 2.4]} radius={0.14} smoothness={3} position={[0, 1.4, 0]} castShadow>
@@ -341,7 +341,7 @@ function LessonFx({ id }) {
   const fx = useGame((s) => s.mg?.fx) || {}
   const star = useRef()
   const balloon = useRef()
-  useFrame(() => {
+  useFrame(() => { if (useGame.getState().week !== 5) return;
     const t = Date.now() * 0.003
     if (star.current) {
       star.current.rotation.z = t
@@ -436,7 +436,7 @@ function LessonFx({ id }) {
 // gentle slope, made physical. Module 5's savings account formalizes it.
 function BankSprout() {
   const leaf = useRef()
-  useFrame(() => { if (leaf.current) leaf.current.rotation.z = Math.sin(Date.now() * 0.0015) * 0.15 })
+  useFrame(() => { if (useGame.getState().week !== 5) return; if (leaf.current) leaf.current.rotation.z = Math.sin(Date.now() * 0.0015) * 0.15 })
   return (
     <group position={[8.5, 0, 3]}>
       <mesh position={[0, 0.35, 0]} castShadow><cylinderGeometry args={[0.55, 0.65, 0.7, 12]} /><meshStandardMaterial color="#1464F0" roughness={0.5} /></mesh>
