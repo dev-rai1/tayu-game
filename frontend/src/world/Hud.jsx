@@ -7,7 +7,7 @@ import {
 } from '../scenarios/lemonade.js'
 import { COMPANIES, COMPANY_IDS, totalValue, firstBuyPrice } from '../scenarios/moneyGarden.js'
 import { weekSpec, TOTAL_WEEKS, COMPANY_CHOICE } from '../scenarios/marketScenarios.js'
-import { LEARN, LIBRARY } from '../scenarios/learnLinks.js'
+import { LEARN, LEARNING_RESOURCES } from '../scenarios/learnLinks.js'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { say } from '../services/speech.js'
 import { BudgetPanel } from './BudgetPanels.jsx'
@@ -943,9 +943,10 @@ function LessonCard() {
 }
 
 // ROUND 8 (7.2): the '?' menu has THREE tabs - CONTROLS (biggest, first,
-// most prominent), PHASES (the journey in the new story order), and LIBRARY
+// most prominent), MODULES (the journey in the new story order), and LEARNING
+// RESOURCES
 // (every Learn More resource, organized by module). Shown once at entry.
-const PHASES = [
+const MODULES = [
   { n: 1, title: 'The Market', desc: 'Split your allowance into jars, then shop for needs and wants.' },
   { n: 2, title: 'The Lemonade Stand', desc: 'EARN it: run a real little business - supplies, price, profit.' },
   { n: 3, title: 'Budget Town', desc: 'BUDGET it: split your money - pocket, bank, and garden.' },
@@ -973,20 +974,20 @@ function ControlsTab() {
   )
 }
 
-function PhasesTab({ week, gameComplete, sel, setSel }) {
+function ModulesTab({ week, gameComplete, sel, setSel }) {
   const statusOf = (n) => (gameComplete || week > n ? 'Done' : week === n ? 'Current' : 'Locked')
   const current = sel ?? Math.min(week, 6)
   return (
     <>
       <div className="mt-3 flex flex-col gap-1.5 text-left">
-        {PHASES.map((p) => {
+        {MODULES.map((p) => {
           const st = p.n === 6 ? (gameComplete ? 'Current' : 'Locked') : statusOf(p.n)
           const active = current === p.n
           return (
             <button key={p.n} onClick={() => setSel(p.n)}
               className={`rounded-2xl border-2 px-3 py-2 text-left transition active:scale-[0.98] ${st === 'Current' ? 'border-teal bg-teal/15' : active ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-extrabold text-white">{p.n === 6 ? p.title : `Phase ${p.n}: ${p.title}`}</span>
+                <span className="text-sm font-extrabold text-white">{p.n === 6 ? p.title : `Module ${p.n}: ${p.title}`}</span>
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${st === 'Done' ? 'bg-teal text-navy' : st === 'Current' ? 'bg-[#FFD700] text-navy' : 'bg-white/15 text-white/60'}`}>
                   {st === 'Current' ? 'YOU ARE HERE' : st.toUpperCase()}
                 </span>
@@ -1012,12 +1013,12 @@ function PhasesTab({ week, gameComplete, sel, setSel }) {
   )
 }
 
-// Part 5.2: the Learning Library - real free resources, by module.
-function LibraryTab() {
+// Part 5.2: real, free learning resources organized by module.
+function LearningResourcesTab() {
   return (
     <div className="mt-3 flex flex-col gap-2 text-left">
       <p className="text-xs font-semibold text-white/70">Want to learn more? These are real, free resources - great to explore with a grown-up.</p>
-      {LIBRARY.map((g) => (
+      {LEARNING_RESOURCES.map((g) => (
         <div key={g.module} className="rounded-2xl bg-white/5 p-2.5">
           <div className="text-xs font-extrabold uppercase tracking-wide text-teal">{g.module}</div>
           <div className="mt-1 flex flex-col gap-1">
@@ -1056,7 +1057,7 @@ function HelpCard() {
     if (!localStorage.getItem('tayu-intro-seen')) {
       localStorage.setItem('tayu-intro-seen', '1')
       showLesson('Confused about the controls? Tap the question mark (?) any time to see them again.', null, true)
-      showLesson("Up top in that menu you'll also find PHASES (where you are in the journey) and the LIBRARY (extra things to learn).", null, true)
+      showLesson("Up top in that menu you'll also find MODULES (where you are in the journey) and LEARNING RESOURCES (extra things to learn).", null, true)
       showLesson('Whenever you want to learn more about something, look for a LEARN MORE button. There is lots more waiting if you are curious!', null, true)
     }
   }
@@ -1066,7 +1067,7 @@ function HelpCard() {
     <div className="pointer-events-auto absolute inset-0 z-[290] flex items-end justify-center bg-navy/30 p-4 sm:items-center">
       <div className="glass--navy pop-in max-h-[92vh] w-full max-w-md overflow-y-auto p-5 text-center">
         <div className="flex justify-center gap-1.5">
-          {[['controls', 'CONTROLS'], ['phases', 'PHASES'], ['library', 'LIBRARY']].map(([id, label]) => (
+          {[['controls', 'CONTROLS'], ['modules', 'MODULES'], ['resources', 'LEARNING RESOURCES']].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
               className={`rounded-xl px-3 text-xs font-extrabold transition active:scale-95 ${id === 'controls' ? 'min-h-[48px] px-5 text-sm' : 'min-h-[40px]'} ${tab === id ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
               {label}
@@ -1081,16 +1082,16 @@ function HelpCard() {
             <SpeakButton text={IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
           </>
         )}
-        {tab === 'phases' && (
+        {tab === 'modules' && (
           <>
-            <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Your Money Journey</h2>
-            <PhasesTab week={week} gameComplete={gameComplete} sel={sel} setSel={setSel} />
+            <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Your Modules</h2>
+            <ModulesTab week={week} gameComplete={gameComplete} sel={sel} setSel={setSel} />
           </>
         )}
-        {tab === 'library' && (
+        {tab === 'resources' && (
           <>
-            <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Learning Library</h2>
-            <LibraryTab />
+            <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Learning Resources</h2>
+            <LearningResourcesTab />
           </>
         )}
         <button className="btn-primary mt-3 min-h-[52px] w-full" onClick={closeHelp}>Got it!</button>
