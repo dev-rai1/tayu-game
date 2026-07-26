@@ -16,10 +16,12 @@ export default function AvatarCreate() {
   const { state, dispatch } = useGameState()
   const [avatar, setAvatar] = useState(state.avatar || DEFAULT_AVATAR)
   const [name, setName] = useState(state.player.name || '')
+  const [nameTouched, setNameTouched] = useState(false)
 
   const patch = (p) => setAvatar((a) => ({ ...a, ...p }))
 
   const confirm = () => {
+    setNameTouched(true)
     if (!isValidName(name)) return
     dispatch({ type: 'SET_AVATAR', payload: avatar })
     dispatch({ type: 'SET_AVATAR_URL', url: null }) // use the built-in 3D character
@@ -64,10 +66,16 @@ export default function AvatarCreate() {
               value={name}
               maxLength={16}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
+              onKeyDown={(e) => e.key === 'Enter' && confirm()}
+              aria-invalid={nameTouched && !isValidName(name)}
+              aria-describedby="name-help"
               placeholder="Alex"
               className="mt-1 w-full rounded-xl border-2 border-white/20 bg-navy/85 px-3 py-2 text-lg font-bold text-white placeholder-white/40"
             />
-            <p className="mt-1 text-xs font-bold text-navy/75">Type your name, then press Enter World!</p>
+            <p id="name-help" className={`mt-1 text-xs font-bold ${nameTouched && !isValidName(name) ? 'text-red-200' : 'text-white/75'}`}>
+              {nameTouched && !isValidName(name) ? 'Please type at least one letter.' : 'Type your name, then press Enter or choose Enter World.'}
+            </p>
           </div>
           <button className="btn-secondary" onClick={() => setAvatar(randomAvatar())}>Randomize</button>
           <button className="btn-primary disabled:opacity-40" disabled={!isValidName(name)} onClick={confirm}>

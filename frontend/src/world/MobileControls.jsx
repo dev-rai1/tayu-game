@@ -111,11 +111,14 @@ function FloatingStick({ frozen }) {
 function ActionButton({ frozen }) {
   const near = useGame((s) => s.near)
   const active = !!near && !frozen
+  const act = () => {
+    if (active) window.dispatchEvent(new Event('tayu-interact'))
+  }
   return (
     <div style={{ position: 'fixed', right: 'calc(16px + env(safe-area-inset-right, 0px))', bottom: SAFE_BOTTOM, zIndex: 95, textAlign: 'center', pointerEvents: 'none' }}>
       {/* context label: the child always knows what the button will do */}
       {active && (
-        <div className="pop-in" style={{
+        <div id="tayu-action-label" className="pop-in" style={{
           marginBottom: 8, maxWidth: 190, padding: '8px 12px', borderRadius: 14,
           background: 'rgba(7,23,72,0.88)', color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1.25,
         }}>
@@ -123,14 +126,16 @@ function ActionButton({ frozen }) {
         </div>
       )}
       <button
-        aria-label={active ? near.label : 'Action button'}
-        onPointerDown={(e) => { e.preventDefault(); if (active) window.dispatchEvent(new Event('tayu-interact')) }}
+        aria-label={active ? near.label : 'Move near a glowing person or place to act'}
+        aria-describedby={active ? 'tayu-action-label' : undefined}
+        disabled={!active}
+        onClick={act}
         className={active ? 'tayu-action-pulse' : ''}
         style={{
           width: active ? 64 : 44, height: active ? 64 : 44, borderRadius: '50%', border: 'none',
           background: '#1464F0', color: '#fff',
           opacity: frozen ? 0 : active ? 1 : 0.3,
-          pointerEvents: frozen ? 'none' : 'auto',
+          pointerEvents: active ? 'auto' : 'none',
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 16px rgba(7,23,72,0.35)',
           transition: 'opacity 0.2s, width 0.2s, height 0.2s',

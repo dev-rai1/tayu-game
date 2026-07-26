@@ -541,10 +541,10 @@ function DialogPanel() {
   const last = dialog.index + 1 >= dialog.lines.length
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[300] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
-      <div className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
-        <div className="text-sm font-extrabold uppercase tracking-wide text-electric">{dialog.name}</div>
-        <p className="mt-1 text-xl font-bold leading-snug text-navy">{dialog.lines[dialog.index]}</p>
-        <SpeakButton text={dialog.lines[dialog.i]} />
+      <div role="dialog" aria-modal="true" aria-labelledby="tayu-dialog-speaker" aria-describedby="tayu-dialog-line" className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
+        <div id="tayu-dialog-speaker" className="text-sm font-extrabold uppercase tracking-wide text-electric">{dialog.name}</div>
+        <p id="tayu-dialog-line" className="mt-1 text-xl font-bold leading-snug text-navy">{dialog.lines[dialog.index]}</p>
+        <SpeakButton text={dialog.lines[dialog.index]} />
         <div className="mt-3 flex justify-end">
           <button className="min-h-[56px] rounded-2xl bg-electric px-8 text-lg font-extrabold text-white transition hover:bg-teal hover:text-navy active:scale-95" onClick={advance}>
             {last ? 'Got it!' : 'Next'}
@@ -915,7 +915,7 @@ function LessonCard() {
   if (lesson.soft) {
     return (
       <div className="pointer-events-none absolute inset-x-0 z-[240] flex justify-center px-4" style={{ bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="glass--navy pop-in pointer-events-auto max-w-md p-4 text-center" onClick={dismiss} role="button">
+        <div role="status" aria-live="polite" className="glass--navy pop-in pointer-events-auto max-w-md p-4 text-center">
           <p className="text-base font-bold leading-snug text-white text-legible">{lesson.text}</p>
           <button className="btn-primary mt-2 min-h-[44px] px-4 text-sm" onClick={dismiss}>Got it!</button>
         </div>
@@ -926,9 +926,9 @@ function LessonCard() {
     // Keep lessons above decision panels so contextual help is visible as soon
     // as it is requested instead of waiting for the underlying panel to close.
     <div className="pointer-events-auto absolute inset-0 z-[330] flex items-end justify-center bg-navy/20 p-6 sm:items-center">
-      <div className="glass--navy pop-in w-full max-w-md p-7 text-center" onClick={dismiss} role="button">
+      <div role="dialog" aria-modal="true" aria-labelledby="tayu-lesson-title" className="glass--navy pop-in w-full max-w-md p-7 text-center">
         <img src={LOGO} alt="" className="mx-auto h-12 w-12 rounded-xl logo-breathe" />
-        <p className="mt-3 text-2xl font-bold leading-snug text-white text-legible">{lesson.text}</p>
+        <p id="tayu-lesson-title" className="mt-3 text-2xl font-bold leading-snug text-white text-legible">{lesson.text}</p>
         {lesson.learn && LEARN[lesson.learn] && (
           <a href={LEARN[lesson.learn].url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
             className="mt-2 block rounded-xl bg-white/15 px-3 py-2 text-center text-xs font-extrabold text-teal active:scale-95">
@@ -983,25 +983,26 @@ function PhasesTab({ week, gameComplete, sel, setSel }) {
           const st = p.n === 6 ? (gameComplete ? 'Current' : 'Locked') : statusOf(p.n)
           const active = current === p.n
           return (
-            <button key={p.n} onClick={() => setSel(p.n)}
-              className={`rounded-2xl border-2 px-3 py-2 text-left transition active:scale-[0.98] ${st === 'Current' ? 'border-teal bg-teal/15' : active ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-extrabold text-white">{p.n === 6 ? p.title : `Phase ${p.n}: ${p.title}`}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${st === 'Done' ? 'bg-teal text-navy' : st === 'Current' ? 'bg-[#FFD700] text-navy' : 'bg-white/15 text-white/60'}`}>
-                  {st === 'Current' ? 'YOU ARE HERE' : st.toUpperCase()}
-                </span>
-              </div>
+            <div key={p.n}
+              className={`rounded-2xl border-2 px-3 py-2 text-left transition ${st === 'Current' ? 'border-teal bg-teal/15' : active ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+              <button className="min-h-[44px] w-full text-left" aria-expanded={active} onClick={() => setSel(p.n)}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-extrabold text-white">{p.n === 6 ? p.title : `Phase ${p.n}: ${p.title}`}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${st === 'Done' ? 'bg-teal text-navy' : st === 'Current' ? 'bg-[#FFD700] text-navy' : 'bg-white/15 text-white/75'}`}>
+                    {st === 'Current' ? 'YOU ARE HERE' : st.toUpperCase()}
+                  </span>
+                </div>
+              </button>
               {active && <p className="mt-1 text-xs font-semibold text-white/80">{p.desc}</p>}
               {active && p.n <= 5 && (
-                <span
-                  role="button"
-                  onClick={(e) => { e.stopPropagation(); localStorage.setItem('tayu-jump-module', String(p.n)); window.location.href = '/world' }}
-                  className="mt-1.5 inline-block rounded-lg bg-teal/20 px-2.5 py-1 text-[11px] font-extrabold text-teal active:scale-95"
+                <button
+                  onClick={() => { localStorage.setItem('tayu-jump-module', String(p.n)); window.location.href = '/world' }}
+                  className="mt-1.5 inline-block min-h-[44px] rounded-lg bg-teal/20 px-3 py-2 text-sm font-extrabold text-teal active:scale-95"
                 >
                   Explore this module
-                </span>
+                </button>
               )}
-            </button>
+            </div>
           )
         })}
       </div>
@@ -1064,33 +1065,33 @@ function HelpCard() {
   if (!open) return null
   return (
     <div className="pointer-events-auto absolute inset-0 z-[290] flex items-end justify-center bg-navy/30 p-4 sm:items-center">
-      <div className="glass--navy pop-in max-h-[92vh] w-full max-w-md overflow-y-auto p-5 text-center">
-        <div className="flex justify-center gap-1.5">
+      <div role="dialog" aria-modal="true" aria-label="Game help" className="glass--navy pop-in max-h-[92vh] w-full max-w-md overflow-y-auto p-5 text-center">
+        <div className="flex justify-center gap-1.5" role="tablist" aria-label="Help sections">
           {[['controls', 'CONTROLS'], ['phases', 'PHASES'], ['library', 'LIBRARY']].map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)}
+            <button key={id} role="tab" aria-selected={tab === id} aria-controls={`help-panel-${id}`} onClick={() => setTab(id)}
               className={`rounded-xl px-3 text-xs font-extrabold transition active:scale-95 ${id === 'controls' ? 'min-h-[48px] px-5 text-sm' : 'min-h-[40px]'} ${tab === id ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
               {label}
             </button>
           ))}
         </div>
         {tab === 'controls' && (
-          <>
+          <div id="help-panel-controls" role="tabpanel">
             <h2 className="mt-3 font-display text-2xl font-extrabold text-teal text-legible">How to play</h2>
             <ControlsTab />
             <SpeakButton text={IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
-          </>
+          </div>
         )}
         {tab === 'phases' && (
-          <>
+          <div id="help-panel-phases" role="tabpanel">
             <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Your Money Journey</h2>
             <PhasesTab week={week} gameComplete={gameComplete} sel={sel} setSel={setSel} />
-          </>
+          </div>
         )}
         {tab === 'library' && (
-          <>
+          <div id="help-panel-library" role="tabpanel">
             <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Learning Library</h2>
             <LibraryTab />
-          </>
+          </div>
         )}
         <button className="btn-primary mt-3 min-h-[52px] w-full" onClick={closeHelp}>Got it!</button>
       </div>
@@ -1245,7 +1246,7 @@ export function Hud({ playerName, onContinue }) {
 
       {toast && !weekComplete && !dialog && cards.length === 0 && lessons.length === 0 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-4 z-[150] flex justify-center px-4">
-          <div className="pop-in max-w-lg rounded-3xl bg-white px-6 py-4 shadow-2xl">
+          <div role="status" aria-live="polite" className="pop-in max-w-lg rounded-3xl bg-white px-6 py-4 shadow-2xl">
             <p className="text-lg font-bold leading-snug text-navy">{toast}</p>
           </div>
         </div>

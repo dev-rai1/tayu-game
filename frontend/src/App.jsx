@@ -27,9 +27,11 @@ export default function App() {
   // small and low-key, bottom-right on every screen - password gate intact.
   return (
     <div className="min-h-screen bg-navy text-white font-body">
-      <Boundary name="routes" hard>
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
+      <a href="#app-content" className="skip-link">Skip to the game</a>
+      <div id="app-content" tabIndex="-1">
+        <Boundary name="routes" hard>
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
             <Route path="/" element={<Welcome />} />
             <Route path="/about" element={<About />} />
             <Route path="/avatar" element={<Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense>} />
@@ -40,9 +42,10 @@ export default function App() {
             <Route path="/modules" element={<Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense>} />
             <Route path="/dashboard" element={<Suspense fallback={<LoadingScreen />}><Dashboard /></Suspense>} />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Boundary>
+            </Routes>
+          </Suspense>
+        </Boundary>
+      </div>
       <AdminPanel showButton />
     </div>
   )

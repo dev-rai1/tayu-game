@@ -34,7 +34,7 @@ export default function ModuleSelect() {
           <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
           <div>
             <h1 className="font-display text-2xl font-extrabold">Pick a module</h1>
-            <p className="text-sm text-white/60">{user ? user.email : prof?.name ? `Welcome back, ${prof.name}!` : 'The order is our favorite path - but you choose.'}</p>
+            <p className="text-sm font-semibold text-white/75">{user ? user.email : prof?.name ? `Welcome back, ${prof.name}!` : 'The order is our favorite path - but you choose.'}</p>
           </div>
         </div>
         <Link to="/" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Home</Link>
@@ -50,11 +50,11 @@ export default function ModuleSelect() {
               style={{ borderColor: done ? m.color : 'rgba(255,255,255,0.1)' }}>
               <div className="flex items-center justify-between">
                 <span className="font-display text-lg font-extrabold" style={{ color: m.color }}>{m.n}. {m.title}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : inProgress ? 'bg-sun text-navy' : 'bg-white/15 text-white/60'}`}>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : inProgress ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>
                   {done ? 'DONE' : inProgress ? 'IN PROGRESS' : 'NOT STARTED'}
                 </span>
               </div>
-              <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/50">{m.grades}</div>
+              <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{m.grades}</div>
               <p className="mt-2 text-sm font-semibold text-white/80">{m.desc}</p>
               <div className="mt-3 text-sm font-extrabold" style={{ color: m.color }}>{done ? 'Play again' : inProgress ? 'Continue' : 'Start here'} →</div>
             </button>
