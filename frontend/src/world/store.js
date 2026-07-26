@@ -413,7 +413,7 @@ export const useGame = create((set, get) => ({
     get().openDialog('Penny', [
       INTRO_LINE(pool),
       TAX_LINE,
-      'Each week: buy supplies from Mr. Bham, set your plan at the stand, and sell. I will tell you exactly what to fix each week!',
+      'Each week: buy supplies from Mr. Bram, set your plan at the stand, and sell. I will tell you exactly what to fix each week!',
     ], () => {
       set({ lemPhase: 'toMarket' })
     })

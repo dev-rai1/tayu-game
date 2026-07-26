@@ -63,7 +63,7 @@ const SHOP_LINES_REMIND = ['Needs first, then a want if you can afford it. The c
 // friendly locked line; the CURRENT host always re-explains the step.
 const HOST_MODULE = { bram: 1, penny: 2, keeper: 3, bea: 4, sprout: 5 }
 const NPC_NAME = { theo: 'Theo', mia: 'Mia', scoop: 'Scoop', wanderer: 'Milo', nea: 'Nea', teller: 'Teller Tom', clerk: 'Clerk Cleo', mailer: 'Postal Pat', helper: 'Helper Hana', scammer: 'Sneaky Sam' }
-const HOST_LABEL = { bram: 'Talk to Mr. Bham', penny: 'Talk to Penny', sprout: 'Talk to Mr. Sprout', keeper: 'Talk to the Budget Keeper', bea: 'Talk to Banker Bea' }
+const HOST_LABEL = { bram: 'Talk to Mr. Bram', penny: 'Talk to Penny', sprout: 'Talk to Mr. Sprout', keeper: 'Talk to the Budget Keeper', bea: 'Talk to Banker Bea' }
 const LOCKED_LINES = {
   penny: 'Penny: "Not right now - finish the Tayu Market first, then come see me at the stand!"',
   sprout: 'Mr. Sprout: "Not right now - finish the Bank of TAYU first, then come grow your money with me!"',
@@ -71,7 +71,7 @@ const LOCKED_LINES = {
   bea: 'Banker Bea: "Not right now - finish Budget Town first, then come see me at the bank!"',
 }
 const DONE_LINES = {
-  bram: 'Mr. Bham: "Come back for a healthy snack anytime, champ!"',
+  bram: 'Mr. Bram: "Come back for a healthy snack anytime, champ!"',
   penny: 'Penny: "I knew you could do it! Keep going!"',
   sprout: 'Mr. Sprout: "The garden remembers you, gardener. Keep growing!"',
   keeper: 'Mayor Penny-Wise: "Your budget still looks great, Budget Boss!"',
@@ -247,7 +247,7 @@ export function Player({ avatar }) {
         if (mod < st.week) { st.setToast(DONE_LINES[host] || 'Hello again, friend!'); return }
         // the CURRENT host re-explains the step with a hint (the host rule)
         if (host === 'penny') {
-          if (st.lemPhase === 'toMarket') st.showLesson('Buy supplies from Mr. Bham - follow your arrow to the market!')
+          if (st.lemPhase === 'toMarket') st.showLesson('Buy supplies from Mr. Bram - follow your arrow to the market!')
           else st.showLesson('Set up your stand: pick your hours, your pay, and your price. Tap "How do I pick?" to re-read the price formula!')
         } else if (host === 'keeper') st.enterBudget()
         else if (host === 'bea') st.enterBank()

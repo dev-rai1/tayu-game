@@ -1049,17 +1049,22 @@ function HelpCard() {
   const [tab, setTab] = useState('controls')
   const [sel, setSel] = useState(null)
   const showLesson = useGame((s) => s.showLesson)
+  const dialog = useGame((s) => s.dialog)
+  const lessons = useGame((s) => s.lessons)
+  const cards = useGame((s) => s.cards)
   useEffect(() => {
-    // R9 3.1: the controls popup appears on EVERY world entry - first play,
-    // replay, reload. No seen-before flag. (initWorld resets the store on
-    // entry, so open AFTER it settles.)
+    // Teach the 3D controls once instead of interrupting every module replay.
+    // The persistent ? button keeps this help available at any time.
+    if (localStorage.getItem('tayu-3d-controls-seen')) return undefined
+    if (dialog || lessons.length > 0 || cards.length > 0) return undefined
     const t = setTimeout(() => setOpen(true), 800)
     return () => clearTimeout(t)
-  }, [setOpen])
+  }, [cards.length, dialog, lessons.length, setOpen])
   // R9 Part 3: after the entry controls card, three short pointers (once per
   // device) - the '?', the top tabs, and the Learn More buttons.
   const closeHelp = () => {
     setOpen(false)
+    localStorage.setItem('tayu-3d-controls-seen', '1')
     if (!localStorage.getItem('tayu-intro-seen')) {
       localStorage.setItem('tayu-intro-seen', '1')
       showLesson('Confused about the controls? Tap the question mark (?) any time to see them again.', null, true)
@@ -1164,6 +1169,8 @@ export function Hud({ playerName, onContinue }) {
   const lemCumProfit = useGame((s) => s.lemCumProfit)
   const bramTalked = useGame((s) => s.bramTalked)
   const mg = useGame((s) => s.mg)
+  const bt = useGame((s) => s.bt)
+  const bk = useGame((s) => s.bk)
   const weekComplete = useGame((s) => s.weekComplete)
   const hudShakeKey = useGame((s) => s.hudShakeKey)
   const alloc = useGame((s) => s.allocations)
@@ -1171,18 +1178,24 @@ export function Hud({ playerName, onContinue }) {
 
   const gameComplete = useGame((s) => s.gameComplete)
   const hint = gameComplete
-    ? 'Go to the FINALE AREA!'
+    ? 'Follow the gold arrow to the FINALE AREA'
     : week === 5
-    ? 'Visit the Money Garden'
+    ? !mg ? 'Follow the arrow to Mr. Sprout'
+      : mg.phase === 'adjust' ? `Week ${Math.min(mg.week, TOTAL_WEEKS)}: open My Portfolio`
+      : mg.phase === 'slider' ? 'Choose how to divide your garden money'
+      : `Week ${Math.min(mg.week, TOTAL_WEEKS)}: complete the choice on screen`
     : week === 4
-    ? 'Visit the Bank of TAYU'
+    ? !bk || !bk.seen?.intro ? 'Follow the arrow to Banker Bea'
+      : `Bank lesson ${Math.min(bk.week, 6)} of 6: complete the choice on screen`
     : week === 3
-    ? 'Visit Budget Town'
+    ? !bt || bt.stage === 'intro' ? 'Follow the arrow to the Budget Keeper'
+      : bt.stage === 'split' ? 'Build your Pocket, Bank, and Garden plan'
+      : `Budget Town: complete the ${bt.stage} choice on screen`
     : week === 2
-    ? (lemPhase === 'toMarket' ? 'Buy supplies from Mr. Bram' : lemPhase === 'toStand' || lemPhase === 'toStand2' ? 'Go to your lemonade stand' : `Goal: $${PROFIT_GOAL} profit`)
-    : objective === 'mailbox' ? 'Go to the ALLOWANCE BANK'
-    : objective === 'kitchen' ? (scenario ? `${scenario.title}: fill your 3 jars` : 'Fill your 3 jars')
-    : objective === 'store' ? (bramTalked ? 'Shop: one healthy food + one healthy drink' : 'Talk to Mr. Bram first')
+    ? (lemPhase === 'toMarket' ? 'Follow the arrow to Mr. Bram for supplies' : lemPhase === 'toStand' ? 'Follow the arrow to Penny at the stand' : lemPhase === 'toStand2' ? 'Return to the stand and build your plan' : `Business goal: earn $${PROFIT_GOAL} profit`)
+    : objective === 'mailbox' ? 'Follow the arrow to the ALLOWANCE BANK'
+    : objective === 'kitchen' ? (scenario ? `${scenario.title}: put all $30 into the three jars` : 'Put all $30 into the three jars')
+    : objective === 'store' ? (bramTalked ? 'Choose a healthy food and drink, then check out' : 'Follow the arrow and talk to Mr. Bram first')
     : 'Week complete!'
 
   const promptOpen = near && !panelJar && !panelItem && !dialog && !weekComplete && !scenarioLocked && lessons.length === 0 && cards.length === 0
@@ -1226,8 +1239,12 @@ export function Hud({ playerName, onContinue }) {
       </div>
 
       <div className="absolute right-4 top-4 flex items-start gap-2">
-        <div className="glass max-w-[40vw] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
-          {hint}
+        <div aria-live="polite" className="glass max-w-[min(58vw,24rem)] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
+          <div className="flex items-center justify-end gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-electric">
+            <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-electric" />
+            Next step
+          </div>
+          <div className="mt-0.5 leading-snug">{hint}</div>
         </div>
         <HelpButton />
       </div>

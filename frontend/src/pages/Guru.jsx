@@ -11,7 +11,7 @@ import { crossfadeTo } from '../services/audio.js'
 
 const CAST = [
   { name: 'Penny', color: '#1464F0' }, { name: 'Theo', color: '#00DCA0' },
-  { name: 'Mia', color: '#7850F0' }, { name: 'Mr. Bham', color: '#e23b3b' },
+  { name: 'Mia', color: '#7850F0' }, { name: 'Mr. Bram', color: '#e23b3b' },
   { name: 'Mr. Sprout', color: '#3f9a42' }, { name: 'Milo', color: '#f0822e' },
   { name: 'Banker Bea', color: '#071748' }, { name: 'Mayor Penny-Wise', color: '#FFD700' },
 ]

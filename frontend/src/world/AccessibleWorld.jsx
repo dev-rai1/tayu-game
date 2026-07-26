@@ -81,7 +81,7 @@ export function AccessibleWorld() {
     }
   } else if (week === 2) {
     if (lemPhase === 'toStand') actions.push(['Go to the Lemonade Stand and meet Penny', game.standIntro])
-    else if (lemPhase === 'toMarket') actions.push(['Go to Mr. Bham and buy supplies', game.openSupplies])
+    else if (lemPhase === 'toMarket') actions.push(['Go to Mr. Bram and buy supplies', game.openSupplies])
     else if (lemPhase === 'toStand2') actions.push(['Return to my stand and make a business plan', game.openTemplate])
   } else if (week === 3 && bt) {
     actions.push([bt.stage === 'intro' ? 'Meet the Budget Keeper and start my day' : 'Continue with the Budget Keeper', game.enterBudget])
