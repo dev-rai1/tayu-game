@@ -63,6 +63,13 @@ export async function seedLocalAccounts() {
 export function currentUser() {
   try { return JSON.parse(localStorage.getItem(SKEY) || 'null') } catch { return null }
 }
+
+export function startGuestSession() {
+  const guest = { role: 'guest', cloud: false, guest: true }
+  setSession(guest)
+  return guest
+}
+
 function setSession(user) {
   if (user) localStorage.setItem(SKEY, JSON.stringify(user))
   else localStorage.removeItem(SKEY)
