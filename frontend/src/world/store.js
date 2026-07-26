@@ -51,6 +51,7 @@ export const useGame = create((set, get) => ({
   coinBatches: [],
   weekComplete: false,
   pendingWeekComplete: false, // G2/C7: summary waits until the message queue drains
+  moduleTransition: null,
   clickMarker: null,
 
   // ONE-AT-A-TIME message discipline (G2). `lessons` = simple tap-to-dismiss
@@ -130,6 +131,7 @@ export const useGame = create((set, get) => ({
   },
   setClickMarker: (m) => set({ clickMarker: m }),
   setHelpOpen: (v) => set({ helpOpen: v }),
+  dismissModuleTransition: () => set({ moduleTransition: null }),
 
   persist: () => {
     const s = get()
@@ -647,6 +649,7 @@ export const useGame = create((set, get) => ({
       mg: valid ? savedMg : fresh(),
       mgPhase: 'toGarden', mgHighlight: null, cards: [], panelPortfolio: false,
       lemPhase: null, scenarioLocked: false, banner: null, guide: null,
+      moduleTransition: s0.week === 4 ? { from: 'Module 4 complete', to: 'Module 5: Money Garden', summary: 'You finished banking. Now use company news and price changes to make investment decisions.' } : null,
       toast: 'THE MONEY GARDEN is open! Follow your arrow to Mr. Sprout.',
     })
     get().persist()
@@ -817,7 +820,13 @@ export const useGame = create((set, get) => ({
     get().snapshotGardenWeek()
     get().persist()
     const button = spec.special === 'seeds' ? { label: 'Plant my seeds', act: 'wk.slider' } : { label: 'Make my moves', act: 'wk.adjust' }
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, learn: spec.learn, buttons: [button] }])
+    const priceNews = COMPANY_IDS.map((id) => {
+      const before = m.companies[id].price
+      const after = companies[id].price
+      const direction = after > before ? `rose from ${before} to ${after}` : after < before ? `fell from ${before} to ${after}` : `held at ${after}`
+      return `${COMPANIES[id].name} ${direction}`
+    }).join(' · ')
+    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -1008,6 +1017,7 @@ export const useGame = create((set, get) => ({
     set({
       week: 3, objective: 'keeper', weekComplete: false, pendingWeekComplete: false,
       bt: valid ? savedBt : fresh(), btPanel: null, mg: null, mgPhase: null, cards: [], scenarioLocked: false, banner: null,
+      moduleTransition: s0.week === 2 ? { from: 'Module 2 complete', to: 'Module 3: Budget Town', summary: 'Your lemonade earnings now become a real-life budget.' } : null,
       toast: 'BUDGET TOWN is open! Follow your arrow to the Budget Keeper.',
     })
     set((x) => ({ allocations: { ...x.allocations, save: r2(x.allocations.save + x.allocations.spend), spend: 0 } }))
@@ -1256,6 +1266,7 @@ export const useGame = create((set, get) => ({
     set({
       week: 4, objective: 'bea', weekComplete: false,
       bk: valid ? { fx: {}, seen: {}, ...savedBk } : fresh(), bkPanel: null, btPanel: null, mg: null, mgPhase: null, cards: [],
+      moduleTransition: s0.week === 3 ? { from: 'Module 3 complete', to: 'Module 4: Bank of TAYU', summary: 'Your budget is ready. Next, learn how banks protect and grow money.' } : null,
       toast: 'THE BANK OF TAYU is open! Follow your arrow to Banker Bea.',
     })
     get().snapshotBkWeek()
@@ -1712,7 +1723,10 @@ export const useGame = create((set, get) => ({
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party' })
+    set({
+      gameComplete: true, weekComplete: false, objective: 'party',
+      moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your full money journey is complete. Follow the arrow to celebrate and collect your certificate.' },
+    })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -1758,7 +1772,7 @@ export const useGame = create((set, get) => ({
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
