@@ -15,7 +15,7 @@ export const NPC_HOME = {
   scoop: [SPROUT[0] + 6, SPROUT[1] + 8], // Scoop the newsboy, off by the garden street
   wanderer: [0, -6], // Milo - walks the ring road clockwise
   nea: [60, -6], // Nea - walks the ring the other way (E5)
-  keeper: [BUDGET_TOWN[0] + 1.9, BUDGET_TOWN[1] + 2.4], // the Budget Keeper beside her board, off the path
+  keeper: [BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4], // R14: front-right of the cutaway house, clear of the room labels
   bea: [BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2], // Banker Bea by the teller counter, road side
   // R9 Part 6: the Bank of TAYU acting cast
   teller: [BANK_DISTRICT[0] - 1.5, BANK_DISTRICT[1] + 2.2], // Teller Tom behind the counter

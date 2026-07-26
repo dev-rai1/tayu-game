@@ -123,11 +123,12 @@ export function Ambient() {
   return (
     <group>
       {AMBIENT_NPCS.map((npc, i) => <Villager key={npc.id} npc={npc} phase={i * 1.9} />)}
-      <Duck r={4.2} speed={0.5} phase={0} />
-      <Duck r={5.6} speed={0.4} phase={2.4} dir={-1} />
-      <Duck r={3.1} speed={0.62} phase={4.4} />
-      <Bunny x={12} z={-18} phase={0} />
-      <Bunny x={46} z={-5} phase={2.6} />
+      {/* R14 P3: duck orbits fit the smaller pond (lake r ~5.2) */}
+      <Duck r={2.7} speed={0.5} phase={0} />
+      <Duck r={3.8} speed={0.4} phase={2.4} dir={-1} />
+      <Duck r={2.0} speed={0.62} phase={4.4} />
+      <Bunny x={15} z={-16} phase={0} />
+      <Bunny x={43} z={-5} phase={2.6} />
     </group>
   )
 }

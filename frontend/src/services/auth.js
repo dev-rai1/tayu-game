@@ -65,11 +65,16 @@ function setSession(user) {
 }
 
 // ---- sign up (captures the email + all profile questions) ----
-export async function signUp({ email, password, role, gradeLevels, foundVia, social }) {
+export async function signUp({ email, password, role, gradeLevels, foundVia, organizationName, organizationEmail }) {
   email = String(email || '').trim().toLowerCase()
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   if (!password || password.length < 6) throw new Error('Password needs at least 6 characters.')
-  const profile = { role: role || 'student', gradeLevels: gradeLevels || '', foundVia: foundVia || '', social: social || '' }
+  if ((role === 'teacher' || role === 'student') && !String(organizationName || '').trim())
+    throw new Error('Please enter your school or organization name.')
+  const profile = {
+    role: role || 'student', gradeLevels: gradeLevels || '', foundVia: foundVia || '',
+    organizationName: String(organizationName || '').trim(), organizationEmail: String(organizationEmail || '').trim(),
+  }
   const c = await client()
   if (c) {
     const { data, error } = await c.auth.signUp({ email, password })
@@ -167,11 +172,13 @@ export async function adminData() {
     const progById = Object.fromEntries((progress || []).map((p) => [p.user_id, p.data]))
     return (profiles || []).map((p) => ({
       email: p.email, role: p.role, gradeLevels: p.grade_levels ?? p.gradeLevels ?? '', foundVia: p.found_via ?? p.foundVia ?? '',
-      social: p.social || '', createdAt: p.created_at, progress: progById[p.id] || null,
+      organizationName: p.organization_name ?? p.organizationName ?? '', organizationEmail: p.organization_email ?? p.organizationEmail ?? '',
+      createdAt: p.created_at, progress: progById[p.id] || null,
     }))
   }
   return Object.values(readAccounts()).map((a) => ({
-    email: a.email, role: a.role, gradeLevels: a.gradeLevels, foundVia: a.foundVia, social: a.social,
+    email: a.email, role: a.role, gradeLevels: a.gradeLevels, foundVia: a.foundVia,
+    organizationName: a.organizationName || '', organizationEmail: a.organizationEmail || '',
     createdAt: a.createdAt, progress: a.progress,
   }))
 }

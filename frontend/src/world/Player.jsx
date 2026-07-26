@@ -253,7 +253,6 @@ export function Player({ avatar }) {
         else if (host === 'bea') st.enterBank()
       }
       else if (near.id.startsWith('item:')) { const it = STORE_ITEMS.find((i) => i.id === near.id.split(':')[1]); if (it) st.openItem(it) }
-      else if (near.id.startsWith('bt:')) st.btStop(near.id.split(':')[1])
       else if (near.id.startsWith('npc:')) st.npcChat(near.id.split(':')[1])
     }
     const onKey = (e) => {
@@ -399,18 +398,6 @@ export function Player({ avatar }) {
         else if (st.lemPhase === 'toMarket') {
           const skx = STORE[0] + SHOPKEEPER.pos[0], skz = STORE[1] + SHOPKEEPER.pos[1]
           if (dist2(playerPos.x, playerPos.z, skx, skz) < NPC_RADIUS + 1.2) near = { id: 'supplies', label: 'Buy lemonade supplies' }
-        }
-      } else if (st.week === 3 && st.bt && !st.btPanel) {
-        // R9 Part 5: the Budget Town day - the CURRENT stop is interactable
-        const b = st.bt
-        const BT_LABEL = { house: 'Pay the rent', grocery: 'Fill your basket', bus: 'Catch the school bus', clinic: 'Fund the health jar', fun: 'Visit the Fun Park' }
-        if (BT_LABEL[b.stage]) {
-          const [wx2, wz2] = btWorld(b.stage)
-          if (dist2(playerPos.x, playerPos.z, wx2, wz2) < 3.1) near = { id: `bt:${b.stage}`, label: BT_LABEL[b.stage] }
-        } else if (b.stage === 'carry') {
-          const key = b.carried.bank ? 'gate' : 'kiosk'
-          const [wx2, wz2] = btWorld(key)
-          if (dist2(playerPos.x, playerPos.z, wx2, wz2) < 3.1) near = { id: `bt:${key}`, label: key === 'kiosk' ? 'Drop off the BANK coins' : 'Drop off the GARDEN coins' }
         }
       } else if (st.objective === 'mailbox' && !st.mailboxOpened) {
         if (dist2(playerPos.x, playerPos.z, MAILBOX[0], MAILBOX[1]) < INTERACT_RADIUS) near = { id: 'mailbox', label: 'Collect Allowance' }

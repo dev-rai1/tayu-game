@@ -5,7 +5,7 @@
 // Master Adjustment C4/E1: the target is always the EXACT person or object of
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
-import { MAILBOX, KITCHEN, STORE, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING, btWorld } from './config.js'
+import { MAILBOX, KITCHEN, STORE, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
 import { stage } from '../anim/stage.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
@@ -24,12 +24,10 @@ export function getObjectiveTarget(st) {
   }
   if (st.week === 4) { const a = stage.actors.bea; return st.bkPanel ? null : [a.x, a.z] }
   if (st.week === 3) {
-    // R9 Part 5: the arrow walks the day - each stop, then the coin carry
+    // R14: Budget Town is a STATIONARY scene. The arrow only leads to the
+    // Budget Keeper to START; after that the day is fully card-driven (no walk).
     const b = st.bt
-    if (b && !st.btPanel) {
-      if (['house', 'grocery', 'bus', 'clinic', 'fun'].includes(b.stage)) return btWorld(b.stage)
-      if (b.stage === 'carry') return btWorld(b.carried?.bank ? 'gate' : 'kiosk')
-    }
+    if (b && b.stage !== 'intro') return null
     const a = stage.actors.keeper
     return st.btPanel ? null : [a.x, a.z]
   }

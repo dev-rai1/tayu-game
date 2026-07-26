@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, ringPoint } from './config.js'
+import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -97,7 +97,7 @@ const TREE_SPOTS = [
   { x: -10, z: 6, s: 1.15 }, { x: -7.8, z: 7, s: 0.9 }, { x: -11.6, z: 7.8, s: 0.8 },
   { x: 70, z: 2, s: 1.15 }, { x: 72.2, z: 3, s: 0.9 }, { x: 68.4, z: 3.8, s: 0.8 },
   { x: 2, z: 18, s: 1.15 }, { x: 4.2, z: 19, s: 0.9 }, { x: 0.4, z: 19.8, s: 0.8 },
-].map((t, i) => ({ ...t, c: i }))
+].map((t, i) => { const [x, z] = worldScale([t.x, t.z]); return { ...t, x, z, c: i } }) // R14 P3: match tighter map
 
 const GEO = {
   trunk: new THREE.CylinderGeometry(0.16, 0.26, 1.3, 7),
@@ -142,8 +142,9 @@ function Hills() {
 
 // THE CENTRAL LAKE - the heart of the park inside the ring.
 function Lake() {
-  const pads = [[3.2, 2.1], [-4.1, 1.4], [1.1, -4.4], [-2.6, -3.5], [5.2, -1.8], [-5.6, -0.6]]
-  const rocks = [[7.2, 3.4], [-6.8, -4.2], [4.6, -6.6], [-7.6, 2.6]]
+  // R14 P3: pads/rocks/reeds pulled in to fit the smaller pond (was r 8.6)
+  const pads = [[2.0, 1.3], [-2.6, 0.9], [0.7, -2.8], [-1.6, -2.2], [3.3, -1.1], [-3.5, -0.4]]
+  const rocks = [[4.8, 2.2], [-4.5, -2.7], [3.0, -4.3], [-4.9, 1.7]]
   return (
     <group position={[LAKE.x, 0, LAKE.z]}>
       {/* sandy shore ring, then shallow water, then a deeper heart */}

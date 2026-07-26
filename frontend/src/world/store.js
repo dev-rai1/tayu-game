@@ -16,10 +16,10 @@ import {
   OPENING, weekSpec, TOTAL_WEEKS, SURPRISE_BILL,
   BANK_DRIP_MIN, GOAL_RATE, COMPLETION_LINE, BRIDGE_LINE,
 } from '../scenarios/marketScenarios.js'
-import { DAY_INTRO, STOPS, NEXT_STOP_TOAST, GROCERY_ITEMS, DAY_SUMMARY, RENT_COST, BUS_COST, CLINIC_COST, FUN_COST, SPLIT_CONFIRM, CARRY_PROMPT, CARRY_BANK_DONE, CARRY_GARDEN_DONE, EMERGENCY_INTRO, EMERGENCY_EVENT, EMERGENCY_PRAISE, EMERGENCY_REPLAY, HANDOFF, defaultSplit } from '../scenarios/budgetTown.js'
+import { DAY_INTRO, STOPS, GROCERY_ITEMS, DAY_SUMMARY, RENT_COST, BUS_COST, CLINIC_COST, FUN_COST, SPLIT_CONFIRM, CARRY_BANK_DONE, CARRY_GARDEN_DONE, EMERGENCY_INTRO, EMERGENCY_EVENT, EMERGENCY_PRAISE, EMERGENCY_REPLAY, HANDOFF, defaultSplit } from '../scenarios/budgetTown.js'
 import { npcFirstLine, SHARED_SECOND } from '../scenarios/npcLines.js'
 import { BK, DEBIT_ITEM, CARD_PURCHASE, CARD_MIN_PAY, SAVINGS_DING, CD_DING, TRUST_NAMED, BK_HANDOFF, BK_OPEN, TRUST_MAX } from '../scenarios/bankModule.js'
-import { BUDGET_TOWN, BANK_DISTRICT, PARTY_HOUSE, btWorld } from './config.js'
+import { BUDGET_TOWN, BANK_DISTRICT, PARTY_HOUSE, btRoom, btRoom3 } from './config.js'
 import { playTimeline, clearTimelines } from '../anim/timeline.js'
 import { resetStage, stage, NPC_HOME } from '../anim/stage.js'
 import { allNpcsHome, npcWalkTo, npcEmote, placeNpc, npcHome, sparkleBurst, npcPose, npcSay, npcFace } from '../anim/worldActions.js'
@@ -1018,70 +1018,63 @@ export const useGame = create((set, get) => ({
   snapshotBtWeek: () => {
     set((x) => ({ bt: { ...x.bt, snapshot: JSON.parse(JSON.stringify({ stage: x.bt.stage, income: x.bt.income, leftover: x.bt.leftover, split: x.bt.split })) } }))
   },
-  // Talking to the Keeper: the ONE welcome, or a gentle mid-day recap.
-  // Continuous flow - beats chain on their own after this.
+  // R14: the whole day is now a STATIONARY, card-driven scene. Talking to the
+  // Keeper starts it, or resumes at the current beat. Every choice animates a
+  // ROOM of the one cutaway house in front of the child - nobody walks anywhere.
   enterBudget: () => {
     const g = get()
     const b = g.bt
     if (!b) return
     if (b.stage === 'intro') {
-      g.pushCards([{ id: 'bt1', speaker: 'The Budget Keeper', text: DAY_INTRO(fmtMoney(g.allocations.save)), learn: 'budgeting', buttons: [{ label: 'Live one day!', act: 'bt.day' }] }])
+      g.pushCards([{ id: 'bt1', speaker: 'The Budget Keeper', text: DAY_INTRO(fmtMoney(g.allocations.save)), learn: 'budgeting', buttons: [{ label: 'Live one day!', act: 'bt.begin' }] }])
     } else if (['house', 'grocery', 'bus', 'clinic', 'fun'].includes(b.stage)) {
-      g.pushCards([{ id: 'btmid', speaker: 'The Budget Keeper', text: `Mid-day already! Next stop: ${STOPS[b.stage].title}. Follow your arrow!`, buttons: [{ label: 'On my way', act: null }] }])
+      g.btPresent(b.stage)
     } else if (b.stage === 'options') {
       g.btSummary()
     } else if (b.stage === 'split') {
       g.pushCards([{ id: 'bt2', speaker: 'The Budget Keeper', text: 'Time to split your leftover: pocket, bank, and garden. The pie shows your plan!', learn: 'allocation', buttons: [{ label: 'Open the sliders', act: 'bt.panel' }] }])
-    } else if (b.stage === 'carry') {
-      g.setToast(CARRY_PROMPT)
     } else if (b.stage === 'emergency') {
       g.pushCards([{ id: 'bt3', speaker: 'The Budget Keeper', text: EMERGENCY_INTRO, learn: 'budgeting', buttons: [{ label: 'Uh oh, what is that?', act: 'bt.emergency' }] }])
     } else {
       g.pushCards([{ id: 'bt4', speaker: 'The Budget Keeper', text: HANDOFF(fmtMoney(b.split.bank), fmtMoney(b.split.garden)), buttons: [{ label: 'To the Bank!', act: 'bt.tobank' }] }])
     }
   },
-  // A building was used in the world (E or click). Each stop: tiny one-line
-  // card -> pay -> ANIMATED outcome in the town -> one-line takeaway -> next.
-  btStop: (key) => {
+  // Present the current beat's DECISION as a card. The button pays/chooses;
+  // the outcome then plays as an animation in the matching room. No walking.
+  btPresent: (key) => {
     const g = get()
-    const b = g.bt
-    if (!b) return
-    if (key === 'kiosk') { g.btCarry('bank'); return }
-    if (key === 'gate') { g.btCarry('garden'); return }
-    if (b.stage !== key) return
+    set((x) => ({ bt: { ...x.bt, stage: key } }))
+    g.persist()
     const S = STOPS[key]
-    if (key === 'grocery') { set({ btPanel: 'grocery' }); return }
+    if (key === 'grocery') {
+      g.pushCards([{ id: 'bt-grocery', speaker: S.title, text: S.line, learn: 'needswants', buttons: [{ label: S.button, act: 'bt.grocery' }] }])
+      return
+    }
     if (key === 'fun') {
-      g.pushCards([{ id: 'btfun', speaker: 'The Budget Keeper', text: S.line, buttons: [{ label: S.ride, act: 'bt.fun.ride' }, { label: S.save, act: 'bt.fun.save' }] }])
+      g.pushCards([{ id: 'btfun', speaker: S.title, text: S.line, learn: 'needswants', buttons: [{ label: S.ride, act: 'bt.fun.ride' }, { label: S.save, act: 'bt.fun.save' }] }])
       return
     }
     const act = { house: 'bt.house', bus: 'bt.bus', clinic: 'bt.clinic' }[key]
-    g.pushCards([{ id: `bt-${key}`, speaker: S.title, text: S.line, buttons: [{ label: S.button, act }] }])
+    g.pushCards([{ id: `bt-${key}`, speaker: S.title, text: S.line, learn: 'budgeting', buttons: [{ label: S.button, act }] }])
   },
   _btSpend: (amt) => {
     set((x) => ({ allocations: { ...x.allocations, save: r2(x.allocations.save - amt) } }))
     get().persist()
   },
-  _btAdvance: (next) => {
-    set((x) => ({ bt: { ...x.bt, stage: next } }))
-    get().persist()
-    if (NEXT_STOP_TOAST[next]) setTimeout(() => get().setToast(NEXT_STOP_TOAST[next]), 400)
+  // fly a little pile of coins from the child's wallet into a room, then sparkle
+  _btCoins: (roomKey, count = 4) => {
+    set((x) => ({ coinBatches: [...x.coinBatches, { id: `bt-${roomKey}-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: btRoom3(roomKey), count }] }))
   },
   btHousePay: () => {
     const g = get()
     g._btSpend(RENT_COST)
-    const [hx, hz] = btWorld('house')
-    set((x) => ({
-      bt: { ...x.bt, needsSpent: x.bt.needsSpent + RENT_COST, fx: { ...x.bt.fx, houseLit: true, houseAt: Date.now() } },
-      near: null,
-      coinBatches: [...x.coinBatches, { id: `rent-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: hx, y: 1.2, z: hz }, count: 5 }],
-    }))
-    // R13 Part 1: the outcome plays while the child stays FREE to walk (Market
-    // model) - movement is NEVER locked during the Budget Town day
+    const [hx, hz] = btRoom('home')
+    set((x) => ({ bt: { ...x.bt, needsSpent: x.bt.needsSpent + RENT_COST, fx: { ...x.bt.fx, houseLit: true, houseAt: Date.now() } }, near: null }))
+    g._btCoins('home', 5)
     playTimeline([
-      { at: 400, run: () => { sparkleBurst([hx, hz], 1.8, 12); get().setToast('The lights come on - the family waves!') } },
-      { at: 1800, run: () => get().setToast(STOPS.house.takeaway), hold: 400 },
-    ], () => get()._btAdvance('grocery'))
+      { at: 400, run: () => { sparkleBurst([hx, hz], 1.8, 12); g.setToast('The lights come on - the family moves in and waves!') } },
+      { at: 1800, run: () => g.setToast(STOPS.house.takeaway), hold: 400 },
+    ], () => g.btPresent('grocery'))
   },
   btGroceryDone: (ids) => {
     const g = get()
@@ -1089,68 +1082,52 @@ export const useGame = create((set, get) => ({
     const cost = items.reduce((v, i) => v + i.cost, 0)
     set({ btPanel: null })
     g._btSpend(cost)
-    const [gx, gz] = btWorld('grocery')
-    set((x) => ({
-      bt: { ...x.bt, basket: ids, foodSpent: cost, needsSpent: x.bt.needsSpent + cost, fx: { ...x.bt.fx, basketAt: Date.now() } },
-      near: null,
-      coinBatches: [...x.coinBatches, { id: `food-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: gx, y: 1.2, z: gz }, count: 4 }],
-    }))
+    const [gx, gz] = btRoom('kitchen')
+    set((x) => ({ bt: { ...x.bt, basket: ids, foodSpent: cost, needsSpent: x.bt.needsSpent + cost, fx: { ...x.bt.fx, basketAt: Date.now() } }, near: null }))
+    g._btCoins('kitchen', 4)
     playTimeline([
-      { at: 400, run: () => { sparkleBurst([gx, gz], 1.6, 10); get().setToast('Basket packed! The bags line up out front.') } },
-      { at: 1800, run: () => get().setToast(STOPS.grocery.takeaway), hold: 400 },
-    ], () => get()._btAdvance('bus'))
+      { at: 400, run: () => { sparkleBurst([gx, gz], 1.6, 10); g.setToast('Groceries arrive - the family sits down to eat!') } },
+      { at: 1800, run: () => g.setToast(STOPS.grocery.takeaway), hold: 400 },
+    ], () => g.btPresent('bus'))
   },
   btBusGo: () => {
     const g = get()
     g._btSpend(BUS_COST)
-    const [bx2, bz2] = btWorld('bus')
-    set((x) => ({
-      bt: { ...x.bt, needsSpent: x.bt.needsSpent + BUS_COST, fx: { ...x.bt.fx, busAt: Date.now() } },
-      near: null,
-    }))
+    const [bx2, bz2] = btRoom('door')
+    set((x) => ({ bt: { ...x.bt, needsSpent: x.bt.needsSpent + BUS_COST, fx: { ...x.bt.fx, busAt: Date.now() } }, near: null }))
     playTimeline([
-      { at: 400, run: () => get().setToast('Here comes the school bus...') },
-      { at: 2400, run: () => { sparkleBurst([bx2, bz2], 1.6, 8); get().setToast('All aboard! The kids wave as it rolls away.') } },
-      { at: 4200, run: () => get().setToast(STOPS.bus.takeaway), hold: 500 },
-    ], () => get()._btAdvance('clinic'))
+      { at: 400, run: () => g.setToast('Here comes the school bus...') },
+      { at: 2400, run: () => { sparkleBurst([bx2, bz2], 1.6, 8); g.setToast('The kids head out the door and off to school!') } },
+      { at: 4200, run: () => g.setToast(STOPS.bus.takeaway), hold: 500 },
+    ], () => g.btPresent('clinic'))
   },
   btClinicPay: () => {
     const g = get()
     g._btSpend(CLINIC_COST)
-    const [cx2, cz2] = btWorld('clinic')
-    set((x) => ({
-      bt: { ...x.bt, needsSpent: x.bt.needsSpent + CLINIC_COST, fx: { ...x.bt.fx, clinicAt: Date.now() } },
-      near: null,
-      coinBatches: [...x.coinBatches, { id: `clin-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: cx2 + 1, y: 0.6, z: cz2 + 1.35 }, count: 3 }],
-    }))
+    const [cx2, cz2] = btRoom('health')
+    set((x) => ({ bt: { ...x.bt, needsSpent: x.bt.needsSpent + CLINIC_COST, fx: { ...x.bt.fx, clinicAt: Date.now() } }, near: null }))
+    g._btCoins('health', 3)
     playTimeline([
-      { at: 400, run: () => { sparkleBurst([cx2, cz2], 1.5, 8); get().setToast('The doctor gives a thumbs-up!') } },
-      { at: 1800, run: () => get().setToast(STOPS.clinic.takeaway), hold: 400 },
-    ], () => get()._btAdvance('fun'))
+      { at: 400, run: () => { sparkleBurst([cx2, cz2], 1.5, 8); g.setToast('The doctor pops in and gives a thumbs-up!') } },
+      { at: 1800, run: () => g.setToast(STOPS.clinic.takeaway), hold: 400 },
+    ], () => g.btPresent('fun'))
   },
   btFun: (ride) => {
     const g = get()
-    const [fx2, fz2] = btWorld('fun')
+    const [fx2, fz2] = btRoom('living')
     if (ride) {
       g._btSpend(FUN_COST)
-      set((x) => ({
-        bt: { ...x.bt, funSpent: FUN_COST, fx: { ...x.bt.fx, wheelAt: Date.now() } },
-        near: null,
-      }))
+      set((x) => ({ bt: { ...x.bt, funSpent: FUN_COST, fx: { ...x.bt.fx, wheelAt: Date.now() } }, near: null }))
       playTimeline([
         { at: 300, run: () => sparkleBurst([fx2, fz2], 2, 14) },
-        { at: 1600, run: () => get().setToast('Wheee! The wheel spins and everyone cheers!') },
-        { at: 3000, run: () => get().setToast(STOPS.fun.takeawayRide), hold: 400 },
-      ], () => {
-        set({ bt: { ...get().bt, stage: 'options' } })
-        get().persist()
-        get().btSummary()
-      })
+        { at: 1600, run: () => g.setToast('Party in the living room - everyone cheers!') },
+        { at: 3000, run: () => g.setToast(STOPS.fun.takeawayRide), hold: 400 },
+      ], () => { set({ bt: { ...get().bt, stage: 'options' } }); g.persist(); g.btSummary() })
     } else {
-      get().setToast(STOPS.fun.takeawaySave)
+      g.setToast(STOPS.fun.takeawaySave)
       set((x) => ({ bt: { ...x.bt, stage: 'options' } }))
-      get().persist()
-      setTimeout(() => get().btSummary(), 1400)
+      g.persist()
+      setTimeout(() => g.btSummary(), 1400)
     }
   },
   // The Keeper's one-line ledger, then the three homes + sliders (the climax)
@@ -1189,43 +1166,35 @@ export const useGame = create((set, get) => ({
     let n1 = rest - n0
     set((x) => ({ bt: { ...x.bt, split: { ...x.bt.split, [id]: v, [others[0]]: n0, [others[1]]: n1 } } }))
   },
-  // Confirm: the plan pie card, then the child WALKS the coins home (5.1).
+  // Confirm: show the plan pie, then DEPOSIT the coins in-scene (R14, no walk).
   btConfirmSplit: () => {
     const g = get()
     const b = g.bt
     set({ btPanel: null, split: { ...b.split } })
-    set((x) => ({ bt: { ...x.bt, stage: 'carry' } }))
-    get().persist()
+    set((x) => ({ bt: { ...x.bt, stage: 'split' } }))
+    g.persist()
     g.pushCards([{
       id: 'btplan', speaker: 'The Budget Keeper',
       text: `${SPLIT_CONFIRM} Pocket $${fmtMoney(b.split.pocket)} | Bank $${fmtMoney(b.split.bank)} | Garden $${fmtMoney(b.split.garden)}.`,
       pie: { ...b.split }, learn: 'allocation',
-      nudge: CARRY_PROMPT,
-      buttons: [{ label: 'Walk the coins!', act: null }],
+      buttons: [{ label: 'Send it to its homes!', act: 'bt.deposit' }],
     }])
   },
-  // walk the coins: bank pile to the kiosk, then garden pile to the gate
-  btCarry: (kind) => {
+  // the coins fly to the bank slot, then the garden slot - all in one scene
+  btDeposit: () => {
     const g = get()
     const b = g.bt
-    if (!b || b.stage !== 'carry' || b.carried[kind]) return
-    if (kind === 'garden' && !b.carried.bank) { g.setToast('Bank coins first - the kiosk is glowing!'); return }
-    const spot = kind === 'bank' ? btWorld('kiosk') : btWorld('gate')
-    set((x) => ({
-      bt: { ...x.bt, carried: { ...x.bt.carried, [kind]: true }, fx: { ...x.bt.fx, [kind === 'bank' ? 'kioskAt' : 'gateAt']: Date.now() } },
-      coinBatches: [...x.coinBatches, { id: `carry-${kind}-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: spot[0], y: 1, z: spot[1] }, count: 5 }],
-    }))
-    sparkleBurst(spot, 1.6, 10)
-    g.setToast(kind === 'bank' ? CARRY_BANK_DONE(fmtMoney(b.split.bank)) : CARRY_GARDEN_DONE(fmtMoney(b.split.garden)))
-    get().persist()
-    const done = get().bt.carried.bank && get().bt.carried.garden
-    if (done) {
-      set((x) => ({ bt: { ...x.bt, stage: 'emergency' } }))
-      get().persist()
-      setTimeout(() => {
-        get().pushCards([{ id: 'bt3', speaker: 'The Budget Keeper', text: EMERGENCY_INTRO, learn: 'budgeting', buttons: [{ label: 'Uh oh, what is that?', act: 'bt.emergency' }] }])
-      }, 1600)
-    }
+    const [kx, kz] = btRoom('bank')
+    const [gx2, gz2] = btRoom('garden')
+    set((x) => ({ bt: { ...x.bt, stage: 'emergency', carried: { bank: true, garden: true }, fx: { ...x.bt.fx, bankAt: Date.now(), gardenAt: Date.now() + 900 } } }))
+    g._btCoins('bank', 5)
+    g.persist()
+    playTimeline([
+      { at: 500, run: () => { sparkleBurst([kx, kz], 1.6, 10); g.setToast(CARRY_BANK_DONE(fmtMoney(b.split.bank))) } },
+      { at: 1600, run: () => { g._btCoins('garden', 5); sparkleBurst([gx2, gz2], 1.6, 10); g.setToast(CARRY_GARDEN_DONE(fmtMoney(b.split.garden))) } },
+    ], () => {
+      g.pushCards([{ id: 'bt3', speaker: 'The Budget Keeper', text: EMERGENCY_INTRO, learn: 'budgeting', buttons: [{ label: 'Uh oh, what is that?', act: 'bt.emergency' }] }])
+    })
   },
   // the surprise - covered from POCKET cash (emergency money's job)
   btEmergency: () => {
@@ -1256,13 +1225,15 @@ export const useGame = create((set, get) => ({
   },
   btAct: (act) => {
     const g = get()
-    if (act === 'bt.day') { g._btAdvance('house'); return }
+    if (act === 'bt.begin') { g.btPresent('house'); return }
     if (act === 'bt.panel') { g.btOpenPanel(); return }
     if (act === 'bt.house') { g.btHousePay(); return }
+    if (act === 'bt.grocery') { set({ btPanel: 'grocery' }); return }
     if (act === 'bt.bus') { g.btBusGo(); return }
     if (act === 'bt.clinic') { g.btClinicPay(); return }
     if (act === 'bt.fun.ride') { g.btFun(true); return }
     if (act === 'bt.fun.save') { g.btFun(false); return }
+    if (act === 'bt.deposit') { g.btDeposit(); return }
     if (act === 'bt.next') { g.enterBudget(); return }
     if (act === 'bt.emergency') { g.btEmergency(); return }
     if (act === 'bt.tobank') { g.awardBadge('budget', 'BUDGET BOSS'); g.startBank(); return }

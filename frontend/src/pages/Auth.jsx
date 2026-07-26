@@ -16,7 +16,7 @@ export default function Auth() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const [ok, setOk] = useState(null)
-  const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'student', gradeLevels: '', foundVia: '', social: '' })
+  const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'student', gradeLevels: '', foundVia: '', organizationName: '', organizationEmail: '' })
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
   const submit = async () => {
@@ -79,16 +79,35 @@ export default function Auth() {
                 <option value="parent">Parent / other</option>
               </select>
             </label>
-            {f.role === 'teacher' && (
-              <label className={LABEL}>What grade level(s) do you teach?
-                <input className={FIELD} value={f.gradeLevels} onChange={set('gradeLevels')} placeholder="e.g. 3rd and 4th grade" />
+            {(f.role === 'teacher' || f.role === 'student') && (
+              <label className={LABEL}>School / high school / organization name <span className="text-white/50">(required)</span>
+                <input className={FIELD} value={f.organizationName} onChange={set('organizationName')} placeholder="e.g. Lincoln Elementary School" />
               </label>
             )}
-            <label className={LABEL}>How did you find TAYU?
-              <input className={FIELD} value={f.foundVia} onChange={set('foundVia')} placeholder="A teacher, a friend, social media..." />
+            <label className={LABEL}>Organization email <span className="text-white/50">(optional)</span>
+              <input className={FIELD} type="email" value={f.organizationEmail} onChange={set('organizationEmail')} placeholder="office@school.org" />
             </label>
-            <label className={LABEL}>Social media handle <span className="text-white/50">(optional)</span>
-              <input className={FIELD} value={f.social} onChange={set('social')} placeholder="@yourhandle" />
+            <label className={LABEL}>{f.role === 'teacher' ? 'What grade level(s) do you teach?' : 'What grade level(s)?'}
+              <select className={FIELD} value={f.gradeLevels} onChange={set('gradeLevels')}>
+                <option value="">Choose a grade range...</option>
+                <option value="K-2">Elementary (K–2)</option>
+                <option value="3-5">Elementary (3–5)</option>
+                <option value="6-8">Middle school (6–8)</option>
+                <option value="9-12">High school (9–12)</option>
+                <option value="mixed">Mixed / multiple grades</option>
+              </select>
+            </label>
+            <label className={LABEL}>How did you find TAYU?
+              <select className={FIELD} value={f.foundVia} onChange={set('foundVia')}>
+                <option value="">Choose one...</option>
+                <option value="teacher">A teacher</option>
+                <option value="friend">A friend or family</option>
+                <option value="school">My school or district</option>
+                <option value="social">Social media</option>
+                <option value="search">A web search</option>
+                <option value="event">An event or conference</option>
+                <option value="other">Somewhere else</option>
+              </select>
             </label>
           </>
         )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { loadWallet, clearWallet } from '../services/walletStore.js'
+import { currentUser } from '../services/auth.js'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { startMusic } from '../services/audio.js'
@@ -65,6 +66,9 @@ export default function Welcome() {
 
   const onPlay = () => {
     startMusic('loading') // F2: music begins on the first user gesture
+    // R14 P2: PLAY *is* the login. Signed-out players go straight to
+    // login/sign-up; signed-in returning players continue their world.
+    if (!currentUser()) { navigate('/login'); return }
     if (hasSave) setChoice(true) // G1: Continue vs Restart
     else navigate('/avatar')
   }
@@ -100,11 +104,10 @@ export default function Welcome() {
           </button>
         </div>
 
-        {/* secondary link */}
+        {/* secondary link - just About Us; Play itself is the login (R14 P2) */}
         <Link to="/about" className="mt-3 rounded-xl bg-white/70 px-4 py-1.5 text-sm font-bold text-navy underline-offset-2 hover:underline">
           About Us
         </Link>
-          <Link to="/login" className="text-sm font-bold text-white/70 underline-offset-4 hover:text-white hover:underline">Log In / Sign Up</Link>
       </main>
 
       {/* G1 - Continue vs Restart (only when a save exists) */}
