@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { signUp, signIn, resetPassword, isCloud } from '../services/auth.js'
 import { loadWallet } from '../services/walletStore.js'
+import GuestModeButton from '../components/GuestModeButton.jsx'
 
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
 const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
@@ -55,6 +56,7 @@ export default function Auth() {
         <p className="mt-1 text-sm font-semibold text-white/75">
           {mode === 'signup' ? 'Sign up, then choose a money adventure.' : mode === 'reset' ? 'We will send instructions to your email.' : 'Log in to continue your money adventure.'}
         </p>
+        <GuestModeButton />
         <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">
           {[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([m, l]) => (
             <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(null); setOk(null) }}
