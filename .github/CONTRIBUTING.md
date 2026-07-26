@@ -7,8 +7,8 @@ Short, scrappy, 11-day sprint. Keep it simple.
 1. Branch off `main`: `git checkout -b stage1-allowance`
 2. Build the feature; keep components small and specced (see `docs/COMPONENTS.md`).
 3. Run `npm run dev` from the repo root and test the flow manually (see `docs/QUICK_START.md`).
-4. Open a PR into `main`. CI (`.github/workflows/deploy.yml`) runs build + tests.
-5. Merge → Vercel + Render auto-deploy.
+4. Open a PR into `main`. CI (`.github/workflows/deploy.yml`) runs build + tests on the PR and again when GitHub's merge queue prepares it.
+5. After the queued checks pass, merge → Vercel + Render auto-deploy.
 
 ## Conventions
 
