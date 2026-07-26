@@ -65,7 +65,7 @@ function setSession(user) {
 }
 
 // ---- sign up (captures the email + all profile questions) ----
-export async function signUp({ email, password, role, gradeLevels, foundVia, organizationName, organizationEmail }) {
+export async function signUp({ email, password, role, gradeLevels, foundVia, organizationName }) {
   email = String(email || '').trim().toLowerCase()
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   if (!password || password.length < 6) throw new Error('Password needs at least 6 characters.')
@@ -73,7 +73,7 @@ export async function signUp({ email, password, role, gradeLevels, foundVia, org
     throw new Error('Please enter your school or organization name.')
   const profile = {
     role: role || 'student', gradeLevels: gradeLevels || '', foundVia: foundVia || '',
-    organizationName: String(organizationName || '').trim(), organizationEmail: String(organizationEmail || '').trim(),
+    organizationName: String(organizationName || '').trim(),
   }
   const c = await client()
   if (c) {
