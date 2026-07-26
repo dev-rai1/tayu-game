@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { loadWallet, clearWallet } from '../services/walletStore.js'
+import { loadProfile, loadWallet, clearWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
@@ -68,6 +68,7 @@ export default function Welcome() {
     // R14 P2: PLAY *is* the login. Signed-out players go straight to
     // login/sign-up; signed-in returning players continue their world.
     if (!currentUser()) { navigate('/login'); return }
+    if (!loadProfile()?.assessment?.pre) { navigate('/assessment/pre'); return }
     if (hasSave) setChoice(true) // G1: Continue vs Restart
     else navigate('/avatar')
   }

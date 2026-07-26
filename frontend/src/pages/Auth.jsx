@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { signUp, signIn, resetPassword, isCloud } from '../services/auth.js'
-import { loadWallet } from '../services/walletStore.js'
+import { loadProfile, loadWallet } from '../services/walletStore.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
 
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
@@ -32,6 +32,7 @@ export default function Auth() {
       } else if (mode === 'signin') {
         const u = await signIn(f.email, f.password)
         if (u.role === 'admin') nav('/dashboard')
+        else if (!loadProfile()?.assessment?.pre) nav('/assessment/pre')
         else nav(loadWallet() ? '/world' : '/modules')
       } else {
         setOk(await resetPassword(f.email))

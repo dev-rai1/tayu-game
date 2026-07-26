@@ -23,7 +23,7 @@ export default function World() {
   useEffect(() => {
     if (enterParty) {
       useGame.setState({ enterParty: false })
-      navigate('/guru') // K: certificate IMMEDIATELY on entry
+      navigate(loadProfile()?.assessment?.post ? '/guru' : '/assessment/post')
     }
   }, [enterParty, navigate])
 

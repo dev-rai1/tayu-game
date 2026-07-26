@@ -177,12 +177,14 @@ export async function adminData() {
     const progById = Object.fromEntries((progress || []).map((p) => [p.user_id, p.data]))
     return (profiles || []).map((p) => ({
       email: p.email, role: p.role, gradeLevels: p.grade_levels ?? p.gradeLevels ?? '', foundVia: p.found_via ?? p.foundVia ?? '',
+      social: p.social ?? '',
       organizationName: p.organization_name ?? p.organizationName ?? '', organizationEmail: p.organization_email ?? p.organizationEmail ?? '',
       createdAt: p.created_at, progress: progById[p.id] || null,
     }))
   }
   return Object.values(readAccounts()).map((a) => ({
     email: a.email, role: a.role, gradeLevels: a.gradeLevels, foundVia: a.foundVia,
+    social: a.social || '',
     organizationName: a.organizationName || '', organizationEmail: a.organizationEmail || '',
     createdAt: a.createdAt, progress: a.progress,
   }))
