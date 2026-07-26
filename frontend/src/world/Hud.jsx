@@ -957,9 +957,12 @@ const MODULES = [
 
 const DESKTOP_HINT = 'Use WASD or the up and down arrow keys to walk. Right-click and drag or use the left and right arrow keys to look around. Press E or click the blue button to act. Follow the arrows to see where to go.'
 const TOUCH_HINT = 'Use the stick in the corner to walk. Drag anywhere to look around. Tap the blue button to do things. Follow the arrows - they show you where to go next!'
+const ACCESSIBLE_HINT = 'Choose the large step button to travel. Lessons and choices open automatically. Use Tab to move between buttons and Enter or Space to choose one.'
 
-function ControlsTab() {
-  const rows = IS_TOUCH
+function ControlsTab({ accessibleMode }) {
+  const rows = accessibleMode
+    ? [['Travel', 'Choose the large step button'], ['Move between choices', 'Press Tab or Shift + Tab'], ['Choose', 'Press Enter or Space'], ['What happens next', 'Lessons and choices open automatically']]
+    : IS_TOUCH
     ? [['Walk', 'Use the stick in the corner to walk'], ['Look around', 'Drag anywhere to look around'], ['Act', 'Tap the blue button to do things'], ['Where to go', 'Follow the arrows!']]
     : [['Walk', 'WASD or the up and down arrow keys'], ['Look around', 'Right-click and drag or use the left and right arrow keys'], ['Act', 'Press E or click the blue button'], ['Where to go', 'Follow the arrows']]
   return (
@@ -974,7 +977,7 @@ function ControlsTab() {
   )
 }
 
-function ModulesTab({ week, gameComplete, sel, setSel }) {
+function ModulesTab({ week, gameComplete, sel, setSel, accessibleMode }) {
   const statusOf = (n) => (gameComplete || week > n ? 'Done' : week === n ? 'Current' : 'Locked')
   const current = sel ?? Math.min(week, 6)
   return (
@@ -1008,7 +1011,9 @@ function ModulesTab({ week, gameComplete, sel, setSel }) {
         })}
       </div>
       <p className="mt-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white/80">
-        Follow the arrows and you'll always be told what to do next - walk up and talk to the glowing person!
+        {accessibleMode
+          ? 'Choose the large step button and the game will always show your next lesson or decision.'
+          : "Follow the arrows and you'll always be told what to do next - walk up and talk to the glowing person!"}
       </p>
     </>
   )
@@ -1036,7 +1041,7 @@ function LearningResourcesTab() {
   )
 }
 
-function HelpCard() {
+function HelpCard({ accessibleMode }) {
   const open = useGame((s) => s.helpOpen)
   const setOpen = useGame((s) => s.setHelpOpen)
   const week = useGame((s) => s.week)
@@ -1078,14 +1083,14 @@ function HelpCard() {
         {tab === 'controls' && (
           <div id="help-panel-controls" role="tabpanel">
             <h2 className="mt-3 font-display text-2xl font-extrabold text-teal text-legible">How to play</h2>
-            <ControlsTab />
-            <SpeakButton text={IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
+            <ControlsTab accessibleMode={accessibleMode} />
+            <SpeakButton text={accessibleMode ? ACCESSIBLE_HINT : IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
           </div>
         )}
         {tab === 'modules' && (
           <div id="help-panel-modules" role="tabpanel">
             <h2 className="mt-3 font-display text-xl font-extrabold text-teal text-legible">Your Modules</h2>
-            <ModulesTab week={week} gameComplete={gameComplete} sel={sel} setSel={setSel} />
+            <ModulesTab week={week} gameComplete={gameComplete} sel={sel} setSel={setSel} accessibleMode={accessibleMode} />
           </div>
         )}
         {tab === 'resources' && (
@@ -1140,7 +1145,7 @@ function HelpButton() {
   )
 }
 
-export function Hud({ playerName, onContinue }) {
+export function Hud({ playerName, onContinue, accessibleMode = false }) {
   const wallet = useGame((s) => s.wallet)
   const near = useGame((s) => s.near)
   const panelJar = useGame((s) => s.panelJar)
@@ -1253,7 +1258,7 @@ export function Hud({ playerName, onContinue }) {
         </div>
       )}
 
-      <HelpCard />
+      <HelpCard accessibleMode={accessibleMode} />
       <TintOverlay />
       <SunSweep />
       <Banner />

@@ -67,7 +67,7 @@ export default function World() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
-      <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
+      <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} accessibleMode={!use3D} />
       {use3D && isTouch && <MobileControls />}
 
       {/* welcome popup */}
