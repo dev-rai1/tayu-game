@@ -10,7 +10,7 @@ import {
   POOL_LINES, SAVE_DIALOG_START, SAVE_DIALOG_END,
 } from '../scenarios/lemonade.js'
 import {
-  COMPANIES, COMPANY_IDS, tick, scriptedMove, guardFloor, fill,
+  COMPANIES, COMPANY_IDS, tick, scriptedMove, guardFloor, fill, weeklyMarketUpdate,
 } from '../scenarios/moneyGarden.js'
 import {
   OPENING, weekSpec, TOTAL_WEEKS, SURPRISE_BILL,
@@ -827,12 +827,7 @@ export const useGame = create((set, get) => ({
     get().snapshotGardenWeek()
     get().persist()
     const button = spec.special === 'seeds' ? { label: 'Plant my seeds', act: 'wk.slider' } : { label: 'Make my moves', act: 'wk.adjust' }
-    const priceNews = COMPANY_IDS.map((id) => {
-      const before = m.companies[id].price
-      const after = companies[id].price
-      const direction = after > before ? `rose from ${before} to ${after}` : after < before ? `fell from ${before} to ${after}` : `held at ${after}`
-      return `${COMPANIES[id].name} ${direction}`
-    }).join(' · ')
+    const priceNews = weeklyMarketUpdate(m.companies, companies)
     g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
