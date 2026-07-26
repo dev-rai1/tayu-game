@@ -35,7 +35,7 @@ export const BK = {
     doneSafe: 'Slow and steady - and you can still reach it.',
     doneSmart: 'The locked CD earns the most. Patience pays!',
     doneCash: 'Easy to grab - but it earns nothing. Next time, let a little grow.',
-    summary: 'Locked longer = earns more.',
+    summary: 'The bank payment is called interest. Simple interest pays on the starting amount. Compound interest adds past interest to the balance, so future interest can earn interest too.',
     learn: 'cd',
   },
   w3: {
