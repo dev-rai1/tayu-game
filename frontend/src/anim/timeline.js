@@ -42,6 +42,26 @@ export function tickTimelines(delta) {
 export function clearTimelines() { active.length = 0 }
 export function activeTimelines() { return active.length }
 
+// Accessible 2D mode does not render choreography. Complete queued scenes in
+// order so students reach the lesson or decision without staring at an empty
+// screen while invisible animation beats play.
+export function flushTimelines() {
+  let guard = 0
+  while (active.length && guard < 100) {
+    const queued = active.splice(0)
+    for (const tl of queued) {
+      for (const beat of tl.beats) {
+        if (!beat.ran) {
+          beat.ran = true
+          try { beat.run() } catch (e) { console.error('beat error', e) }
+        }
+      }
+      try { tl.onDone?.() } catch (e) { console.error('[tayu] timeline onDone error', e) }
+    }
+    guard += 1
+  }
+}
+
 // Exposed in ALL builds (Round 6 Part 0): the Admin/Demo panel's
 // Fast-Forward and auto-play speed control drive scenes through this hook.
 if (typeof window !== 'undefined') {
