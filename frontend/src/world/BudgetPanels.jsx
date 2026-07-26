@@ -35,12 +35,12 @@ function OptionsPanel() {
   const allTried = OPTION_CARDS.every((c) => bt.tried[c.id])
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
-      <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
-        <div className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Three homes for money</div>
+      <div role="dialog" aria-modal="true" aria-labelledby="budget-options-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+        <h2 id="budget-options-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Three homes for money</h2>
         <div className="mt-1 text-sm font-bold text-navy/70">Tap each one to see what it does. ({OPTION_CARDS.filter((c) => bt.tried[c.id]).length}/3 tried)</div>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {OPTION_CARDS.map((c) => (
-            <button key={c.id}
+            <button key={c.id} aria-pressed={!!bt.tried[c.id]}
               onClick={() => { setPlaying(c.id); btTryOption(c.id); setTimeout(() => setPlaying((p) => (p === c.id ? null : p)), 2100) }}
               className={`rounded-2xl border-2 p-3 text-left transition active:scale-95 ${bt.tried[c.id] ? 'border-teal bg-teal/10' : 'border-navy/15 bg-navy/5'}`}>
               <div className="font-display text-sm font-extrabold" style={{ color: c.color }}>{c.title}</div>
@@ -95,18 +95,18 @@ function SplitPanel() {
   const nudge = splitNudge(bt.split, total)
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
-      <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
-        <div className="text-sm font-extrabold uppercase tracking-wide text-electric">Split your ${fmt(total)}</div>
+      <div role="dialog" aria-modal="true" aria-labelledby="budget-split-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+        <h2 id="budget-split-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Split your ${fmt(total)}</h2>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             {['pocket', 'bank', 'garden'].map((id) => (
               <div key={id} className="flex items-center justify-between rounded-2xl bg-navy/5 px-3 py-2">
                 <div className="text-sm font-extrabold" style={{ color: COLORS[id] }}>{NAMES[id]}</div>
                 <div className="flex items-center gap-1.5">
-                  <button onClick={() => { btSetSplit(id, bt.split[id] - 1); setPicked(id) }}
+                  <button aria-label={`Put one dollar less in ${NAMES[id]}`} onClick={() => { btSetSplit(id, bt.split[id] - 1); setPicked(id) }}
                     className="grid h-9 w-9 place-items-center rounded-xl bg-navy/10 font-display text-lg font-extrabold text-navy active:scale-90">-</button>
                   <div className="w-12 text-center font-display text-base font-extrabold text-navy">${fmt(bt.split[id])}</div>
-                  <button onClick={() => { btSetSplit(id, bt.split[id] + 1); setPicked(id) }}
+                  <button aria-label={`Put one dollar more in ${NAMES[id]}`} onClick={() => { btSetSplit(id, bt.split[id] + 1); setPicked(id) }}
                     className="grid h-9 w-9 place-items-center rounded-xl bg-navy/10 font-display text-lg font-extrabold text-navy active:scale-90">+</button>
                 </div>
               </div>
@@ -115,7 +115,7 @@ function SplitPanel() {
           <SplitPie split={bt.split} total={total} onPick={setPicked} picked={picked} />
         </div>
         {/* the advisor's exact per-slice feedback, live with real percentages */}
-        <div className="mt-3 min-h-[44px] rounded-2xl bg-navy/5 px-3 py-2 text-sm font-bold leading-snug text-navy/80">
+        <div aria-live="polite" className="mt-3 min-h-[44px] rounded-2xl bg-navy/5 px-3 py-2 text-sm font-bold leading-snug text-navy/80">
           {picked
             ? sliceLine(picked, Math.round(((bt.split[picked] || 0) / Math.max(1, total)) * 100))
             : 'Tap a slice to hear what your plan means.'}
@@ -141,9 +141,9 @@ function GroceryPanel() {
   const ready = foods >= MIN_FOODS
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
-      <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-labelledby="grocery-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-extrabold uppercase tracking-wide text-electric">Fill the basket</div>
+          <h2 id="grocery-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Fill the basket</h2>
           <div className="rounded-full bg-navy px-3 py-1 text-xs font-extrabold text-white">${cost} of ${FOOD_BUDGET}</div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -151,7 +151,7 @@ function GroceryPanel() {
             const on = picked.includes(it.id)
             const full = !on && cost + it.cost > FOOD_BUDGET
             return (
-              <button key={it.id} onClick={() => toggle(it)} disabled={full}
+              <button key={it.id} onClick={() => toggle(it)} disabled={full} aria-pressed={on}
                 className={`rounded-2xl border-2 p-2.5 text-center transition active:scale-95 disabled:opacity-35 ${on ? (it.need ? 'border-teal bg-teal/10' : 'border-sun bg-sun/15') : 'border-navy/15 bg-navy/5'}`}>
                 <div className="font-display text-sm font-extrabold text-navy">{it.name}</div>
                 <div className="text-xs font-bold text-navy/60">${it.cost}</div>
@@ -160,7 +160,7 @@ function GroceryPanel() {
             )
           })}
         </div>
-        <div className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold leading-snug ${ready ? 'bg-teal/15 text-navy' : 'bg-sun/20 text-navy/80'}`}>
+        <div aria-live="polite" className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold leading-snug ${ready ? 'bg-teal/15 text-navy' : 'bg-sun/20 text-navy/80'}`}>
           {ready ? `${foods} foods and ${picked.length - foods} treat${picked.length - foods === 1 ? '' : 's'} - a smart basket!` : GROCERY_GATE}
         </div>
         <button disabled={!ready} onClick={() => btGroceryDone(picked)} className="btn-primary mt-3 min-h-[52px] w-full px-5 disabled:opacity-40">
