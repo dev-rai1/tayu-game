@@ -8,6 +8,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Required checks must also run on the temporary commits created by
+  # GitHub's merge queue. Without this event, queued PRs remain blocked
+  # because the frontend and backend checks are never reported.
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   frontend:
