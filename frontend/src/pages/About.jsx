@@ -262,7 +262,7 @@ export default function About() {
           {/* R12 2.4: new accounts land here first - the clear door into play */}
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
             <h2 className="font-display text-xl font-extrabold text-navy">Ready when you are</h2>
-            <p className="mt-2 text-navy/70">TAYU is a free teacher resource - five playable money modules for K-5.</p>
+            <p className="mt-2 text-navy/70">TAYU is a free K-12 teacher resource, beginning with five playable core money modules and expanding for middle and high school.</p>
             <a href="/avatar" className="btn-primary mt-4 inline-block min-h-[56px] px-10 text-lg leading-[56px]">Play the Game</a>
             <p className="mt-4 text-sm font-bold text-navy/60">After you play, share your feedback:</p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">

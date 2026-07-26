@@ -247,7 +247,7 @@ export const useGame = create((set, get) => ({
       allNpcsHome()
       if (res.ok) {
         set({ scenarioState: 'SUCCESS' })
-        get().showLesson('See that? You did not put everything in one jar. That is DIVERSIFICATION: spreading your money so you are ready for everything!', 'diversify-jars')
+        get().showLesson("Splitting your money into three jobs means you're always ready - for today, for later, and for others.", 'three-money-jobs')
         setTimeout(() => get().enterStore(), 900)
       } else {
         get().resetJarsAnim()

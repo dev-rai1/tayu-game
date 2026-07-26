@@ -6,10 +6,9 @@ import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { startMusic } from '../services/audio.js'
 
-// TAYU landing (Master Adjustment Part A). Zero explanatory text, zero emojis,
-// zero "Module 1" - a living animated town, the bubble wordmark, one tagline,
-// one big Play button, and a small About link. A child lands here and wants to
-// press Play, not read.
+// TAYU landing: the first viewport stays playful and student-friendly, while
+// the content directly below it gives educators and search engines a clear
+// picture of the complete K-12 learning path.
 
 const LOGO = '/assets/tayu-logo.webp'
 
@@ -76,8 +75,10 @@ export default function Welcome() {
   const onRestart = () => { clearWallet(); navigate('/avatar') }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <TownBackground theme="play" />
+    <div className="relative min-h-screen overflow-x-hidden bg-[#eef8ff] text-navy">
+      <div className="fixed inset-0">
+        <TownBackground theme="play" />
+      </div>
 
       {/* header: just the logo - no copy */}
       {/* z-30: the full-screen <main> below is also z-10 and paints AFTER the
@@ -104,15 +105,67 @@ export default function Welcome() {
           </button>
         </div>
 
-        {/* secondary link - just About Us; Play itself is the login (R14 P2) */}
-        <Link to="/about" className="mt-3 rounded-xl bg-white/70 px-4 py-1.5 text-sm font-bold text-navy underline-offset-2 hover:underline">
-          About Us
-        </Link>
+        <nav aria-label="Visitor paths" className="mt-3 flex flex-wrap justify-center gap-2">
+          <a href="#educators" className="rounded-xl bg-white/90 px-5 py-2 text-sm font-extrabold text-navy shadow hover:bg-white">
+            For Educators
+          </a>
+          <Link to="/about" className="rounded-xl bg-white/70 px-5 py-2 text-sm font-bold text-navy underline-offset-2 hover:underline">
+            About Us
+          </Link>
+        </nav>
+
+        <a href="#grade-bands" className="absolute bottom-5 text-sm font-bold text-navy/70 hover:text-electric">
+          Explore the K-12 learning path <span aria-hidden="true">↓</span>
+        </a>
       </main>
+
+      <div className="relative z-10 bg-white/95 shadow-[0_-12px_40px_rgba(7,23,72,0.12)] backdrop-blur">
+        <section id="grade-bands" className="mx-auto max-w-5xl scroll-mt-6 px-6 py-16">
+          <div className="text-center">
+            <p className="font-display text-sm font-extrabold uppercase tracking-[0.18em] text-electric">Financial literacy that grows with students</p>
+            <h1 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">One world. Three grade bands.</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-lg text-navy/70">Start with everyday money choices, then build toward the real financial decisions students will make as adults.</p>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              ['Elementary', 'Grades K-5', 'Spend, save, give, budget, bank, and grow money through concrete, playful choices.', '#1464F0'],
+              ['Middle School', 'Grades 6-8', 'Build on the core game with credit, taxes, insurance, careers, and investing.', '#7850F0'],
+              ['High School', 'Grades 9-12', 'Prepare for college costs, tax filing, retirement, fintech, and a personal life roadmap.', '#00a77a'],
+            ].map(([title, grades, copy, color]) => (
+              <article key={title} className="rounded-3xl border-2 border-navy/10 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                <div className="font-display text-sm font-extrabold" style={{ color }}>{grades}</div>
+                <h2 className="mt-1 font-display text-2xl font-extrabold">{title}</h2>
+                <p className="mt-3 leading-relaxed text-navy/70">{copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="educators" className="scroll-mt-6 bg-navy px-6 py-14 text-white">
+          <div className="mx-auto grid max-w-5xl items-center gap-8 md:grid-cols-[1.3fr_1fr]">
+            <div>
+              <div className="inline-flex rounded-full bg-teal/15 px-4 py-2 text-sm font-extrabold text-teal">Built for classrooms • Free to play</div>
+              <h2 className="mt-4 font-display text-3xl font-extrabold">Bring TAYU to your school</h2>
+              <p className="mt-3 max-w-2xl text-lg leading-relaxed text-white/75">Explore short, playable modules, classroom-ready guidance, read-aloud support, and automatic progress saving. We also offer free live or virtual demos for schools and community programs.</p>
+              <p className="mt-4 font-bold text-white">Designed around the CEE/Jump$tart National Standards for Personal Financial Education.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href="https://calendly.com/tayu-finance/30min" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-teal px-6 py-3 font-extrabold text-navy hover:bg-white">Book a Free Demo</a>
+                <Link to="/about" className="rounded-2xl border-2 border-white/30 px-6 py-3 font-extrabold text-white hover:bg-white/10">Educator Overview</Link>
+              </div>
+            </div>
+            <div className="rounded-3xl bg-white/10 p-6">
+              <p className="font-display text-sm font-extrabold uppercase tracking-wider text-teal">Elementary companion book</p>
+              <h3 className="mt-2 font-display text-2xl font-extrabold">The Seed That Grew</h3>
+              <p className="mt-2 text-white/70">Pair TAYU with our children&rsquo;s story about patience, investing, and helping a small seed grow.</p>
+              <a href="https://www.amazon.com/Seed-That-Grew-Story-Investing/dp/B0FZ9CNLJV/" target="_blank" rel="noopener noreferrer" className="mt-4 inline-block font-extrabold text-teal underline underline-offset-4">Explore the companion book</a>
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* G1 - Continue vs Restart (only when a save exists) */}
       {choice && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-navy/60 p-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-navy/60 p-6 backdrop-blur-sm">
           <div className="glass--navy pop-in w-full max-w-sm p-7 text-center">
             <img src={LOGO} alt="" className="mx-auto h-14 w-14 rounded-2xl" />
             <h2 className="mt-3 font-display text-xl font-extrabold text-white">Welcome back!</h2>
