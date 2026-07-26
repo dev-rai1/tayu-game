@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { isMuted, toggleMute } from '../services/audio.js'
 
 // The always-visible speaker toggle (F2). Simple inline SVG icons - no emojis.
-export function MuteButton({ className = '' }) {
+export function MuteButton({ className = '', showLabel = false }) {
   const [muted, setMuted] = useState(isMuted())
   return (
     <button
       aria-label={muted ? 'Unmute music' : 'Mute music'}
+      aria-pressed={muted}
       onClick={() => setMuted(toggleMute())}
-      className={`pointer-events-auto grid h-11 w-11 place-items-center rounded-2xl bg-navy/80 shadow-lg transition active:scale-95 ${className}`}
+      className={`pointer-events-auto flex h-11 items-center justify-center gap-2 rounded-2xl bg-navy/80 px-3 text-white shadow-lg transition active:scale-95 ${className}`}
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#fff" stroke="none" />
@@ -24,6 +25,11 @@ export function MuteButton({ className = '' }) {
           </>
         )}
       </svg>
+      {showLabel && (
+        <span className="whitespace-nowrap text-sm font-extrabold">
+          Music {muted ? 'off' : 'on'}
+        </span>
+      )}
     </button>
   )
 }
