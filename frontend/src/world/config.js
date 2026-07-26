@@ -32,9 +32,11 @@ export const SPAWN = sc([0, -6]) // west point of the ring
 export const MAILBOX = sc([-1, -22.4]) // the ALLOWANCE BANK kiosk (interaction id 'mailbox')
 export const KITCHEN = sc([8.6, -31.6]) // jar table, in front of the house
 export const JARS = {
-  spend: sc([7.6, -31.8]),
+  // Give each jar its own interaction space. In the first usability session,
+  // players repeatedly selected SAVE while trying to move to another jar.
+  spend: sc([7.0, -31.8]),
   save: sc([8.6, -31.8]),
-  give: sc([9.6, -31.8]),
+  give: sc([10.2, -31.8]),
 }
 export const HOME = sc([4.6, -35]) // the house, behind the jar table
 export const STORE = sc([16.7, -42.6]) // TAYU MARKET - open front faces the ring

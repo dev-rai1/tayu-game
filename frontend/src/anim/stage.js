@@ -7,11 +7,9 @@ import { STORE, SPROUT, BUDGET_TOWN, BANK_DISTRICT, KITCHEN } from '../world/con
 // stand TOGETHER as a group BESIDE the route (paths run at z=2.8, z=-2.7 and
 // x=4) - visible and approachable, never blocking a walkway.
 export const NPC_HOME = {
-  // Keep the jar audience at the sides of the table. The camera approaches
-  // from +z, so placing the trio in front of it hides the jars behind bodies.
-  penny: [KITCHEN[0] - 4.1, KITCHEN[1] + 0.3],
-  theo: [KITCHEN[0] + 4.1, KITCHEN[1] + 0.3],
-  mia: [KITCHEN[0] + 3.4, KITCHEN[1] - 2.1],
+  penny: [KITCHEN[0] - 4.2, KITCHEN[1] + 3.2], // nearby audience, clear of every jar
+  theo: [KITCHEN[0] + 4.2, KITCHEN[1] + 3.4],
+  mia: [KITCHEN[0] + 0.2, KITCHEN[1] + 5.4],
   bram: [STORE[0] + 0, STORE[1] - 3.0], // shopkeeper, behind the store counter
   sprout: [SPROUT[0] - 6.2, SPROUT[1] + 4.6], // Mr. Sprout - front-left of the plaza, visible on approach (E-I.4)
   scoop: [SPROUT[0] + 6, SPROUT[1] + 8], // Scoop the newsboy, off by the garden street

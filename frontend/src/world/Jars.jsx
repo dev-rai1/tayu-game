@@ -79,10 +79,10 @@ export function KitchenTable() {
     <group>
       {/* table top */}
       <mesh position={[cx, 0.92, cz]} castShadow receiveShadow>
-        <boxGeometry args={[3, 0.16, 1.4]} /><meshStandardMaterial color="#a9743f" />
+        <boxGeometry args={[4.4, 0.16, 1.4]} /><meshStandardMaterial color="#a9743f" />
       </mesh>
       {/* legs */}
-      {[[-1.3, -0.5], [1.3, -0.5], [-1.3, 0.5], [1.3, 0.5]].map(([dx, dz], i) => (
+      {[[-2, -0.5], [2, -0.5], [-2, 0.5], [2, 0.5]].map(([dx, dz], i) => (
         <mesh key={i} position={[cx + dx, 0.45, cz + dz]} castShadow>
           <boxGeometry args={[0.14, 0.9, 0.14]} /><meshStandardMaterial color="#7a531f" />
         </mesh>
