@@ -85,6 +85,42 @@ function JarHud() {
   )
 }
 
+// A persistent, direct way to choose a jar. Players no longer have to steer
+// precisely up to three similar objects just to make an allocation.
+function JarChooser() {
+  const week = useGame((s) => s.week)
+  const state = useGame((s) => s.scenarioState)
+  const wallet = useGame((s) => s.wallet)
+  const alloc = useGame((s) => s.allocations)
+  const panelJar = useGame((s) => s.panelJar)
+  const dialog = useGame((s) => s.dialog)
+  const lessons = useGame((s) => s.lessons)
+  const open = useGame((s) => s.openPanel)
+  if (week !== 1 || state !== 'ALLOCATING' || panelJar || dialog || lessons.length > 0 || wallet <= 0) return null
+
+  return (
+    <div className="pointer-events-auto absolute inset-x-0 bottom-4 z-[240] flex justify-center px-3">
+      <div className="glass--navy w-full max-w-xl rounded-3xl p-3 shadow-2xl">
+        <p className="mb-2 text-center text-sm font-extrabold text-white">Choose a jar to put money in</p>
+        <div className="grid grid-cols-3 gap-2">
+          {Object.keys(JAR_LABEL).map((jar) => (
+            <button
+              key={jar}
+              onClick={() => open(jar)}
+              className="min-h-[64px] rounded-2xl border-2 bg-white px-2 py-2 text-navy shadow-lg transition hover:-translate-y-0.5 active:scale-95"
+              style={{ borderColor: JAR_HEX[jar] }}
+              aria-label={`Choose ${JAR_LABEL[jar]} jar, currently $${fmt(alloc[jar])}`}
+            >
+              <span className="block text-sm font-extrabold" style={{ color: JAR_HEX[jar] }}>{JAR_LABEL[jar]}</span>
+              <span className="block text-xl font-extrabold">${fmt(alloc[jar])}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // The always-visible money readout for Weeks 2 and 3 (comments 33/28):
 // ONE simple number - never make the player guess what they have.
 function MoneyPill() {
@@ -1226,6 +1262,7 @@ export function Hud({ playerName, onContinue }) {
       </div>
 
       <JarHud />
+      <JarChooser />
       <MoneyPill />
       <SeedProgress />
       <DayBudgetBar />
