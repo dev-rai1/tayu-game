@@ -923,7 +923,9 @@ function LessonCard() {
     )
   }
   return (
-    <div className="pointer-events-auto absolute inset-0 z-[290] flex items-end justify-center bg-navy/20 p-6 sm:items-center">
+    // Keep lessons above decision panels so contextual help is visible as soon
+    // as it is requested instead of waiting for the underlying panel to close.
+    <div className="pointer-events-auto absolute inset-0 z-[330] flex items-end justify-center bg-navy/20 p-6 sm:items-center">
       <div className="glass--navy pop-in w-full max-w-md p-7 text-center" onClick={dismiss} role="button">
         <img src={LOGO} alt="" className="mx-auto h-12 w-12 rounded-xl logo-breathe" />
         <p className="mt-3 text-2xl font-bold leading-snug text-white text-legible">{lesson.text}</p>
