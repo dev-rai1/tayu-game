@@ -121,7 +121,7 @@ function JarAllocationBoard() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-extrabold uppercase tracking-wide text-teal">Your $30 plan</div>
-          <div className="text-sm font-bold">Choose each jar. Use all $30.</div>
+          <div className="text-sm font-bold">Click a jar below. That is where your money will go.</div>
         </div>
         <div className="rounded-xl bg-white/10 px-3 py-1 text-center">
           <div className="text-[10px] font-bold text-white/60">LEFT</div>
@@ -389,7 +389,7 @@ function BottomSheet() {
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[320] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
         <ReadQuestHeader speaker={card.speaker} step={1} total={cardCount} label="STORY QUEST — READ THIS" />
-        <p className="rounded-2xl border-2 border-electric/15 bg-white px-3 py-2 text-xl font-bold leading-relaxed text-navy">{card.text}</p>
+        <p className="break-words rounded-2xl border-2 border-electric/15 bg-white px-3 py-2 text-xl font-bold leading-relaxed text-navy [overflow-wrap:anywhere]">{card.text}</p>
         {card.nums && <p className="mt-2 rounded-xl bg-navy/5 px-3 py-1.5 text-sm font-extrabold text-navy/80">{card.nums}</p>}
         {card.nudge && <p className="mt-1 text-sm font-semibold text-electric">{card.nudge}</p>}
         {card.bars && (
@@ -617,11 +617,11 @@ function DialogPanel() {
   const last = dialog.index + 1 >= dialog.lines.length
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[300] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
-      <div role="dialog" aria-modal="true" aria-labelledby="tayu-dialog-speaker" aria-describedby="tayu-dialog-line" className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-labelledby="tayu-dialog-speaker" aria-describedby="tayu-dialog-line" className="pop-in min-w-0 w-full max-w-lg overflow-hidden rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
         <div id="tayu-dialog-speaker">
           <ReadQuestHeader speaker={dialog.name} step={dialog.index + 1} total={dialog.lines.length} />
         </div>
-        <p id="tayu-dialog-line" className="rounded-2xl border-2 border-teal/25 bg-teal/5 px-3 py-2 text-xl font-bold leading-relaxed text-navy">{dialog.lines[dialog.index]}</p>
+        <p id="tayu-dialog-line" className="break-words rounded-2xl border-2 border-teal/25 bg-teal/5 px-3 py-2 text-xl font-bold leading-relaxed text-navy [overflow-wrap:anywhere]">{dialog.lines[dialog.index]}</p>
         <SpeakButton text={dialog.lines[dialog.index]} />
         <div className="mt-3 flex justify-end">
           <button className="min-h-[56px] rounded-2xl bg-electric px-8 text-lg font-extrabold text-white transition hover:bg-teal hover:text-navy active:scale-95" onClick={advance}>
@@ -753,6 +753,7 @@ function SupplyPanel() {
                 className="flex min-h-[64px] flex-col items-center justify-center rounded-2xl border-2 border-white/25 bg-white/10 px-3 py-2 transition hover:bg-white/20 active:scale-95 disabled:opacity-35">
                 <div className="text-lg font-extrabold text-white">{b.label}: ${b.cost}</div>
                 <div className="text-xs font-semibold text-white/70">{b.cups} cups{ok ? '' : ' (locked)'}</div>
+                <div className="mt-1 text-[10px] font-bold leading-tight text-teal">Includes: {b.ingredients.join(' + ')}</div>
               </button>
             )
           })}
@@ -1007,6 +1008,7 @@ function Confetti() {
 // decision card (G2). Big text (comment 20).
 function LessonCard() {
   const lesson = useGame((s) => s.lessons[0])
+  const lessonCount = useGame((s) => s.lessons.length)
   const dialog = useGame((s) => s.dialog)
   const cards = useGame((s) => s.cards)
   const dismiss = useGame((s) => s.dismissLesson)
@@ -1018,7 +1020,7 @@ function LessonCard() {
       <div className="pointer-events-none absolute inset-x-0 z-[240] flex justify-center px-4" style={{ bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
         <div role="status" aria-live="polite" className="glass--navy pop-in pointer-events-auto max-w-md p-4 text-center">
           <p className="text-base font-bold leading-snug text-white text-legible">{lesson.text}</p>
-          <button className="btn-primary mt-2 min-h-[44px] px-4 text-sm" onClick={dismiss}>Got it!</button>
+          <button className="btn-primary mt-2 min-h-[44px] px-4 text-sm" onClick={dismiss}>{lessonCount > 1 ? `Next message (${lessonCount - 1} left)` : 'Got it!'}</button>
         </div>
       </div>
     )
@@ -1037,7 +1039,7 @@ function LessonCard() {
           </a>
         )}
         <SpeakButton text={lesson.text} dark />
-        <button className="btn-primary mt-4 min-h-[56px] text-lg" onClick={dismiss}>Got it!</button>
+        <button className="btn-primary mt-4 min-h-[56px] text-lg" onClick={dismiss}>{lessonCount > 1 ? `Next message (${lessonCount - 1} left)` : 'Got it!'}</button>
       </div>
     </div>
   )
@@ -1238,6 +1240,13 @@ function WeekDots() {
   )
 }
 
+function ModuleTransition() {
+  const transition = useGame((state) => state.moduleTransition)
+  const dismiss = useGame((state) => state.dismissModuleTransition)
+  if (!transition) return null
+  return <div className="pointer-events-auto absolute inset-0 z-[360] flex items-center justify-center bg-navy/75 p-4 backdrop-blur-sm"><div role="dialog" aria-modal="true" className="pop-in w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><div className="text-sm font-extrabold uppercase text-teal">{transition.from}</div><h2 className="mt-2 font-display text-3xl font-extrabold text-navy">Moving to {transition.to}</h2><p className="mt-3 text-lg font-bold leading-relaxed text-navy/75">{transition.summary}</p><button className="btn-primary mt-6 min-h-[60px] w-full text-lg" onClick={dismiss}>Continue to {transition.to}</button></div></div>
+}
+
 function HelpButton() {
   const setOpen = useGame((s) => s.setHelpOpen)
   return (
@@ -1378,6 +1387,7 @@ export function Hud({ playerName, onContinue }) {
         </div>
       )}
 
+      <ModuleTransition />
       <HelpCard />
       <TintOverlay />
       <SunSweep />
