@@ -1044,13 +1044,17 @@ function HelpCard() {
   const [tab, setTab] = useState('controls')
   const [sel, setSel] = useState(null)
   const showLesson = useGame((s) => s.showLesson)
+  const dialog = useGame((s) => s.dialog)
+  const lessons = useGame((s) => s.lessons)
+  const cards = useGame((s) => s.cards)
   useEffect(() => {
     // Teach the 3D controls once instead of interrupting every module replay.
     // The persistent ? button keeps this help available at any time.
     if (localStorage.getItem('tayu-3d-controls-seen')) return undefined
+    if (dialog || lessons.length > 0 || cards.length > 0) return undefined
     const t = setTimeout(() => setOpen(true), 800)
     return () => clearTimeout(t)
-  }, [setOpen])
+  }, [cards.length, dialog, lessons.length, setOpen])
   // R9 Part 3: after the entry controls card, three short pointers (once per
   // device) - the '?', the top tabs, and the Learn More buttons.
   const closeHelp = () => {
