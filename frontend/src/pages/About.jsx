@@ -182,8 +182,9 @@ export default function About() {
                   live financial-literacy lessons. Then we took it global: the book was translated
                   into <b>seven languages</b> (English, Hindi, Marathi, Chinese, Mongolian, Spanish, and Russian) and
                   distributed to students and schools across <b>five countries</b> (the United
-                  States, India, China, Kazakhstan, and Australia), including a donation campaign
-                  into Fairfax County Public Schools elementary libraries.
+                  States, India, China, Kazakhstan, and Australia). The book is also available on
+                  Amazon, making it accessible to readers beyond the schools and communities we
+                  have worked with.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a href="https://www.amazon.com/Seed-That-Grew-Story-Investing/dp/B0FZ9CNLJV/" target="_blank" rel="noopener" className="rounded-2xl bg-navy px-4 py-2 text-sm font-bold text-white hover:bg-electric">
