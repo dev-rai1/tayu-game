@@ -173,7 +173,9 @@ export default function Guru() {
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
   useEffect(() => {
-    if (!loadProfile()?.guru) navigate('/world', { replace: true })
+    const profile = loadProfile()
+    if (!profile?.guru) navigate('/world', { replace: true })
+    else if (!profile.assessment?.post) navigate('/assessment/post', { replace: true })
   }, [navigate])
 
   useEffect(() => { crossfadeTo('party') }, []) // K: the party plays behind the certificate

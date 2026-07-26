@@ -6,6 +6,7 @@
 // all, reset) is gone by design.
 import { useState, useEffect } from 'react'
 import { useGame } from '../world/store.js'
+import { currentUser } from '../services/auth.js'
 
 const ADMIN_PW = 'tayu1234'
 let adminUnlocked = false // memory only - re-locks on every reload
@@ -104,6 +105,11 @@ export function AdminPanel({ showButton = true }) {
           </div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">MODULE {g().week} of 5</div>
+          {currentUser()?.role === 'admin' && (
+            <a href="/dashboard" className="mt-2 grid min-h-[44px] place-items-center rounded-lg bg-teal px-3 text-sm font-bold text-navy">
+              View player data
+            </a>
+          )}
           <div className="mt-1 flex gap-2">
             <button className={`${B} flex-1 bg-white/20`} disabled={g().week <= 1} onClick={moduleBack}>&lt; Module</button>
             <button className={`${B} flex-1 bg-white text-black`} onClick={moduleForward}>Module &gt;</button>
