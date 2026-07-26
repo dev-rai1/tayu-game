@@ -18,7 +18,10 @@ const TRACKS = {
   party: '/assets/music/money_song.wav',
 }
 const PLAYLIST = ['town1', 'town2', 'town3']
-const BASE_VOL = 0.4
+// Keep music comfortably behind narration and gameplay sounds. HTMLAudioElement
+// volume is perceptual enough that 0.16 is substantially gentler than the old
+// 0.4 setting while still being easy to hear on laptop speakers.
+const BASE_VOL = 0.16
 const XFADE_MS = 1800
 
 const state = {
@@ -173,18 +176,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
 
 // THE master switch (B1): flips `.muted` on every registered element at once.
 // Playback keeps rolling silently, so unmute is instant, on any screen.
-// UX rule: if the page is effectively SILENT (autoplay was blocked and the
-// track never really got going), the click means "turn the music ON" - it
-// starts playback and stays unmuted instead of "muting" the silence.
 export function toggleMute() {
-  const a = state.current ? state.els[state.current] : null
-  const audiblyPlaying = a && !a.paused && !a.muted && a.currentTime > 0.6
-  if (!state.muted && a && !audiblyPlaying) {
-    a.volume = BASE_VOL
-    a.muted = false
-    tryPlay(a) // the click IS a user activation - this play() succeeds
-    return state.muted // still unmuted; there is sound now
-  }
   state.muted = !state.muted
   saveProfile({ muted: state.muted })
   for (const el2 of Object.values(state.els)) el2.muted = state.muted

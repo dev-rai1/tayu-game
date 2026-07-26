@@ -80,12 +80,13 @@ export default function Welcome() {
         <TownBackground theme="play" />
       </div>
 
-      {/* header: just the logo - no copy */}
+      {/* Keep the music control explicit here so first-time players know they
+          can silence the soundtrack before entering the game. */}
       {/* z-30: the full-screen <main> below is also z-10 and paints AFTER the
           header - without this, clicks on the mute button hit the overlay */}
       <header className="absolute left-0 top-0 z-30 flex items-center gap-2 p-4">
         <img src={LOGO} alt="TAYU" className="h-12 w-12 rounded-2xl shadow-lg" />
-        <MuteButton />
+        <MuteButton showLabel />
       </header>
 
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-5 px-6 pb-16">
