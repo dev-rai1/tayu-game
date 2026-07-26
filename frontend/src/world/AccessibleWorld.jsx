@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { tickTimelines } from '../anim/timeline.js'
 import { useGame } from './store.js'
 import { SHOPKEEPER, STORE_ITEMS } from './config.js'
 
@@ -33,6 +35,14 @@ function Action({ children, onClick, secondary = false }) {
 }
 
 export function AccessibleWorld() {
+  // In 3D mode ConsequenceStage advances the game's frame-driven timelines.
+  // Accessible mode has no Three.js frame loop, so advance the same state
+  // machine here or every acted-out lesson will stop permanently.
+  useEffect(() => {
+    const timer = window.setInterval(() => tickTimelines(0.1), 16)
+    return () => window.clearInterval(timer)
+  }, [])
+
   const game = useGame()
   const {
     week, objective, mailboxOpened, scenarioState, bramTalked, bought,
@@ -107,6 +117,12 @@ export function AccessibleWorld() {
         {!busy && actions.length === 0 && (
           <div role="status" className="mt-4 rounded-3xl bg-white/10 p-5 text-center text-lg font-bold">
             Complete the choice on screen to continue.
+          </div>
+        )}
+
+        {game.scenarioLocked && (
+          <div role="status" aria-live="polite" className="mt-4 rounded-3xl bg-white/10 p-5 text-center text-lg font-bold">
+            Finishing this activity… Your next choice will appear automatically.
           </div>
         )}
       </div>
