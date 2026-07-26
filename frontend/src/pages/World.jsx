@@ -7,6 +7,8 @@ import { MobileControls, isTouch } from '../world/MobileControls.jsx'
 import { useGame } from '../world/store.js'
 import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
+import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
+import { hasWebGL } from '../utils/webgl.js'
 
 // Full-screen 3D world page (Module 1, Week 1).
 export default function World() {
@@ -16,6 +18,7 @@ export default function World() {
   const [welcome, setWelcome] = useState(true)
   const initWorld = useGame((s) => s.initWorld)
   const enterParty = useGame((s) => s.enterParty)
+  const [use3D] = useState(hasWebGL)
 
   useEffect(() => {
     if (enterParty) {
@@ -63,16 +66,16 @@ export default function World() {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-navy">
-      <GameWorld avatar={state.avatar} />
+      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
-      {isTouch && <MobileControls />}
+      {use3D && isTouch && <MobileControls />}
 
       {/* welcome popup */}
       {welcome && (
         <div className="pointer-events-none absolute inset-x-0 top-24 z-[120] flex justify-center">
           <div className="rounded-2xl bg-navy/90 px-6 py-3 text-center text-white shadow-xl">
             <p className="font-bold">Welcome to your neighborhood, {state.player.name || 'friend'}!</p>
-            <p className="text-sm text-white/70">Follow the arrows - they'll show you where to go next!</p>
+            <p className="text-sm text-white/70">{use3D ? "Follow the arrows - they'll show you where to go next!" : 'Use the step buttons to choose where to go next!'}</p>
           </div>
         </div>
       )}

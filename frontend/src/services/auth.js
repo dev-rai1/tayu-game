@@ -24,6 +24,7 @@ async function client() {
 // ---- local demo store ----
 const LKEY = 'tayu-accounts-v1'
 const SKEY = 'tayu-session-v1'
+const DEMO_ADMIN_CREDENTIAL_VERSION = 2
 const readAccounts = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '{}') } catch { return {} } }
 const writeAccounts = (a) => localStorage.setItem(LKEY, JSON.stringify(a))
 
@@ -38,11 +39,15 @@ async function hashPw(pw, salt) {
 // the credential never ships in client code beyond this demo fallback.
 export async function seedLocalAccounts() {
   const acc = readAccounts()
-  if (!acc['tayu.finance@gmail.com']) {
+  if (!acc['tayu.finance@gmail.com'] || acc['tayu.finance@gmail.com'].credentialVersion !== DEMO_ADMIN_CREDENTIAL_VERSION) {
     const salt = 'tayu-admin-salt'
     acc['tayu.finance@gmail.com'] = {
-      email: 'tayu.finance@gmail.com', salt, hash: await hashPw('tayuadmin9876', salt),
-      role: 'admin', gradeLevels: '', foundVia: 'founder', social: '', createdAt: new Date().toISOString(), progress: null,
+      ...acc['tayu.finance@gmail.com'],
+      email: 'tayu.finance@gmail.com', salt, hash: await hashPw('tayuadmin9587', salt),
+      credentialVersion: DEMO_ADMIN_CREDENTIAL_VERSION, needsPassword: false,
+      role: 'admin', gradeLevels: '', foundVia: 'founder', social: '',
+      createdAt: acc['tayu.finance@gmail.com']?.createdAt || new Date().toISOString(),
+      progress: acc['tayu.finance@gmail.com']?.progress ?? null,
     }
   }
   if (!acc['devr53247@gmail.com']) {

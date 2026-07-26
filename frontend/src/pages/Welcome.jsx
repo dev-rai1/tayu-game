@@ -166,10 +166,10 @@ export default function Welcome() {
       {/* G1 - Continue vs Restart (only when a save exists) */}
       {choice && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-navy/60 p-6 backdrop-blur-sm">
-          <div className="glass--navy pop-in w-full max-w-sm p-7 text-center">
+          <div role="dialog" aria-modal="true" aria-labelledby="continue-title" aria-describedby="continue-description" className="glass--navy pop-in w-full max-w-sm p-7 text-center">
             <img src={LOGO} alt="" className="mx-auto h-14 w-14 rounded-2xl" />
-            <h2 className="mt-3 font-display text-xl font-extrabold text-white">Welcome back!</h2>
-            <p className="mt-1 text-sm text-white/70">You have a world in progress.</p>
+            <h2 id="continue-title" className="mt-3 font-display text-xl font-extrabold text-white">Welcome back!</h2>
+            <p id="continue-description" className="mt-1 text-sm font-semibold text-white/80">You have a world in progress.</p>
             <div className="mt-5 flex flex-col gap-2">
               <button className="btn-primary" onClick={onContinue}>Continue my world</button>
               <button className="btn-ghost" onClick={onRestart}>Restart from the beginning</button>

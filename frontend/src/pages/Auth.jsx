@@ -19,7 +19,8 @@ export default function Auth() {
   const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'teacher', gradeLevels: '', foundVia: '', organizationName: '' })
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
-  const submit = async () => {
+  const submit = async (event) => {
+    event?.preventDefault()
     setErr(null); setOk(null); setBusy(true)
     try {
       if (mode === 'signup') {
@@ -47,10 +48,16 @@ export default function Auth() {
         <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
         <span className="font-display text-2xl font-extrabold text-white">TAYU</span>
       </Link>
-      <div className="rounded-3xl bg-white/5 p-6">
-        <div className="flex gap-1.5">
+      <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
+        <h1 className="font-display text-2xl font-extrabold">
+          {mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}
+        </h1>
+        <p className="mt-1 text-sm font-semibold text-white/75">
+          {mode === 'signup' ? 'Sign up, then choose a money adventure.' : mode === 'reset' ? 'We will send instructions to your email.' : 'Log in to continue your money adventure.'}
+        </p>
+        <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">
           {[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([m, l]) => (
-            <button key={m} onClick={() => { setMode(m); setErr(null); setOk(null) }}
+            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(null); setOk(null) }}
               className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold transition active:scale-95 ${mode === m ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
               {l}
             </button>
@@ -63,7 +70,7 @@ export default function Auth() {
 
         {mode !== 'reset' && (
           <label className={LABEL}>Password
-            <input className={FIELD} type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={f.password} onChange={set('password')} placeholder="At least 6 characters" onKeyDown={(e) => e.key === 'Enter' && mode === 'signin' && submit()} />
+            <input className={FIELD} type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={6} value={f.password} onChange={set('password')} placeholder="At least 6 characters" />
           </label>
         )}
 
@@ -81,7 +88,7 @@ export default function Auth() {
             </label>
             {(f.role === 'teacher' || f.role === 'student') && (
               <label className={LABEL}>School / high school / organization name <span className="text-white/50">(required)</span>
-                <input className={FIELD} value={f.organizationName} onChange={set('organizationName')} placeholder="e.g. Lincoln Elementary School" />
+                <input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} placeholder="e.g. Lincoln Elementary School" />
               </label>
             )}
             {(f.role === 'teacher' || f.role === 'student') && (
@@ -111,25 +118,27 @@ export default function Auth() {
           </>
         )}
 
-        {err && <p className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-300">{err}</p>}
-        {ok && <p className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}
+        <div aria-live="polite" aria-atomic="true">
+          {err && <p role="alert" className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-200">{err}</p>}
+          {ok && <p className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}
+        </div>
 
-        <button disabled={busy} onClick={submit} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">
+        <button type="submit" disabled={busy} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">
           {busy ? 'One moment...' : mode === 'signup' ? 'Create my account' : mode === 'signin' ? 'Log in' : 'Send reset link'}
         </button>
 
         {mode === 'signin' && (
-          <button onClick={() => setMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/60 hover:text-white">
+          <button type="button" onClick={() => setMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
             Forgot password?
           </button>
         )}
         {!isCloud() && (
-          <p className="mt-4 text-center text-xs text-white/40">
-            Demo mode: accounts live on this device only. Add the Supabase keys on Vercel for real cloud accounts and reset emails (see AUTH_README).
+          <p className="mt-4 text-center text-xs font-semibold text-white/70">
+            Practice mode: this account is saved only on this device.
           </p>
         )}
-      </div>
-      <Link to="/" className="mt-4 text-center text-sm font-bold text-white/60 hover:text-white">Back to the home page</Link>
+      </form>
+      <Link to="/" className="mt-4 text-center text-sm font-bold text-white/75 hover:text-white">Back to the home page</Link>
     </main>
   )
 }

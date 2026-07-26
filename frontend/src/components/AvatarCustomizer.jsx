@@ -19,6 +19,7 @@ function Pills({ options, value, onChange }) {
       {options.map((o) => (
         <button
           key={o.id}
+          aria-pressed={value === o.id}
           onClick={() => onChange(o.id)}
           className={`rounded-lg px-2.5 py-1 text-sm transition ${
             value === o.id ? 'bg-electric text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
@@ -40,6 +41,7 @@ function Swatches({ options, value, onChange }) {
           key={o.id}
           title={o.label}
           aria-label={o.label}
+          aria-pressed={value === o.id}
           onClick={() => onChange(o.id)}
           style={{ background: o.hex }}
           className={`h-8 w-8 rounded-full border-2 transition ${
@@ -106,6 +108,7 @@ export default function AvatarCustomizer({ avatar, onChange }) {
           {ACCESSORIES.map((a) => (
             <button
               key={a.id}
+              aria-pressed={avatar.accessories.includes(a.id)}
               onClick={() => toggleAcc(a.id)}
               className={`rounded-lg px-2.5 py-1 text-sm transition ${
                 avatar.accessories.includes(a.id) ? 'bg-brandpurple text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'

@@ -19,6 +19,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1000;
+  transform: translateY(-180%);
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #071748;
+  padding: 0.75rem 1rem;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(7, 23, 72, 0.3);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 /* Reusable component classes (Tayu design system) */
 @layer components {
   .btn {
