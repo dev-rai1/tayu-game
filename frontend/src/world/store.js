@@ -820,10 +820,7 @@ export const useGame = create((set, get) => ({
     get().snapshotGardenWeek()
     get().persist()
     const button = spec.special === 'seeds' ? { label: 'Plant my seeds', act: 'wk.slider' } : { label: 'Make my moves', act: 'wk.adjust' }
-    const priceNews = COMPANY_IDS.map((id) => {
-      const before = m.companies[id].price, after = companies[id].price
-      const direction = after > before ? 'rose from 
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
+    const priceNews = COMPANY_IDS.map((id) => { const before = m.companies[id].price, after = companies[id].price; return COMPANIES[id].name + ' ' + (after > before ? 'rose from 
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -1832,7 +1829,6 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__tayu = { useGame, playerPos, joystick, moveTarget, cameraRig }
 }
  + before + ' to 
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -2729,7 +2725,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party', moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your money journey is complete. Follow the arrow to celebrate and collect your certificate.' } })
+    set({ gameComplete: true, weekComplete: false, objective: 'party' })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -2743,7 +2739,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 6000) => {
+  sayActor: (actor, line, ms = 3400) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
@@ -2775,7 +2771,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
@@ -2841,7 +2837,6 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__tayu = { useGame, playerPos, joystick, moveTarget, cameraRig }
 }
  + after : after < before ? 'fell from 
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -3738,7 +3733,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party', moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your money journey is complete. Follow the arrow to celebrate and collect your certificate.' } })
+    set({ gameComplete: true, weekComplete: false, objective: 'party' })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -3752,7 +3747,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 6000) => {
+  sayActor: (actor, line, ms = 3400) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
@@ -3784,7 +3779,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
@@ -3850,7 +3845,6 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__tayu = { useGame, playerPos, joystick, moveTarget, cameraRig }
 }
  + before + ' to 
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -4747,7 +4741,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party', moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your money journey is complete. Follow the arrow to celebrate and collect your certificate.' } })
+    set({ gameComplete: true, weekComplete: false, objective: 'party' })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -4761,7 +4755,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 6000) => {
+  sayActor: (actor, line, ms = 3400) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
@@ -4793,7 +4787,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
@@ -4859,7 +4853,6 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__tayu = { useGame, playerPos, joystick, moveTarget, cameraRig }
 }
  + after : 'held at 
-    g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
   // Round 8 W1: the SEED PIE - dollars split across the three companies,
@@ -5756,7 +5749,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party', moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your money journey is complete. Follow the arrow to celebrate and collect your certificate.' } })
+    set({ gameComplete: true, weekComplete: false, objective: 'party' })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -5770,7 +5763,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 6000) => {
+  sayActor: (actor, line, ms = 3400) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
@@ -5802,7 +5795,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
@@ -5867,9 +5860,7 @@ export const ALLOWANCE_TOTAL = ALLOWANCE
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__tayu = { useGame, playerPos, joystick, moveTarget, cameraRig }
 }
- + after
-      return COMPANIES[id].name + ' ' + direction
-    }).join(' · ')
+ + after) }).join(' · ')
     g.pushCards([{ id: `wk${m.week}`, speaker: 'Mr. Sprout', text: spec.intro, nums: `WEEK ${m.week} MARKET UPDATE: ${priceNews}`, learn: spec.learn, buttons: [button] }])
   },
 
@@ -6767,7 +6758,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   // ---- Part J: the finale unlock ----
   // Called when the Week 3 summary closes: the mystery house opens for real.
   unlockParty: () => {
-    set({ gameComplete: true, weekComplete: false, objective: 'party', moduleTransition: { from: 'Module 5 complete', to: 'Finale Area', summary: 'Your money journey is complete. Follow the arrow to celebrate and collect your certificate.' } })
+    set({ gameComplete: true, weekComplete: false, objective: 'party' })
     saveProfile({ guru: true })
     get().persist()
     get().setBanner('THE FINALE AREA IS OPEN!', 3400)
@@ -6781,7 +6772,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 6000) => {
+  sayActor: (actor, line, ms = 3400) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
@@ -6813,7 +6804,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, moduleTransition: null, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
