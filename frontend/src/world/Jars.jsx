@@ -18,6 +18,7 @@ function Jar({ jarKey, label, color, pos }) {
   const body = useRef()
   const fill = useRef()
   const ghost = useRef()
+  const selector = useRef()
   // Keep the player's choice attached to the object it affects. This is much
   // easier to scan than matching the jars to a separate HUD legend.
   const labelTex = cardTexture(`$${amount}`, label, { bg: '#ffffff', color: TAYU.navy, accent: color })
@@ -31,6 +32,11 @@ function Jar({ jarKey, label, color, pos }) {
     }
     const near = st.near?.id === `jar:${jarKey}` && !st.panelJar
     const chiming = st.jarGlow === jarKey
+    if (selector.current) {
+      selector.current.visible = near
+      selector.current.rotation.z += 0.025
+      selector.current.material.opacity = Math.sin(Date.now() * 0.008) * 0.18 + 0.72
+    }
     if (body.current) {
       body.current.material.emissiveIntensity = chiming
         ? Math.sin(Date.now() * 0.02) * 0.4 + 0.7
@@ -65,6 +71,11 @@ function Jar({ jarKey, label, color, pos }) {
         <meshBasicMaterial color={TAYU.gold} transparent opacity={0.3} depthWrite={false} />
       </mesh>
       <mesh position={[0, 0.38, 0]}><cylinderGeometry args={[0.32, 0.32, 0.07, 18]} /><meshStandardMaterial color="#8B6914" /></mesh>
+      {/* A bright selector makes it unambiguous which jar E will open. */}
+      <mesh ref={selector} position={[0, 0.42, 0]} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <ringGeometry args={[0.42, 0.56, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.8} depthWrite={false} />
+      </mesh>
       {/* Keep each live dollar amount centered above its own jar. The narrower,
           raised card prevents neighboring SPEND / SAVE / GIVE labels from crowding. */}
       <Billboard position={[0, 1.3, 0]}>
