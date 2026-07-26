@@ -955,13 +955,18 @@ const MODULES = [
   { n: 6, title: 'Finale Area', desc: 'CELEBRATE: music, dancing, and your certificate!' },
 ]
 
-const DESKTOP_HINT = 'Use WASD or the up and down arrow keys to walk. Right-click and drag or use the left and right arrow keys to look around. Press E or click the blue button to act. Follow the arrows to see where to go.'
+const DESKTOP_HINT = 'Use WASD or the up and down arrow keys to walk. Use the left and right arrow keys, or hold the right mouse button and drag, to look around. Press E or click the blue action button to act. Follow the arrows to see where to go.'
 const TOUCH_HINT = 'Use the stick in the corner to walk. Drag anywhere to look around. Tap the blue button to do things. Follow the arrows - they show you where to go next!'
 
 function ControlsTab() {
   const rows = IS_TOUCH
     ? [['Walk', 'Use the stick in the corner to walk'], ['Look around', 'Drag anywhere to look around'], ['Act', 'Tap the blue button to do things'], ['Where to go', 'Follow the arrows!']]
-    : [['Walk', 'WASD or the up and down arrow keys'], ['Look around', 'Right-click and drag or use the left and right arrow keys'], ['Act', 'Press E or click the blue button'], ['Where to go', 'Follow the arrows']]
+    : [
+        ['Walk', 'Use WASD or the up and down arrow keys'],
+        ['Look around', 'Use the left and right arrow keys, or hold right-click and drag'],
+        ['Act', 'Press E or click the blue action button'],
+        ['Where to go', 'Follow the arrows'],
+      ]
   return (
     <div className="mt-3 flex flex-col gap-2 text-left">
       {rows.map(([k, v]) => (
@@ -1077,7 +1082,7 @@ function HelpCard() {
         </div>
         {tab === 'controls' && (
           <div id="help-panel-controls" role="tabpanel">
-            <h2 className="mt-3 font-display text-2xl font-extrabold text-teal text-legible">How to play</h2>
+            <h2 className="mt-3 font-display text-2xl font-extrabold text-teal text-legible">How to Play</h2>
             <ControlsTab />
             <SpeakButton text={IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
           </div>
