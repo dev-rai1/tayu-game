@@ -148,7 +148,10 @@ export const useGame = create((set, get) => ({
       if (s.lessonSeen[onceKey]) return
       set({ lessonSeen: { ...s.lessonSeen, [onceKey]: true } })
     }
-    set((x) => ({ lessons: [...x.lessons, { id: Date.now() + Math.random(), text, soft, learn }] }))
+    set((x) => ({
+      lessons: [...x.lessons, { id: Date.now() + Math.random(), text, soft, learn }],
+      actorCaption: null, guide: null, toast: null,
+    }))
   },
   dismissLesson: () => {
     set((s) => ({ lessons: s.lessons.slice(1) }))
@@ -158,7 +161,9 @@ export const useGame = create((set, get) => ({
       get().persist()
     }
   },
-  pushCards: (cs) => set((x) => ({ cards: [...x.cards, ...cs] })),
+  pushCards: (cs) => set((x) => ({
+    cards: [...x.cards, ...cs], actorCaption: null, guide: null, toast: null,
+  })), 
   // A card button was tapped: pop the card, then run its action.
   cardAct: (act) => {
     set((s) => ({ cards: s.cards.slice(1) }))
@@ -290,7 +295,9 @@ export const useGame = create((set, get) => ({
     setTimeout(() => set((s) => (s.toast?.includes('healthy drink') ? { toast: null } : {})), 3600)
   },
 
-  openDialog: (name, lines, onClose = null) => set({ dialog: { name, lines, index: 0, onClose } }),
+  openDialog: (name, lines, onClose = null) => set({
+    dialog: { name, lines, index: 0, onClose }, actorCaption: null, guide: null, toast: null,
+  }),
   advanceDialog: () => {
     const s = get()
     if (!s.dialog) return
@@ -1740,7 +1747,7 @@ export const useGame = create((set, get) => ({
     set({ guide: { line } })
     guideTimer = setTimeout(() => set({ guide: null }), ms)
   },
-  sayActor: (actor, line, ms = 3400) => {
+  sayActor: (actor, line, ms = 6000) => {
     clearTimeout(actorTimer)
     set({ actorCaption: { actor, line } })
     actorTimer = setTimeout(() => set({ actorCaption: null }), ms)
