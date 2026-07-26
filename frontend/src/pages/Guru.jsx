@@ -28,7 +28,7 @@ function PartyBackdrop() {
     const bills = Array.from({ length: 34 }, () => ({
       x: Math.random(), y: Math.random(), spin: Math.random() * Math.PI, vy: 0.06 + Math.random() * 0.1, vs: (Math.random() - 0.5) * 2,
     }))
-    const resize = () => { cv.width = cv.clientWidth * 2; cv.height = cv.clientHeight * 2 }
+    const resize = () => { cv.width = cv.clientWidth; cv.height = cv.clientHeight }
     resize()
     window.addEventListener('resize', resize)
     const drawDancer = (x, y, sc, color, t) => {
@@ -48,7 +48,11 @@ function PartyBackdrop() {
       ctx.beginPath(); ctx.arc(0, -18 * sc, 11 * sc, 0, Math.PI * 2); ctx.fill()
       ctx.restore()
     }
+    let last = 0
     const draw = (now) => {
+      raf = requestAnimationFrame(draw)
+      if (now - last < 50) return
+      last = now
       const t = now / 1000
       const W = cv.width, H = cv.height
       ctx.clearRect(0, 0, W, H)
@@ -87,7 +91,6 @@ function PartyBackdrop() {
         ctx.fillText('$', 0, 1)
         ctx.restore()
       }
-      raf = requestAnimationFrame(draw)
     }
     raf = requestAnimationFrame(draw)
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
