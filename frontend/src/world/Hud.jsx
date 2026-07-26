@@ -121,7 +121,7 @@ function JarAllocationBoard() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-extrabold uppercase tracking-wide text-teal">Your $30 plan</div>
-          <div className="text-sm font-bold">Choose each jar. Use all $30.</div>
+          <div className="text-sm font-bold">Click a jar below. That is where your money will go.</div>
         </div>
         <div className="rounded-xl bg-white/10 px-3 py-1 text-center">
           <div className="text-[10px] font-bold text-white/60">LEFT</div>
