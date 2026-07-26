@@ -28,11 +28,12 @@ export const PRICE_STEP = 0.05 // fine steps so $1.10 is reachable
 export const PRICE_STEP_BIG = 0.25
 
 // Supplies include cups, lemons, sugar, water, AND the table (A3's example).
+const CORE_SUPPLIES = ['cups', 'lemons', 'sugar', 'water', 'table']
 export const BUNDLES = [
-  { id: 'small', label: 'Small', cost: 4, cups: 6 },
-  { id: 'medium', label: 'Medium', cost: 6, cups: 10 }, // the formula example
-  { id: 'large', label: 'Large', cost: 9, cups: 18 },
-  { id: 'mega', label: 'Mega', cost: 12, cups: 26 },
+  { id: 'small', label: 'Small', cost: 4, cups: 6, ingredients: CORE_SUPPLIES },
+  { id: 'medium', label: 'Medium', cost: 6, cups: 10, ingredients: CORE_SUPPLIES },
+  { id: 'large', label: 'Large', cost: 9, cups: 18, ingredients: CORE_SUPPLIES },
+  { id: 'mega', label: 'Mega', cost: 12, cups: 26, ingredients: CORE_SUPPLIES },
 ]
 
 // G3: quality choices (unlocked AFTER the first perfect week). Both honest
