@@ -74,8 +74,13 @@ export default function World() {
       {welcome && (
         <div className="pointer-events-none absolute inset-x-0 top-24 z-[120] flex justify-center">
           <div className="rounded-2xl bg-navy/90 px-6 py-3 text-center text-white shadow-xl">
-            <p className="font-bold">Welcome to your neighborhood, {state.player.name || 'friend'}!</p>
-            <p className="text-sm text-white/70">{use3D ? "Follow the arrows - they'll show you where to go next!" : 'Use the step buttons to choose where to go next!'}</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">🗺️ Your map mission</p>
+            <p className="mt-1 font-bold">Welcome to your neighborhood, {state.player.name || 'friend'}!</p>
+            <p className="text-sm text-white/80">
+              {use3D
+                ? <><b className="text-sun">Follow the glowing arrows</b> — each stop unlocks the next part of your money adventure!</>
+                : <><b className="text-sun">Use the step buttons</b> to choose where to go next!</>}
+            </p>
           </div>
         </div>
       )}

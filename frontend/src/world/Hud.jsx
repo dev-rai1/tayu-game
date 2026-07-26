@@ -60,6 +60,25 @@ function SpeakButton({ text, dark = false }) {
   )
 }
 
+// A consistent reading cue for every story beat. It tells young players exactly
+// which box matters, while the tiny "quest" framing makes reading feel like an
+// action in the game instead of a wall of instructions.
+function ReadQuestHeader({ speaker, step, total, label = 'READ THIS' }) {
+  const progress = total > 1 ? `${step} of ${total}` : 'Quick read'
+  return (
+    <div className="mb-3 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-electric/10 via-teal/10 to-sun/20 p-2.5">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-2xl shadow-sm" aria-hidden>📖</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-electric">{label}</span>
+          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{progress}</span>
+        </div>
+        {speaker && <div className="truncate font-display text-base font-extrabold text-navy">💬 {speaker} says...</div>}
+      </div>
+    </div>
+  )
+}
+
 function JarHud() {
   const alloc = useGame((s) => s.allocations)
   const mailboxOpened = useGame((s) => s.mailboxOpened)
@@ -355,6 +374,7 @@ function PortfolioPanel() {
 // Every instructional beat in the Money Garden flows through here.
 function BottomSheet() {
   const card = useGame((s) => s.cards[0])
+  const cardCount = useGame((s) => s.cards.length)
   const dialog = useGame((s) => s.dialog)
   const act = useGame((s) => s.cardAct)
   const setToast = useGame((s) => s.setToast)
@@ -367,8 +387,8 @@ function BottomSheet() {
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[320] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
-        {card.speaker && <div className="text-sm font-extrabold uppercase tracking-wide text-electric">{card.speaker}</div>}
-        <p className="mt-1 text-xl font-bold leading-snug text-navy">{card.text}</p>
+        <ReadQuestHeader speaker={card.speaker} step={1} total={cardCount} label="STORY QUEST — READ THIS" />
+        <p className="rounded-2xl border-2 border-electric/15 bg-white px-3 py-2 text-xl font-bold leading-relaxed text-navy">{card.text}</p>
         {card.nums && <p className="mt-2 rounded-xl bg-navy/5 px-3 py-1.5 text-sm font-extrabold text-navy/80">{card.nums}</p>}
         {card.nudge && <p className="mt-1 text-sm font-semibold text-electric">{card.nudge}</p>}
         {card.bars && (
@@ -597,11 +617,10 @@ function DialogPanel() {
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[300] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div role="dialog" aria-modal="true" aria-labelledby="tayu-dialog-speaker" aria-describedby="tayu-dialog-line" className="pop-in w-full max-w-lg rounded-3xl border-4 border-teal bg-white p-5 shadow-2xl">
-        <div id="tayu-dialog-speaker" className="flex items-center justify-between gap-2 text-sm font-extrabold uppercase tracking-wide text-electric">
-          <span>{dialog.name}</span>
-          <span className="text-navy/45">{dialog.index + 1} of {dialog.lines.length}</span>
+        <div id="tayu-dialog-speaker">
+          <ReadQuestHeader speaker={dialog.name} step={dialog.index + 1} total={dialog.lines.length} />
         </div>
-        <p id="tayu-dialog-line" className="mt-1 text-xl font-bold leading-snug text-navy">{dialog.lines[dialog.index]}</p>
+        <p id="tayu-dialog-line" className="rounded-2xl border-2 border-teal/25 bg-teal/5 px-3 py-2 text-xl font-bold leading-relaxed text-navy">{dialog.lines[dialog.index]}</p>
         <SpeakButton text={dialog.lines[dialog.index]} />
         <div className="mt-3 flex justify-end">
           <button className="min-h-[56px] rounded-2xl bg-electric px-8 text-lg font-extrabold text-white transition hover:bg-teal hover:text-navy active:scale-95" onClick={advance}>
