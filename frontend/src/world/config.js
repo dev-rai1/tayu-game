@@ -44,8 +44,15 @@ export const LEMONADE = sc([31.3, -43]) // the lemonade stand
 export const BUDGET_TOWN = sc([48, -42.5]) // Budget Town - now a single indoor house
 export const BANK_DISTRICT = sc([59.1, -30.4]) // the Bank of TAYU (door faces the ring)
 export const SPROUT = sc([69, -15.7]) // the Money Garden plaza
-// the FINALE AREA - closes the loop; sits just inside the ring at its new angle
-export const PARTY_HOUSE = (() => { const [px, pz] = ringPoint(-46); return [px - (px - CENTER[0]) * 0.12, pz - (pz - CENTER[1]) * 0.12] })()
+// The finale sits outside the road with a landscaped buffer between its front
+// door and the walking lane. The previous inside-ring placement overlapped the
+// road and made the final approach look like it ran through the building.
+export const PARTY_HOUSE = (() => {
+  const [px, pz] = ringPoint(STOP_ANGLES.party)
+  const dx = px - CENTER[0], dz = pz - CENTER[1]
+  const d = Math.hypot(dx, dz)
+  return [px + (dx / d) * 7.2, pz + (dz / d) * 7.2]
+})()
 
 // The ring road + a short spur to every ENTRANCE. No segment ever ends at a
 // wall or runs through a building; the ring itself is continuous (closed).
@@ -58,8 +65,38 @@ export const PATHS = {
   spurBudget: [ringPoint(64), sc([48, -37.6])],
   spurBank: [ringPoint(40), sc([59.1, -27.2])],
   spurGarden: [ringPoint(14), sc([64.6, -15.2])],
-  spurParty: [ringPoint(-46), [PARTY_HOUSE[0], PARTY_HOUSE[1]]],
+  spurParty: (() => {
+    const road = ringPoint(STOP_ANGLES.party)
+    const dx = PARTY_HOUSE[0] - CENTER[0], dz = PARTY_HOUSE[1] - CENTER[1]
+    const d = Math.hypot(dx, dz)
+    const entrance = [PARTY_HOUSE[0] - (dx / d) * 2.7, PARTY_HOUSE[1] - (dz / d) * 2.7]
+    return [road, entrance]
+  })(),
 }
+
+const pointToSegmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
+  const dx = bx - ax, dz = bz - az
+  const lengthSq = dx * dx + dz * dz
+  if (!lengthSq) return Math.hypot(px - ax, pz - az)
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lengthSq))
+  return Math.hypot(px - (ax + t * dx), pz - (az + t * dz))
+}
+
+export const PATH_CLEARANCE = { ring: 4.0, spur: 2.7 }
+
+export function distanceToPaths(point) {
+  let closest = Infinity
+  Object.entries(PATHS).forEach(([name, points]) => {
+    const required = name === 'ring' ? PATH_CLEARANCE.ring : PATH_CLEARANCE.spur
+    for (let i = 0; i < points.length - 1; i += 1) {
+      closest = Math.min(closest, pointToSegmentDistance(point, points[i], points[i + 1]) - required)
+    }
+  })
+  return closest
+}
+
+export const isClearOfPaths = (point, radius = 0) => distanceToPaths(point) >= radius
+
 
 export const PLAY_BOUNDS = 96 // legacy import
 // R14 P3: bounds scaled about the center to match the tighter map

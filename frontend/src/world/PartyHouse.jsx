@@ -6,7 +6,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Billboard } from '@react-three/drei'
 import { useGame } from './store.js'
-import { PARTY_HOUSE } from './config.js'
+import { PARTY_HOUSE, RING } from './config.js'
 import { labelTexture, cardTexture } from './textures.js'
 
 // 7.4: the disco ball - spins always, sparkles harder once the game is done
@@ -107,6 +107,7 @@ function QuestionMark({ x, y, z, phase }) {
 export function PartyHouse() {
   const gameComplete = useGame((s) => s.gameComplete)
   const [hx, hz] = PARTY_HOUSE
+  const faceRoad = Math.atan2(RING.c[0] - hx, RING.c[1] - hz)
   const door = useRef()
   useFrame(() => {
     const t = Date.now() * 0.003
@@ -116,7 +117,7 @@ export function PartyHouse() {
     ? cardTexture('FINALE AREA', 'Come in, Money Guru!', { bg: '#071748', color: '#ffffff', accent: '#FFD700' })
     : cardTexture('FINALE AREA', 'Finish the journey... the party is waiting!', { bg: '#071748', color: '#ffffff', accent: '#7850F0' })
   return (
-    <group position={[hx, 0, hz]} rotation={[0, Math.PI, 0]}>
+    <group position={[hx, 0, hz]} rotation={[0, faceRoad, 0]}>
       {/* the house - deep party purple with a starry roof */}
       <RoundedBox args={[5, 3.4, 4]} radius={0.16} smoothness={3} position={[0, 1.7, 0]} castShadow>
         <meshPhysicalMaterial color="#3a1f6e" clearcoat={0.5} roughness={0.45} />
