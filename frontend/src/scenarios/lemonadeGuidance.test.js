@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BUNDLES, EVENTS, QUALITY, SIGNS,
   analyzeLemonadeResult, estimateDemandSignal, findProfitablePlan,
-  nextTip, recommendedStarterPrice, simulateSales,
+  nextEventFor, nextTip, recommendedStarterPrice, rollEvent, simulateSales,
 } from './lemonade.js'
 
 const normal = EVENTS.find((event) => event.id === 'normal')
@@ -74,6 +74,19 @@ describe('lemonade supply, demand, and pinned profit guidance', () => {
     expect(feedback.action.toLowerCase()).toContain('raise the price')
     expect(feedback.goal.toLowerCase()).toContain('projected result')
     expect(feedback.plan.sim.keep).toBeGreaterThan(0)
+  })
+
+  it('uses the same upcoming Town News for the end card and next round', () => {
+    const expected = nextEventFor(normal.id)
+    const rolled = rollEvent(true, normal.id)
+    const levers = baseLevers(3)
+    const sim = simulateSales(levers, normal)
+    const tip = nextTip(sim, levers, normal, 3, [])
+
+    expect(rolled.id).toBe(expected.id)
+    expect(tip.targetEvent.id).toBe(rolled.id)
+    expect(tip.text).toContain("NEXT WEEK'S TOWN NEWS")
+    expect(tip.plan.sim.keep).toBeGreaterThan(0)
   })
 
   it('keeps the existing nextTip API while returning structured next-round guidance', () => {
