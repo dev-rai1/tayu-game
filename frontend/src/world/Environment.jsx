@@ -100,7 +100,7 @@ const TREE_SPOTS = [
 ].map((t, i) => {
   const [x, z] = worldScale([t.x, t.z])
   return { ...t, x, z, c: i }
-}).filter((t) => isClearOfPaths([t.x, t.z], 1.5)) // keep trunks and canopies out of every walking lane
+}).filter((t) => isClearOfPaths([t.x, t.z], 1.5) && isClearOfModuleGates([t.x, t.z], 1)) // keep every module gateway readable
 
 const PALM_SPOTS = [
   [21, -9, 1], [39, -10.5, 1.05], [21.5, -2, 0.95], [38.5, -0.5, 1],
@@ -108,7 +108,7 @@ const PALM_SPOTS = [
 ].map(([x, z, s], i) => {
   const [sx, sz] = worldScale([x, z])
   return { x: sx, z: sz, s, i }
-}).filter((p) => isClearOfPaths([p.x, p.z], 1.5))
+}).filter((p) => isClearOfPaths([p.x, p.z], 1.5) && isClearOfModuleGates([p.x, p.z], 1))
 
 const FLOWER_SPOTS = [
   [4, -14, 0], [12, -24, 1], [24, -26, 2], [36, -26, 3], [46, -24, 4],
@@ -117,7 +117,7 @@ const FLOWER_SPOTS = [
 ].map(([x, z, c]) => {
   const [sx, sz] = worldScale([x, z])
   return [sx, sz, c]
-}).filter(([x, z]) => isClearOfPaths([x, z], 0.55))
+}).filter(([x, z]) => isClearOfPaths([x, z], 0.55) && isClearOfModuleGates([x, z]))
 
 const roadsideSpot = (angle, radialOffset, tangentOffset = 0) => {
   const [x, z] = ringPoint(angle)
@@ -470,10 +470,6 @@ export function Environment3D() {
       {/* THE PARK: lake and calm supporting spaces at the heart of the circle */}
       <Lake />
       <CentralCommons />
-      <Picnic x={23} z={2} />
-      <Bench x={38} z={-13} rot={2.2} />
-      <Bench x={22} z={-13} rot={0.9} />
-      <Bench x={30} z={5} rot={Math.PI} />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
 
