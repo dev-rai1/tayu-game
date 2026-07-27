@@ -10,6 +10,7 @@ import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
 import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
+import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { ReadingPaceGuard } from '../world/ReadingPaceGuard.jsx'
 import { hasWebGL } from '../utils/webgl.js'
@@ -72,6 +73,7 @@ export default function World() {
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       <PersistentCoach />
+      <PersistentImprovementCoach />
       <GuidedCommerceOverlay />
       {!welcome && <ReadingPaceGuard />}
       {use3D && usesTouchControls && <MobileControls />}
