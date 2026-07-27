@@ -107,17 +107,11 @@ export const ROYAL_APPROACH = {
   entrance: partyEntrance,
 }
 
-// Early paths retain their established destinations. From Lemonade onward,
-// every spur terminates at the actual host or interaction point.
+// One continuous royal route. Modules sit around it in story order; there are
+// deliberately no side paths competing with the route or cutting through
+// buildings and landscaping.
 export const PATHS = {
   ring: RING_POINTS,
-  spurAllowance: [ringPoint(152), sc([-0.2, -21.5])],
-  spurJars: [ringPoint(131), sc([8.6, -30.6])],
-  spurMarket: [ringPoint(110), sc([16.7, -38.4])],
-  spurLemonade: [ringPoint(STOP_ANGLES.lemonade), LEMONADE],
-  spurBudget: [ringPoint(STOP_ANGLES.budget), [BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4]],
-  spurBank: [ringPoint(STOP_ANGLES.bank), [BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2]],
-  spurGarden: [ringPoint(STOP_ANGLES.garden), [SPROUT[0] - 6.2, SPROUT[1] + 4.6]],
   royalParty: [
     ringPoint(STOP_ANGLES.garden),
     royalArcPoint(8, 1.0),
@@ -137,12 +131,12 @@ const pointToSegmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
   return Math.hypot(px - (ax + t * dx), pz - (az + t * dz))
 }
 
-export const PATH_CLEARANCE = { ring: 4.0, spur: 2.7 }
+export const PATH_CLEARANCE = { ring: 4.0, royal: 3.5 }
 
 export function distanceToPaths(point) {
   let closest = Infinity
   Object.entries(PATHS).forEach(([name, points]) => {
-    const required = name === 'ring' ? PATH_CLEARANCE.ring : PATH_CLEARANCE.spur
+    const required = name === 'ring' ? PATH_CLEARANCE.ring : PATH_CLEARANCE.royal
     for (let i = 0; i < points.length - 1; i += 1) {
       closest = Math.min(closest, pointToSegmentDistance(point, points[i], points[i + 1]) - required)
     }
