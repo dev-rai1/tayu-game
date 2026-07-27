@@ -62,8 +62,21 @@ describe('world path separation', () => {
     expect(PATHS.royalPartyRight).toBeUndefined()
   })
 
-  it('uses one main route without competing module side paths', () => {
-    expect(Object.keys(PATHS).sort()).toEqual(['ring', 'royalParty'])
+  it('restores a short entrance path for every town module', () => {
+    expect(Object.keys(PATHS).sort()).toEqual([
+      'ring',
+      'royalParty',
+      'spurAllowance',
+      'spurBank',
+      'spurBudget',
+      'spurGarden',
+      'spurJars',
+      'spurLemonade',
+      'spurMarket',
+    ])
+    Object.entries(PATHS)
+      .filter(([name]) => name.startsWith('spur'))
+      .forEach(([, points]) => expect(points).toHaveLength(2))
   })
 
   it('uses support landmarks instead of decorative center houses', () => {

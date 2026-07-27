@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Billboard } from '@react-three/drei'
 import * as THREE from 'three'
 import { SPROUT, TAYU } from './config.js'
-import { COMPANIES, COMPANY_IDS } from '../scenarios/moneyGarden.js'
+import { COMPANIES, COMPANY_IDS, companyFacingAngle } from '../scenarios/moneyGarden.js'
 import { cardTexture, labelTexture } from './textures.js'
 import { useGame } from './store.js'
 
@@ -269,6 +269,9 @@ export function MoneyGarden() {
       <mesh position={[0, 0.032, 0.6]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[9.5, 10.2, 40]} /><meshStandardMaterial color="#8cbf6a" roughness={1} />
       </mesh>
+      <mesh position={[0, 0.028, 9.2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[2.2, 3.6]} /><meshStandardMaterial color="#e9f2e0" roughness={1} />
+      </mesh>
       {/* NO bushes anywhere near the plaza (E-I.1) and NO world-space sign
           (E-I.5) - the guidance arrow and bottom cards are the instruction
           channel. Framing instead: lamps, benches, planters (E-I.3). */}
@@ -307,7 +310,7 @@ export function MoneyGarden() {
         const Front = FRONTS[id]
         const [lx, lz] = COMPANIES[id].pos
         return (
-          <group key={id} position={[lx, 0, lz]}>
+          <group key={id} position={[lx, 0, lz]} rotation={[0, companyFacingAngle([lx, lz]), 0]}>
             <Front />
             {/* R13 6.3: a readable, correctly-proportioned name sign matching
                 the other district signs (navy pill, billboarded, 3.2 aspect) */}
