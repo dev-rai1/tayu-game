@@ -5,13 +5,23 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { playerPos } from './store.js'
-import { AMBIENT_NPCS, LAKE } from './config.js'
+import { AMBIENT_NPCS, DISTRICT_GAP_ANGLES, LAKE, RING, ringPoint } from './config.js'
 
 // v8 Section 4: reduced-motion stills all decorative life
 const STILL = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function Clay({ color, rough = 0.9 }) {
   return <meshStandardMaterial color={color} roughness={rough} metalness={0} />
+}
+
+const gapSpot = (angle, radialOffset, tangentOffset = 0) => {
+  const [x, z] = ringPoint(angle)
+  const rx = (x - RING.c[0]) / RING.r
+  const rz = (z - RING.c[1]) / RING.r
+  return [
+    x + rx * radialOffset - rz * tangentOffset,
+    z + rz * radialOffset + rx * tangentOffset,
+  ]
 }
 
 // one little person; kind: dance | sit | picnic
@@ -154,13 +164,16 @@ export function Ambient() {
       <Duck r={2.7} speed={0.5} phase={0} />
       <Duck r={3.8} speed={0.4} phase={2.4} dir={-1} />
       <Duck r={2.0} speed={0.62} phase={4.4} />
-      {/* Animals and butterflies stay in the central lawns, away from the ring road. */}
-      <Bunny x={18} z={-6} phase={0} />
-      <Bunny x={42} z={-6} phase={2.6} />
-      <Butterfly x={19} z={-1} phase={0} color="#ff8fb3" />
-      <Butterfly x={41} z={-11} phase={1.3} color="#FFD700" />
-      <Butterfly x={30} z={-17} phase={2.7} color="#7850F0" />
-      <Butterfly x={29} z={5} phase={4.1} color="#5aa6ff" />
+      {/* Wildlife now fills the landscaped gaps BETWEEN outside districts. */}
+      {DISTRICT_GAP_ANGLES.filter((_, i) => i % 2 === 0).map((angle, i) => {
+        const [x, z] = gapSpot(angle, 10.5, i % 2 ? 5.2 : -5.2)
+        return <Bunny key={`gap-bunny-${angle}`} x={x} z={z} phase={i * 1.7} />
+      })}
+      {DISTRICT_GAP_ANGLES.map((angle, i) => {
+        const [x, z] = gapSpot(angle, 6.0, i % 2 ? 4.8 : -4.8)
+        const colors = ['#ff8fb3', '#FFD700', '#7850F0', '#5aa6ff', '#00DCA0']
+        return <Butterfly key={`gap-butterfly-${angle}`} x={x} z={z} phase={i * 1.1} color={colors[i % colors.length]} />
+      })}
     </group>
   )
 }
