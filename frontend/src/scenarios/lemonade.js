@@ -1,33 +1,19 @@
-// Week 2 - THE LEMONADE STAND v4 (Round 5, Parts A + G).
-// THE ACCURACY DOCTRINE governs every string and every formula here:
-//   A1 - tax is on PROFIT (after supplies AND the player's own wage), never
-//        on earnings. Order everywhere: Revenue -> Supplies -> Your pay ->
-//        Profit -> Tax -> You keep.
-//   A2 - no fake price-demand "law". Customers respond to many things (the
-//        weather, town events, how good the lemonade is); the player
-//        discovers that through play.
-//   A3 - the advisor's price-setting formula is THE teaching moment, shown
-//        before the first price decision and re-openable every week.
-//   A4 - "economic profit" language is GONE; the time lesson lives in the
-//        wage line ("Your pay") and the hours decision.
-//   G5 - feedback is DIRECT: one lever, the direction, a concrete number.
-//   G6 - scenarios and extra features are gated until the first PERFECT week.
-//   G7 - tuned so coached play reaches $30 in ~3-4 weeks; reckless play hits
-//        the bankruptcy-rewind (Part F), never a dead end.
+// Week 2 - THE LEMONADE STAND v5: guided pricing and persistent coaching.
+// The player should never have to guess what to change next. Every result names
+// one specific lever, why it mattered, and the exact next action.
 
-export const TAX_RATE = 0.1 // the Town Tax - 10% OF PROFIT (A1)
-export const PROFIT_GOAL = 30 // cumulative kept profit (after tax)
+export const TAX_RATE = 0.1 // Town Tax: 10% of profit, never revenue
+export const PROFIT_GOAL = 40 // cumulative kept profit after tax
 export const HOURS_OPTIONS = [2, 3, 4, 5, 6]
-export const DEFAULT_HOURS = 4 // 4 hours at $1/h = the formula's "Your work: $4"
-export const WAGE_RATES = [0.5, 1, 1.5] // $ per hour you pay yourself (modest by design)
+export const DEFAULT_HOURS = 4
+export const WAGE_RATES = [0.5, 1, 1.5]
 export const DEFAULT_WAGE_RATE = 1
 
 export const PRICE_MIN = 0.25
 export const PRICE_MAX = 3
-export const PRICE_STEP = 0.05 // fine steps so $1.10 is reachable
+export const PRICE_STEP = 0.05
 export const PRICE_STEP_BIG = 0.25
 
-// Supplies include cups, lemons, sugar, water, AND the table (A3's example).
 const CORE_SUPPLIES = ['cups', 'lemons', 'sugar', 'water', 'table']
 export const BUNDLES = [
   { id: 'small', label: 'Small', cost: 4, cups: 6, ingredients: CORE_SUPPLIES },
@@ -36,22 +22,18 @@ export const BUNDLES = [
   { id: 'mega', label: 'Mega', cost: 12, cups: 26, ingredients: CORE_SUPPLIES },
 ]
 
-// G3: quality choices (unlocked AFTER the first perfect week). Both honest
-// tradeoffs - neither is strictly better.
 export const QUALITY = [
   { id: 'basic', label: 'Basic', addPerCup: 0 },
-  { id: 'lemony', label: 'Extra Lemony', addPerCup: 0.25 }, // costs more, supports a higher price
-  { id: 'lesssugar', label: 'Less Sugar', addPerCup: -0.05 }, // healthier AND cheaper to make
+  { id: 'lemony', label: 'Extra Lemony', addPerCup: 0.25 },
+  { id: 'lesssugar', label: 'Less Sugar', addPerCup: -0.05 },
 ]
 
 export const SIGNS = [
-  { id: 'none', label: 'No sign', cost: 0, traffic: 1 },
-  { id: 'small', label: 'Small sign', cost: 1, traffic: 1.2 },
-  { id: 'big', label: 'Big bright sign', cost: 3, traffic: 1.45 },
+  { id: 'none', label: 'No sign', cost: 0, traffic: 1, guide: 'Costs $0, but does not bring extra customers.' },
+  { id: 'small', label: 'Small sign', cost: 1, traffic: 1.2, guide: 'Costs $1 and brings a few more customers.' },
+  { id: 'big', label: 'Big bright sign', cost: 3, traffic: 1.45, guide: 'Costs $3 and brings the most attention. Use it only when extra traffic can repay the cost.' },
 ]
 
-// Weekly town news (A2: the HONEST way customer response varies). Gated until
-// the first perfect week (G6) - fundamentals come first.
 export const EVENTS = [
   { id: 'normal', line: 'A regular sunny day in town this week.', traffic: 1, appeal: 0, signBoost: 1 },
   { id: 'hot', line: 'HEAT WAVE this week! Everyone is extra thirsty.', traffic: 1.15, appeal: 0.5, signBoost: 1 },
@@ -59,28 +41,26 @@ export const EVENTS = [
   { id: 'fair', line: 'The town fair is this week! Big crowds on every street.', traffic: 1.5, appeal: 0, signBoost: 1 },
   { id: 'thrifty', line: 'Allowance day is late this week. Kids are watching every penny.', traffic: 1, appeal: -0.35, signBoost: 1 },
 ]
+
 export function rollEvent(unlocked, lastId) {
-  if (!unlocked) return EVENTS[0] // pure fundamentals until the first perfect week
+  if (!unlocked) return EVENTS[0]
   const pool = EVENTS.filter((e) => e.id !== lastId && e.id !== 'normal')
   return pool[(Math.random() * pool.length) | 0]
 }
 
-// G6: after the first perfect week, ONE new thing per week, in this order.
 export const FEATURE_QUEUE = ['quality', 'sign', 'events']
 export const FEATURE_CARDS = {
-  quality: 'Something new this week! Upgrade time: EXTRA LEMONY costs more to make, but kids may pay more for it. Or go LESS SUGAR - healthier AND cheaper to make! Your call.',
-  sign: 'Something new this week! A marketing SIGN brings more kids to your stand. Signs cost money - is it worth it? Your call.',
-  events: 'Something new this week! TOWN NEWS is live: each week, something happens in town. Check the news before you decide anything!',
+  quality: 'NEW CHOICE: recipe. Extra Lemony costs more but may support a higher price. Less Sugar costs a little less. Read the recipe cost before changing your price.',
+  sign: 'NEW CHOICE: sign. A sign can bring more customers, but it also costs money. Compare the sign cost with how many extra cups you can actually sell.',
+  events: 'NEW CHOICE: town news. Read the news before changing anything. Weather and crowds affect how many customers may arrive.',
 }
 
 const r2 = (n) => Math.round(n * 100) / 100
-const TRAFFIC_K = 9 // tuned: coached play reaches $30 in ~3-4 weeks (G7)
+const TRAFFIC_K = 9
 
-// Quality appeal: Extra Lemony always helps; Less Sugar adds a small healthy
-// bonus on ORDINARY days (G3). No mechanical price "law" is ever taught (A2).
 function qualityAppeal(quality, event) {
   if (quality.id === 'lemony') return 1.25
-  if (quality.id === 'lesssugar') return event.id === 'normal' ? 1.08 : 1.0
+  if (quality.id === 'lesssugar') return event.id === 'normal' ? 1.08 : 1
   return 1
 }
 
@@ -93,11 +73,10 @@ export function simulateSales(levers, event) {
   const buyers = Math.round(traffic * f)
   const sold = Math.min(bundle.cups, buyers)
   const revenue = r2(sold * price)
-  // A1 ORDER: Revenue -> Supplies -> Your pay -> Profit -> Tax -> You keep
   const supplies = r2(bundle.cost + quality.addPerCup * bundle.cups + sign.cost)
   const wages = r2(wageRate * hours)
   const profit = r2(revenue - supplies - wages)
-  const tax = profit > 0 ? r2(profit * TAX_RATE) : 0 // tax on PROFIT only, never revenue
+  const tax = profit > 0 ? r2(profit * TAX_RATE) : 0
   const keep = r2(profit - tax)
   return {
     sold, revenue, supplies, wages, profit, tax, keep, hours,
@@ -108,8 +87,6 @@ export function simulateSales(levers, event) {
   }
 }
 
-// Best plan for this week's unlocked feature set - the source of the DIRECT
-// numbers in feedback (G5). Wage held at the fair default.
 export function solveIdeal(features, event) {
   const qs = features >= 1 ? QUALITY : [QUALITY[0]]
   const gs = features >= 2 ? SIGNS : [SIGNS[0]]
@@ -123,66 +100,74 @@ export function solveIdeal(features, event) {
   return best
 }
 
-const PERFECT_EPSILON = 2 // within $2 of the optimum = the setup is right
-
-// ---- G5: DIRECT feedback - one lever, the direction, a concrete number ----
-// The anti-repetition engine still rotates levers and phrasings, but every
-// line tells the player exactly what to change. A5: names behavior, not luck.
+const PERFECT_EPSILON = 2
 const priceRange = (ideal) => `$${Math.max(PRICE_MIN, ideal.price - 0.15).toFixed(2)}-$${(ideal.price + 0.1).toFixed(2)}`
 const bundleUp = (b) => BUNDLES[Math.min(BUNDLES.length - 1, BUNDLES.findIndex((x) => x.id === b.id) + 1)]
+
+// Used by the stand screen as a persistent instruction box.
+export function firstPriceGuide(bundle, hours = DEFAULT_HOURS, wageRate = DEFAULT_WAGE_RATE) {
+  if (!bundle) return 'STEP 1: Choose supplies. Then this box will calculate a starting price for you.'
+  const work = r2(hours * wageRate)
+  const total = r2(bundle.cost + work)
+  const perCup = r2(total / bundle.cups)
+  const suggested = r2(perCup * 1.1)
+  return `FIRST PRICE GUIDE: Supplies $${bundle.cost.toFixed(2)} + your work $${work.toFixed(2)} = $${total.toFixed(2)} total cost. Divide by ${bundle.cups} cups = $${perCup.toFixed(2)} per cup. Add a little profit. Start near $${suggested.toFixed(2)}.`
+}
+
+// Used by the stand screen after each round. It stays visible while the next
+// price, hours, recipe, sign, and supply choices are being adjusted.
+export function persistentPlanGuide(tip, round = 1) {
+  if (!tip) return round === 1
+    ? 'YOUR PLAN: Choose supplies, use the price guide, choose hours, and review every cost before starting the week.'
+    : 'YOUR PLAN: Read Penny’s last feedback before changing anything. Change the named choice first, then keep the other choices steady so you can see what worked.'
+  return `PENNY’S PLAN FOR THIS WEEK: ${tip} Change this first. Keep the other settings the same unless the town news gives you a reason to adjust them.`
+}
 
 export function nextTip(sim, levers, event, features, history = []) {
   const ideal = solveIdeal(features, event)
   if (sim.keep >= ideal.sim.keep - PERFECT_EPSILON) {
-    return { lever: 'perfect', perfect: true, text: 'PERFECT combination! Supplies match your sales, your price works, your hours pay off. Nothing to fix!' }
+    return { lever: 'perfect', perfect: true, text: 'Your setup worked. Keep this price, supply size, and hours steady next week. Only adjust if the town news changes.' }
   }
   const gaps = []
-  if (sim.missed >= 3) gaps.push({ lever: 'supplyMore', gap: sim.missed, text: () => `You sold out and ${sim.missed} kids were turned away. Buy ${bundleUp(levers.bundle).label} supplies next week.` })
-  if (sim.leftover >= 4) gaps.push({ lever: 'supplyLess', gap: sim.leftover * 0.9, text: () => `You bought ${levers.bundle.label} supplies but only sold ${sim.sold} cups. Go ${ideal.bundle.label} instead.` })
-  if (levers.price > ideal.price + 0.2) gaps.push({ lever: 'priceHigh', gap: (levers.price - ideal.price) * 12, text: () => `Your price is too high this week. Try around ${priceRange(ideal)} next week.` })
-  if (levers.price < ideal.price - 0.2) gaps.push({ lever: 'priceLow', gap: (ideal.price - levers.price) * 12, text: () => `Kids happily paid ${levers.price < 1 ? 'that little' : 'your price'} - you can charge more. Try around ${priceRange(ideal)}.` })
-  if (levers.hours < ideal.hours) gaps.push({ lever: 'hoursMore', gap: (ideal.hours - levers.hours) * 3, text: () => `You only opened ${levers.hours} hours. Open ${ideal.hours} so more kids can find you - more hours means more customers, but you pay yourself for the extra work time.` })
-  if (levers.hours > ideal.hours + 1) gaps.push({ lever: 'hoursLess', gap: (levers.hours - ideal.hours) * 2.5, text: () => `The last hours were quiet, and you pay yourself for every open hour. Try ${ideal.hours} hours instead of ${levers.hours}.` })
-  if (features >= 1 && levers.quality.id !== ideal.quality.id) gaps.push({ lever: 'quality', gap: 2, text: () => `This week, ${ideal.quality.label} was the smarter recipe. Try it next time.` })
-  if (features >= 2 && levers.sign.id !== ideal.sign.id) gaps.push({ lever: 'sign', gap: 2, text: () => `${ideal.sign.id === 'none' ? 'Skip the sign this week - it cost more than it brought in.' : `A ${ideal.sign.label} would bring in more kids than it costs.`}` })
+  if (sim.missed >= 3) gaps.push({ lever: 'supplyMore', gap: sim.missed, text: () => `You sold out and turned away ${sim.missed} customers. NEXT ACTION: buy ${bundleUp(levers.bundle).label} supplies. Keep your price and hours the same so you can test the larger supply amount.` })
+  if (sim.leftover >= 4) gaps.push({ lever: 'supplyLess', gap: sim.leftover * 0.9, text: () => `You had ${sim.leftover} cups left. NEXT ACTION: choose ${ideal.bundle.label} supplies. Keep your price and hours the same so less money is trapped in leftovers.` })
+  if (levers.price > ideal.price + 0.2) gaps.push({ lever: 'priceHigh', gap: (levers.price - ideal.price) * 12, text: () => `Your price was too high for this week. NEXT ACTION: set the price near ${priceRange(ideal)}. Keep the supply size and hours the same while you test the lower price.` })
+  if (levers.price < ideal.price - 0.2) gaps.push({ lever: 'priceLow', gap: (ideal.price - levers.price) * 12, text: () => `Your cups sold, but the price left profit behind. NEXT ACTION: raise the price near ${priceRange(ideal)}. Keep supplies and hours the same while you test it.` })
+  if (levers.hours < ideal.hours) gaps.push({ lever: 'hoursMore', gap: (ideal.hours - levers.hours) * 3, text: () => `You closed before enough customers arrived. NEXT ACTION: open for ${ideal.hours} hours. Keep your price and supplies the same while you test the longer day.` })
+  if (levers.hours > ideal.hours + 1) gaps.push({ lever: 'hoursLess', gap: (levers.hours - ideal.hours) * 2.5, text: () => `The extra hours did not repay the extra work cost. NEXT ACTION: open for ${ideal.hours} hours. Keep your price and supplies the same.` })
+  if (features >= 1 && levers.quality.id !== ideal.quality.id) gaps.push({ lever: 'quality', gap: 2, text: () => `The recipe cost did not match this week’s customers. NEXT ACTION: choose ${ideal.quality.label}. Recheck the price guide because changing the recipe changes your cost.` })
+  if (features >= 2 && levers.sign.id !== ideal.sign.id) gaps.push({ lever: 'sign', gap: 2, text: () => ideal.sign.id === 'none'
+    ? 'The sign cost more than the extra traffic returned. NEXT ACTION: choose No sign and keep your other settings steady.'
+    : `More customers were available than your current sign reached. NEXT ACTION: choose ${ideal.sign.label} and keep your price, supplies, and hours steady.` })
   gaps.sort((a, b) => b.gap - a.gap)
   if (gaps.length === 0) {
-    return { lever: 'perfect', perfect: true, text: 'PERFECT combination! Supplies match your sales, your price works, your hours pay off. Nothing to fix!' }
+    return { lever: 'perfect', perfect: true, text: 'Your setup worked. Keep this plan steady next week unless the town news changes.' }
   }
-  // never the same lever twice in a row
   const last = history[history.length - 1]
   let pick = gaps[0]
   if (last && pick.lever === last.lever && gaps[1]) pick = gaps[1]
   return { lever: pick.lever, perfect: false, text: pick.text() }
 }
 
-// ---- FINAL COPY (Round 5) ----
-// G1: the intro states the starting budget and the goal. $X filled at runtime.
 export const INTRO_LINE = (money) =>
-  `Welcome to your Lemonade Stand! You have $${money} to start. You'll buy supplies, set your price, and sell cups. Your goal: earn $${PROFIT_GOAL} profit. Penny will help you!`
+  `Welcome to your Lemonade Stand! You have $${money} to start. Your goal is to keep $${PROFIT_GOAL} in profit. Each week: choose supplies, calculate a starting price, choose hours, and read Penny’s feedback before changing the next plan.`
 
-// A1: the corrected tax teaching - on PROFIT, never on earnings.
-export const TAX_LINE = 'Tax is a small part of your PROFIT that goes to the town. Profit is what is left after you pay for your supplies and pay yourself for your work.'
+export const TAX_LINE = 'Tax is a small part of your PROFIT that goes to the town. Profit is what remains after supplies and your work are paid.'
 
-// A3: the advisor's price-setting formula, split across two sequential cards.
 export const PRICE_FORMULA_CARDS = [
-  'How do you set your price? Add your costs. Supplies: $6 (cups, lemons, sugar, water, table). Your work: $4 (you can change what your time is worth). Total cost: $6 + $4 = $10.',
-  'These supplies make 10 cups, so each cup costs $10 / 10 = $1. Now add a little profit - say 10%: $0.10. Price: $1 + $0.10 = $1.10 a cup. You decide your price - then see how your customers respond!',
+  'FIRST PRICE, STEP 1: Add every cost. Example: $6 of supplies plus $4 for your work equals $10 total cost.',
+  'FIRST PRICE, STEP 2: Divide $10 by 10 cups. Each cup costs $1 before profit. Add a little profit, such as $0.10, for a starting price of $1.10. This is a reasoned starting point, not a lottery. After the week, use Penny’s feedback to adjust one choice at a time.',
 ]
 
-// G3: the week the quality lever unlocks (L8 final copy) lives in FEATURE_CARDS.
-
-// G7: the cash-out bridge into the Money Garden.
 export const CASHOUT_LINE = (cum) =>
-  `You did it! Time to CASH OUT - collect your $${cum} from the stand. Now... where should all that money LIVE? Follow the arrow to BUDGET TOWN!`
+  `You reached the $${PROFIT_GOAL} goal and kept $${cum}! Your stand money is ready for Budget Town.`
 
-// Part F: the universal bankruptcy card (calm, no shame, one card).
-export const BANKRUPTCY_LINE = 'Uh oh - bankruptcy! Your money ran out. That happens to real businesses too. Let\'s go back and make a better decision this time!'
+export const BANKRUPTCY_LINE = 'Your stand ran out of money. The week will reset. Read Penny’s plan, change the named choice, and try again without changing everything at once.'
 
 export const POOL_LINES = {
-  work: 'You kept the stand open while Theo swam. Everything you choose costs the thing you did not choose.',
-  pool: 'What a swim! But the stand earned nothing today. Everything you choose costs the thing you did not choose.',
+  work: 'You kept the stand open while Theo swam. Choosing work meant giving up swim time, but the stand could earn money.',
+  pool: 'You chose the pool, so the stand stayed closed and earned $0. Choices have tradeoffs. Try the work choice to continue the business.',
 }
 
-export const SAVE_DIALOG_START = 'You saved money for things like this stand. Nice! Money you do not spend becomes your savings, just like we learned.'
-export const SAVE_DIALOG_END = 'All your leftover money went into your savings. Saving what you earn is how the next big thing gets funded!'
+export const SAVE_DIALOG_START = 'You saved money for a future goal, and now it can fund your lemonade stand.'
+export const SAVE_DIALOG_END = 'Money left after spending becomes savings. Savings can fund the next goal.'
