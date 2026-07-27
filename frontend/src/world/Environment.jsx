@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, ringPoint, worldScale } from './config.js'
+import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfPaths, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -97,7 +97,27 @@ const TREE_SPOTS = [
   { x: -10, z: 6, s: 1.15 }, { x: -7.8, z: 7, s: 0.9 }, { x: -11.6, z: 7.8, s: 0.8 },
   { x: 70, z: 2, s: 1.15 }, { x: 72.2, z: 3, s: 0.9 }, { x: 68.4, z: 3.8, s: 0.8 },
   { x: 2, z: 18, s: 1.15 }, { x: 4.2, z: 19, s: 0.9 }, { x: 0.4, z: 19.8, s: 0.8 },
-].map((t, i) => { const [x, z] = worldScale([t.x, t.z]); return { ...t, x, z, c: i } }) // R14 P3: match tighter map
+].map((t, i) => {
+  const [x, z] = worldScale([t.x, t.z])
+  return { ...t, x, z, c: i }
+}).filter((t) => isClearOfPaths([t.x, t.z], 1.5)) // keep trunks and canopies out of every walking lane
+
+const PALM_SPOTS = [
+  [21, -9, 1], [39, -10.5, 1.05], [21.5, -2, 0.95], [38.5, -0.5, 1],
+  [30, -19, 1.1], [-8, -25, 0.95], [30, 27.5, 1], [68, -27, 0.95], [-4, 8, 0.9],
+].map(([x, z, s], i) => {
+  const [sx, sz] = worldScale([x, z])
+  return { x: sx, z: sz, s, i }
+}).filter((p) => isClearOfPaths([p.x, p.z], 1.5))
+
+const FLOWER_SPOTS = [
+  [4, -14, 0], [12, -24, 1], [24, -26, 2], [36, -26, 3], [46, -24, 4],
+  [52, -14, 0], [50, -3, 1], [40, 8, 2], [28, 10, 3], [16, 8, 4],
+  [6, 2, 0], [2, -18, 3], [26, -10, 1], [34, -2.5, 5],
+].map(([x, z, c]) => {
+  const [sx, sz] = worldScale([x, z])
+  return [sx, sz, c]
+}).filter(([x, z]) => isClearOfPaths([x, z], 0.55))
 
 const GEO = {
   trunk: new THREE.CylinderGeometry(0.16, 0.26, 1.3, 7),
@@ -338,20 +358,18 @@ export function Environment3D() {
       <Home />
       {/* THE PARK: lake at the heart of the circle */}
       <Lake />
-      <Picnic x={24.6} z={2.6} />
-      <Bench x={36.4} z={-13.2} rot={2.2} />
-      <Bench x={23.2} z={-13.8} rot={0.9} />
-      <Bench x={1.6} z={-8.6} rot={-0.6} />
-      <Fence from={[10, 22]} to={[24, 26.5]} />
-      <Fence from={[52, -46]} to={[64, -40]} />
+      <Picnic x={23} z={2} />
+      <Bench x={38} z={-13} rot={2.2} />
+      <Bench x={22} z={-13} rot={0.9} />
+      <Bench x={30} z={5} rot={Math.PI} />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
       {/* palms around the lake shore and the ring's outer edge */}
-      {[[21, -9, 1], [39, -10.5, 1.05], [21.5, -2, 0.95], [38.5, -0.5, 1], [30, -19, 1.1], [-8, -25, 0.95], [30, 27.5, 1], [68, -27, 0.95], [-4, 8, 0.9]].map(([x, z, sc], i) => (
-        <Palm key={`p${i}`} x={x} z={z} scale={sc} lean={i % 2 ? 0.12 : -0.1} />
+      {PALM_SPOTS.map(({ x, z, s, i }) => (
+        <Palm key={`p${i}`} x={x} z={z} scale={s} lean={i % 2 ? 0.12 : -0.1} />
       ))}
       {/* little forests: two inside the park, three around the outside */}
       {/* forest clumps are folded into InstancedTrees above */}
@@ -360,9 +378,8 @@ export function Environment3D() {
 
       {/* R12 PERF: all flowers in 2 instanced draw calls */}
       {(() => {
-        const F = [[4, -14, 0], [12, -24, 1], [24, -26, 2], [36, -26, 3], [46, -24, 4], [52, -14, 0], [50, -3, 1], [40, 8, 2], [28, 10, 3], [16, 8, 4], [6, 2, 0], [2, -18, 3], [26, -10, 1], [34, -2.5, 5]]
-        const stems = F.map(([x, z]) => ({ x, z, y: 0.18, c: 0 }))
-        const petals = F.map(([x, z, c]) => ({ x, z, y: 0.4, c }))
+        const stems = FLOWER_SPOTS.map(([x, z]) => ({ x, z, y: 0.18, c: 0 }))
+        const petals = FLOWER_SPOTS.map(([x, z, c]) => ({ x, z, y: 0.4, c }))
         return (
           <group>
             <Scatter geometry={GEO.stem} colors={['#4f9a3f']} items={stems} flat={false} />
