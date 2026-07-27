@@ -10,14 +10,26 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
+    function isApprovedAdminEmail() {
       return signedIn()
+        && (request.auth.token.email == 'tayu.finance@gmail.com'
+          || request.auth.token.email == 'devr53247@gmail.com');
+    }
+
+    function isAdmin() {
+      return isApprovedAdminEmail() || (
+        signedIn()
         && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
-        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin';
+        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin'
+      );
     }
 
     function validPublicRole(role) {
       return role == 'student' || role == 'teacher' || role == 'other';
+    }
+
+    function validProfileRole(role) {
+      return validPublicRole(role) || (isApprovedAdminEmail() && role == 'admin');
     }
 
     function validAuthActivityType(type) {
@@ -27,7 +39,7 @@ service cloud.firestore {
     match /profiles/{userId} {
       allow create: if owns(userId)
         && request.resource.data.email == request.auth.token.email
-        && validPublicRole(request.resource.data.role);
+        && validProfileRole(request.resource.data.role);
       allow read: if owns(userId) || isAdmin();
       allow update: if isAdmin() || (
         owns(userId)
