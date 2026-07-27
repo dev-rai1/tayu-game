@@ -5,15 +5,20 @@
 // Master Adjustment C4/E1: the target is always the EXACT person or object of
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
-import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
+import { TUTORIAL_COIN_OFFSET, TUTORIAL_GREETER_OFFSET } from '../utils/kidUx.js'
+import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING, SPAWN } from './config.js'
 import { stage } from '../anim/stage.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
 const MARKET_SHELVES = [STORE[0], STORE[1] - 1]
 const MARKET_CHECKOUT = [STORE[0], STORE[1] + 4.2]
+const TUTORIAL_COIN = [SPAWN[0] + TUTORIAL_COIN_OFFSET[0], SPAWN[1] + TUTORIAL_COIN_OFFSET[1]]
+const TUTORIAL_GREETER = [SPAWN[0] + TUTORIAL_GREETER_OFFSET[0], SPAWN[1] + TUTORIAL_GREETER_OFFSET[1]]
 
 export function getObjectiveTarget(st) {
   if (st.adminHideArrows) return null // Part 0: presenter toggle
+  if (st.kidUxTutorialStep === 0) return TUTORIAL_COIN
+  if (st.kidUxTutorialStep === 1) return TUTORIAL_GREETER
   if (st.weekComplete || st.scenarioLocked) return null
   // When the next action is already on screen, remove the world arrow so it
   // never competes with the card or panel the player must use.
@@ -56,6 +61,7 @@ export function getObjectiveTarget(st) {
 // How close counts as "arrived" - both the neck arrow and the overhead marker
 // hide inside this radius (comment 14: stop on arrival).
 export function arriveRadius(st) {
+  if (st.kidUxTutorialStep === 0 || st.kidUxTutorialStep === 1) return 0.9
   if (st.week === 5) return 3.2
   if (st.week === 1 && st.objective === 'store') return 3
   return 2.5
