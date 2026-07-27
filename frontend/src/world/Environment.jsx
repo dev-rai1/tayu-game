@@ -15,7 +15,7 @@ const P = {
   hill: '#7fb88e', water: '#5aa6d8', waterDeep: '#3f8dc4', lane: '#f7ecd2',
 }
 
-const radForPathBanner = (x, z) => Math.atan2(x - RING.c[0], z - RING.c[1])
+const radForRoadsideNature = (x, z) => Math.atan2(x - RING.c[0], z - RING.c[1])
 
 function Clay({ color, rough = 0.95, flat = false, ...p }) {
   return <meshStandardMaterial color={color} roughness={rough} metalness={0} flatShading={flat} {...p} />
@@ -419,21 +419,50 @@ function RoyalPond({ x, z, scale = 1 }) {
   )
 }
 
-function RoyalBanner({ x, z, angle = 0 }) {
+// Friendly roadside nature replaces the tall purple banners. The compact
+// clusters stay outside the walking lane and keep the route feeling alive.
+function RoadsideAnimalGrove({ x, z, angle = 0, variant = 0 }) {
+  const rabbit = variant % 2 === 0
+  const coat = rabbit ? ['#d7c5ad', '#c8b39a', '#eee4d6'][variant % 3] : ['#b97845', '#c98a54', '#aa6840'][variant % 3]
+  const dark = rabbit ? '#8f7a68' : '#70462f'
   return (
     <group position={[x, 0, z]} rotation={[0, angle, 0]}>
-      {[-0.72, 0.72].map((px) => (
-        <mesh key={px} position={[px, 1.35, 0]} castShadow>
-          <cylinderGeometry args={[0.045, 0.06, 2.7, 8]} /><Clay color="#8a6428" />
+      {/* A layered bush backdrop makes each animal feel nestled into the town. */}
+      {[[-0.92, 0.48, -0.2, 0.72], [0.86, 0.42, -0.12, 0.66], [-0.1, 0.38, -0.55, 0.58]].map(([bx, by, bz, s], i) => (
+        <mesh key={i} position={[bx, by, bz]} scale={[s * 1.15, s, s]} castShadow>
+          <icosahedronGeometry args={[0.75, 1]} /><Clay color={[P.leaf1, P.leaf2, P.leaf3][(variant + i) % 3]} flat />
         </mesh>
       ))}
-      <mesh position={[0, 2.05, 0]}>
-        <planeGeometry args={[1.25, 0.85]} />
-        <meshStandardMaterial color="#7850F0" side={2} roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 2.05, 0.012]}>
-        <circleGeometry args={[0.16, 16]} /><meshStandardMaterial color="#FFD700" emissive="#7a5a00" emissiveIntensity={0.2} />
-      </mesh>
+      <group position={[0, 0, 0.35]} scale={rabbit ? 0.82 : 0.9}>
+        <mesh position={[0, 0.48, 0]} scale={[0.62, 0.48, 0.82]} castShadow>
+          <sphereGeometry args={[0.62, 12, 10]} /><Clay color={coat} flat />
+        </mesh>
+        <mesh position={[0, 0.82, 0.48]} scale={[0.5, 0.46, 0.48]} castShadow>
+          <sphereGeometry args={[0.5, 12, 10]} /><Clay color={coat} flat />
+        </mesh>
+        {/* Long rabbit ears alternate with wider woodland-deer ears. */}
+        {[-0.2, 0.2].map((ex) => (
+          <mesh key={ex} position={[ex, rabbit ? 1.28 : 1.16, 0.45]} rotation={[rabbit ? -0.08 : 0.12, 0, ex * (rabbit ? -0.7 : -2.2)]} scale={rabbit ? [0.15, 0.48, 0.13] : [0.24, 0.28, 0.14]} castShadow>
+            <coneGeometry args={[0.3, 0.9, 8]} /><Clay color={dark} flat />
+          </mesh>
+        ))}
+        {[-0.28, 0.28].map((lx) => (
+          <mesh key={lx} position={[lx, 0.2, 0.12]} castShadow>
+            <cylinderGeometry args={[0.09, 0.11, 0.42, 7]} /><Clay color={dark} flat />
+          </mesh>
+        ))}
+        <mesh position={[-0.15, 0.88, 0.87]}><sphereGeometry args={[0.045, 8, 8]} /><Clay color="#182036" /></mesh>
+        <mesh position={[0.15, 0.88, 0.87]}><sphereGeometry args={[0.045, 8, 8]} /><Clay color="#182036" /></mesh>
+        <mesh position={[0, 0.73, 0.94]}><sphereGeometry args={[0.055, 8, 8]} /><Clay color="#453329" /></mesh>
+        <mesh position={[0, 0.56, -0.7]} scale={rabbit ? 1 : 0.72} castShadow>
+          <sphereGeometry args={[0.22, 9, 8]} /><Clay color={rabbit ? '#fff7eb' : dark} flat />
+        </mesh>
+        {!rabbit && [0.2, -0.2, 0].map((sx, i) => (
+          <mesh key={i} position={[sx, 0.62 + i * 0.06, -0.25 + i * 0.08]} scale={[0.08, 0.08, 0.04]}>
+            <sphereGeometry args={[1, 7, 7]} /><Clay color="#f6dfbd" />
+          </mesh>
+        ))}
+      </group>
     </group>
   )
 }
@@ -629,14 +658,15 @@ export function Environment3D() {
     const d = Math.hypot(dx, dz)
     return [x + (dx / d) * 3.4, z + (dz / d) * 3.4]
   })
-  const banners = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden'].map((k, i) => {
+  const roadsideNature = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden'].map((k, i) => {
     const [x, z] = ringPoint(STOP_ANGLES[k] - 5)
     const dx = RING.c[0] - x, dz = RING.c[1] - z
     const d = Math.hypot(dx, dz)
     return {
       x: x + (dx / d) * 3.8,
       z: z + (dz / d) * 3.8,
-      angle: radForPathBanner(x, z),
+      angle: radForRoadsideNature(x, z),
+      variant: i,
       key: `${k}-${i}`,
     }
   })
@@ -677,7 +707,7 @@ export function Environment3D() {
       <CentralCommons />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
-      {banners.map((banner) => <RoyalBanner key={banner.key} {...banner} />)}
+      {roadsideNature.map((spot) => <RoadsideAnimalGrove key={spot.key} {...spot} />)}
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
