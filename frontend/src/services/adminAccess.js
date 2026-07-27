@@ -1,7 +1,11 @@
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import { prepareFirebaseAuth } from './firebase.js'
 
 const SESSION_KEY = 'tayu-session-v1'
+const DASHBOARD_PASSWORD_HASH = '6ee14ba73bd03864e1e997245afeacd832a23d24d6f3ac9f5e243fac8f3a3b8e'
+
+export const DASHBOARD_VIEWER_EMAIL = 'dashboard.viewer@tayufinance.app'
 
 export const ADMIN_EMAILS = Object.freeze([
   'tayu.finance@gmail.com',
@@ -14,6 +18,10 @@ function normalizeEmail(email) {
 
 export function isAdminEmail(email) {
   return ADMIN_EMAILS.includes(normalizeEmail(email))
+}
+
+export function isDashboardViewerEmail(email) {
+  return normalizeEmail(email) === DASHBOARD_VIEWER_EMAIL
 }
 
 function readSession() {
@@ -29,10 +37,72 @@ function saveSession(user) {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event('tayu-auth-changed'))
 }
 
+async function passwordHash(password) {
+  if (!globalThis.crypto?.subtle) throw new Error('Secure password checking is unavailable in this browser.')
+  const bytes = new TextEncoder().encode(String(password || ''))
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes)
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+export async function isDashboardPassword(password) {
+  return (await passwordHash(password)) === DASHBOARD_PASSWORD_HASH
+}
+
+async function saveDashboardViewer(firebase, firebaseUser) {
+  const now = new Date().toISOString()
+  await setDoc(doc(firebase.firestore, 'profiles', firebaseUser.uid), {
+    email: DASHBOARD_VIEWER_EMAIL,
+    role: 'admin',
+    accountType: 'dashboard_viewer',
+    lastActiveAt: now,
+  }, { merge: true })
+
+  const session = {
+    id: firebaseUser.uid,
+    email: DASHBOARD_VIEWER_EMAIL,
+    role: 'admin',
+    accountType: 'dashboard_viewer',
+    cloud: true,
+  }
+  saveSession(session)
+  return session
+}
+
+export async function openDashboardWithPassword(password) {
+  if (!(await isDashboardPassword(password))) throw new Error('Incorrect dashboard password.')
+
+  const firebase = await prepareFirebaseAuth()
+  if (!firebase) throw new Error('Dashboard access is temporarily unavailable. Please refresh and try again.')
+
+  let credential
+  try {
+    credential = await signInWithEmailAndPassword(firebase.auth, DASHBOARD_VIEWER_EMAIL, password)
+  } catch (error) {
+    if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error?.code)) throw error
+    try {
+      // The first successful use initializes the dedicated, read-only Firebase viewer.
+      // The actual password is never stored in the public source code.
+      credential = await createUserWithEmailAndPassword(firebase.auth, DASHBOARD_VIEWER_EMAIL, password)
+    } catch (createError) {
+      if (createError?.code === 'auth/email-already-in-use') throw new Error('Incorrect dashboard password.')
+      throw createError
+    }
+  }
+
+  return saveDashboardViewer(firebase, credential.user)
+}
+
 export async function ensureAdminAccess(user = null) {
   const session = readSession()
   const candidate = { ...(session || {}), ...(user || {}) }
   const email = normalizeEmail(candidate.email)
+
+  if (isDashboardViewerEmail(email)) {
+    const promoted = { ...candidate, email, role: 'admin', accountType: 'dashboard_viewer' }
+    saveSession(promoted)
+    return promoted
+  }
+
   if (!isAdminEmail(email)) return null
 
   const promoted = { ...candidate, email, role: 'admin' }
