@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Welcome from './pages/Welcome.jsx'
 import About from './pages/About.jsx'
+import { MediaCoverage } from './components/MediaCoverage.jsx'
 import { initAutoplay } from './services/audio.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
@@ -43,7 +44,7 @@ export default function App() {
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
             <Route path="/" element={<Welcome />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/about" element={<><About /><MediaCoverage about /></>} />
             <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
             <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
             <Route path="/party" element={<Navigate to="/guru" replace />} />
