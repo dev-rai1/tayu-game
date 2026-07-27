@@ -293,6 +293,9 @@ async function startFirebaseAuthSync() {
       if (currentUser()?.cloud) setSession(null)
       return
     }
+    // Anonymous auth belongs to the existing guest/solo-mode flow and should
+    // never be promoted into a permanent student account session.
+    if (user.isAnonymous) return
     try {
       const profile = await firebaseProfile(firebase.firestore, user.uid)
       setSession({ email: user.email || '', role: profile?.role || 'student', cloud: true, id: user.uid })
