@@ -44,4 +44,3 @@ describe('whole-game next-step guidance', () => {
     expect(result.title).toBe('WATCH WHAT HAPPENS')
   })
 })
-
