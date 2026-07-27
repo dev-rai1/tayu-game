@@ -8,20 +8,21 @@ export const MODULE_CATALOG = [
 
 export const EDUCATOR_GRADE_BANDS = [
   {
-    title: 'Elementary', grades: 'Grades K-5', color: '#1464F0',
-    copy: 'Build everyday money habits through concrete, playful choices.',
-    currentModules: MODULE_CATALOG, plannedModules: [],
+    title: 'Elementary School', grades: 'Grades K-5', color: '#1464F0',
+    copy: 'Modules 1-5 build everyday money habits through concrete, playful choices that grow with students.',
+    currentModules: MODULE_CATALOG,
+    plannedModules: [],
   },
   {
     title: 'Middle School', grades: 'Grades 6-8', color: '#7850F0',
-    copy: 'Bridge into more complex decisions about banking, risk, credit, and earning.',
+    copy: 'Modules 4-5 provide a grade-6 bridge into banking, investing, risk, credit, and more independent decisions.',
     currentModules: MODULE_CATALOG.filter((module) => [4, 5].includes(module.n)),
-    plannedModules: ['Credit & Debt', 'Taxes', 'Insurance', 'Careers & Paychecks'],
+    plannedModules: ['Credit scores and debt', 'Taxes and paychecks', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9-12', color: '#00a77a',
-    copy: 'Prepare for the financial decisions students will make after graduation.',
+    copy: 'The high-school pathway will prepare students for the financial decisions they will make during and after graduation.',
     currentModules: [],
-    plannedModules: ['College Costs', 'Tax Filing', 'Retirement & Investing', 'Fintech', 'Personal Life Roadmap'],
+    plannedModules: ['College costs and financial aid', 'Tax filing', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
 ]
