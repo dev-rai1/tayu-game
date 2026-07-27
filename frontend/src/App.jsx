@@ -5,6 +5,8 @@ import About from './pages/About.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
 import { initAutoplay } from './services/audio.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
+import AdminDashboardButton from './components/AdminDashboardButton.jsx'
+import AdminRoute from './components/AdminRoute.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { currentUser } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
@@ -34,8 +36,8 @@ export default function App() {
   useEffect(() => {
     if (!/^\/(world|party|guru)/.test(window.location.pathname)) initAutoplay()
   }, [])
-  // v9 must-fix 2 (supersedes v8): the Admin button is ALWAYS present,
-  // small and low-key, bottom-right on every screen - password gate intact.
+  // The game-control Admin button remains available, while signed-in TAYU
+  // administrators also receive a separate direct link to player analytics.
   return (
     <div className="min-h-screen bg-navy text-white font-body">
       <a href="#app-content" className="skip-link">Skip to the game</a>
@@ -51,13 +53,14 @@ export default function App() {
             <Route path="/guru" element={<Suspense fallback={<LoadingScreen label="Rolling out the red carpet..." />}><Guru /></Suspense>} />
             <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
             <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
-            <Route path="/dashboard" element={<Suspense fallback={<LoadingScreen />}><Dashboard /></Suspense>} />
+            <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><Dashboard /></Suspense></AdminRoute>} />
             <Route path="/assessment/:phase" element={<Suspense fallback={<LoadingScreen />}><KnowledgeQuiz /></Suspense>} />
             <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
         </Boundary>
       </div>
+      <AdminDashboardButton />
       <AdminPanel showButton />
     </div>
   )

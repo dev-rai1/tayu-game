@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { signUp, signIn, resetPassword } from '../services/auth.js'
+import { ensureAdminAccess } from '../services/adminAccess.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
 
@@ -30,11 +31,13 @@ export default function Auth() {
     try {
       if (mode === 'signup') {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
-        await signUp(f)
-        nav('/about?welcome=1')
+        const user = await signUp(f)
+        const admin = await ensureAdminAccess(user)
+        nav(admin ? '/dashboard' : '/about?welcome=1')
       } else if (mode === 'signin') {
         const user = await signIn(f.email, f.password)
-        if (user.role === 'admin') nav('/dashboard')
+        const admin = await ensureAdminAccess(user)
+        if (admin || user.role === 'admin') nav('/dashboard')
         else if (!loadProfile()?.assessment?.pre) nav('/assessment/pre')
         else nav(loadWallet() ? '/world' : '/modules')
       } else {
