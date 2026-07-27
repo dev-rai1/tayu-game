@@ -256,21 +256,35 @@ export function analyzeLemonadeResult(sim, levers, event, features, nextBudget =
   }
 }
 
-// Backward-compatible API used by the existing end-of-round card. When Town
-// News is unlocked, this previews the exact same next event that afterRound sets.
+// Backward-compatible API used by the existing end-of-round card. It anticipates
+// the one feature afterRound will unlock, then previews the exact same Town News.
 export function nextTip(sim, levers, event, features, history = []) {
   void history
-  const targetEvent = features >= 3 ? nextEventFor(event?.id) : (event || EVENTS[0])
-  const analysis = analyzeLemonadeResult(sim, levers, targetEvent, features)
-  if (targetEvent.id !== event?.id) {
-    const news = `NEXT WEEK'S TOWN NEWS: ${targetEvent.line}`
-    return {
-      ...analysis,
-      diagnosis: `${analysis.diagnosis} ${news}`,
-      text: `${analysis.diagnosis} ${news} NEXT MOVE: ${analysis.action} ${analysis.goal}`,
-    }
+  const currentEvent = event || EVENTS[0]
+  const currentAnalysis = analyzeLemonadeResult(sim, levers, currentEvent, features)
+  // features > 0 proves a perfect week happened earlier, so afterRound will keep
+  // unlocking one feature per round. At features 0, unlock only if this round is perfect.
+  const unlockNext = features < FEATURE_QUEUE.length && (features > 0 || currentAnalysis.perfect)
+  const nextFeatures = unlockNext ? features + 1 : features
+  const targetEvent = nextFeatures >= 3 ? nextEventFor(currentEvent.id) : currentEvent
+  const analysis = analyzeLemonadeResult(sim, levers, targetEvent, nextFeatures)
+
+  const notices = []
+  if (nextFeatures > features) notices.push(`NEXT ROUND UNLOCK: ${FEATURE_QUEUE[features].toUpperCase()}.`)
+  if (targetEvent.id !== currentEvent.id) notices.push(`NEXT WEEK'S TOWN NEWS: ${targetEvent.line}`)
+  const notice = notices.join(' ')
+
+  return {
+    ...analysis,
+    // Keep the original perfection signal used by the existing unlock gate.
+    perfect: currentAnalysis.perfect || features > 0,
+    currentPerfect: currentAnalysis.perfect,
+    nextFeatures,
+    diagnosis: notice ? `${analysis.diagnosis} ${notice}` : analysis.diagnosis,
+    text: notice
+      ? `${analysis.diagnosis} ${notice} NEXT MOVE: ${analysis.action} ${analysis.goal}`
+      : analysis.text,
   }
-  return analysis
 }
 
 export const INTRO_LINE = (moneyAvailable) =>
