@@ -45,8 +45,12 @@ export const SCENERY_ZONES = [
   { angle: -162, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
 ]
 export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
-// closed loop polyline (θ 180 -> -180, the story direction)
-export const RING_POINTS = Array.from({ length: 49 }, (_, i) => ringPoint(180 - i * 7.5))
+// One story road: spawn through Money Garden. It deliberately stops at the
+// final module so the only route beyond it is the gold Finale path.
+export const RING_POINTS = [
+  ...Array.from({ length: 23 }, (_, i) => ringPoint(180 - i * 7.5)),
+  ringPoint(STOP_ANGLES.garden),
+]
 
 export const SPAWN = sc([0, -6]) // west point of the ring
 export const MAILBOX = sc([-1, -22.4]) // the ALLOWANCE BANK kiosk (interaction id 'mailbox')
@@ -88,9 +92,8 @@ const partyForecourt = [
   PARTY_HOUSE[1] - partyRadial[1] * 5.0,
 ]
 
-// The gold route begins immediately after Money Garden, then bends around the
-// Finale as a compact semicircular crown. The matching lower arm keeps the
-// approach balanced without sending either path across the rest of the map.
+// A single gold path takes over exactly where the normal road ends. Its short
+// outward bow keeps it visually separate from the final module and the Finale.
 const royalArcPoint = (angle, outward = 0) => {
   const [x, z] = ringPoint(angle)
   const dx = x - CENTER[0], dz = z - CENTER[1]
@@ -99,27 +102,31 @@ const royalArcPoint = (angle, outward = 0) => {
 }
 
 export const ROYAL_APPROACH = {
-  leftGate: ringPoint(2),
-  rightGate: ringPoint(-50),
-  leftForecourt: [partyForecourt[0] - partyTangent[0] * 1.8, partyForecourt[1] - partyTangent[1] * 1.8],
-  rightForecourt: [partyForecourt[0] + partyTangent[0] * 1.8, partyForecourt[1] + partyTangent[1] * 1.8],
+  gate: ringPoint(STOP_ANGLES.garden),
+  forecourt: partyForecourt,
   entrance: partyEntrance,
 }
 
-// The ring road + a clean spur to every module entrance. The Finale Area is
-// different on purpose: both directions around the ring branch into matching
-// royal paths, then converge at a shared forecourt and central entrance.
+// Early paths retain their established destinations. From Lemonade onward,
+// every spur terminates at the actual host or interaction point.
 export const PATHS = {
   ring: RING_POINTS,
   spurAllowance: [ringPoint(152), sc([-0.2, -21.5])],
   spurJars: [ringPoint(131), sc([8.6, -30.6])],
   spurMarket: [ringPoint(110), sc([16.7, -38.4])],
-  spurLemonade: [ringPoint(88), sc([31.3, -40])],
-  spurBudget: [ringPoint(64), sc([48, -37.6])],
-  spurBank: [ringPoint(40), sc([59.1, -27.2])],
-  spurGarden: [ringPoint(14), sc([64.6, -15.2])],
-  royalPartyLeft: [ROYAL_APPROACH.leftGate, royalArcPoint(-4, 1.0), royalArcPoint(-10, 2.2), royalArcPoint(-16, 3.4), ROYAL_APPROACH.leftForecourt, ROYAL_APPROACH.entrance],
-  royalPartyRight: [ROYAL_APPROACH.rightGate, royalArcPoint(-44, 1.0), royalArcPoint(-38, 2.2), royalArcPoint(-32, 3.4), ROYAL_APPROACH.rightForecourt, ROYAL_APPROACH.entrance],
+  spurLemonade: [ringPoint(STOP_ANGLES.lemonade), LEMONADE],
+  spurBudget: [ringPoint(STOP_ANGLES.budget), [BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4]],
+  spurBank: [ringPoint(STOP_ANGLES.bank), [BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2]],
+  spurGarden: [ringPoint(STOP_ANGLES.garden), [SPROUT[0] - 6.2, SPROUT[1] + 4.6]],
+  royalParty: [
+    ringPoint(STOP_ANGLES.garden),
+    royalArcPoint(8, 1.0),
+    royalArcPoint(2, 2.2),
+    royalArcPoint(-6, 3.3),
+    royalArcPoint(-14, 3.8),
+    ROYAL_APPROACH.forecourt,
+    ROYAL_APPROACH.entrance,
+  ],
 }
 
 const pointToSegmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
@@ -170,13 +177,13 @@ export const NPC_RADIUS = 2.6
 // R14 P3: the central LAKE is MUCH smaller now (was r 8.6) so the middle no
 // longer reads as a big empty pond; park life is woven in closer around it.
 export const LAKE = { x: 30, z: -6, r: 5.2 }
-// Small non-module buildings turn the open middle into a lively town commons.
-// Their compact footprints preserve long sightlines and broad walking aisles.
+// Open support landmarks replace the house-like center decorations. Each one
+// communicates rest, help, water, or calm without looking like another module.
 export const CENTER_BUILDINGS = [
-  { id: 'art-studio', x: 19, z: 14, r: 2.2, wall: '#f3c7a8', roof: '#b85f66' },
-  { id: 'book-nook', x: 41, z: 14, r: 2.2, wall: '#bcd9ee', roof: '#557db5' },
-  { id: 'garden-shed', x: 17, z: -21, r: 2.1, wall: '#d7e8bd', roof: '#5d8f5a' },
-  { id: 'music-hall', x: 43, z: -21, r: 2.1, wall: '#e4cdf4', roof: '#8b64ad' },
+  { id: 'rest-pavilion', type: 'rest', x: 19, z: 14, r: 1.7, wall: '#d9f0dc', roof: '#5d8f5a' },
+  { id: 'help-kiosk', type: 'help', x: 41, z: 14, r: 1.7, wall: '#d9e8f5', roof: '#557db5' },
+  { id: 'water-station', type: 'water', x: 17, z: -21, r: 1.6, wall: '#d5eff5', roof: '#4f9ead' },
+  { id: 'quiet-garden', type: 'calm', x: 43, z: -21, r: 1.6, wall: '#eadcf4', roof: '#8b64ad' },
 ]
 
 export const BLOCKERS = [
