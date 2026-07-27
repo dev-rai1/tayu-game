@@ -16,7 +16,6 @@ import { BankDistrict } from './BankDistrict.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
 import { CoinLayer } from './CoinLayer.jsx'
-import { ClickMarker } from './ClickMarker.jsx'
 import { Boundary } from '../components/Boundary.jsx'
 
 // Root 3D scene - "soft clay diorama": warm key light, gentle fill, fog for
@@ -63,7 +62,6 @@ export function GameWorld({ avatar }) {
         <GuidanceArrow />
         <CompassBeam />
         <CoinLayer />
-        <ClickMarker />
         <Player avatar={avatar} />
       </Suspense>
     </Canvas></Boundary>
