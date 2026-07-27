@@ -579,6 +579,27 @@ function RingRoad() {
   )
 }
 
+const CLOUDS = [
+  [-18, 18, -35, 1.15], [4, 22, 16, 0.85], [22, 19, -48, 1.0],
+  [43, 24, 18, 1.2], [67, 20, -38, 0.9], [82, 23, 4, 1.1],
+  [12, 27, -8, 0.7], [58, 28, -12, 0.78], [32, 31, 34, 0.9],
+]
+
+function SkyClouds() {
+  return (
+    <group>
+      {CLOUDS.map(([x, y, z, scale], i) => (
+        <group key={i} position={[x, y, z]} scale={scale} rotation={[0, (i % 3 - 1) * 0.2, 0]}>
+          <mesh position={[-1.6, 0, 0]}><sphereGeometry args={[1.45, 12, 10]} /><meshStandardMaterial color="#ffffff" roughness={1} /></mesh>
+          <mesh position={[0, 0.45, 0]}><sphereGeometry args={[2.05, 14, 11]} /><meshStandardMaterial color="#fffef7" roughness={1} /></mesh>
+          <mesh position={[1.8, 0.05, 0]}><sphereGeometry args={[1.5, 12, 10]} /><meshStandardMaterial color="#f7fbff" roughness={1} /></mesh>
+          <mesh position={[0.25, -0.45, 0]} scale={[1.8, 0.6, 0.9]}><sphereGeometry args={[1.35, 12, 10]} /><meshStandardMaterial color="#f3f7fb" roughness={1} /></mesh>
+        </group>
+      ))}
+    </group>
+  )
+}
+
 export function Environment3D() {
   // lamps light every stop along the ring (just inside the road edge)
   const lampStops = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden', 'party']
@@ -602,6 +623,7 @@ export function Environment3D() {
       <Hills />
       {/* sun */}
       <mesh position={[50, 24, -50]}><sphereGeometry args={[3, 24, 24]} /><meshStandardMaterial color="#fff4cf" emissive="#ffe9a3" emissiveIntensity={0.9} /></mesh>
+      <SkyClouds />
 
       {/* PART 1: the two-way ring road + entrance spurs */}
       <RingRoad />
