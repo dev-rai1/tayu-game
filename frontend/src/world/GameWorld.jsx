@@ -16,6 +16,9 @@ import { BankDistrict } from './BankDistrict.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
 import { CoinLayer } from './CoinLayer.jsx'
+import { EdgeObjectivePointer } from './EdgeObjectivePointer.jsx'
+import { TutorialWorldGuide } from './TutorialWorldGuide.jsx'
+import { AvatarBadgeAura } from './AvatarBadgeAura.jsx'
 import { Boundary } from '../components/Boundary.jsx'
 
 // Root 3D scene - "soft clay diorama": warm key light, gentle fill, fog for
@@ -61,8 +64,11 @@ export function GameWorld({ avatar }) {
         <BankDistrict />
         <GuidanceArrow />
         <CompassBeam />
+        <EdgeObjectivePointer />
+        <TutorialWorldGuide />
         <CoinLayer />
         <Player avatar={avatar} />
+        <AvatarBadgeAura />
       </Suspense>
     </Canvas></Boundary>
   )
