@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useGame } from './store.js'
 import { STORE_ITEMS } from './config.js'
 import { estimateDemandSignal, recommendedStarterPrice } from '../scenarios/lemonade.js'
@@ -112,8 +111,6 @@ function LemonadeSupplyDemandCoach() {
   const setPrice = useGame((s) => s.setLemPrice)
 
   const activePhase = ['toMarket', 'supplies', 'toStand2', 'template'].includes(phase)
-  if (week !== 2 || objective !== 'lemonade' || !activePhase || dialog || lessons.length > 0 || cards.length > 0 || weekComplete) return null
-
   const signal = estimateDemandSignal(hours, event, sign)
   const suggested = bundle
     ? recommendedStarterPrice({ bundle, hours, quality, sign, wageRate, event })
@@ -126,15 +123,15 @@ function LemonadeSupplyDemandCoach() {
       : supply > signal.potential + 3
         ? `Your ${supply}-cup supply may be higher than demand. Leftovers are possible.`
         : `Your ${supply}-cup supply is close to the demand signal. Test the price next.`
+  const priceMove = {
+    lower: /price was too high|lower/i.test(tip || ''),
+    raise: /charged too little|price was too low|raise/i.test(tip || ''),
+  }
 
-  const priceMove = useMemo(() => {
-    const lower = /price was too high|lower/i.test(tip || '')
-    const raise = /charged too little|price was too low|raise/i.test(tip || '')
-    return { lower, raise }
-  }, [tip])
+  if (week !== 2 || objective !== 'lemonade' || !activePhase || dialog || lessons.length > 0 || cards.length > 0 || weekComplete) return null
 
   return (
-    <aside className="pointer-events-auto fixed right-3 top-24 z-[475] w-[min(94vw,25rem)] rounded-3xl border-2 border-sun bg-white p-4 text-navy shadow-2xl">
+    <aside className="pointer-events-auto fixed right-3 top-24 z-[475] max-h-[calc(100vh-7rem)] w-[min(94vw,25rem)] overflow-y-auto rounded-3xl border-2 border-sun bg-white p-4 text-navy shadow-2xl">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Lemonade Lab · Round {round}</div>
