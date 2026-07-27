@@ -26,9 +26,25 @@ export const ringPoint = (deg) => [RING.c[0] + RING.r * Math.cos(rad(deg)), RING
 // R14: the finale is pulled MUCH closer (was -108) so the last leg is short.
 export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 40, garden: 14, party: -46 }
 
-// Landscaped transition zones centered in the empty arcs BETWEEN module stops.
-// These deliberately live around the outside route, not in the central park.
-export const DISTRICT_GAP_ANGLES = [166, 141.5, 120.5, 99, 76, 52, 27, 2, -18]
+// Distinct scenery neighborhoods continue around the ENTIRE ring. The first
+// nine fill the module side; the final four prevent the quiet back half from
+// feeling unfinished. Theme and density keep adjacent areas from looking copied.
+export const SCENERY_ZONES = [
+  { angle: 166, theme: 'orchard', density: 3, accent: '#e05252' },
+  { angle: 141.5, theme: 'butterfly-meadow', density: 2, accent: '#ff8fb3' },
+  { angle: 120.5, theme: 'rock-garden', density: 1, accent: '#9aa0a6' },
+  { angle: 99, theme: 'sunflower-field', density: 3, accent: '#FFD700' },
+  { angle: 76, theme: 'birdhouse-grove', density: 2, accent: '#5aa6ff' },
+  { angle: 52, theme: 'mushroom-woods', density: 3, accent: '#e8626f' },
+  { angle: 27, theme: 'lantern-garden', density: 1, accent: '#fff0a8' },
+  { angle: 2, theme: 'reeds-and-pond', density: 2, accent: '#5aa6d8' },
+  { angle: -18, theme: 'picnic-grove', density: 2, accent: '#e8626f' },
+  { angle: -78, theme: 'pine-trail', density: 3, accent: '#4e9440' },
+  { angle: -106, theme: 'sculpture-garden', density: 1, accent: '#c9a46a' },
+  { angle: -134, theme: 'autumn-grove', density: 3, accent: '#e8893a' },
+  { angle: -160, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
+]
+export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
 // closed loop polyline (θ 180 -> -180, the story direction)
 export const RING_POINTS = Array.from({ length: 49 }, (_, i) => ringPoint(180 - i * 7.5))
 
