@@ -391,9 +391,9 @@ function SkyCloud({ x, y, z, scale = 1 }) {
         [-1.05, 0, 0, 0.85], [-0.35, 0.2, 0, 1.05], [0.45, 0.1, 0, 0.95],
         [1.15, -0.05, 0, 0.7], [0, -0.18, 0, 1.1],
       ].map(([cx, cy, cz, s], i) => (
-        <mesh key={i} position={[cx, cy, cz]} scale={s}>
+        <mesh key={i} position={[cx, cy, cz]} scale={s} renderOrder={-1}>
           <sphereGeometry args={[1, 12, 10]} />
-          <meshStandardMaterial color="#ffffff" roughness={1} transparent opacity={0.9} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.96} fog={false} toneMapped={false} depthWrite={false} />
         </mesh>
       ))}
     </group>
@@ -653,13 +653,19 @@ export function Environment3D() {
       <Hills />
       {/* sun */}
       <mesh position={[50, 24, -50]}><sphereGeometry args={[3, 24, 24]} /><meshStandardMaterial color="#fff4cf" emissive="#ffe9a3" emissiveIntensity={0.9} /></mesh>
-      <SkyCloud x={-12} y={18} z={-34} scale={2.2} />
-      <SkyCloud x={14} y={21} z={-54} scale={1.65} />
-      <SkyCloud x={40} y={19} z={-48} scale={2.0} />
-      <SkyCloud x={70} y={22} z={-29} scale={1.8} />
-      <SkyCloud x={76} y={17} z={7} scale={2.15} />
-      <SkyCloud x={35} y={23} z={29} scale={1.6} />
-      <SkyCloud x={-5} y={20} z={22} scale={1.9} />
+      {/* Low horizon layer: the normal follow camera is 7 units high and
+          looks down, so clouds above ~15 units never enter its view. These
+          larger groups stay visibly overhead throughout the full route. */}
+      <SkyCloud x={-8} y={8.5} z={-29} scale={2.8} />
+      <SkyCloud x={10} y={10.5} z={-43} scale={2.35} />
+      <SkyCloud x={31} y={9.5} z={-46} scale={3.0} />
+      <SkyCloud x={53} y={11} z={-39} scale={2.45} />
+      <SkyCloud x={70} y={8.5} z={-23} scale={3.1} />
+      <SkyCloud x={72} y={10} z={1} scale={2.55} />
+      <SkyCloud x={57} y={8.5} z={20} scale={2.9} />
+      <SkyCloud x={34} y={11} z={28} scale={2.4} />
+      <SkyCloud x={11} y={9} z={22} scale={2.75} />
+      <SkyCloud x={-8} y={10.5} z={5} scale={2.5} />
 
       {/* One clean gold main path; modules face it with no side-path clutter. */}
       <RingRoad />
