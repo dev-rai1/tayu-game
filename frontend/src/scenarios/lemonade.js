@@ -1,7 +1,6 @@
-// Week 2 - THE LEMONADE STAND v6 (supply, demand, and guided price tests).
-// The player is taught how to calculate a first price, then receives one clear
-// adjustment for every later round. Decisions are based on costs, customers,
-// hours, quality, signs, and town events rather than guessing.
+// Week 2 - THE LEMONADE STAND v7 (pinned, specific profit coaching).
+// Every round produces a structured diagnosis and an exact profitable next plan.
+// Price is always explained first, then supply, hours, recipe, and promotion.
 
 export const TAX_RATE = 0.1 // the Town Tax - 10% OF PROFIT
 export const PROFIT_GOAL = 40 // cumulative kept profit after tax
@@ -52,13 +51,14 @@ export function rollEvent(unlocked, lastId) {
 
 export const FEATURE_QUEUE = ['quality', 'sign', 'events']
 export const FEATURE_CARDS = {
-  quality: 'NEW TEST: recipe quality. Extra Lemony costs more per cup but may support a stronger price. Less Sugar is cheaper and healthier. Change only the recipe first, then compare demand.',
-  sign: 'NEW TEST: a sign. A sign costs money but may increase demand by bringing more customers. Compare the sign cost with the extra sales it creates.',
-  events: 'NEW TEST: Town News. Weather and crowds change demand. Read the forecast before choosing supply, hours, and price.',
+  quality: 'NEW TEST: recipe quality. Extra Lemony costs more per cup but may support a stronger price. Less Sugar is cheaper and healthier. Penny will keep the exact recipe suggestion pinned while you decide.',
+  sign: 'NEW TEST: a promotion sign. A sign costs money but may increase demand. Penny will compare the extra sign cost with the extra sales and tell you whether to use it.',
+  events: 'NEW TEST: Town News. Weather and crowds change demand. Read the forecast, then follow the pinned price, supply, hours, recipe, and promotion plan.',
 }
 
 const r2 = (n) => Math.round(n * 100) / 100
 const TRAFFIC_K = 9
+const money = (n) => `$${r2(n).toFixed(2)}`
 
 function qualityAppeal(quality, event) {
   if (quality.id === 'lemony') return 1.25
@@ -115,99 +115,162 @@ export function simulateSales(levers, event) {
   }
 }
 
-export function solveIdeal(features, event) {
-  const qs = features >= 1 ? QUALITY : [QUALITY[0]]
-  const gs = features >= 2 ? SIGNS : [SIGNS[0]]
+function choicePool(features) {
+  return {
+    qualities: features >= 1 ? QUALITY : [QUALITY[0]],
+    signs: features >= 2 ? SIGNS : [SIGNS[0]],
+  }
+}
+
+// Find the highest-profit plan the player can actually afford. Optional locks let
+// the coach respect a batch that has already been purchased.
+export function findProfitablePlan(features, event = EVENTS[0], budget = Infinity, locks = {}) {
+  const { qualities, signs } = choicePool(features)
   let best = null
-  for (const b of BUNDLES) for (const h of HOURS_OPTIONS) for (const q of qs) for (const g of gs) {
-    for (let p = PRICE_MIN; p <= PRICE_MAX + 0.001; p += PRICE_STEP) {
-      const sim = simulateSales({ price: r2(p), hours: h, bundle: b, quality: q, sign: g, wageRate: DEFAULT_WAGE_RATE }, event)
-      if (!best || sim.keep > best.sim.keep) best = { sim, price: r2(p), hours: h, bundle: b, quality: q, sign: g }
+  for (const bundle of BUNDLES) {
+    if (locks.bundleId && bundle.id !== locks.bundleId) continue
+    for (const hours of HOURS_OPTIONS) {
+      if (locks.hours && hours !== locks.hours) continue
+      for (const quality of qualities) {
+        if (locks.qualityId && quality.id !== locks.qualityId) continue
+        for (const sign of signs) {
+          if (locks.signId && sign.id !== locks.signId) continue
+          const upfront = r2(bundle.cost + quality.addPerCup * bundle.cups + sign.cost)
+          if (upfront > budget + 0.001) continue
+          for (let raw = PRICE_MIN; raw <= PRICE_MAX + 0.001; raw += PRICE_STEP) {
+            const price = r2(raw)
+            const sim = simulateSales({ price, hours, bundle, quality, sign, wageRate: DEFAULT_WAGE_RATE }, event)
+            if (!best || sim.keep > best.sim.keep) {
+              best = { price, hours, bundle, quality, sign, wageRate: DEFAULT_WAGE_RATE, upfront, sim }
+            }
+          }
+        }
+      }
     }
   }
-  return best
+  // A normal game balance always has an affordable plan, but retain a safe
+  // deterministic fallback for admin/demo states with unusual money values.
+  return best || {
+    price: PRICE_MIN,
+    hours: DEFAULT_HOURS,
+    bundle: BUNDLES[0],
+    quality: QUALITY[0],
+    sign: SIGNS[0],
+    wageRate: DEFAULT_WAGE_RATE,
+    upfront: BUNDLES[0].cost,
+    sim: simulateSales({
+      price: PRICE_MIN,
+      hours: DEFAULT_HOURS,
+      bundle: BUNDLES[0],
+      quality: QUALITY[0],
+      sign: SIGNS[0],
+      wageRate: DEFAULT_WAGE_RATE,
+    }, event),
+  }
 }
 
-const PERFECT_EPSILON = 2
-const priceRange = (ideal) => `$${Math.max(PRICE_MIN, ideal.price - 0.15).toFixed(2)}-$${(ideal.price + 0.1).toFixed(2)}`
-const bundleUp = (b) => BUNDLES[Math.min(BUNDLES.length - 1, BUNDLES.findIndex((x) => x.id === b.id) + 1)]
+export function solveIdeal(features, event) {
+  return findProfitablePlan(features, event, Infinity)
+}
 
+function exactPlanLine(plan) {
+  return `Set the price to ${money(plan.price)}. Use ${plan.bundle.label}, open for ${plan.hours} hours, choose ${plan.quality.label}, and use ${plan.sign.label}.`
+}
+
+// Analyze the player's actual combination and return a pinned, structured repair.
+// The exact recommendation is simulated, so following it produces the projected
+// positive result shown in the coach box.
+export function analyzeLemonadeResult(sim, levers, event, features, nextBudget = Infinity) {
+  const plan = findProfitablePlan(features, event, nextBudget)
+  const actualCost = r2(sim.supplies + sim.wages)
+  const priceGap = r2(levers.price - plan.price)
+  let lever = 'plan'
+  let diagnosis
+
+  if (sim.keep < 0) {
+    diagnosis = `You lost ${money(Math.abs(sim.keep))}. You earned ${money(sim.revenue)}, but supplies and your pay cost ${money(actualCost)}.`
+  } else if (sim.keep === 0) {
+    diagnosis = `You broke even: revenue and costs matched, so you kept ${money(0)}.`
+  } else {
+    diagnosis = `You kept ${money(sim.keep)} profit after selling ${sim.sold} of ${levers.bundle.cups} cups.`
+  }
+
+  let priceAction
+  if (priceGap > 0.05) {
+    lever = 'priceHigh'
+    priceAction = `Lower the price from ${money(levers.price)} to ${money(plan.price)}. The old price reduced demand.`
+  } else if (priceGap < -0.05) {
+    lever = 'priceLow'
+    priceAction = `Raise the price from ${money(levers.price)} to ${money(plan.price)}. The old price did not leave enough money after costs.`
+  } else {
+    priceAction = `Keep the price near ${money(plan.price)}. The price is already close, so fix the rest of the combination.`
+  }
+
+  const supplyNote = sim.missed >= 2
+    ? `Demand was higher than your supply, and ${sim.missed} customers could not buy.`
+    : sim.leftover >= 2
+      ? `Supply was higher than demand, leaving ${sim.leftover} cups unsold.`
+      : 'Supply was close to the number of customers who wanted to buy.'
+
+  const extras = []
+  if (levers.bundle.id !== plan.bundle.id) extras.push(`batch: ${plan.bundle.label}`)
+  if (levers.hours !== plan.hours) extras.push(`hours: ${plan.hours}`)
+  if (levers.quality.id !== plan.quality.id) extras.push(`recipe: ${plan.quality.label}`)
+  if (levers.sign.id !== plan.sign.id) extras.push(`promotion: ${plan.sign.label}`)
+  const secondary = extras.length
+    ? `Then change ${extras.join(', ')}.`
+    : 'Keep the other choices the same for this test.'
+
+  const action = `${priceAction} ${secondary}`
+  const goal = `Projected result: sell ${plan.sim.sold} cups and keep ${money(plan.sim.keep)} profit after tax.`
+  const perfect = sim.keep >= plan.sim.keep - 1.5
+    && Math.abs(priceGap) <= 0.05
+    && levers.bundle.id === plan.bundle.id
+    && levers.hours === plan.hours
+    && levers.quality.id === plan.quality.id
+    && levers.sign.id === plan.sign.id
+
+  return {
+    lever: perfect ? 'perfect' : lever,
+    perfect,
+    title: perfect ? 'Repeat this profitable plan' : 'Fix this combination next round',
+    diagnosis: `${diagnosis} ${supplyNote}`,
+    action,
+    goal,
+    plan,
+    expectedKeep: plan.sim.keep,
+    text: `${diagnosis} ${supplyNote} NEXT MOVE: ${action} ${goal}`,
+    exactPlan: exactPlanLine(plan),
+  }
+}
+
+// Backward-compatible API used by the existing end-of-round card.
 export function nextTip(sim, levers, event, features, history = []) {
-  const ideal = solveIdeal(features, event)
-  if (sim.keep >= ideal.sim.keep - PERFECT_EPSILON) {
-    return {
-      lever: 'perfect', perfect: true,
-      text: `Supply and demand matched well. Keep this as your starting point next week: ${levers.bundle.label}, about ${priceRange(ideal)}, ${ideal.hours} hours${features >= 2 ? `, and ${ideal.sign.label}` : ''}. Read the Town News before changing one thing.`,
-    }
-  }
-
-  const gaps = []
-  if (sim.missed >= 3) gaps.push({
-    lever: 'supplyMore', gap: sim.missed,
-    text: () => `Demand was higher than supply: you sold out and turned away ${sim.missed} customers. NEXT MOVE: choose ${bundleUp(levers.bundle).label}. Keep price and hours the same first so you can see what the supply change does.`,
-  })
-  if (sim.leftover >= 4) gaps.push({
-    lever: 'supplyLess', gap: sim.leftover * 0.9,
-    text: () => `Supply was higher than demand: ${sim.leftover} cups were left. NEXT MOVE: choose ${ideal.bundle.label}. Keep price and hours the same first so you can test the smaller supply.`,
-  })
-  if (levers.price > ideal.price + 0.2) gaps.push({
-    lever: 'priceHigh', gap: (levers.price - ideal.price) * 12,
-    text: () => `Your price was too high, so demand dropped and customers walked away. NEXT MOVE: lower the price near ${priceRange(ideal)}. Keep supply and hours the same to test only the price.`,
-  })
-  if (levers.price < ideal.price - 0.2) gaps.push({
-    lever: 'priceLow', gap: (ideal.price - levers.price) * 12,
-    text: () => `Demand was strong, but you charged too little to reach the goal efficiently. NEXT MOVE: raise the price near ${priceRange(ideal)} while keeping supply and hours the same.`,
-  })
-  if (levers.hours < ideal.hours) gaps.push({
-    lever: 'hoursMore', gap: (ideal.hours - levers.hours) * 3,
-    text: () => `You opened for ${levers.hours} hours, so not enough customers reached the stand. NEXT MOVE: open for ${ideal.hours} hours. Extra hours also increase your pay cost.`,
-  })
-  if (levers.hours > ideal.hours + 1) gaps.push({
-    lever: 'hoursLess', gap: (levers.hours - ideal.hours) * 2.5,
-    text: () => `The last hours had very little demand, but you still paid yourself. NEXT MOVE: open for ${ideal.hours} hours instead of ${levers.hours}.`,
-  })
-  if (features >= 1 && levers.quality.id !== ideal.quality.id) gaps.push({
-    lever: 'quality', gap: 2,
-    text: () => `The recipe changed your cost and customer demand. NEXT MOVE: choose ${ideal.quality.label}, then recalculate the price using the new total cost.`,
-  })
-  if (features >= 2 && levers.sign.id !== ideal.sign.id) gaps.push({
-    lever: 'sign', gap: 2,
-    text: () => ideal.sign.id === 'none'
-      ? 'The sign cost more than the extra demand it created. NEXT MOVE: choose No sign this week.'
-      : `More demand was available than your stand attracted. NEXT MOVE: choose ${ideal.sign.label}; it should bring in more customers than it costs this week.`,
-  })
-
-  gaps.sort((a, b) => b.gap - a.gap)
-  if (gaps.length === 0) {
-    return { lever: 'perfect', perfect: true, text: 'Your supply, demand, and price setup is strong. Keep it as the starting plan and read the Town News before changing one thing.' }
-  }
-  const last = history[history.length - 1]
-  let pick = gaps[0]
-  if (last && pick.lever === last.lever && gaps[1]) pick = gaps[1]
-  return { lever: pick.lever, perfect: false, text: pick.text() }
+  void history
+  return analyzeLemonadeResult(sim, levers, event, features, Infinity)
 }
 
-export const INTRO_LINE = (money) =>
-  `Welcome to your Lemonade Stand! You have $${money} to start. Your goal is to keep $${PROFIT_GOAL} in profit. Each week, compare supply with demand, calculate a starting price, test one plan, and use Penny's saved feedback for the next round.`
+export const INTRO_LINE = (moneyAvailable) =>
+  `Welcome to your Lemonade Stand! You have $${moneyAvailable} to start. Your goal is to keep $${PROFIT_GOAL} in profit. The first round is fully guided. After every round, a pinned coach box will show what happened, the exact price change, the other settings to use, and the projected profit. It stays on screen while you make the next plan.`
 
 export const TAX_LINE = 'Tax is a small part of your PROFIT that goes to the town. Profit is what remains after supplies and your pay. The order is Revenue, Supplies, Your Pay, Profit, Tax, and You Keep.'
 
 export const PRICE_FORMULA_CARDS = [
   'STEP 1 — FIND TOTAL COST. Add supplies and your work. Example: $6 supplies + $4 for four hours of work = $10 total cost.',
   'STEP 2 — FIND COST PER CUP. If the batch makes 10 cups, divide $10 by 10. Each cup costs $1 before profit.',
-  'STEP 3 — CHECK DEMAND. High demand may support a slightly higher price. Low demand may require a lower price or smaller supply.',
-  'STEP 4 — TEST ONE CHANGE. Start just above cost per cup. After the sales result, follow Penny’s exact suggestion and change only supply, price, hours, recipe, or sign—not everything at once.',
+  'STEP 3 — SET PRICE FIRST. Use the pinned recommendation. If the old price was too high, lower it so more customers buy. If it was too low, raise it so sales cover costs and leave profit.',
+  'STEP 4 — MATCH THE COMBINATION. Follow the exact pinned batch, hours, recipe, and promotion. The box remains visible until the next sales result replaces it.',
 ]
 
 export const CASHOUT_LINE = (cum) =>
   `You reached the $${PROFIT_GOAL} goal and kept $${cum}! Your stand money now transfers automatically into the next budgeting lesson. Continue to BUDGET TOWN.`
 
-export const BANKRUPTCY_LINE = 'Your stand cannot afford the next required choice. This week is resetting. Read Penny’s saved suggestion, lower the risky cost, and test one specific change instead of guessing.'
+export const BANKRUPTCY_LINE = 'Your stand cannot afford the next required choice. This week is resetting. The pinned coach will remain visible. Follow its exact price, batch, hours, recipe, and promotion instead of guessing.'
 
 export const POOL_LINES = {
   work: 'You kept the stand open while Theo swam. Choosing work gave up pool time, but it allowed the stand to earn money.',
-  pool: 'You chose the pool, so the stand stayed closed and earned $0. Choices have tradeoffs. Return to the stand and start the selling day when your plan is ready.',
+  pool: 'You chose the pool, so the stand stayed closed and earned $0. Choices have tradeoffs. Return to the stand and follow the pinned plan when you are ready to sell.',
 }
 
 export const SAVE_DIALOG_START = 'You saved money for a future goal, and now that savings can fund the stand. This is why saving before a big purchase matters.'
-export const SAVE_DIALOG_END = 'Money left after your choices remains in savings and can fund the next week. Read the saved guidance, change one part of the plan, and test again.'
+export const SAVE_DIALOG_END = 'Money left after your choices remains in savings and can fund the next week. Follow the pinned guidance and test the exact recommended combination.'
