@@ -43,8 +43,8 @@ export default function App() {
         <Boundary name="routes" hard>
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route path="/about" element={<><About /><MediaCoverage about /></>} />
+            <Route path="/" element={<><Welcome /><div className="bg-white px-6 py-12"><MediaCoverage /></div></>} />
+            <Route path="/about" element={<><About /><div className="bg-white"><MediaCoverage about /></div></>} />
             <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
             <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
             <Route path="/party" element={<Navigate to="/guru" replace />} />
