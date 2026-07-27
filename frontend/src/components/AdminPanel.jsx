@@ -1,7 +1,7 @@
 // ROUND 8 (7.3): THE SIMPLIFIED ADMIN PANEL.
 // A low-key Admin button on every screen, password-gated (tayu1234).
 // SOLID opaque gray background, and exactly THREE working controls:
-//   1. Skip module  2. Week back / forward  3. Add money
+//   1. Skip module or jump to party  2. Week back / forward  3. Add money
 // Everything else from Round 6 (fast-forward, auto-play, set name, unlock
 // all, reset) is gone by design.
 import { useState, useEffect } from 'react'
@@ -44,9 +44,10 @@ export function AdminPanel({ showButton = true }) {
     else setPwError(true)
   }
 
-  // 1) module navigation - BOTH directions (R9 Part 4)
+  // 1) module navigation - BOTH directions plus a direct finale jump
   const moduleBack = guard(() => { const wk = g().week; if (wk > 1) g().adminJumpModule(wk - 1) })
   const moduleForward = guard(() => g().adminCompleteModule())
+  const jumpParty = guard(() => { g().adminJumpModule(6); setOpen(false) })
 
   // 2) one week back / forward inside the current module
   const wkInfo = open && adminUnlocked ? (() => { try { return g().adminCurrentWeek() } catch { return { n: 1, max: 1 } } })() : { n: 1, max: 1 }
@@ -114,6 +115,7 @@ export function AdminPanel({ showButton = true }) {
             <button className={`${B} flex-1 bg-white/20`} disabled={g().week <= 1} onClick={moduleBack}>&lt; Module</button>
             <button className={`${B} flex-1 bg-white text-black`} onClick={moduleForward}>Module &gt;</button>
           </div>
+          <button className={`${B} mt-2 w-full bg-teal text-navy`} onClick={jumpParty}>Skip to Party Area</button>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">WEEK {wkInfo.n} of {wkInfo.max}</div>
           <div className="mt-1 flex gap-2">
