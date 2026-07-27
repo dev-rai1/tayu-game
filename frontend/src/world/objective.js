@@ -5,15 +5,19 @@
 // Master Adjustment C4/E1: the target is always the EXACT person or object of
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
-import { MAILBOX, KITCHEN, STORE, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
+import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
 import { stage } from '../anim/stage.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
 const MARKET_SHELVES = [STORE[0], STORE[1] - 1]
+const MARKET_CHECKOUT = [STORE[0], STORE[1] + 4.2]
 
 export function getObjectiveTarget(st) {
   if (st.adminHideArrows) return null // Part 0: presenter toggle
   if (st.weekComplete || st.scenarioLocked) return null
+  // When the next action is already on screen, remove the world arrow so it
+  // never competes with the card or panel the player must use.
+  if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
   // Part J: everything is done - the arrow leads to the party house door
   if (st.gameComplete) return [PARTY_HOUSE[0], PARTY_HOUSE[1] - 3]
   // Round 8 order: 3 = Budget Town, 4 = the Bank, 5 = the Money Garden
@@ -41,8 +45,10 @@ export function getObjectiveTarget(st) {
   if (st.objective === 'store') {
     // sequence: talk to Mr. Bram FIRST (arrow at the person), then shop
     if (!st.bramTalked) return BRAM
-    if (st.bought.length === 0 || !st.storeMissionDone) return MARKET_SHELVES
-    return MARKET_SHELVES
+    const basket = st.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
+    const ready = basket.some((item) => item.tags?.includes('food'))
+      && basket.some((item) => item.tags?.includes('drink'))
+    return ready ? MARKET_CHECKOUT : MARKET_SHELVES
   }
   return null
 }
