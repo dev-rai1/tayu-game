@@ -1,6 +1,5 @@
-// ROUND 9 PART 1: the CIRCULAR town environment. A two-way ring road loops
-// the whole town (lane dashes down the middle), spurs run to every entrance,
-// and the middle of the circle is a park: a lake with lily pads and ducks,
+// The town follows one clean royal-gold story path with every module facing it.
+// The middle of the circle is a park: lakes with lily pads and ducks,
 // palms, little forests, flowers, benches and a picnic. Districts sit around
 // the outside of the ring in story order.
 import { useLayoutEffect, useMemo, useRef } from 'react'
@@ -15,6 +14,8 @@ const P = {
   wall: '#f2e4c9', roof: '#d98a5a', door: '#7a4a2e', window: '#bfe0f2',
   hill: '#7fb88e', water: '#5aa6d8', waterDeep: '#3f8dc4', lane: '#f7ecd2',
 }
+
+const radForPathBanner = (x, z) => Math.atan2(x - RING.c[0], z - RING.c[1])
 
 function Clay({ color, rough = 0.95, flat = false, ...p }) {
   return <meshStandardMaterial color={color} roughness={rough} metalness={0} flatShading={flat} {...p} />
@@ -383,6 +384,60 @@ function Picnic({ x, z }) {
   )
 }
 
+function SkyCloud({ x, y, z, scale = 1 }) {
+  return (
+    <group position={[x, y, z]} scale={scale}>
+      {[
+        [-1.05, 0, 0, 0.85], [-0.35, 0.2, 0, 1.05], [0.45, 0.1, 0, 0.95],
+        [1.15, -0.05, 0, 0.7], [0, -0.18, 0, 1.1],
+      ].map(([cx, cy, cz, s], i) => (
+        <mesh key={i} position={[cx, cy, cz]} scale={s}>
+          <sphereGeometry args={[1, 12, 10]} />
+          <meshStandardMaterial color="#ffffff" roughness={1} transparent opacity={0.9} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+function RoyalPond({ x, z, scale = 1 }) {
+  return (
+    <group position={[x, 0, z]} scale={scale}>
+      <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[2.15, 28]} /><Clay color="#d5c48f" />
+      </mesh>
+      <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[1.78, 28]} /><Clay color="#66b9dc" rough={0.3} />
+      </mesh>
+      {[[-0.75, 0.25], [0.55, -0.55], [0.75, 0.65]].map(([px, pz], i) => (
+        <group key={i} position={[px, 0.06, pz]}>
+          <mesh rotation={[-Math.PI / 2, 0, i]}><circleGeometry args={[0.28, 12, 0.3, Math.PI * 1.7]} /><Clay color="#4ca85c" /></mesh>
+          {i === 1 && <mesh position={[0, 0.1, 0]}><sphereGeometry args={[0.08, 8, 8]} /><Clay color="#ff9fc9" /></mesh>}
+        </group>
+      ))}
+    </group>
+  )
+}
+
+function RoyalBanner({ x, z, angle = 0 }) {
+  return (
+    <group position={[x, 0, z]} rotation={[0, angle, 0]}>
+      {[-0.72, 0.72].map((px) => (
+        <mesh key={px} position={[px, 1.35, 0]} castShadow>
+          <cylinderGeometry args={[0.045, 0.06, 2.7, 8]} /><Clay color="#8a6428" />
+        </mesh>
+      ))}
+      <mesh position={[0, 2.05, 0]}>
+        <planeGeometry args={[1.25, 0.85]} />
+        <meshStandardMaterial color="#7850F0" side={2} roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 2.05, 0.012]}>
+        <circleGeometry args={[0.16, 16]} /><meshStandardMaterial color="#FFD700" emissive="#7a5a00" emissiveIntensity={0.2} />
+      </mesh>
+    </group>
+  )
+}
+
 function Home() {
   const signTex = cardTexture('HOME', null, { accent: '#00DCA0' })
   return (
@@ -514,6 +569,10 @@ function CentralCommons() {
       <Bench x={38} z={4.5} rot={-2.7} />
       <Picnic x={23.5} z={-16} />
       <Picnic x={36.5} z={-16} />
+      <RoyalPond x={11.5} z={2.5} scale={0.9} />
+      <RoyalPond x={48.5} z={2.5} scale={0.9} />
+      <RoyalPond x={13} z={-16.5} scale={0.75} />
+      <RoyalPond x={47} z={-16.5} scale={0.75} />
     </group>
   )
 }
@@ -536,24 +595,14 @@ function PathLine({ points, w, color, y }) {
   return segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={w} color={color} y={y} />)
 }
 
-function ModuleApproach({ points }) {
-  return (
-    <group>
-      {/* A cool stone edge makes every entrance visibly separate from the ring. */}
-      <PathLine points={points} w={4.2} color="#aebfc4" y={0.021} />
-      <PathLine points={points} w={3.15} color="#f1dfb7" y={0.029} />
-    </group>
-  )
-}
-
-// THE TWO-WAY RING ROAD: wide segments around the circle + a dashed center
-// line so the two lanes read clearly. Sits slightly above the grass.
+// The party approach uses the same gold layers, so the route reads as one
+// continuous journey rather than a second path.
 function RoyalFinaleApproach() {
   return (
     <group>
-      {/* The normal road ends at Money Garden; this is the only Finale route. */}
-      <PathLine points={PATHS.royalParty} w={5.0} color="#d6aa35" y={0.021} />
-      <PathLine points={PATHS.royalParty} w={3.55} color="#fff0bd" y={0.029} />
+      <PathLine points={PATHS.royalParty} w={5.8} color="#a66d16" y={0.020} />
+      <PathLine points={PATHS.royalParty} w={5.0} color="#FFD45A" y={0.026} />
+      <PathLine points={PATHS.royalParty} w={3.8} color="#fff1b8" y={0.032} />
     </group>
   )
 }
@@ -561,20 +610,11 @@ function RoyalFinaleApproach() {
 function RingRoad() {
   const segs = []
   for (let i = 0; i < RING_POINTS.length - 1; i++) segs.push([RING_POINTS[i], RING_POINTS[i + 1]])
-  // lane dashes: one short tangent-aligned stripe at every segment midpoint
-  const dashes = segs.map(([a, b]) => {
-    const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2
-    const ang = Math.atan2(b[0] - a[0], b[1] - a[1])
-    return { mx, mz, ang }
-  })
   return (
     <group>
-      {segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={4.8} />)}
-      {dashes.map((d, i) => (
-        <mesh key={`d${i}`} position={[d.mx, 0.032, d.mz]} rotation={[-Math.PI / 2, 0, -d.ang]}>
-          <planeGeometry args={[0.24, 1.7]} /><Clay color={P.lane} rough={1} />
-        </mesh>
-      ))}
+      {segs.map(([a, b], i) => <PathSegment key={`edge-${i}`} from={a} to={b} w={5.8} color="#a66d16" y={0.020} />)}
+      {segs.map(([a, b], i) => <PathSegment key={`gold-${i}`} from={a} to={b} w={5.0} color="#FFD45A" y={0.026} />)}
+      {segs.map(([a, b], i) => <PathSegment key={`clean-${i}`} from={a} to={b} w={3.8} color="#fff1b8" y={0.032} />)}
     </group>
   )
 }
@@ -589,6 +629,17 @@ export function Environment3D() {
     const d = Math.hypot(dx, dz)
     return [x + (dx / d) * 3.4, z + (dz / d) * 3.4]
   })
+  const banners = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden'].map((k, i) => {
+    const [x, z] = ringPoint(STOP_ANGLES[k] - 5)
+    const dx = RING.c[0] - x, dz = RING.c[1] - z
+    const d = Math.hypot(dx, dz)
+    return {
+      x: x + (dx / d) * 3.8,
+      z: z + (dz / d) * 3.8,
+      angle: radForPathBanner(x, z),
+      key: `${k}-${i}`,
+    }
+  })
   return (
     <group>
       {/* big island ground centered under the ring */}
@@ -602,16 +653,16 @@ export function Environment3D() {
       <Hills />
       {/* sun */}
       <mesh position={[50, 24, -50]}><sphereGeometry args={[3, 24, 24]} /><meshStandardMaterial color="#fff4cf" emissive="#ffe9a3" emissiveIntensity={0.9} /></mesh>
+      <SkyCloud x={-12} y={18} z={-34} scale={2.2} />
+      <SkyCloud x={14} y={21} z={-54} scale={1.65} />
+      <SkyCloud x={40} y={19} z={-48} scale={2.0} />
+      <SkyCloud x={70} y={22} z={-29} scale={1.8} />
+      <SkyCloud x={76} y={17} z={7} scale={2.15} />
+      <SkyCloud x={35} y={23} z={29} scale={1.6} />
+      <SkyCloud x={-5} y={20} z={22} scale={1.9} />
 
-      {/* PART 1: the two-way ring road + entrance spurs */}
+      {/* One clean gold main path; modules face it with no side-path clutter. */}
       <RingRoad />
-      <ModuleApproach points={PATHS.spurAllowance} />
-      <ModuleApproach points={PATHS.spurJars} />
-      <ModuleApproach points={PATHS.spurMarket} />
-      <ModuleApproach points={PATHS.spurLemonade} />
-      <ModuleApproach points={PATHS.spurBudget} />
-      <ModuleApproach points={PATHS.spurBank} />
-      <ModuleApproach points={PATHS.spurGarden} />
       <RoyalFinaleApproach />
 
       <Home />
@@ -620,6 +671,7 @@ export function Environment3D() {
       <CentralCommons />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
+      {banners.map((banner) => <RoyalBanner key={banner.key} {...banner} />)}
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
