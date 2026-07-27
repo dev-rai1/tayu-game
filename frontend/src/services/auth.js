@@ -1,5 +1,5 @@
 // TAYU account layer: Firebase Authentication, password-reset emails,
-// Firestore profiles, and synced progress.
+// Firestore profiles, account activity, and synced progress.
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -7,7 +7,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, increment, setDoc } from 'firebase/firestore'
 import { getFirebaseServices, isFirebaseConfigured, prepareFirebaseAuth } from './firebase.js'
 import { loadWallet, saveWallet, loadProfile, saveProfile } from './walletStore.js'
 
@@ -17,15 +17,59 @@ export const isCloud = () => isFirebaseConfigured()
 const LKEY = 'tayu-accounts-v1'
 const SKEY = 'tayu-session-v1'
 const GKEY = 'tayu-guest-progress-v1'
+const AKEY = 'tayu-auth-activity-v1'
 const DEMO_ADMIN_CREDENTIAL_VERSION = 3
 const readAccounts = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '{}') } catch { return {} } }
 const writeAccounts = (accounts) => localStorage.setItem(LKEY, JSON.stringify(accounts))
+const readLocalActivity = () => { try { return JSON.parse(localStorage.getItem(AKEY) || '[]') } catch { return [] } }
+const writeLocalActivity = (activity) => localStorage.setItem(AKEY, JSON.stringify(activity.slice(0, 100)))
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase()
 const localAccountFor = (email) => readAccounts()[normalizeEmail(email)] || null
 
 // Remove the old persistent session key. Registered users now authenticate for
 // each new browser session, while sessionStorage preserves normal page refreshes.
 if (typeof window !== 'undefined') localStorage.removeItem(SKEY)
+
+function deviceLabel() {
+  if (typeof navigator === 'undefined') return 'Unknown'
+  const agent = navigator.userAgent || ''
+  if (/iPad|Tablet/i.test(agent)) return 'Tablet'
+  if (/Mobi|Android|iPhone/i.test(agent)) return 'Mobile'
+  return 'Desktop'
+}
+
+function currentPath() {
+  return typeof window === 'undefined' ? '' : window.location.pathname
+}
+
+function localActivity(email, type, occurredAt = new Date().toISOString()) {
+  const activity = {
+    id: `${occurredAt}-${Math.random().toString(36).slice(2)}`,
+    email: normalizeEmail(email),
+    type,
+    occurredAt,
+    device: deviceLabel(),
+    path: currentPath(),
+  }
+  writeLocalActivity([activity, ...readLocalActivity()])
+}
+
+async function cloudActivity(firebase, user, type, occurredAt = new Date().toISOString()) {
+  const email = normalizeEmail(user?.email)
+  if (!firebase?.firestore || !user?.uid || !email) return
+  try {
+    await addDoc(collection(firebase.firestore, 'authActivity'), {
+      uid: user.uid,
+      email,
+      type,
+      occurredAt,
+      device: deviceLabel(),
+      path: currentPath(),
+    })
+  } catch {
+    // Analytics must never block account access.
+  }
+}
 
 async function hashPw(password, salt) {
   const data = new TextEncoder().encode(`${salt}:${password}`)
@@ -168,6 +212,8 @@ export async function signUp({ email, password, role, gradeLevels, foundVia, org
     organizationName: String(organizationName || legacyAccount?.organizationName || '').trim(),
     social: legacyAccount?.social || '',
     createdAt: legacyAccount?.createdAt || now,
+    lastActiveAt: now,
+    loginCount: 0,
     ...(legacyAccount ? { migratedFromLocal: true, migratedAt: now } : {}),
   }
 
@@ -177,6 +223,7 @@ export async function signUp({ email, password, role, gradeLevels, foundVia, org
       const credential = await createUserWithEmailAndPassword(firebase.auth, email, password)
       await setDoc(doc(firebase.firestore, 'profiles', credential.user.uid), profile)
       setSession({ email, role: profile.role, cloud: true, id: credential.user.uid })
+      await cloudActivity(firebase, credential.user, 'sign_up', now)
       const migrated = await uploadLegacyProgress(firebase.firestore, credential.user.uid, legacyAccount?.progress)
       if (legacyAccount) markLegacyAccountMigrated(email, credential.user.uid)
       return { email, role: profile.role, migrated }
@@ -195,6 +242,7 @@ export async function signUp({ email, password, role, gradeLevels, foundVia, org
   }
   writeAccounts(accounts)
   setSession({ email, role: accounts[email].role, cloud: false })
+  localActivity(email, 'sign_up', now)
   return { email, role: accounts[email].role, migrated: false }
 }
 
@@ -207,7 +255,16 @@ export async function signIn(email, password) {
       const credential = await signInWithEmailAndPassword(firebase.auth, email, password)
       const profile = await firebaseProfile(firebase.firestore, credential.user.uid)
       const role = profile?.role || 'student'
+      const now = new Date().toISOString()
       setSession({ email: credential.user.email || email, role, cloud: true, id: credential.user.uid })
+      await Promise.allSettled([
+        setDoc(doc(firebase.firestore, 'profiles', credential.user.uid), {
+          lastLoginAt: now,
+          lastActiveAt: now,
+          loginCount: increment(1),
+        }, { merge: true }),
+        cloudActivity(firebase, credential.user, 'sign_in', now),
+      ])
       await syncDown()
       return { email, role }
     } catch (error) {
@@ -223,14 +280,43 @@ export async function signIn(email, password) {
   const account = accounts[email]
   if (!account || account.needsPassword) throw new Error(account ? 'This account needs a password - use Sign Up to set one.' : 'No account with that email yet.')
   if ((await hashPw(password, account.salt)) !== account.hash) throw new Error('Email or password did not match.')
+  const now = new Date().toISOString()
+  accounts[email] = {
+    ...account,
+    lastLoginAt: now,
+    lastActiveAt: now,
+    loginCount: Number(account.loginCount || 0) + 1,
+  }
+  writeAccounts(accounts)
   setSession({ email, role: account.role, cloud: false })
+  localActivity(email, 'sign_in', now)
   await syncDown()
   return { email, role: account.role }
 }
 
 export async function signOutUser() {
+  const user = currentUser()
+  const now = new Date().toISOString()
   const firebase = await prepareFirebaseAuth()
-  if (firebase) await signOut(firebase.auth)
+  if (firebase) {
+    if (user?.id && !user.guest) {
+      await Promise.allSettled([
+        setDoc(doc(firebase.firestore, 'profiles', user.id), {
+          lastLogoutAt: now,
+          lastActiveAt: now,
+        }, { merge: true }),
+        cloudActivity(firebase, { uid: user.id, email: user.email }, 'sign_out', now),
+      ])
+    }
+    await signOut(firebase.auth)
+  } else if (user?.email && !user.guest) {
+    const accounts = readAccounts()
+    if (accounts[user.email]) {
+      accounts[user.email] = { ...accounts[user.email], lastLogoutAt: now, lastActiveAt: now }
+      writeAccounts(accounts)
+    }
+    localActivity(user.email, 'sign_out', now)
+  }
   setSession(null)
 }
 
@@ -310,12 +396,13 @@ export async function adminData() {
   if (!user || user.role !== 'admin') throw new Error('Admin only.')
   const firebase = getFirebaseServices()
   if (firebase) {
-    const [profileSnapshot, progressSnapshot] = await Promise.all([
+    const [profileSnapshot, progressSnapshot, activitySnapshot] = await Promise.all([
       getDocs(collection(firebase.firestore, 'profiles')),
       getDocs(collection(firebase.firestore, 'progress')),
+      getDocs(collection(firebase.firestore, 'authActivity')),
     ])
     const progressById = Object.fromEntries(progressSnapshot.docs.map((item) => [item.id, item.data()?.data || null]))
-    return profileSnapshot.docs.map((item) => {
+    const accounts = profileSnapshot.docs.map((item) => {
       const profile = item.data()
       return {
         email: profile.email || '',
@@ -326,16 +413,32 @@ export async function adminData() {
         organizationName: profile.organizationName || '',
         organizationEmail: profile.organizationEmail || '',
         createdAt: profile.createdAt || '',
+        lastLoginAt: profile.lastLoginAt || '',
+        lastLogoutAt: profile.lastLogoutAt || '',
+        lastActiveAt: profile.lastActiveAt || '',
+        loginCount: Number(profile.loginCount || 0),
         progress: progressById[item.id] || null,
       }
     })
+    const activity = activitySnapshot.docs
+      .map((item) => ({ id: item.id, ...item.data() }))
+      .sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || '')))
+      .slice(0, 100)
+    return { accounts, activity }
   }
 
-  return Object.values(readAccounts()).map((account) => ({
+  const accounts = Object.values(readAccounts()).map((account) => ({
     email: account.email, role: account.role, gradeLevels: account.gradeLevels, foundVia: account.foundVia,
     social: account.social || '', organizationName: account.organizationName || '',
-    organizationEmail: account.organizationEmail || '', createdAt: account.createdAt, progress: account.progress,
+    organizationEmail: account.organizationEmail || '', createdAt: account.createdAt,
+    lastLoginAt: account.lastLoginAt || '', lastLogoutAt: account.lastLogoutAt || '',
+    lastActiveAt: account.lastActiveAt || '', loginCount: Number(account.loginCount || 0),
+    progress: account.progress,
   }))
+  const activity = readLocalActivity()
+    .sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || '')))
+    .slice(0, 100)
+  return { accounts, activity }
 }
 
 // Keep the session cache aligned with Firebase's current authentication state.

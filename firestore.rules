@@ -20,6 +20,10 @@ service cloud.firestore {
       return role == 'student' || role == 'teacher' || role == 'other';
     }
 
+    function validAuthActivityType(type) {
+      return type == 'sign_up' || type == 'sign_in' || type == 'sign_out';
+    }
+
     match /profiles/{userId} {
       allow create: if owns(userId)
         && request.resource.data.email == request.auth.token.email
@@ -36,6 +40,15 @@ service cloud.firestore {
     match /progress/{userId} {
       allow read, create, update: if owns(userId) || isAdmin();
       allow delete: if isAdmin();
+    }
+
+    match /authActivity/{activityId} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && validAuthActivityType(request.resource.data.type);
+      allow read, delete: if isAdmin();
+      allow update: if false;
     }
   }
 }

@@ -13,6 +13,7 @@ import { startGuestSession, syncUp } from './auth.js'
 describe('guest progress persistence', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.clearAllMocks()
   })
 
@@ -27,13 +28,13 @@ describe('guest progress persistence', () => {
 
     loadWallet.mockReturnValue({ spend: 99, save: 0, give: 0, week: 1 })
     loadProfile.mockReturnValue({ name: 'Different Account' })
-    localStorage.setItem('tayu-session-v1', JSON.stringify({ email: 'account@example.com', role: 'student' }))
+    sessionStorage.setItem('tayu-session-v1', JSON.stringify({ email: 'account@example.com', role: 'student' }))
 
     startGuestSession()
 
     expect(saveWallet).toHaveBeenCalledWith(wallet)
     expect(saveProfile).toHaveBeenCalledWith(profile)
-    expect(JSON.parse(localStorage.getItem('tayu-session-v1'))).toMatchObject({ guest: true })
+    expect(JSON.parse(sessionStorage.getItem('tayu-session-v1'))).toMatchObject({ guest: true })
   })
 
   it('does not fail when demo mode has no saved progress yet', () => {
