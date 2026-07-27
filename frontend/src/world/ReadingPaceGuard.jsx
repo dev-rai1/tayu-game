@@ -70,7 +70,7 @@ export function ReadingPaceGuard() {
     <div className="pointer-events-auto fixed inset-0 z-[610]" aria-live="polite" aria-label="Reading time">
       <div className="absolute inset-x-0 bottom-5 flex justify-center px-4">
         <div className="rounded-full border-2 border-sun bg-navy/95 px-5 py-2 text-sm font-extrabold text-white shadow-2xl">
-          Take a moment to read · Continue unlocks in {seconds}s
+          Continue in {seconds}s
         </div>
       </div>
     </div>
