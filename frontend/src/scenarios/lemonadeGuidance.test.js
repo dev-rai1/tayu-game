@@ -76,15 +76,18 @@ describe('lemonade supply, demand, and pinned profit guidance', () => {
     expect(feedback.plan.sim.keep).toBeGreaterThan(0)
   })
 
-  it('uses the same upcoming Town News for the end card and next round', () => {
+  it('previews the exact feature and Town News that afterRound will unlock', () => {
     const expected = nextEventFor(normal.id)
     const rolled = rollEvent(true, normal.id)
     const levers = baseLevers(3)
     const sim = simulateSales(levers, normal)
-    const tip = nextTip(sim, levers, normal, 3, [])
+    // Two features are live; the existing game unlocks Town News next.
+    const tip = nextTip(sim, levers, normal, 2, [])
 
+    expect(tip.nextFeatures).toBe(3)
     expect(rolled.id).toBe(expected.id)
     expect(tip.targetEvent.id).toBe(rolled.id)
+    expect(tip.text).toContain('NEXT ROUND UNLOCK: EVENTS')
     expect(tip.text).toContain("NEXT WEEK'S TOWN NEWS")
     expect(tip.plan.sim.keep).toBeGreaterThan(0)
   })
