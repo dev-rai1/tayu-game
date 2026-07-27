@@ -120,13 +120,13 @@ function Butterfly({ x, z, phase, color }) {
   )
 }
 
-function Bird({ x, z, phase, color = '#5aa6ff' }) {
+function Bird({ x, z, phase, color = '#5aa6ff', altitude = 2.4, orbit = 2.2 }) {
   const ref = useRef()
   useFrame(() => {
     const g = ref.current
     if (!g) return
     const t = Date.now() * 0.0011 + phase
-    g.position.set(x + Math.cos(t) * 2.2, 2.4 + Math.sin(t * 2) * 0.25, z + Math.sin(t) * 2.2)
+    g.position.set(x + Math.cos(t) * orbit, altitude + Math.sin(t * 2) * 0.35, z + Math.sin(t) * orbit)
     g.rotation.y = -t - Math.PI / 2
     g.rotation.z = Math.sin(t * 8) * 0.08
   })
@@ -238,6 +238,15 @@ export function Ambient() {
         const [x, z] = gapSpot(zone.angle, 8.2, i % 2 ? 3.8 : -3.8)
         return <Bird key={`gap-bird-${zone.theme}`} x={x} z={z} phase={i * 1.8} color={zone.accent} />
       })}
+      {/* A visible flock gives the open sky life without adding ground clutter. */}
+      {[
+        [8, -20, 0, '#f8fbff', 10, 7], [20, -34, 1.1, '#b8d8ff', 12, 8],
+        [34, -38, 2.2, '#ffffff', 9, 6], [50, -30, 3.3, '#c9b7ff', 13, 9],
+        [62, -12, 4.4, '#ffffff', 11, 7], [54, 10, 5.5, '#b8d8ff', 14, 8],
+        [32, 18, 6.6, '#ffffff', 10, 6], [10, 9, 7.7, '#c9b7ff', 12, 7],
+      ].map(([x, z, phase, color, altitude, orbit], i) => (
+        <Bird key={`sky-bird-${i}`} x={x} z={z} phase={phase} color={color} altitude={altitude} orbit={orbit} />
+      ))}
     </group>
   )
 }
