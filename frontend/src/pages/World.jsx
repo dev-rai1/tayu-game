@@ -9,6 +9,7 @@ import { useGame } from '../world/store.js'
 import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
 import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
+import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 
 // Full-screen 3D world page (Module 1, Week 1).
@@ -52,8 +53,7 @@ export default function World() {
     }
     crossfadeTo('town') // F2: loading theme fades into the town theme
     const t1 = setTimeout(() => setFaded(true), 60)
-    const t2 = setTimeout(() => setWelcome(false), 4500)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    return () => clearTimeout(t1)
   }, [initWorld])
 
   const onContinue = () => {
@@ -69,19 +69,23 @@ export default function World() {
     <div className="fixed inset-0 overflow-hidden bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
+      <PersistentCoach />
       {use3D && usesTouchControls && <MobileControls />}
 
-      {/* welcome popup */}
+      {/* Welcome instructions wait for the player instead of disappearing on a timer. */}
       {welcome && (
-        <div className="pointer-events-none absolute inset-x-0 top-24 z-[120] flex justify-center">
-          <div className="rounded-2xl bg-navy/90 px-6 py-3 text-center text-white shadow-xl">
+        <div className="pointer-events-auto absolute inset-0 z-[520] flex items-center justify-center bg-navy/35 p-4 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-labelledby="world-welcome-title" className="w-full max-w-md rounded-3xl border-2 border-teal bg-navy/95 px-6 py-5 text-center text-white shadow-2xl">
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">🗺️ Your map mission</p>
-            <p className="mt-1 font-bold">Welcome to your neighborhood, {state.player.name || 'friend'}!</p>
-            <p className="text-sm text-white/80">
+            <p id="world-welcome-title" className="mt-2 text-xl font-extrabold">Welcome to your neighborhood, {state.player.name || 'friend'}!</p>
+            <p className="mt-2 text-base font-semibold leading-relaxed text-white/85">
               {use3D
-                ? <><b className="text-sun">Follow the glowing arrows</b> — each stop unlocks the next part of your money adventure!</>
-                : <><b className="text-sun">Use the step buttons</b> to choose where to go next!</>}
+                ? <><b className="text-sun">Follow the glowing arrows.</b> Each stop unlocks the next part of your money adventure.</>
+                : <><b className="text-sun">Use the step buttons.</b> They show you exactly where to go next.</>}
             </p>
+            <button type="button" onClick={() => setWelcome(false)} className="btn-primary mt-5 min-h-[56px] w-full text-lg">
+              Start exploring
+            </button>
           </div>
         </div>
       )}
