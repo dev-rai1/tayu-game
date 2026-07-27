@@ -1,10 +1,9 @@
 // MODULE 3 - THE MONEY GARDEN v5 (Round 5, Part H): the advisor's complete
 // restructure. Ten ordered weekly lessons, each with an Intro (before
 // deciding), a Praise line (followed the lesson) and a Coach line (didn't -
-// warm, behavior-naming, forward-pointing). All thirty lines are her final
-// copy, verbatim. Feedback follows the H9 card shape: behavior line -> tiny
-// honest numbers -> forward nudge. Goal is ~+40% (about $42 from a $30
-// cash-out), never "investing doubles your money."
+// warm, behavior-naming, forward-pointing). Feedback follows the H9 card
+// shape: behavior line -> tiny honest numbers -> forward nudge. Goal is ~+40%
+// (about $42 from a $30 cash-out), never "investing doubles your money."
 // A5: every line credits a DECISION, never a lucky pick. No emojis.
 
 import { COMPANIES } from './moneyGarden.js'
@@ -19,18 +18,18 @@ export const BANK_DRIP_MIN = 5 // Bank Sprout pays $1 per 2 weeks on $5+
 export const OPENING = [
   "There you are! You earned it at the stand, you budgeted it in town, you banked the safe part... and you brought the GROW part right here. Welcome to the Money Garden!",
   "Remember your plan: pocket cash for surprises, bank money growing slow and steady. And a grown-up secret: money that just sits still slowly buys LESS over time - so growing some of it really matters. THIS money is the brave part - the garden can grow it the most, but it wiggles.",
-  "Here we plant money in COMPANIES. But smart gardeners never plant at random - let me show you how to choose your seeds.",
+  "Here we plant money in COMPANIES. Every week works the same way: read the clue, click My Portfolio, make your choice, close the portfolio, and then click Start the Week to see what happens.",
 ]
 
 // ---- Round 8 Part 4: the SEED PIE - how to CHOOSE companies (not random) ----
 export const COMPANY_CHOICE = {
-  prompt: 'Split your garden money across the three companies. Tap each slice to hear its story first!',
+  prompt: 'First, tap each company slice to hear its story. Then choose how much to plant in each one.',
   lines: {
     toy: 'Toy Town: peek in the windows - PACKED with customers every day. A busy store is a healthy company. A steady grower.',
     snack: 'Snack Shack: the town news says kids love their new juice pops. Good news can mean growth - but always check the store, not just the headlines.',
     game: 'Game Land: exciting, but its price jumps around - a wiggly grower. It can grow fast AND droop fast. Plant here only what can ride the wiggles.',
   },
-  closing: 'That is how gardeners choose: look for BUSY stores, listen for REAL news, and know your steady growers from your wiggly ones. Never plant at random - and never all in one bed!',
+  closing: 'Now make your choice. Look for BUSY stores, listen for REAL news, and know your steady growers from your wiggly ones. Never plant at random - and never all in one bed!',
 }
 
 // ---- H6: the Week-1 plant-amount slider bands (live Sprout nudges) ----
@@ -69,15 +68,14 @@ const isSpread = (m) => {
   return Object.keys(m.companies).every((id) => (m.companies[id].owned * m.companies[id].price) / hv <= 0.55)
 }
 
-// ---- H5/H7: the ten weeks. intro/praise/coach are VERBATIM final copy. ----
-// Each week: lesson (pinned chip), intro, praise, coach, nudge (H9 bottom
-// line), ctx/fx/moves (the engineered beat), judge(m, actions, ctx, extra),
-// special ('slider' | 'surprise' | 'bankrupt' | 'rebalance').
+// ---- H5/H7: the ten weeks. ----
+// Every intro gives the player the same clear action sequence: read the clue,
+// click My Portfolio, make the decision, close it, then start the week.
 export const WEEKS = [
   {
     n: 1,
     lesson: 'Lesson: choose your seeds like a detective - never at random',
-    intro: 'Time to plant! Three companies, three garden beds. Before you choose, be a detective: who is busy? What does the news say? Who is steady, who is wiggly? Then split your seeds the way YOU think is smart.',
+    intro: 'Time to plant! First study the three company stories. Then choose how to split your seeds across the beds. After you finish your choice, start the week to see how your garden grows.',
     praise: 'You looked before you planted - busy stores, real news, steady and wiggly. That is detective gardening!',
     coach: 'Seeds are in the ground - now watch them close. Detectives keep watching after they plant!',
     nudge: 'Next week: why one garden bed is never enough.',
@@ -91,7 +89,7 @@ export const WEEKS = [
   {
     n: 2,
     lesson: 'Lesson: never keep all your money in one company',
-    intro: "Time to choose your seeds! Toy Town, Snack Shack, Game Land... here's a tip: one garden bed can flood. Two or three beds? Much harder to lose it all.",
+    intro: "One garden bed can flood, but two or three beds make it harder to lose everything. Click My Portfolio, spread your seeds across at least two companies, close the portfolio, and then click Start the Week.",
     praise: 'When Toy Town drooped, your Snack Shack seeds kept right on growing. Spreading out saved you!',
     coach: 'Ouch - all your seeds were in one bed when the rain came. Next week, try spreading across two or three. It\'s like a seatbelt for your coins.',
     nudge: 'Next week: what to do when prices wiggle.',
@@ -108,7 +106,7 @@ export const WEEKS = [
   {
     n: 3,
     lesson: 'Lesson: prices wiggle - do not panic when they dip',
-    intro: 'Fair warning, friend: this week the prices are going to wiggle. Down, up, down again. A drooping plant is NOT a dead plant. Watch before you pull!',
+    intro: 'Prices will wiggle down, up, and down again. A drooping plant is not a dead plant. Click My Portfolio, decide whether to hold, buy, or sell, close it, and then click Start the Week. The patient choice is usually to avoid panic-selling.',
     praise: 'You held on through the droop and - look at that - it stood back up taller. That\'s called patience, and it pays.',
     coach: 'You pulled your seed out right at the bottom of the droop... and then it grew back without you. Dips end. Next time, take a breath first.',
     nudge: 'Next week: a gardener trick called research.',
@@ -121,7 +119,7 @@ export const WEEKS = [
   {
     n: 4,
     lesson: 'Lesson: watch the store - a busy store is a healthy company',
-    intro: 'New gardener trick: look before you plant! Walk past the shops. Full of customers? Healthy company. Empty and dusty? Hmm. The store tells you what the price can\'t.',
+    intro: 'Look at the shops before deciding. Full of customers can mean a healthy company; empty and dusty is a warning. Click My Portfolio, favor the busy store, close it, and then click Start the Week.',
     praise: 'You planted in the busy store - and busy stores grow gardens. You did real research, detective!',
     coach: 'That store\'s been empty for weeks and you planted anyway. Next time, peek in the windows first - customers are clues.',
     nudge: 'Next week: two price drops, two very different stories.',
@@ -129,13 +127,12 @@ export const WEEKS = [
     ctx: () => ({ busy: 'game', dusty: 'snack' }),
     fx: (c) => ({ busy: c.busy, dusty: c.dusty }),
     moves: (c) => ({ early: { [c.dusty]: -1 }, late: { [c.busy]: +2 } }),
-    // researched = leaned toward the busy store, not the dusty one
     judge: (m, a, c) => (a.bought[c.busy] || 0) > 0 || ((a.bought[c.dusty] || 0) === 0 && m.companies[c.busy].owned > 0),
   },
   {
     n: 5,
     lesson: 'Lesson: price and health are different',
-    intro: 'Two prices dropped today! But look closer: one store is still PACKED, the other is a ghost town. Same price drop, very different story. Cheap and busy is a sale. Cheap and empty is a warning.',
+    intro: 'Two prices dropped, but one store is still packed while the other is empty. Cheap and busy may be a sale; cheap and empty may be a warning. Click My Portfolio, compare both companies, make your choice, close it, and then click Start the Week.',
     praise: 'You grabbed the busy store while it was on sale - and skipped the empty one. That\'s the sharpest eye in the garden!',
     coach: 'You bought the cheap one... but nobody shops there, friend. Cheap isn\'t the same as good. Busy-and-cheap is the treasure.',
     nudge: 'Next week: give your seeds time - and keep your ears open.',
@@ -149,12 +146,12 @@ export const WEEKS = [
   {
     n: 6,
     lesson: 'Lesson: money seeds take time - patience pays',
-    intro: 'Some seeds are slow bloomers. The longer they sit, the deeper the roots. Oh - and keep your ears open. I hear a surprise is coming to town this week...',
+    intro: 'Some seeds are slow bloomers, and a surprise bill may arrive. Click My Portfolio, make sure you keep some money in Pocket instead of planting everything, close it, and then click Start the Week.',
     praise: 'A surprise bill! But you had pocket coins ready, so your garden never felt a thing. THIS is why we don\'t plant everything.',
     coach: 'That surprise bill made you dig up a seed before it finished growing - you lost a little. Now you know why gardeners keep pocket coins. You won\'t forget!',
     nudge: 'Next week: warning signs - and what to do about them.',
     learn: 'longterm',
-    special: 'surprise', // the ONE designed sting; the rewind does NOT fire here
+    special: 'surprise',
     ctx: (m) => ({ held: ownedIds(m) }),
     fx: () => ({ envelope: true }),
     moves: (c) => ({ early: {}, late: Object.fromEntries(c.held.map((id) => [id, +2])) }),
@@ -163,7 +160,7 @@ export const WEEKS = [
   {
     n: 7,
     lesson: 'Lesson: companies can fail - watch for warning signs',
-    intro: 'Hard truth time, friend. Sometimes a store closes for good. Watch for the warning signs: empty aisles, sad signs, dusty windows. It\'s okay to move your seeds OUT of sick soil.',
+    intro: 'A store may close when the warning signs pile up: empty aisles, sad signs, and dusty windows. Click My Portfolio, move your seeds out of the unhealthy store, close it, and then click Start the Week.',
     praise: 'You saw the warning signs and moved your seeds out before the store closed. That\'s not panic - that\'s paying attention.',
     coach: 'The store closed and took a seed with it. It stings, I know. But look - your other beds are still growing. One closed store never ends a good gardener.',
     nudge: 'Next week: rockets, noise, and keeping a cool head.',
@@ -180,13 +177,13 @@ export const WEEKS = [
   {
     n: 8,
     lesson: 'Lesson: do not chase - what shot up fast can fall fast',
-    intro: 'Everyone in town is shouting about last week\'s rocket stock! Here\'s the thing about rockets: what shoots up fast can come down fast. Don\'t plant just because of the noise.',
+    intro: 'Everyone is shouting about the rocket stock, but what shoots up fast can fall fast. Click My Portfolio, avoid buying only because of the hype, close it, and then click Start the Week.',
     praise: 'The whole town chased the rocket - and you didn\'t. When it fizzled, your steady seeds just kept growing. Cool head, green garden.',
     coach: 'You bought the rocket at the tippy-top, right before it fell. Chasing the shiny thing usually means arriving late. The busy-store trick works better than the loud-crowd trick.',
     nudge: 'Next week: the quiet shop on the corner.',
     learn: 'finbasics',
     ctx: (m) => ({ hot: lastRiser(m) }),
-    pre: (c) => ({ [c.hot]: +2 }), // the rocket inflates before the decision
+    pre: (c) => ({ [c.hot]: +2 }),
     fx: (c) => ({ balloon: c.hot }),
     moves: (c) => ({ early: {}, late: { [c.hot]: -3 } }),
     judge: (m, a, c) => (a.bought[c.hot] || 0) === 0,
@@ -194,7 +191,7 @@ export const WEEKS = [
   {
     n: 9,
     lesson: 'Lesson: steady and boring can beat flashy',
-    intro: 'See that quiet little shop on the corner? No fireworks, no crowds shouting. Just open every day, steady as sunrise. Keep an eye on it this week...',
+    intro: 'The quiet shop has no fireworks, but it opens every day and stays steady. Click My Portfolio, consider putting money in the steady company instead of only the flashy ones, close it, and then click Start the Week.',
     praise: 'The quiet shop won the week while the flashy ones wobbled! Boring is beautiful in a money garden.',
     coach: 'The flashy stores danced up and down and ended right where they started - the quiet shop passed them all. Steady seeds, friend. Steady seeds.',
     nudge: 'Last week coming up: garden tidying!',
@@ -210,7 +207,7 @@ export const WEEKS = [
   {
     n: 10,
     lesson: 'Lesson: check your garden - trim the big, water the small',
-    intro: 'Last week! Time for garden tidying. Some plants grew huge, some stayed tiny - so your seeds might be crowded in one bed again without you noticing. Trim the big, water the small, spread things back out.',
+    intro: 'Your last decision is to rebalance. Click My Portfolio, sell a little from any company holding too much and add to the smaller beds, close it, and then click Start the Week.',
     praise: 'Trimmed, watered, balanced - your garden is spread out just right, and look at that number. You\'re a true gardener now!',
     coach: 'Almost there! One bed is holding most of your coins again - remember Week 2? Give it one more trim and you\'re home.',
     nudge: 'Your garden is ready for harvest!',
@@ -227,7 +224,7 @@ export const WEEKS = [
 // so the harvest is always reachable - never a grind wall.
 export const OVERTIME = {
   lesson: 'Lesson: steady gardens grow a little every week',
-  intro: 'A little more tidying, gardener - steady weeks grow steady gardens. Keep your beds spread out.',
+  intro: 'You are close. Click My Portfolio, keep your seeds spread across the beds, close it, and then click Start the Week.',
   praise: 'Steady, spread out, and growing. The harvest is close!',
   coach: 'Spread your seeds across the beds and let them grow - you are almost there.',
   nudge: 'The harvest is close!',
