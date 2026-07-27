@@ -62,11 +62,8 @@ describe('world path separation', () => {
     expect(PATHS.royalPartyRight).toBeUndefined()
   })
 
-  it('connects every path from Lemonade onward to its real interaction point', () => {
-    expect(PATHS.spurLemonade.at(-1)).toEqual(LEMONADE)
-    expect(PATHS.spurBudget.at(-1)).toEqual([BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4])
-    expect(PATHS.spurBank.at(-1)).toEqual([BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2])
-    expect(PATHS.spurGarden.at(-1)).toEqual([SPROUT[0] - 6.2, SPROUT[1] + 4.6])
+  it('uses one main route without competing module side paths', () => {
+    expect(Object.keys(PATHS).sort()).toEqual(['ring', 'royalParty'])
   })
 
   it('uses support landmarks instead of decorative center houses', () => {
