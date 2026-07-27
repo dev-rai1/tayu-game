@@ -19,9 +19,9 @@ printable certificate at the end.
 
 ## Tech
 
-React 18 + Vite + Tailwind, React-Three-Fiber/three.js (the 3D town),
-Zustand (game state), optional Supabase (accounts + analytics — see
-`AUTH_README.md`). Everything ships as a static SPA; no server is required
+React 18 + Vite + Tailwind, React-Three-Fiber/three.js (the 3D town), Zustand
+(game state), and Firebase Authentication + Cloud Firestore for accounts and
+progress. Everything ships as a static SPA; no application server is required
 to play.
 
 ## Run it locally
@@ -29,8 +29,11 @@ to play.
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173
+cp .env.example .env   # fill in the Firebase web configuration
+npm run dev            # http://localhost:5173
 ```
+
+The app also boots without Firebase variables in local practice mode.
 
 ## Build for production
 
@@ -42,43 +45,40 @@ npm run build      # output in frontend/dist
 
 ## Deploy to Firebase Hosting
 
-The repo is pre-configured (`firebase.json` points Hosting at
-`frontend/dist` with the SPA rewrite). One-time setup:
+The repo is configured for the Firebase project in `.firebaserc`. One-time CLI
+setup:
 
 ```bash
 npm install -g firebase-tools
 firebase login
-firebase projects:create   # or use an existing project
-# put your project id in .firebaserc (replace YOUR-FIREBASE-PROJECT-ID)
 ```
 
-Then every deploy is:
+Then build and deploy Hosting plus Firestore security rules:
 
 ```bash
 cd frontend && npm run build && cd ..
-firebase deploy --only hosting
+firebase deploy --only hosting,firestore:rules
 ```
 
-To enable the cloud account system on Firebase Hosting, create
-`frontend/.env` from `frontend/.env.example` with your Supabase keys
-**before** running the build (Vite bakes env vars in at build time).
+Vite embeds the `VITE_FIREBASE_*` web configuration values during the build.
+See `frontend/.env.example` and `AUTH_README.md` for the required values and
+Firebase Console setup.
 
-## Deploy to Vercel (current production)
+## Deploy to Vercel
 
 ```bash
 cd frontend
 npx vercel deploy --prod
 ```
 
-`frontend/vercel.json` already carries the SPA rewrite. Set
-`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in the Vercel project
-settings for cloud accounts.
+Set the same `VITE_FIREBASE_*` variables in the Vercel project settings before
+the build.
 
 ## Accounts, analytics, and the admin dashboard
 
-See [`AUTH_README.md`](AUTH_README.md) — the login system runs in on-device
-demo mode until Supabase keys are provided; [`supabase-setup.sql`](supabase-setup.sql)
-creates the tables, security policies, and the admin account.
+See [`AUTH_README.md`](AUTH_README.md) for Firebase Authentication,
+forgot-password emails, Firestore profiles/progress, security rules, admin
+roles, and where each item appears in the Firebase Console.
 
 ## Docs
 
