@@ -1,8 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const PASSWORD_HASH = '6ee14ba73bd03864e1e997245afeacd832a23d24d6f3ac9f5e243fac8f3a3b8e'
+const hashBytes = Uint8Array.from(PASSWORD_HASH.match(/../g).map((value) => Number.parseInt(value, 16)))
+
 const mocks = vi.hoisted(() => ({
+  createUserWithEmailAndPassword: vi.fn(),
+  signInWithEmailAndPassword: vi.fn(),
   prepareFirebaseAuth: vi.fn(),
   setDoc: vi.fn(),
+}))
+
+vi.mock('firebase/auth', () => ({
+  createUserWithEmailAndPassword: mocks.createUserWithEmailAndPassword,
+  signInWithEmailAndPassword: mocks.signInWithEmailAndPassword,
 }))
 
 vi.mock('firebase/firestore', () => ({
@@ -14,12 +24,23 @@ vi.mock('./firebase.js', () => ({
   prepareFirebaseAuth: mocks.prepareFirebaseAuth,
 }))
 
-import { ensureAdminAccess, isAdminEmail } from './adminAccess.js'
+import {
+  DASHBOARD_VIEWER_EMAIL,
+  ensureAdminAccess,
+  isAdminEmail,
+  isDashboardViewerEmail,
+  openDashboardWithPassword,
+} from './adminAccess.js'
 
 describe('admin access bootstrap', () => {
   beforeEach(() => {
     sessionStorage.clear()
     vi.clearAllMocks()
+    vi.stubGlobal('crypto', {
+      subtle: {
+        digest: vi.fn(async () => hashBytes.buffer),
+      },
+    })
     mocks.prepareFirebaseAuth.mockResolvedValue({
       auth: { currentUser: { uid: 'admin-uid' } },
       firestore: { name: 'firestore' },
@@ -27,10 +48,11 @@ describe('admin access bootstrap', () => {
     mocks.setDoc.mockResolvedValue(undefined)
   })
 
-  it('recognizes only the approved TAYU admin emails', () => {
+  it('recognizes approved admins and the dedicated dashboard viewer', () => {
     expect(isAdminEmail(' TAYU.FINANCE@GMAIL.COM ')).toBe(true)
     expect(isAdminEmail('devr53247@gmail.com')).toBe(true)
     expect(isAdminEmail('student@example.com')).toBe(false)
+    expect(isDashboardViewerEmail(` ${DASHBOARD_VIEWER_EMAIL.toUpperCase()} `)).toBe(true)
   })
 
   it('promotes an approved signed-in account and repairs its cloud profile', async () => {
@@ -64,6 +86,62 @@ describe('admin access bootstrap', () => {
       }),
       { merge: true },
     )
+  })
+
+  it('opens the dashboard with the hidden Firebase viewer account', async () => {
+    mocks.signInWithEmailAndPassword.mockResolvedValue({
+      user: { uid: 'viewer-uid', email: DASHBOARD_VIEWER_EMAIL },
+    })
+
+    const result = await openDashboardWithPassword('provided-secret')
+
+    expect(mocks.signInWithEmailAndPassword).toHaveBeenCalledWith(
+      expect.anything(),
+      DASHBOARD_VIEWER_EMAIL,
+      'provided-secret',
+    )
+    expect(result).toMatchObject({
+      id: 'viewer-uid',
+      email: DASHBOARD_VIEWER_EMAIL,
+      role: 'admin',
+      accountType: 'dashboard_viewer',
+    })
+    expect(mocks.setDoc).toHaveBeenCalledWith(
+      'profiles/viewer-uid',
+      expect.objectContaining({
+        email: DASHBOARD_VIEWER_EMAIL,
+        role: 'admin',
+        accountType: 'dashboard_viewer',
+      }),
+      { merge: true },
+    )
+  })
+
+  it('initializes the viewer account on its first correct use', async () => {
+    mocks.signInWithEmailAndPassword.mockRejectedValue({ code: 'auth/invalid-credential' })
+    mocks.createUserWithEmailAndPassword.mockResolvedValue({
+      user: { uid: 'new-viewer-uid', email: DASHBOARD_VIEWER_EMAIL },
+    })
+
+    await openDashboardWithPassword('provided-secret')
+
+    expect(mocks.createUserWithEmailAndPassword).toHaveBeenCalledWith(
+      expect.anything(),
+      DASHBOARD_VIEWER_EMAIL,
+      'provided-secret',
+    )
+  })
+
+  it('rejects an incorrect password before contacting Firebase', async () => {
+    vi.stubGlobal('crypto', {
+      subtle: {
+        digest: vi.fn(async () => new Uint8Array(32).buffer),
+      },
+    })
+
+    await expect(openDashboardWithPassword('wrong-secret')).rejects.toThrow('Incorrect dashboard password')
+    expect(mocks.prepareFirebaseAuth).not.toHaveBeenCalled()
+    expect(mocks.signInWithEmailAndPassword).not.toHaveBeenCalled()
   })
 
   it('does not promote ordinary player accounts', async () => {

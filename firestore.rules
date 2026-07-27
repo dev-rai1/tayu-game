@@ -16,12 +16,23 @@ service cloud.firestore {
           || request.auth.token.email == 'devr53247@gmail.com');
     }
 
-    function isAdmin() {
-      return isApprovedAdminEmail() || (
-        signedIn()
+    function isDashboardViewer() {
+      return signedIn()
+        && request.auth.token.email == 'dashboard.viewer@tayufinance.app';
+    }
+
+    function hasAdminProfile() {
+      return signedIn()
         && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
-        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin'
-      );
+        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isAdmin() {
+      return !isDashboardViewer() && (isApprovedAdminEmail() || hasAdminProfile());
+    }
+
+    function canReadDashboard() {
+      return isAdmin() || isDashboardViewer();
     }
 
     function validPublicRole(role) {
@@ -29,7 +40,9 @@ service cloud.firestore {
     }
 
     function validProfileRole(role) {
-      return validPublicRole(role) || (isApprovedAdminEmail() && role == 'admin');
+      return validPublicRole(role)
+        || (isApprovedAdminEmail() && role == 'admin')
+        || (isDashboardViewer() && role == 'admin');
     }
 
     function validAuthActivityType(type) {
@@ -40,7 +53,7 @@ service cloud.firestore {
       allow create: if owns(userId)
         && request.resource.data.email == request.auth.token.email
         && validProfileRole(request.resource.data.role);
-      allow read: if owns(userId) || isAdmin();
+      allow read: if owns(userId) || canReadDashboard();
       allow update: if isAdmin() || (
         owns(userId)
         && request.resource.data.email == resource.data.email
@@ -50,7 +63,8 @@ service cloud.firestore {
     }
 
     match /progress/{userId} {
-      allow read, create, update: if owns(userId) || isAdmin();
+      allow read: if owns(userId) || canReadDashboard();
+      allow create, update: if owns(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -59,7 +73,8 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
         && validAuthActivityType(request.resource.data.type);
-      allow read, delete: if isAdmin();
+      allow read: if canReadDashboard();
+      allow delete: if isAdmin();
       allow update: if false;
     }
   }
