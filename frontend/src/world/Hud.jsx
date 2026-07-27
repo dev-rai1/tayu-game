@@ -14,6 +14,7 @@ import { BudgetPanel } from './BudgetPanels.jsx'
 import { TrustMeter } from './BankPanels.jsx'
 import { shouldShowInteractionPrompt } from './interactionPrompt.js'
 import { getGuidance } from './guidance.js'
+import { MODULE_CATALOG } from '../constants/modules.js'
 
 const JAR_LABEL = { spend: 'SPEND', save: 'SAVE', give: 'GIVE' }
 const JAR_TEXT = { spend: 'text-electric', save: 'text-teal', give: 'text-brandpurple' }
@@ -1061,11 +1062,7 @@ function LessonCard() {
 // RESOURCES
 // (every Learn More resource, organized by module). Shown once at entry.
 const MODULES = [
-  { n: 1, title: 'The Market', desc: 'Split your allowance into jars, then shop for needs and wants.' },
-  { n: 2, title: 'The Lemonade Stand', desc: 'EARN it: run a real little business - supplies, price, profit.' },
-  { n: 3, title: 'Budget Town', desc: 'BUDGET it: split your money - pocket, bank, and garden.' },
-  { n: 4, title: 'The Bank', desc: 'BANK it: accounts, cards, debt, scams, and your trust score.' },
-  { n: 5, title: 'The Money Garden', desc: 'GROW it: invest wisely and watch your money work.' },
+  ...MODULE_CATALOG,
   { n: 6, title: 'Finale Area', desc: 'CELEBRATE: music, dancing, and your certificate!' },
 ]
 
@@ -1113,6 +1110,7 @@ function ModulesTab({ week, gameComplete, sel, setSel }) {
                   </span>
                 </div>
               </button>
+              {active && p.grades && <div className="mt-1 text-[10px] font-extrabold uppercase tracking-wide text-teal">{p.grades}</div>}
               {active && <p className="mt-1 text-xs font-semibold text-white/80">{p.desc}</p>}
               {active && p.n <= 5 && (
                 <button
