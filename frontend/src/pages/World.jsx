@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import { GameWorld } from '../world/GameWorld.jsx'
 import { Hud } from '../world/Hud.jsx'
-import { MobileControls, isTouch } from '../world/MobileControls.jsx'
+import { MobileControls } from '../world/MobileControls.jsx'
+import { usesTouchControls } from '../world/controlMode.js'
 import { useGame } from '../world/store.js'
 import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
@@ -68,7 +69,7 @@ export default function World() {
     <div className="fixed inset-0 overflow-hidden bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
-      {use3D && isTouch && <MobileControls />}
+      {use3D && usesTouchControls && <MobileControls />}
 
       {/* welcome popup */}
       {welcome && (
