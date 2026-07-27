@@ -5,14 +5,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
+import { MODULE_CATALOG } from '../constants/modules.js'
 
-export const MODULE_CARDS = [
-  { n: 1, badge: 'jars', title: 'The Market & Jars', grades: 'Best for grades K-2', desc: 'Split your allowance to spend, save, and give - then shop smart.', color: '#1464F0' },
-  { n: 2, badge: 'lemonade', title: 'The Lemonade Stand', grades: 'Best for grades 2-4', desc: 'Run a real stand: supplies, your price, profit, and a simple tax.', color: '#FFD700' },
-  { n: 3, badge: 'budget', title: 'Budget Town', grades: 'Best for grades 3-5', desc: 'Live one day: needs first, wants after, and plan the leftover.', color: '#00DCA0' },
-  { n: 4, badge: 'bank', title: 'The Bank of TAYU', grades: 'Best for grades 4-6', desc: 'Vaults, accounts, debit vs credit, what borrowing costs, scams.', color: '#7850F0' },
-  { n: 5, badge: 'garden', title: 'The Money Garden', grades: 'Best for grades 4-6', desc: 'Invest with patience and watch small amounts grow over time.', color: '#00b37f' },
-]
+export const MODULE_CARDS = MODULE_CATALOG
 
 export default function ModuleSelect() {
   const nav = useNavigate()
@@ -54,7 +49,7 @@ export default function ModuleSelect() {
                   {done ? 'DONE' : inProgress ? 'IN PROGRESS' : 'NOT STARTED'}
                 </span>
               </div>
-              <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{m.grades}</div>
+              <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">Best for {m.grades.toLowerCase()}</div>
               <p className="mt-2 text-sm font-semibold text-white/80">{m.desc}</p>
               <div className="mt-3 text-sm font-extrabold" style={{ color: m.color }}>{done ? 'Play again' : inProgress ? 'Continue' : 'Start here'} →</div>
             </button>
