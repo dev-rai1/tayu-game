@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from './store.js'
-import { JARS, STORE_ITEMS } from './config.js'
+import { JARS } from './config.js'
 import {
   BUNDLES, PROFIT_GOAL, HOURS_OPTIONS, QUALITY, SIGNS, WAGE_RATES,
   PRICE_MIN, PRICE_MAX, PRICE_STEP, PRICE_STEP_BIG,
@@ -13,6 +13,7 @@ import { say } from '../services/speech.js'
 import { BudgetPanel } from './BudgetPanels.jsx'
 import { TrustMeter } from './BankPanels.jsx'
 import { shouldShowInteractionPrompt } from './interactionPrompt.js'
+import { getGuidance } from './guidance.js'
 
 const JAR_LABEL = { spend: 'SPEND', save: 'SAVE', give: 'GIVE' }
 const JAR_TEXT = { spend: 'text-electric', save: 'text-teal', give: 'text-brandpurple' }
@@ -150,23 +151,13 @@ function MarketMissionBar() {
   const spend = useGame((s) => s.allocations.spend)
   const bought = useGame((s) => s.bought)
   if (week !== 1 || objective !== 'store' || !talked) return null
-  const basket = bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
-  const hasFood = basket.some((item) => item.tags?.includes('food'))
-  const hasDrink = basket.some((item) => item.tags?.includes('drink'))
-  const readyForCheckout = hasFood && hasDrink
   return (
     <div className="absolute left-1/2 top-[72px] z-[165] w-[min(94vw,32rem)] -translate-x-1/2 rounded-2xl bg-navy/90 px-4 py-3 text-center text-white shadow-xl">
-      <div className={readyForCheckout ? "text-lg font-extrabold text-sun" : "font-extrabold"}>
-        {readyForCheckout ? 'Food and drink ready! Go to CHECKOUT ↓' : 'Pick 1 healthy food + 1 healthy drink'}
-      </div>
+      <div className="font-extrabold">Pick 1 healthy food + 1 healthy drink</div>
       <div className="mt-1 text-sm font-bold text-white/75">
         SPEND money left: <span className="text-sun">${fmt(spend)}</span> · Basket: {bought.length} item{bought.length === 1 ? '' : 's'}
       </div>
-      <div className={readyForCheckout ? "mt-1 rounded-xl bg-teal px-3 py-2 text-sm font-extrabold text-navy" : "text-xs text-teal"}>
-        {readyForCheckout
-          ? `Walk to the glowing green CHECKOUT at the front of the store and ${USES_TOUCH_CONTROLS ? 'tap the blue button' : 'press E'}.`
-          : 'You may spend it or save what is left for later.'}
-      </div>
+      <div className="text-xs text-teal">You may spend it or save what is left for later.</div>
     </div>
   )
 }
@@ -1268,6 +1259,10 @@ export function Hud({ playerName, onContinue }) {
   const near = useGame((s) => s.near)
   const panelJar = useGame((s) => s.panelJar)
   const panelItem = useGame((s) => s.panelItem)
+  const panelPortfolio = useGame((s) => s.panelPortfolio)
+  const btPanel = useGame((s) => s.btPanel)
+  const bkPanel = useGame((s) => s.bkPanel)
+  const helpOpen = useGame((s) => s.helpOpen)
   const dialog = useGame((s) => s.dialog)
   const lessons = useGame((s) => s.lessons)
   const cards = useGame((s) => s.cards)
@@ -1281,6 +1276,7 @@ export function Hud({ playerName, onContinue }) {
   const lemPhase = useGame((s) => s.lemPhase)
   const lemCumProfit = useGame((s) => s.lemCumProfit)
   const bramTalked = useGame((s) => s.bramTalked)
+  const bought = useGame((s) => s.bought)
   const mg = useGame((s) => s.mg)
   const bt = useGame((s) => s.bt)
   const bk = useGame((s) => s.bk)
@@ -1290,26 +1286,12 @@ export function Hud({ playerName, onContinue }) {
   const shownWallet = useCountUp(wallet)
 
   const gameComplete = useGame((s) => s.gameComplete)
-  const hint = gameComplete
-    ? 'Follow the gold arrow to the FINALE AREA'
-    : week === 5
-    ? !mg ? 'Follow the arrow to Mr. Sprout'
-      : mg.phase === 'adjust' ? `Week ${Math.min(mg.week, TOTAL_WEEKS)}: open My Portfolio`
-      : mg.phase === 'slider' ? 'Choose how to divide your garden money'
-      : `Week ${Math.min(mg.week, TOTAL_WEEKS)}: complete the choice on screen`
-    : week === 4
-    ? !bk || !bk.seen?.intro ? 'Follow the arrow to Banker Bea'
-      : `Bank lesson ${Math.min(bk.week, 6)} of 6: complete the choice on screen`
-    : week === 3
-    ? !bt || bt.stage === 'intro' ? 'Follow the arrow to the Budget Keeper'
-      : bt.stage === 'split' ? 'Build your Pocket, Bank, and Garden plan'
-      : `Budget Town: complete the ${bt.stage} choice on screen`
-    : week === 2
-    ? (lemPhase === 'toMarket' ? 'Follow the arrow to Mr. Bram for supplies' : lemPhase === 'toStand' ? 'Follow the arrow to Penny at the stand' : lemPhase === 'toStand2' ? 'Return to the stand and build your plan' : `Business goal: earn $${PROFIT_GOAL} profit`)
-    : objective === 'mailbox' ? 'Follow the arrow to the ALLOWANCE BANK'
-    : objective === 'kitchen' ? (scenario ? `${scenario.title}: put all $30 into the three jars` : 'Put all $30 into the three jars')
-    : objective === 'store' ? (bramTalked ? 'Choose a healthy food and drink, then check out' : 'Follow the arrow and talk to Mr. Bram first')
-    : 'Week complete!'
+  const guidance = getGuidance({
+    week, objective, scenarioLocked, scenario, gameComplete, lemPhase, bramTalked,
+    bought, mg, bt, bk, weekComplete,
+    cards, lessons, dialog, panelJar, panelItem,
+    btPanel, bkPanel, panelPortfolio, helpOpen,
+  }, USES_TOUCH_CONTROLS)
 
   const promptOpen = shouldShowInteractionPrompt(near) && !panelJar && !panelItem && !dialog && !weekComplete && !scenarioLocked && lessons.length === 0 && cards.length === 0
 
@@ -1354,12 +1336,13 @@ export function Hud({ playerName, onContinue }) {
       </div>
 
       <div className="absolute right-4 top-4 flex items-start gap-2">
-        <div aria-live="polite" className="glass max-w-[min(58vw,24rem)] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
+        <div aria-live="polite" className="glass max-w-[min(64vw,28rem)] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
           <div className="flex items-center justify-end gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-electric">
             <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-electric" />
-            Next step
+            {guidance.title}
           </div>
-          <div className="mt-0.5 leading-snug">{hint}</div>
+          <div className="mt-0.5 leading-snug">{guidance.instruction}</div>
+          <div className="mt-1 text-[11px] font-extrabold text-electric">{guidance.action}</div>
         </div>
         <HelpButton />
       </div>
