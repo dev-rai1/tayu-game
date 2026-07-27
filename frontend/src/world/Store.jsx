@@ -53,10 +53,11 @@ function Shelf({ z }) {
 // Checkout mat - walk onto it and press E to end the shopping trip.
 function Checkout() {
   const ring = useRef()
-  const labelTex = labelTexture('CHECKOUT', { bg: '#00DCA0', color: '#071748', accent: '#071748' })
+  const labelTex = labelTexture('↓ CHECKOUT HERE ↓', { bg: '#00DCA0', color: '#071748', accent: '#FFD700' })
   useFrame(() => {
     const st = useGame.getState()
-    const active = st.bought.length > 0
+    const basket = st.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
+    const active = basket.some((item) => item.tags?.includes('food')) && basket.some((item) => item.tags?.includes('drink'))
     if (ring.current) {
       const pulse = active ? Math.sin(Date.now() * 0.005) * 0.25 + 0.6 : 0.15
       ring.current.material.opacity = pulse
@@ -65,13 +66,17 @@ function Checkout() {
   return (
     <group position={[0, 0, 4.2]}>
       <mesh ref={ring} position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.8, 1.3, 32]} /><meshBasicMaterial color="#00DCA0" transparent opacity={0.15} toneMapped={false} />
+        <ringGeometry args={[1.05, 1.75, 32]} /><meshBasicMaterial color="#00DCA0" transparent opacity={0.15} toneMapped={false} />
       </mesh>
       <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.8, 32]} /><meshStandardMaterial color="#00DCA0" transparent opacity={0.22} roughness={0.9} />
+        <circleGeometry args={[1.05, 32]} /><meshStandardMaterial color="#00DCA0" transparent opacity={0.22} roughness={0.9} />
       </mesh>
-      <Billboard position={[0, 1.4, 0]}>
-        <mesh><planeGeometry args={[1.5, 0.47]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
+      <mesh position={[0, 1.35, 0]}>
+        <cylinderGeometry args={[0.55, 1.15, 2.7, 24, 1, true]} />
+        <meshBasicMaterial color="#00DCA0" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <Billboard position={[0, 2.45, 0]}>
+        <mesh><planeGeometry args={[3.2, 1]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
       </Billboard>
     </group>
   )
