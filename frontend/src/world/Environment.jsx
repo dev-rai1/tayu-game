@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfPaths, ringPoint, worldScale } from './config.js'
+import { BLOCKERS, DISTRICT_GAP_ANGLES, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfPaths, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -119,6 +119,43 @@ const FLOWER_SPOTS = [
   return [sx, sz, c]
 }).filter(([x, z]) => isClearOfPaths([x, z], 0.55))
 
+const roadsideSpot = (angle, radialOffset, tangentOffset = 0) => {
+  const [x, z] = ringPoint(angle)
+  const rx = (x - RING.c[0]) / RING.r
+  const rz = (z - RING.c[1]) / RING.r
+  const tx = -rz
+  const tz = rx
+  return {
+    x: x + rx * radialOffset + tx * tangentOffset,
+    z: z + rz * radialOffset + tz * tangentOffset,
+  }
+}
+
+// Each gap gets a layered grove on the OUTSIDE of the route: three trees,
+// four bushes, and a flower ribbon. This creates visible scenery between
+// buildings while preserving an open road and entrance sightlines.
+const GROVE_TREE_SPOTS = DISTRICT_GAP_ANGLES.flatMap((angle, i) => [
+  { ...roadsideSpot(angle, 6.8, -2.7), s: 1.05, c: i * 3 },
+  { ...roadsideSpot(angle, 7.8, 0.2), s: 1.25, c: i * 3 + 1 },
+  { ...roadsideSpot(angle, 6.6, 2.8), s: 0.9, c: i * 3 + 2 },
+])
+
+const TRANSITION_BUSHES = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
+  [-4.2, -1.4, 1.4, 4.2].map((tangent, n) => ({
+    ...roadsideSpot(angle, 4.9 + (n % 2) * 0.5, tangent),
+    y: 0.42,
+    s: 0.8 + (n % 3) * 0.12,
+    c: i + n,
+  })),
+)
+
+const TRANSITION_FLOWERS = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
+  [-4.8, -3.2, -1.6, 0, 1.6, 3.2, 4.8].map((tangent, n) => ({
+    ...roadsideSpot(angle, 3.9, tangent),
+    c: i + n,
+  })),
+)
+
 const GEO = {
   trunk: new THREE.CylinderGeometry(0.16, 0.26, 1.3, 7),
   canopy: new THREE.IcosahedronGeometry(0.95, 1),
@@ -130,10 +167,11 @@ const GEO = {
 }
 
 function InstancedTrees() {
-  const trunks = TREE_SPOTS.map((t) => ({ x: t.x, z: t.z, s: t.s, y: 0.65 * t.s, c: 0 }))
-  const canopies = TREE_SPOTS.map((t) => ({ x: t.x, z: t.z, s: t.s, y: 1.75 * t.s, c: t.c }))
-  const blobsA = TREE_SPOTS.map((t) => ({ x: t.x + 0.45 * t.s, z: t.z + 0.25 * t.s, s: t.s, y: 1.45 * t.s, c: t.c + 1 }))
-  const blobsB = TREE_SPOTS.map((t) => ({ x: t.x - 0.4 * t.s, z: t.z - 0.2 * t.s, s: t.s, y: 1.55 * t.s, c: t.c + 2 }))
+  const allTrees = [...TREE_SPOTS, ...GROVE_TREE_SPOTS]
+  const trunks = allTrees.map((t) => ({ x: t.x, z: t.z, s: t.s, y: 0.65 * t.s, c: 0 }))
+  const canopies = allTrees.map((t) => ({ x: t.x, z: t.z, s: t.s, y: 1.75 * t.s, c: t.c }))
+  const blobsA = allTrees.map((t) => ({ x: t.x + 0.45 * t.s, z: t.z + 0.25 * t.s, s: t.s, y: 1.45 * t.s, c: t.c + 1 }))
+  const blobsB = allTrees.map((t) => ({ x: t.x - 0.4 * t.s, z: t.z - 0.2 * t.s, s: t.s, y: 1.55 * t.s, c: t.c + 2 }))
   return (
     <group>
       <Scatter geometry={GEO.trunk} colors={[P.trunk]} items={trunks} castShadow flat={false} />
@@ -367,6 +405,10 @@ export function Environment3D() {
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
+      {/* Dense transition landscaping between every pair of module districts. */}
+      <Scatter geometry={GEO.bush} colors={[P.leaf1, P.leaf2, P.leaf3]} items={TRANSITION_BUSHES} castShadow />
+      <Scatter geometry={GEO.stem} colors={['#4f9a3f']} items={TRANSITION_FLOWERS.map((f) => ({ ...f, y: 0.18 }))} flat={false} />
+      <Scatter geometry={GEO.petal} colors={['#ef6f6f', '#f5c542', '#7aa6ff', '#c77dff', '#ff9f43', '#ff8fb3']} items={TRANSITION_FLOWERS.map((f) => ({ ...f, y: 0.4 }))} />
       {/* palms around the lake shore and the ring's outer edge */}
       {PALM_SPOTS.map(({ x, z, s, i }) => (
         <Palm key={`p${i}`} x={x} z={z} scale={s} lean={i % 2 ? 0.12 : -0.1} />
