@@ -1,43 +1,82 @@
-# TAYU Accounts — how to turn on CLOUD mode
+# TAYU Firebase accounts
 
-The login/account system ships in two modes:
+TAYU now uses the same Firebase project for Hosting, Authentication, and Cloud
+Firestore. When the Firebase web environment variables are present, users get
+real cross-device accounts, persisted login sessions, synced progress, and
+password-reset emails. Without those variables, the app still boots in local
+practice mode, but accounts stay on that browser and reset emails cannot send.
 
-- **Demo mode (right now, no setup):** the full flow works — sign-up with all
-  the profile questions, log in, saved progress per account, the admin
-  analytics dashboard — but accounts live only in that device's browser
-  storage, and password-reset emails cannot send. The admin account
-  (`tayu.finance@gmail.com` / `tayuadmin9587`) and Dev's account
-  (`devr53247@gmail.com`, password set on first sign-up) are pre-seeded.
-- **Cloud mode (10 minutes of setup):** real accounts for everyone, on every
-  device, with secure hashed passwords and working reset emails, via
-  Supabase's free tier.
+## One-time Firebase Console setup
 
-## Turning on cloud mode
+1. Open the Firebase project `tayu-financial-literacy`.
+2. Go to **Build -> Authentication -> Sign-in method** and enable
+   **Email/Password**.
+3. Go to **Build -> Firestore Database** and create the database.
+4. Go to **Project settings -> General -> Your apps**. Create or select the web
+   app and copy its Firebase configuration values.
+5. In **Authentication -> Settings -> Authorized domains**, confirm that
+   `tayufinance.app`, the Firebase Hosting domains, and any preview domain used
+   for testing are listed.
 
-1. Create a free project at https://supabase.com (any name, any region).
-2. In the project: **SQL Editor → New query**, paste the contents of
-   `supabase-setup.sql` (in this folder), Run. Follow the comment in step 4
-   of that file to create the admin user first (Authentication → Users →
-   Add user → `tayu.finance@gmail.com` / `tayuadmin9587`, auto-confirm ON),
-   then re-run the final insert so it gets the admin role.
-3. Project **Settings → API**: copy the *Project URL* and the *anon public*
-   key.
-4. In Vercel (project `finquest1/tayu`): **Settings → Environment
-   Variables**, add both for Production (and Preview):
-   - `VITE_SUPABASE_URL` = the project URL
-   - `VITE_SUPABASE_ANON_KEY` = the anon key
-5. Redeploy. The login page badge switches from "demo" to cloud
-   automatically; reset emails now send (Supabase → Authentication → Email
-   Templates to customize the wording).
+## Environment variables
 
-Passwords are hashed by Supabase Auth — never stored by TAYU. The anon key
-is safe to expose in the client; the row-level-security policies in the SQL
-file are what protect the data (users only see their own rows, admins see
-everything).
+Copy `frontend/.env.example` to `frontend/.env` for local builds, or add the
+same names as GitHub Actions repository secrets:
 
-## Where things live in the code
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_DATABASE_URL` (optional; used by the existing realtime solo mode)
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
 
-- `frontend/src/services/auth.js` — the whole account layer (cloud + demo).
-- `frontend/src/pages/Auth.jsx` — Log In / Sign Up / Forgot password.
-- `frontend/src/pages/Dashboard.jsx` — the admin analytics (role=admin only).
-- Progress syncs automatically ~2.5s after every game save.
+Vite embeds these public Firebase web configuration values during the build.
+Access control is enforced by Authentication and `firestore.rules`; never put a
+Firebase Admin SDK private key in a `VITE_` variable.
+
+## Deploy
+
+The repository is already connected to the Firebase project through
+`.firebaserc`. Build and deploy Hosting plus Firestore rules with:
+
+```bash
+cd frontend
+npm ci
+npm run build
+cd ..
+firebase deploy --only hosting,firestore:rules
+```
+
+The GitHub Actions workflow performs the same deployment from `main` when the
+Firebase environment secrets and `FIREBASE_TOKEN` are configured.
+
+## Admin access
+
+Normal sign-up can create only `student`, `teacher`, or `other` profiles. To
+make an existing Firebase user an administrator, open **Firestore Database ->
+profiles -> the user's UID** and change the `role` field to `admin`. Firestore
+rules prevent a normal user from promoting their own account.
+
+## Where to verify it
+
+- **Authentication -> Users:** registered email/password accounts.
+- **Firestore Database -> profiles:** role and sign-up questions by Firebase UID.
+- **Firestore Database -> progress:** each user's synced game snapshot.
+- **Hosting:** production releases and the Firebase site URLs.
+
+## Password reset flow
+
+The login page includes **Forgot password?**. Firebase sends the reset email and
+returns the user to `/login?mode=signin` after the password is changed. Reset
+links require the website domain to be listed under Authentication's authorized
+domains.
+
+## Main code locations
+
+- `frontend/src/services/firebase.js` — shared Firebase initialization.
+- `frontend/src/services/auth.js` — sign-up, sign-in, logout, reset email,
+  Firestore profiles/progress, and local practice fallback.
+- `frontend/src/pages/Auth.jsx` — account and forgot-password interface.
+- `firestore.rules` — profile/progress access control.
+- `.github/workflows/firebase-hosting-deploy.yml` — automatic deployment.
