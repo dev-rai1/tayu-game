@@ -1,7 +1,5 @@
-// TAYU account layer.
-// FIREBASE MODE when Firebase Hosting or VITE_FIREBASE_* configuration is present:
-// real Firebase Authentication, password-reset emails, Firestore profiles, and synced progress.
-// LOCAL DEMO MODE otherwise: accounts and progress remain on this device only.
+// TAYU account layer: Firebase Authentication, password-reset emails,
+// Firestore profiles, and synced progress.
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -15,7 +13,7 @@ import { loadWallet, saveWallet, loadProfile, saveProfile } from './walletStore.
 
 export const isCloud = () => isFirebaseConfigured()
 
-// ---- local demo store ----
+// Legacy compatibility data is read only to help older accounts move into Firebase.
 const LKEY = 'tayu-accounts-v1'
 const SKEY = 'tayu-session-v1'
 const GKEY = 'tayu-guest-progress-v1'
@@ -25,14 +23,18 @@ const writeAccounts = (accounts) => localStorage.setItem(LKEY, JSON.stringify(ac
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase()
 const localAccountFor = (email) => readAccounts()[normalizeEmail(email)] || null
 
+// Remove the old persistent session key. Registered users now authenticate for
+// each new browser session, while sessionStorage preserves normal page refreshes.
+if (typeof window !== 'undefined') localStorage.removeItem(SKEY)
+
 async function hashPw(password, salt) {
   const data = new TextEncoder().encode(`${salt}:${password}`)
   const hash = await crypto.subtle.digest('SHA-256', data)
   return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
-// These demo accounts are used only when Firebase is not configured. Production
-// Firebase credentials are never stored in the client code.
+// Retained only for compatibility if Firebase configuration is unavailable in a
+// development build. Production credentials are never stored in client code.
 export async function seedLocalAccounts() {
   const accounts = readAccounts()
   if (!accounts['tayu.finance@gmail.com'] || accounts['tayu.finance@gmail.com'].credentialVersion !== DEMO_ADMIN_CREDENTIAL_VERSION) {
@@ -56,7 +58,7 @@ export async function seedLocalAccounts() {
 
 // ---- session ----
 export function currentUser() {
-  try { return JSON.parse(localStorage.getItem(SKEY) || 'null') } catch { return null }
+  try { return JSON.parse(sessionStorage.getItem(SKEY) || 'null') } catch { return null }
 }
 
 function readGuestProgress() {
@@ -80,8 +82,9 @@ export function startGuestSession() {
 }
 
 function setSession(user) {
-  if (user) localStorage.setItem(SKEY, JSON.stringify(user))
-  else localStorage.removeItem(SKEY)
+  localStorage.removeItem(SKEY)
+  if (user) sessionStorage.setItem(SKEY, JSON.stringify(user))
+  else sessionStorage.removeItem(SKEY)
   window.dispatchEvent(new Event('tayu-auth-changed'))
 }
 
@@ -91,7 +94,7 @@ function normalizeRole(role) {
 
 function firebaseError(error, fallback) {
   const messages = {
-    'auth/email-already-in-use': 'That email already has a Firebase account. Use Log In or Forgot password.',
+    'auth/email-already-in-use': 'That email already has an account. Use Log In or Forgot password.',
     'auth/invalid-email': 'Please enter a real email address.',
     'auth/invalid-credential': 'Email or password did not match.',
     'auth/user-not-found': 'Email or password did not match.',
@@ -99,12 +102,12 @@ function firebaseError(error, fallback) {
     'auth/user-disabled': 'This account has been disabled. Please contact TAYU.',
     'auth/weak-password': 'Password needs at least 6 characters.',
     'auth/too-many-requests': 'Too many attempts. Please wait a little and try again.',
-    'auth/network-request-failed': 'We could not reach Firebase. Check your internet connection and try again.',
-    'auth/operation-not-allowed': 'Email/password accounts are not enabled in Firebase yet. Enable Email/Password under Firebase Authentication.',
-    'auth/configuration-not-found': 'Firebase Authentication is not fully configured for this project yet.',
-    'auth/unauthorized-domain': 'This website domain is not authorized in Firebase Authentication settings.',
-    'auth/invalid-continue-uri': 'The password-reset return address is not allowed by Firebase.',
-    'auth/invalid-api-key': 'The website is connected to an invalid Firebase configuration.',
+    'auth/network-request-failed': 'We could not reach the account service. Check your internet connection and try again.',
+    'auth/operation-not-allowed': 'Email/password accounts are not enabled yet. Please contact TAYU.',
+    'auth/configuration-not-found': 'Account services are not fully configured yet.',
+    'auth/unauthorized-domain': 'This website is not authorized for account access yet.',
+    'auth/invalid-continue-uri': 'The password-reset return address is not allowed.',
+    'auth/invalid-api-key': 'The website account configuration is invalid.',
   }
   return new Error(messages[error?.code] || fallback || error?.message || 'Something went wrong. Please try again.')
 }
@@ -114,7 +117,7 @@ function isCredentialMismatch(error) {
 }
 
 function legacyMigrationMessage() {
-  return 'This email was created in TAYU’s older device-only account system and is not yet a Firebase cloud account. Open Sign Up, use the same email, and choose a password to move it to the cloud.'
+  return 'This email has not been activated in the new account system yet. Open Sign Up, use the same email, and choose a password to activate it.'
 }
 
 async function firebaseProfile(firestore, uid) {
@@ -237,7 +240,7 @@ export async function resetPassword(email) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   const firebase = await prepareFirebaseAuth()
   if (!firebase) {
-    throw new Error('Password-reset emails need Firebase to be connected. This device is currently using practice mode.')
+    throw new Error('Account services are temporarily unavailable. Please refresh and try again.')
   }
 
   try {
@@ -245,13 +248,13 @@ export async function resetPassword(email) {
     // delivery to fail when the custom domain has not been added to Authorized domains.
     await sendPasswordResetEmail(firebase.auth, email)
     const legacyAccount = localAccountFor(email)
-    const legacyNote = legacyAccount && !legacyAccount.migratedToFirebase
-      ? ' This browser also has an older device-only account with that email. If no email arrives, use Sign Up with the same email to move it to Firebase first.'
+    const activationNote = legacyAccount && !legacyAccount.migratedToFirebase
+      ? ' If no email arrives, use Sign Up with the same email to activate the account first.'
       : ''
-    return `If a Firebase account uses that email, a password-reset link was sent. Check your inbox and spam folder.${legacyNote}`
+    return `If an account uses that email, a password-reset link was sent. Check your inbox and spam folder.${activationNote}`
   } catch (error) {
     if (error?.code === 'auth/user-not-found') {
-      return 'If a Firebase account uses that email, a password-reset link was sent. Check your inbox and spam folder.'
+      return 'If an account uses that email, a password-reset link was sent. Check your inbox and spam folder.'
     }
     throw firebaseError(error, 'We could not send the reset email. Please try again.')
   }
@@ -335,7 +338,7 @@ export async function adminData() {
   }))
 }
 
-// Keep a locally cached session aligned with Firebase's persisted auth state.
+// Keep the session cache aligned with Firebase's current authentication state.
 let stopFirebaseAuthSync = null
 async function startFirebaseAuthSync() {
   if (!isCloud() || stopFirebaseAuthSync) return
@@ -346,8 +349,8 @@ async function startFirebaseAuthSync() {
       if (currentUser()?.cloud) setSession(null)
       return
     }
-    // Anonymous auth belongs to the existing guest/solo-mode flow and should
-    // never be promoted into a permanent student account session.
+    // Anonymous authentication belongs to guest mode and should never be
+    // promoted into a permanent student account session.
     if (user.isAnonymous) return
     try {
       const profile = await firebaseProfile(firebase.firestore, user.uid)
@@ -358,7 +361,7 @@ async function startFirebaseAuthSync() {
   })
 }
 
-// Keep cloud/local progress fresh: the wallet store announces every save.
+// Keep account progress fresh whenever the wallet store announces a save.
 let syncTimer = null
 if (typeof window !== 'undefined') {
   window.addEventListener('tayu-progress-saved', () => {
