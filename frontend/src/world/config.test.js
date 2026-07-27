@@ -51,31 +51,26 @@ describe('world path separation', () => {
     expect(isClearOfModuleGates(ringPoint(120.5))).toBe(true)
   })
 
-  it('builds a symmetrical two-sided royal finale approach', () => {
-    expect(PATHS.royalPartyLeft.at(-1)).toEqual(ROYAL_APPROACH.entrance)
-    expect(PATHS.royalPartyRight.at(-1)).toEqual(ROYAL_APPROACH.entrance)
-
-    const leftRadius = Math.hypot(
-      ROYAL_APPROACH.leftGate[0] - RING.c[0],
-      ROYAL_APPROACH.leftGate[1] - RING.c[1],
-    )
-    const rightRadius = Math.hypot(
-      ROYAL_APPROACH.rightGate[0] - RING.c[0],
-      ROYAL_APPROACH.rightGate[1] - RING.c[1],
-    )
-    expect(leftRadius).toBeCloseTo(rightRadius, 6)
-
-    const distanceToHouse = Math.hypot(
-      ROYAL_APPROACH.entrance[0] - PARTY_HOUSE[0],
-      ROYAL_APPROACH.entrance[1] - PARTY_HOUSE[1],
-    )
-    expect(distanceToHouse).toBeGreaterThanOrEqual(2.65)
+  it('ends the normal road at Money Garden and uses one gold Finale path', () => {
+    const finalModuleGate = ringPoint(14)
+    expect(PATHS.ring.at(-1)).toEqual(finalModuleGate)
+    expect(ROYAL_APPROACH.gate).toEqual(finalModuleGate)
+    expect(PATHS.royalParty[0]).toEqual(finalModuleGate)
+    expect(PATHS.royalParty.at(-1)).toEqual(ROYAL_APPROACH.entrance)
+    expect(PATHS.royalParty.length).toBeGreaterThanOrEqual(7)
+    expect(PATHS.royalPartyLeft).toBeUndefined()
+    expect(PATHS.royalPartyRight).toBeUndefined()
   })
 
-  it('starts the short finale crown immediately after the last module', () => {
-    expect(ROYAL_APPROACH.leftGate).toEqual(ringPoint(2))
-    expect(PATHS.royalPartyLeft.length).toBeGreaterThanOrEqual(6)
-    expect(PATHS.royalPartyRight.length).toBeGreaterThanOrEqual(6)
+  it('connects every path from Lemonade onward to its real interaction point', () => {
+    expect(PATHS.spurLemonade.at(-1)).toEqual(LEMONADE)
+    expect(PATHS.spurBudget.at(-1)).toEqual([BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4])
+    expect(PATHS.spurBank.at(-1)).toEqual([BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2])
+    expect(PATHS.spurGarden.at(-1)).toEqual([SPROUT[0] - 6.2, SPROUT[1] + 4.6])
+  })
+
+  it('uses support landmarks instead of decorative center houses', () => {
+    expect(CENTER_BUILDINGS.map((building) => building.type)).toEqual(['rest', 'help', 'water', 'calm'])
   })
 
   it('keeps all center buildings outside every walking path', () => {
