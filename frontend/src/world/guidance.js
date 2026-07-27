@@ -7,7 +7,6 @@ const marketReady = (bought = []) => {
   return basket.some((item) => item.tags?.includes('food'))
     && basket.some((item) => item.tags?.includes('drink'))
 }
-
 const guide = (title, instruction, action) => ({ title, instruction, action })
 
 // One source of truth for the persistent NEXT STEP card. Every state answers:
@@ -97,4 +96,3 @@ export function getGuidance(st, touch = false) {
 
   return guide('FOLLOW YOUR NEXT STEP', 'Use the arrow and the instruction shown on screen.', `${act} near the highlighted person or place`)
 }
-
