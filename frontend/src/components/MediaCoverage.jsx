@@ -11,35 +11,20 @@ export function MediaCoverage({ compact = false, about = false }) {
   if (compact) {
     return (
       <section className={sectionClass} aria-labelledby={titleId}>
-        <div className="mx-auto max-w-5xl rounded-[2rem] bg-gradient-to-r from-[#d71920] via-navy to-electric p-[2px] shadow-xl">
-          <div className="grid items-stretch gap-3 rounded-[1.85rem] bg-white/95 p-4 backdrop-blur md:grid-cols-[minmax(190px,0.72fr)_1fr_1fr]">
-            <div className="flex flex-col justify-center px-2 text-center md:text-left">
-              <p className="font-display text-[11px] font-extrabold uppercase tracking-[0.2em] text-electric">As seen in the news</p>
-              <h2 id={titleId} className="mt-1 font-display text-xl font-extrabold leading-tight text-navy">TAYU in the spotlight</h2>
-              <p className="mt-1 text-xs font-semibold leading-relaxed text-navy/60">See the student-led story behind our game, book, and classroom impact.</p>
-            </div>
-
-            <div className="rounded-2xl border border-[#d71920]/20 bg-[#fff6f6] p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between gap-3">
-                <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-xs font-extrabold text-white">FOX 5 DC</span>
-                <span className="text-[11px] font-extrabold uppercase tracking-wide text-[#d71920]">Live feature</span>
-              </div>
-              <p className="mt-2 font-display text-base font-extrabold text-navy">The Cash Classroom and TAYU</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920] px-3 py-2 text-xs font-extrabold text-white transition hover:opacity-90">View FOX 5 page →</a>
-                <a href={FOX_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#d71920]/25 bg-white px-3 py-2 text-xs font-extrabold text-[#b51219] transition hover:bg-[#fff0f0]">Watch clip</a>
-              </div>
-            </div>
-
-            <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex items-center justify-between gap-3">
-                <span className="rounded-lg bg-electric px-3 py-1 font-display text-xs font-extrabold text-white">WTOP NEWS</span>
-                <span className="text-xs font-extrabold text-electric">Read article →</span>
-              </div>
-              <p className="mt-2 font-display text-base font-extrabold text-navy">Fairfax students teach financial literacy</p>
-              <p className="mt-1 text-xs font-semibold leading-relaxed text-navy/60">Read about the team&rsquo;s book and work with elementary students.</p>
-            </a>
-          </div>
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
+          <span id={titleId} className="font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
+            As seen on
+          </span>
+          <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
+            FOX 5 DC story
+          </a>
+          <a href={FOX_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl px-2 py-1.5 text-xs font-bold text-navy/65 underline-offset-2 hover:text-navy hover:underline">
+            Watch clip
+          </a>
+          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
+            WTOP story
+          </a>
         </div>
       </section>
     )
