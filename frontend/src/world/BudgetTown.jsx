@@ -294,6 +294,10 @@ export function BudgetTown() {
         <circleGeometry args={[7.2, 40]} />
         <meshStandardMaterial color="#a7d08a" roughness={1} />
       </mesh>
+      <mesh position={[1.9, 0.03, 4]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2, 4]} />
+        <meshStandardMaterial color="#efe6d2" roughness={1} />
+      </mesh>
       {/* the district sign, readable from the ring approach */}
       <Billboard position={[0, 6.6, 1]}>
         <mesh><planeGeometry args={[6.4, 2]} /><meshBasicMaterial map={labelTexture('BUDGET TOWN', { bg: '#071748', color: '#ffffff', accent: '#00DCA0' })} transparent depthTest={false} /></mesh>
