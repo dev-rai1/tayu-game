@@ -1,6 +1,6 @@
 // TAYU account layer.
-// FIREBASE MODE when the VITE_FIREBASE_* variables are present: real Firebase
-// Authentication, password-reset emails, Firestore profiles, and synced progress.
+// FIREBASE MODE when Firebase Hosting or VITE_FIREBASE_* configuration is present:
+// real Firebase Authentication, password-reset emails, Firestore profiles, and synced progress.
 // LOCAL DEMO MODE otherwise: accounts and progress remain on this device only.
 import {
   createUserWithEmailAndPassword,
@@ -21,35 +21,37 @@ const SKEY = 'tayu-session-v1'
 const GKEY = 'tayu-guest-progress-v1'
 const DEMO_ADMIN_CREDENTIAL_VERSION = 3
 const readAccounts = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '{}') } catch { return {} } }
-const writeAccounts = (a) => localStorage.setItem(LKEY, JSON.stringify(a))
+const writeAccounts = (accounts) => localStorage.setItem(LKEY, JSON.stringify(accounts))
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase()
+const localAccountFor = (email) => readAccounts()[normalizeEmail(email)] || null
 
-async function hashPw(pw, salt) {
-  const data = new TextEncoder().encode(salt + ':' + pw)
-  const h = await crypto.subtle.digest('SHA-256', data)
-  return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, '0')).join('')
+async function hashPw(password, salt) {
+  const data = new TextEncoder().encode(`${salt}:${password}`)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 // These demo accounts are used only when Firebase is not configured. Production
 // Firebase credentials are never stored in the client code.
 export async function seedLocalAccounts() {
-  const acc = readAccounts()
-  if (!acc['tayu.finance@gmail.com'] || acc['tayu.finance@gmail.com'].credentialVersion !== DEMO_ADMIN_CREDENTIAL_VERSION) {
-    acc['tayu.finance@gmail.com'] = {
-      ...acc['tayu.finance@gmail.com'],
+  const accounts = readAccounts()
+  if (!accounts['tayu.finance@gmail.com'] || accounts['tayu.finance@gmail.com'].credentialVersion !== DEMO_ADMIN_CREDENTIAL_VERSION) {
+    accounts['tayu.finance@gmail.com'] = {
+      ...accounts['tayu.finance@gmail.com'],
       email: 'tayu.finance@gmail.com', salt: null, hash: null,
       credentialVersion: DEMO_ADMIN_CREDENTIAL_VERSION, needsPassword: true,
       role: 'admin', gradeLevels: '', foundVia: 'founder', social: '',
-      createdAt: acc['tayu.finance@gmail.com']?.createdAt || new Date().toISOString(),
-      progress: acc['tayu.finance@gmail.com']?.progress ?? null,
+      createdAt: accounts['tayu.finance@gmail.com']?.createdAt || new Date().toISOString(),
+      progress: accounts['tayu.finance@gmail.com']?.progress ?? null,
     }
   }
-  if (!acc['devr53247@gmail.com']) {
-    acc['devr53247@gmail.com'] = {
+  if (!accounts['devr53247@gmail.com']) {
+    accounts['devr53247@gmail.com'] = {
       email: 'devr53247@gmail.com', salt: null, hash: null, needsPassword: true,
       role: 'admin', gradeLevels: '', foundVia: 'founder', social: '', createdAt: new Date().toISOString(), progress: null,
     }
   }
-  writeAccounts(acc)
+  writeAccounts(accounts)
 }
 
 // ---- session ----
@@ -89,39 +91,81 @@ function normalizeRole(role) {
 
 function firebaseError(error, fallback) {
   const messages = {
-    'auth/email-already-in-use': 'That email already has an account. Try logging in.',
+    'auth/email-already-in-use': 'That email already has a Firebase account. Use Log In or Forgot password.',
     'auth/invalid-email': 'Please enter a real email address.',
     'auth/invalid-credential': 'Email or password did not match.',
+    'auth/user-not-found': 'Email or password did not match.',
+    'auth/wrong-password': 'Email or password did not match.',
     'auth/user-disabled': 'This account has been disabled. Please contact TAYU.',
     'auth/weak-password': 'Password needs at least 6 characters.',
     'auth/too-many-requests': 'Too many attempts. Please wait a little and try again.',
     'auth/network-request-failed': 'We could not reach Firebase. Check your internet connection and try again.',
+    'auth/operation-not-allowed': 'Email/password accounts are not enabled in Firebase yet. Enable Email/Password under Firebase Authentication.',
+    'auth/configuration-not-found': 'Firebase Authentication is not fully configured for this project yet.',
+    'auth/unauthorized-domain': 'This website domain is not authorized in Firebase Authentication settings.',
+    'auth/invalid-continue-uri': 'The password-reset return address is not allowed by Firebase.',
+    'auth/invalid-api-key': 'The website is connected to an invalid Firebase configuration.',
   }
   return new Error(messages[error?.code] || fallback || error?.message || 'Something went wrong. Please try again.')
 }
 
+function isCredentialMismatch(error) {
+  return ['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error?.code)
+}
+
+function legacyMigrationMessage() {
+  return 'This email was created in TAYU’s older device-only account system and is not yet a Firebase cloud account. Open Sign Up, use the same email, and choose a password to move it to the cloud.'
+}
+
 async function firebaseProfile(firestore, uid) {
-  const snap = await getDoc(doc(firestore, 'profiles', uid))
-  return snap.exists() ? snap.data() : null
+  const snapshot = await getDoc(doc(firestore, 'profiles', uid))
+  return snapshot.exists() ? snapshot.data() : null
+}
+
+async function uploadLegacyProgress(firestore, uid, legacyProgress) {
+  if (!legacyProgress) return false
+  if (legacyProgress.wallet) saveWallet(legacyProgress.wallet)
+  if (legacyProgress.profile) saveProfile(legacyProgress.profile)
+  const savedAt = legacyProgress.savedAt || new Date().toISOString()
+  await setDoc(doc(firestore, 'progress', uid), {
+    data: { ...legacyProgress, savedAt },
+    updatedAt: savedAt,
+  }, { merge: true })
+  return true
+}
+
+function markLegacyAccountMigrated(email, uid) {
+  const accounts = readAccounts()
+  if (!accounts[email]) return
+  accounts[email] = {
+    ...accounts[email],
+    migratedToFirebase: true,
+    firebaseUid: uid,
+    migratedAt: new Date().toISOString(),
+  }
+  writeAccounts(accounts)
 }
 
 // ---- sign up ----
 export async function signUp({ email, password, role, gradeLevels, foundVia, organizationName }) {
-  email = String(email || '').trim().toLowerCase()
+  email = normalizeEmail(email)
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   if (!password || password.length < 6) throw new Error('Password needs at least 6 characters.')
   if ((role === 'teacher' || role === 'student') && !String(organizationName || '').trim()) {
     throw new Error('Please enter your school or organization name.')
   }
 
+  const legacyAccount = localAccountFor(email)
+  const now = new Date().toISOString()
   const profile = {
     email,
     role: normalizeRole(role),
-    gradeLevels: gradeLevels || '',
-    foundVia: foundVia || '',
-    organizationName: String(organizationName || '').trim(),
-    social: '',
-    createdAt: new Date().toISOString(),
+    gradeLevels: gradeLevels || legacyAccount?.gradeLevels || '',
+    foundVia: foundVia || legacyAccount?.foundVia || '',
+    organizationName: String(organizationName || legacyAccount?.organizationName || '').trim(),
+    social: legacyAccount?.social || '',
+    createdAt: legacyAccount?.createdAt || now,
+    ...(legacyAccount ? { migratedFromLocal: true, migratedAt: now } : {}),
   }
 
   const firebase = await prepareFirebaseAuth()
@@ -130,28 +174,30 @@ export async function signUp({ email, password, role, gradeLevels, foundVia, org
       const credential = await createUserWithEmailAndPassword(firebase.auth, email, password)
       await setDoc(doc(firebase.firestore, 'profiles', credential.user.uid), profile)
       setSession({ email, role: profile.role, cloud: true, id: credential.user.uid })
-      return { email, role: profile.role }
+      const migrated = await uploadLegacyProgress(firebase.firestore, credential.user.uid, legacyAccount?.progress)
+      if (legacyAccount) markLegacyAccountMigrated(email, credential.user.uid)
+      return { email, role: profile.role, migrated }
     } catch (error) {
       throw firebaseError(error, 'We could not create the account. Please try again.')
     }
   }
 
-  const acc = readAccounts()
-  if (acc[email] && !acc[email].needsPassword) throw new Error('That email already has an account. Try logging in.')
+  const accounts = readAccounts()
+  if (accounts[email] && !accounts[email].needsPassword) throw new Error('That email already has an account. Try logging in.')
   const salt = Math.random().toString(36).slice(2)
-  acc[email] = {
-    ...(acc[email] || {}), email, salt, hash: await hashPw(password, salt), needsPassword: false,
-    ...profile, role: acc[email]?.role === 'admin' ? 'admin' : profile.role,
-    createdAt: acc[email]?.createdAt || profile.createdAt, progress: acc[email]?.progress ?? null,
+  accounts[email] = {
+    ...(accounts[email] || {}), email, salt, hash: await hashPw(password, salt), needsPassword: false,
+    ...profile, role: accounts[email]?.role === 'admin' ? 'admin' : profile.role,
+    createdAt: accounts[email]?.createdAt || profile.createdAt, progress: accounts[email]?.progress ?? null,
   }
-  writeAccounts(acc)
-  setSession({ email, role: acc[email].role, cloud: false })
-  return { email, role: acc[email].role }
+  writeAccounts(accounts)
+  setSession({ email, role: accounts[email].role, cloud: false })
+  return { email, role: accounts[email].role, migrated: false }
 }
 
 // ---- sign in: restores the saved progress tied to the account ----
 export async function signIn(email, password) {
-  email = String(email || '').trim().toLowerCase()
+  email = normalizeEmail(email)
   const firebase = await prepareFirebaseAuth()
   if (firebase) {
     try {
@@ -162,17 +208,21 @@ export async function signIn(email, password) {
       await syncDown()
       return { email, role }
     } catch (error) {
+      const legacyAccount = localAccountFor(email)
+      if (isCredentialMismatch(error) && legacyAccount && !legacyAccount.migratedToFirebase) {
+        throw new Error(legacyMigrationMessage())
+      }
       throw firebaseError(error, 'Email or password did not match.')
     }
   }
 
-  const acc = readAccounts()
-  const a = acc[email]
-  if (!a || a.needsPassword) throw new Error(a ? 'This account needs a password - use Sign Up to set one.' : 'No account with that email yet.')
-  if ((await hashPw(password, a.salt)) !== a.hash) throw new Error('Email or password did not match.')
-  setSession({ email, role: a.role, cloud: false })
+  const accounts = readAccounts()
+  const account = accounts[email]
+  if (!account || account.needsPassword) throw new Error(account ? 'This account needs a password - use Sign Up to set one.' : 'No account with that email yet.')
+  if ((await hashPw(password, account.salt)) !== account.hash) throw new Error('Email or password did not match.')
+  setSession({ email, role: account.role, cloud: false })
   await syncDown()
-  return { email, role: a.role }
+  return { email, role: account.role }
 }
 
 export async function signOutUser() {
@@ -183,7 +233,7 @@ export async function signOutUser() {
 
 // ---- forgot password ----
 export async function resetPassword(email) {
-  email = String(email || '').trim().toLowerCase()
+  email = normalizeEmail(email)
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   const firebase = await prepareFirebaseAuth()
   if (!firebase) {
@@ -191,14 +241,17 @@ export async function resetPassword(email) {
   }
 
   try {
-    await sendPasswordResetEmail(firebase.auth, email, {
-      url: `${window.location.origin}/login?mode=signin`,
-      handleCodeInApp: false,
-    })
-    return 'If an account uses that email, Firebase has sent a password-reset link. Check your inbox and spam folder.'
+    // Use Firebase's hosted reset handler. A custom continue URL can cause reset
+    // delivery to fail when the custom domain has not been added to Authorized domains.
+    await sendPasswordResetEmail(firebase.auth, email)
+    const legacyAccount = localAccountFor(email)
+    const legacyNote = legacyAccount && !legacyAccount.migratedToFirebase
+      ? ' This browser also has an older device-only account with that email. If no email arrives, use Sign Up with the same email to move it to Firebase first.'
+      : ''
+    return `If a Firebase account uses that email, a password-reset link was sent. Check your inbox and spam folder.${legacyNote}`
   } catch (error) {
     if (error?.code === 'auth/user-not-found') {
-      return 'If an account uses that email, Firebase has sent a password-reset link. Check your inbox and spam folder.'
+      return 'If a Firebase account uses that email, a password-reset link was sent. Check your inbox and spam folder.'
     }
     throw firebaseError(error, 'We could not send the reset email. Please try again.')
   }
@@ -214,44 +267,44 @@ function serializableSnapshot() {
 
 // ---- progress sync ----
 export async function syncUp() {
-  const u = currentUser()
-  if (!u) return
+  const user = currentUser()
+  if (!user) return
   const snapshot = serializableSnapshot()
-  if (u.guest) {
+  if (user.guest) {
     try { localStorage.setItem(GKEY, JSON.stringify(snapshot)) } catch { /* storage unavailable */ }
     return
   }
 
   const firebase = getFirebaseServices()
-  if (firebase && u.id) {
-    await setDoc(doc(firebase.firestore, 'progress', u.id), { data: snapshot, updatedAt: snapshot.savedAt }, { merge: true })
+  if (firebase && user.id) {
+    await setDoc(doc(firebase.firestore, 'progress', user.id), { data: snapshot, updatedAt: snapshot.savedAt }, { merge: true })
     return
   }
 
-  const acc = readAccounts()
-  if (acc[u.email]) { acc[u.email].progress = snapshot; writeAccounts(acc) }
+  const accounts = readAccounts()
+  if (accounts[user.email]) { accounts[user.email].progress = snapshot; writeAccounts(accounts) }
 }
 
 export async function syncDown() {
-  const u = currentUser()
-  if (!u) return false
-  let snap = null
+  const user = currentUser()
+  if (!user) return false
+  let snapshot = null
   const firebase = getFirebaseServices()
-  if (firebase && u.id) {
-    const progress = await getDoc(doc(firebase.firestore, 'progress', u.id))
-    snap = progress.exists() ? progress.data()?.data : null
+  if (firebase && user.id) {
+    const progress = await getDoc(doc(firebase.firestore, 'progress', user.id))
+    snapshot = progress.exists() ? progress.data()?.data : null
   } else {
-    snap = readAccounts()[u.email]?.progress || null
+    snapshot = readAccounts()[user.email]?.progress || null
   }
-  if (snap?.wallet) saveWallet(snap.wallet)
-  if (snap?.profile) saveProfile(snap.profile)
-  return Boolean(snap)
+  if (snapshot?.wallet) saveWallet(snapshot.wallet)
+  if (snapshot?.profile) saveProfile(snapshot.profile)
+  return Boolean(snapshot)
 }
 
 // ---- admin dashboard data ----
 export async function adminData() {
-  const u = currentUser()
-  if (!u || u.role !== 'admin') throw new Error('Admin only.')
+  const user = currentUser()
+  if (!user || user.role !== 'admin') throw new Error('Admin only.')
   const firebase = getFirebaseServices()
   if (firebase) {
     const [profileSnapshot, progressSnapshot] = await Promise.all([
@@ -275,10 +328,10 @@ export async function adminData() {
     })
   }
 
-  return Object.values(readAccounts()).map((a) => ({
-    email: a.email, role: a.role, gradeLevels: a.gradeLevels, foundVia: a.foundVia,
-    social: a.social || '', organizationName: a.organizationName || '',
-    organizationEmail: a.organizationEmail || '', createdAt: a.createdAt, progress: a.progress,
+  return Object.values(readAccounts()).map((account) => ({
+    email: account.email, role: account.role, gradeLevels: account.gradeLevels, foundVia: account.foundVia,
+    social: account.social || '', organizationName: account.organizationName || '',
+    organizationEmail: account.organizationEmail || '', createdAt: account.createdAt, progress: account.progress,
   }))
 }
 
