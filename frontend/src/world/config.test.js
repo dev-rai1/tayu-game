@@ -8,9 +8,11 @@ import {
   PARTY_HOUSE,
   PATHS,
   RING,
+  ROYAL_APPROACH,
   SPROUT,
   STORE,
   distanceToPaths,
+  isClearOfModuleGates,
   isClearOfPaths,
   ringPoint,
 } from './config.js'
@@ -39,11 +41,28 @@ describe('world path separation', () => {
     expect(radialDistance).toBeGreaterThan(RING.r + 7)
   })
 
-  it('ends the finale path at the entrance, before the building footprint', () => {
-    const entrance = PATHS.spurParty.at(-1)
+  it('keeps every module gateway free of decorative scenery', () => {
+    expect(isClearOfModuleGates(ringPoint(110))).toBe(false)
+    expect(isClearOfModuleGates(ringPoint(120.5))).toBe(true)
+  })
+
+  it('builds a symmetrical two-sided royal finale approach', () => {
+    expect(PATHS.royalPartyLeft.at(-1)).toEqual(ROYAL_APPROACH.entrance)
+    expect(PATHS.royalPartyRight.at(-1)).toEqual(ROYAL_APPROACH.entrance)
+
+    const leftRadius = Math.hypot(
+      ROYAL_APPROACH.leftGate[0] - RING.c[0],
+      ROYAL_APPROACH.leftGate[1] - RING.c[1],
+    )
+    const rightRadius = Math.hypot(
+      ROYAL_APPROACH.rightGate[0] - RING.c[0],
+      ROYAL_APPROACH.rightGate[1] - RING.c[1],
+    )
+    expect(leftRadius).toBeCloseTo(rightRadius, 6)
+
     const distanceToHouse = Math.hypot(
-      entrance[0] - PARTY_HOUSE[0],
-      entrance[1] - PARTY_HOUSE[1],
+      ROYAL_APPROACH.entrance[0] - PARTY_HOUSE[0],
+      ROYAL_APPROACH.entrance[1] - PARTY_HOUSE[1],
     )
     expect(distanceToHouse).toBeGreaterThanOrEqual(2.65)
   })
