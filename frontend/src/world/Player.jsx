@@ -25,7 +25,6 @@ export const isFrozen = (st) =>
 
 const WALK_SPEED = 6
 const TURN_SPEED = 9
-const GROUND = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 const LOOK_SENS = 0.006 // radians per px of horizontal drag
 const KEY_ROT = 1.6 // radians/sec for comma/period keyboard rotate
 
@@ -85,7 +84,6 @@ export function Player({ avatar }) {
   const walk = useRef(0)
   const t = useRef(0)
   const limbs = useRef(null)
-  const ray = useRef(new THREE.Raycaster())
   const rotKey = useRef(0) // -1 left, +1 right (comma/period held)
 
   const setNear = useGame((s) => s.setNear)
@@ -112,10 +110,9 @@ export function Player({ avatar }) {
   // ★ CAMERA & INPUT OVERHAUL (Round 3, Part D) ★
   //  D1: same-direction look - drag right = look RIGHT, drag up = look UP.
   //  D2: camera lives on the RIGHT mouse button (Roblox-style): hold+drag for
-  //      any duration; context menu suppressed. LEFT never touches the camera.
-  //  D3: on touch, TWO-finger drag rotates the view; one finger stays
-  //      tap-to-move / interaction.
-  //  Left click remains a tap: raycast the ground -> click-to-move.
+  //      any duration; context menu suppressed. LEFT does nothing.
+  //  D3: on touch, one- or two-finger drag rotates the view. Ground taps never
+  //      move the player; walking is limited to explicit movement controls.
   useEffect(() => {
     const el = gl.domElement
     el.style.touchAction = 'none' // stop touch-drag from scrolling the page
@@ -130,7 +127,6 @@ export function Player({ avatar }) {
       if (inJoystick(e)) return // belongs to the movement pad
       if (e.pointerType === 'mouse') {
         if (e.button === 2) { rmb = true; lastX = e.clientX; lastY = e.clientY }
-        else if (e.button === 0) tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY }
       } else {
         touches.set(e.pointerId, { x: e.clientX, y: e.clientY })
         if (touches.size === 1) tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY }
@@ -176,29 +172,8 @@ export function Player({ avatar }) {
     const onUp = (e) => {
       if (e.pointerType === 'mouse' && e.button === 2) { rmb = false; return }
       if (e.pointerType !== 'mouse') { touches.delete(e.pointerId); if (touches.size < 2) pinchDist = null }
-      // tap-to-move: a LEFT click / single-finger tap that barely moved
-      if (!tapStart || tapStart.id !== e.pointerId) return
-      const totalMoved = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y)
-      tapStart = null
-      if (totalMoved > 8) return
-      groundTap(e.clientX, e.clientY)
+      if (tapStart?.id === e.pointerId) tapStart = null
     }
-    // tap-to-move raycast, shared by canvas taps and the stick zone's quick taps
-    const groundTap = (clientX, clientY) => {
-      const s = useGame.getState()
-      if (isFrozen(s)) return
-      const rect = el.getBoundingClientRect()
-      const ndc = new THREE.Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1)
-      ray.current.setFromCamera(ndc, camera)
-      const hit = new THREE.Vector3()
-      if (ray.current.ray.intersectPlane(GROUND, hit)) {
-        const cx = THREE.MathUtils.clamp(hit.x, BOUNDS.xMin, BOUNDS.xMax)
-        const cz = THREE.MathUtils.clamp(hit.z, BOUNDS.zMin, BOUNDS.zMax)
-        moveTarget.x = cx; moveTarget.z = cz
-        useGame.getState().setClickMarker({ x: cx, z: cz, t: 0 })
-      }
-    }
-    const onZoneTap = (e) => groundTap(e.detail.x, e.detail.y)
     const onCancel = (e) => {
       if (e.pointerType !== 'mouse') { touches.delete(e.pointerId); if (touches.size < 2) pinchDist = null }
       if (tapStart && tapStart.id === e.pointerId) tapStart = null
@@ -209,14 +184,12 @@ export function Player({ avatar }) {
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onCancel)
-    window.addEventListener('tayu-ground-tap', onZoneTap)
     return () => {
       el.removeEventListener('contextmenu', onContextMenu)
       el.removeEventListener('pointerdown', onDown)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onCancel)
-      window.removeEventListener('tayu-ground-tap', onZoneTap)
     }
   }, [camera, gl])
 
@@ -292,7 +265,7 @@ export function Player({ avatar }) {
     const manual = k.forward || k.backward || k.left || k.right || Math.abs(joystick.x) > 0.05 || Math.abs(joystick.y) > 0.05
     if (!frozen) {
       if (manual) {
-        moveTarget.x = null // manual input cancels click-to-move
+        moveTarget.x = null // manual input cancels any scripted movement
         if (k.forward) rz += 1
         if (k.backward) rz -= 1
         if (k.right) rx += 1
@@ -300,7 +273,7 @@ export function Player({ avatar }) {
         rx += joystick.x
         rz += joystick.y // joystick up (+y) = forward
       } else if (moveTarget.x != null) {
-        // click-to-move: head toward the world point in WORLD space, then convert
+        // Scripted movement: head toward the world point in WORLD space, then convert
         // into the camera frame so the same rotation math drives it.
         const dx = moveTarget.x - playerPos.x, dz = moveTarget.z - playerPos.z
         if (Math.hypot(dx, dz) < 0.3) { moveTarget.x = null }
