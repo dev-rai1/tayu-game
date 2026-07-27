@@ -73,7 +73,7 @@ export default function World() {
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       <PersistentCoach />
       <GuidedCommerceOverlay />
-      <ReadingPaceGuard />
+      {!welcome && <ReadingPaceGuard />}
       {use3D && usesTouchControls && <MobileControls />}
 
       {/* Welcome instructions wait for the player instead of disappearing on a timer. */}
