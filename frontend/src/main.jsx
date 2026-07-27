@@ -6,6 +6,7 @@ import { GameStateProvider } from './hooks/useGameState.jsx'
 import './styles/index.css'
 import { logTayuError } from './components/Boundary.jsx'
 import { armFirstGesture } from './services/audio.js'
+import './world/replayGuidanceListener.js'
 
 // R10 v8 7.3: nothing fails silently - unhandled errors are logged locally
 window.addEventListener('unhandledrejection', (e) => logTayuError('unhandledrejection', e.reason))
