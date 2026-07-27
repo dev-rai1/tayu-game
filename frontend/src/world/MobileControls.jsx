@@ -5,9 +5,7 @@
 // - ACTION BUTTON bottom-right: 68px Electric Blue, context label above it,
 //   pulses Gold when an interactable is in range. Fires the same
 //   'tayu-interact' event the E key uses.
-// - A quick tap in the stick zone falls through to tap-to-move (a
-//   'tayu-ground-tap' event Player.jsx raycasts), so cause-and-effect
-//   walking still works for the youngest players.
+// - Walking only happens while the child deliberately drags the thumbstick.
 // All bottom offsets respect the home-bar safe area.
 import { useEffect, useRef, useState } from 'react'
 import { joystick } from './store.js'
@@ -52,9 +50,8 @@ function FloatingStick({ frozen }) {
     if (!d || e.pointerId !== d.id) return
     drag.current = null
     joystick.x = 0; joystick.y = 0
-    // a quick, small touch = the child meant "walk THERE" (tap-to-move)
+    // A quick tap is a no-op. Movement requires an intentional stick drag.
     if (d.moved < 10 && performance.now() - d.t0 < 350) {
-      window.dispatchEvent(new CustomEvent('tayu-ground-tap', { detail: { x: e.clientX, y: e.clientY } }))
       setStick(null)
       return
     }
@@ -160,7 +157,7 @@ export function MobileControls() {
           position: 'fixed', left: 16, bottom: `calc(96px + env(safe-area-inset-bottom, 0px))`, zIndex: 92,
           width: 200, padding: '10px 12px', borderRadius: 14, fontSize: 13, fontWeight: 700, color: '#fff',
         }}>
-          Touch here and drag to walk. Or just tap the ground!
+          Touch here and drag to walk.
         </div>
       )}
     </>
