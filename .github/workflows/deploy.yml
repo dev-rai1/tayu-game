@@ -29,12 +29,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
-      - run: npm test --if-present -- --reporter=json --outputFile=vitest-results.json
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-vitest-results
-          path: frontend/vitest-results.json
+      - run: npm test --if-present
 
   backend:
     runs-on: ubuntu-latest
