@@ -1,28 +1,11 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, signInAnonymously } from 'firebase/auth'
-import { getDatabase } from 'firebase/database'
+import { signInAnonymously } from 'firebase/auth'
+import { getFirebaseServices } from '../services/firebase.js'
 
-// Lazy Firebase init. Used for anonymous auth + solo-mode save/resume.
-// Returns null cleanly if env vars are absent so the app still boots locally.
-
-const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-}
-
-let app = null
-function ensureApp() {
-  if (!config.apiKey) return null
-  if (!app) app = getApps().length ? getApps()[0] : initializeApp(config)
-  return app
-}
-
+// Shared Firebase access for anonymous solo-mode save/resume.
+// Account login uses the same initialized app through services/auth.js.
 export function useFirebase() {
-  const ready = ensureApp()
-  const auth = ready ? getAuth(ready) : null
-  const db = ready ? getDatabase(ready) : null
+  const services = getFirebaseServices()
+  const auth = services?.auth || null
 
   const signIn = async () => {
     if (!auth) return null
@@ -30,5 +13,12 @@ export function useFirebase() {
     return cred.user
   }
 
-  return { app: ready, auth, db, signIn, configured: Boolean(ready) }
+  return {
+    app: services?.app || null,
+    auth,
+    db: services?.realtimeDb || null,
+    firestore: services?.firestore || null,
+    signIn,
+    configured: Boolean(services),
+  }
 }
