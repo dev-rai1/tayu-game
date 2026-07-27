@@ -1365,9 +1365,16 @@ export function Hud({ playerName, onContinue }) {
           {/* D4: the prompt IS the button - clicking fires the same interaction as E */}
           <button
             onClick={() => window.dispatchEvent(new Event('tayu-interact'))}
-            className="tayu-btn-glass min-h-[52px] animate-pulse text-lg transition hover:scale-105 active:scale-95"
+            aria-label={`Press E or click here to ${near.label}`}
+            className="tayu-btn-glass flex min-h-[64px] items-center gap-3 px-6 text-lg transition hover:scale-105 active:scale-95"
           >
-            {USES_TOUCH_CONTROLS ? `Tap - ${near.label}` : `Click or press E - ${near.label}`}
+            <span className="grid h-11 min-w-11 place-items-center rounded-xl border-2 border-white bg-white/15 px-3 font-display text-2xl font-extrabold shadow-md" aria-hidden>
+              E
+            </span>
+            <span className="text-left leading-tight">
+              <span className="block text-xs font-extrabold uppercase tracking-wide text-white/75">Press E or click here</span>
+              <span className="block text-xl font-extrabold">{near.label}</span>
+            </span>
           </button>
         </div>
       )}
