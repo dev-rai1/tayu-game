@@ -9,6 +9,7 @@ import {
   PATHS,
   RING,
   ROYAL_APPROACH,
+  SCENERY_ZONES,
   SPROUT,
   STORE,
   distanceToPaths,
@@ -30,7 +31,10 @@ describe('world path separation', () => {
       districts.slice(i + 1).map((other) => Math.hypot(point[0] - other[0], point[1] - other[1])),
     )
     expect(Math.min(...distances)).toBeGreaterThan(14)
-    expect(DISTRICT_GAP_ANGLES).toHaveLength(9)
+    expect(DISTRICT_GAP_ANGLES).toHaveLength(13)
+    expect(new Set(SCENERY_ZONES.map((zone) => zone.theme)).size).toBe(SCENERY_ZONES.length)
+    expect(Math.min(...DISTRICT_GAP_ANGLES)).toBeLessThan(-150)
+    expect(Math.max(...DISTRICT_GAP_ANGLES)).toBeGreaterThan(150)
   })
 
   it('places the finale outside the road instead of on top of it', () => {
