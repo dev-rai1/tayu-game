@@ -24,7 +24,7 @@ const rad = (deg) => (deg * Math.PI) / 180
 export const ringPoint = (deg) => [RING.c[0] + RING.r * Math.cos(rad(deg)), RING.c[1] - RING.r * Math.sin(rad(deg))]
 // the ring angle of every stop, in STORY order (θ decreases as you walk it).
 // R14: the finale is pulled MUCH closer (was -108) so the last leg is short.
-export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 40, garden: 14, party: -46 }
+export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 40, garden: 14, party: -24 }
 
 // Distinct scenery neighborhoods continue around the ENTIRE ring. The first
 // nine fill the module side; the final four prevent the quiet back half from
@@ -37,12 +37,12 @@ export const SCENERY_ZONES = [
   { angle: 76, theme: 'birdhouse-grove', density: 2, accent: '#5aa6ff' },
   { angle: 52, theme: 'mushroom-woods', density: 3, accent: '#e8626f' },
   { angle: 27, theme: 'lantern-garden', density: 1, accent: '#fff0a8' },
-  { angle: 2, theme: 'reeds-and-pond', density: 2, accent: '#5aa6d8' },
-  { angle: -18, theme: 'picnic-grove', density: 2, accent: '#e8626f' },
-  { angle: -78, theme: 'pine-trail', density: 3, accent: '#4e9440' },
-  { angle: -106, theme: 'sculpture-garden', density: 1, accent: '#c9a46a' },
-  { angle: -134, theme: 'autumn-grove', density: 3, accent: '#e8893a' },
-  { angle: -160, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
+  { angle: 4, theme: 'reeds-and-pond', density: 2, accent: '#5aa6d8' },
+  { angle: -62, theme: 'picnic-grove', density: 2, accent: '#e8626f' },
+  { angle: -86, theme: 'pine-trail', density: 3, accent: '#4e9440' },
+  { angle: -110, theme: 'sculpture-garden', density: 1, accent: '#c9a46a' },
+  { angle: -136, theme: 'autumn-grove', density: 3, accent: '#e8893a' },
+  { angle: -162, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
 ]
 export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
 // closed loop polyline (θ 180 -> -180, the story direction)
@@ -88,9 +88,19 @@ const partyForecourt = [
   PARTY_HOUSE[1] - partyRadial[1] * 5.0,
 ]
 
+// The gold route begins immediately after Money Garden, then bends around the
+// Finale as a compact semicircular crown. The matching lower arm keeps the
+// approach balanced without sending either path across the rest of the map.
+const royalArcPoint = (angle, outward = 0) => {
+  const [x, z] = ringPoint(angle)
+  const dx = x - CENTER[0], dz = z - CENTER[1]
+  const d = Math.hypot(dx, dz)
+  return [x + (dx / d) * outward, z + (dz / d) * outward]
+}
+
 export const ROYAL_APPROACH = {
-  leftGate: ringPoint(STOP_ANGLES.party + 14),
-  rightGate: ringPoint(STOP_ANGLES.party - 14),
+  leftGate: ringPoint(2),
+  rightGate: ringPoint(-50),
   leftForecourt: [partyForecourt[0] - partyTangent[0] * 1.8, partyForecourt[1] - partyTangent[1] * 1.8],
   rightForecourt: [partyForecourt[0] + partyTangent[0] * 1.8, partyForecourt[1] + partyTangent[1] * 1.8],
   entrance: partyEntrance,
@@ -108,8 +118,8 @@ export const PATHS = {
   spurBudget: [ringPoint(64), sc([48, -37.6])],
   spurBank: [ringPoint(40), sc([59.1, -27.2])],
   spurGarden: [ringPoint(14), sc([64.6, -15.2])],
-  royalPartyLeft: [ROYAL_APPROACH.leftGate, ROYAL_APPROACH.leftForecourt, ROYAL_APPROACH.entrance],
-  royalPartyRight: [ROYAL_APPROACH.rightGate, ROYAL_APPROACH.rightForecourt, ROYAL_APPROACH.entrance],
+  royalPartyLeft: [ROYAL_APPROACH.leftGate, royalArcPoint(-4, 1.0), royalArcPoint(-10, 2.2), royalArcPoint(-16, 3.4), ROYAL_APPROACH.leftForecourt, ROYAL_APPROACH.entrance],
+  royalPartyRight: [ROYAL_APPROACH.rightGate, royalArcPoint(-44, 1.0), royalArcPoint(-38, 2.2), royalArcPoint(-32, 3.4), ROYAL_APPROACH.rightForecourt, ROYAL_APPROACH.entrance],
 }
 
 const pointToSegmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
@@ -160,8 +170,18 @@ export const NPC_RADIUS = 2.6
 // R14 P3: the central LAKE is MUCH smaller now (was r 8.6) so the middle no
 // longer reads as a big empty pond; park life is woven in closer around it.
 export const LAKE = { x: 30, z: -6, r: 5.2 }
+// Small non-module buildings turn the open middle into a lively town commons.
+// Their compact footprints preserve long sightlines and broad walking aisles.
+export const CENTER_BUILDINGS = [
+  { id: 'art-studio', x: 19, z: 14, r: 2.2, wall: '#f3c7a8', roof: '#b85f66' },
+  { id: 'book-nook', x: 41, z: 14, r: 2.2, wall: '#bcd9ee', roof: '#557db5' },
+  { id: 'garden-shed', x: 17, z: -21, r: 2.1, wall: '#d7e8bd', roof: '#5d8f5a' },
+  { id: 'music-hall', x: 43, z: -21, r: 2.1, wall: '#e4cdf4', roof: '#8b64ad' },
+]
+
 export const BLOCKERS = [
   { x: LAKE.x, z: LAKE.z, r: LAKE.r + 0.6 }, // the lake itself
+  ...CENTER_BUILDINGS.map(({ x, z, r }) => ({ x, z, r })),
   ...[
     [20, -14], [40, -16], [23, 1], [39, 2], [30, -20], [11, -10], [51, 6],
   ].map(([x, z]) => { const [sx, sz] = sc([x, z]); return { x: sx, z: sz, r: 1 } }), // park + arc trees
