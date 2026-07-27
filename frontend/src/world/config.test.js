@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BANK_DISTRICT,
+  BUDGET_TOWN,
+  DISTRICT_GAP_ANGLES,
+  HOME,
+  LEMONADE,
   PARTY_HOUSE,
   PATHS,
   RING,
+  SPROUT,
+  STORE,
   distanceToPaths,
   isClearOfPaths,
   ringPoint,
@@ -13,6 +20,15 @@ describe('world path separation', () => {
     const roadCenter = ringPoint(90)
     expect(distanceToPaths(roadCenter)).toBeLessThan(0)
     expect(isClearOfPaths(roadCenter, 0.1)).toBe(false)
+  })
+
+  it('keeps substantial space between every major district', () => {
+    const districts = [HOME, STORE, LEMONADE, BUDGET_TOWN, BANK_DISTRICT, SPROUT, PARTY_HOUSE]
+    const distances = districts.flatMap((point, i) =>
+      districts.slice(i + 1).map((other) => Math.hypot(point[0] - other[0], point[1] - other[1])),
+    )
+    expect(Math.min(...distances)).toBeGreaterThan(14)
+    expect(DISTRICT_GAP_ANGLES).toHaveLength(9)
   })
 
   it('places the finale outside the road instead of on top of it', () => {
