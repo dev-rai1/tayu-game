@@ -1,7 +1,8 @@
 // Login / sign-up / forgot-password page. Email is the account username.
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { signUp, signIn, resetPassword } from '../services/auth.js'
+import { signUp, signIn } from '../services/auth.js'
+import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { ensureAdminAccess } from '../services/adminAccess.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
@@ -15,14 +16,42 @@ export default function Auth() {
   const nav = useNavigate()
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
-  const [ok, setOk] = useState(null)
+  const [ok, setOk] = useState(
+    params.get('reset') === 'complete'
+      ? 'Your password was changed. Log in with your new password.'
+      : null,
+  )
+  const [recovery, setRecovery] = useState(null)
   const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'teacher', gradeLevels: '', foundVia: '', organizationName: '' })
-  const set = (key) => (event) => setF({ ...f, [key]: event.target.value })
+  const set = (key) => (event) => {
+    const value = event.target.value
+    setF((current) => ({ ...current, [key]: value }))
+    if (key === 'email') {
+      setRecovery(null)
+      setOk(null)
+    }
+  }
 
   const changeMode = (nextMode) => {
     setMode(nextMode)
     setErr(null)
     setOk(null)
+    setRecovery(null)
+  }
+
+  const activateOlderAccount = () => {
+    const profile = recovery?.activationProfile || {}
+    setF((current) => ({
+      ...current,
+      ...profile,
+      email: recovery?.email || current.email,
+      password: '',
+      confirm: '',
+    }))
+    setMode('signup')
+    setRecovery(null)
+    setErr(null)
+    setOk('This is an older device-only account. Create a new password below to activate it in Firebase and keep its saved progress.')
   }
 
   const submit = async (event) => {
@@ -41,9 +70,12 @@ export default function Auth() {
         else if (!loadProfile()?.assessment?.pre) nav('/assessment/pre')
         else nav(loadWallet() ? '/world' : '/modules')
       } else {
-        setOk(await resetPassword(f.email))
+        const result = await requestPasswordReset(f.email)
+        setRecovery(result)
+        setOk(result.message)
       }
     } catch (error) {
+      setRecovery(null)
       setErr(error.message || String(error))
     } finally {
       setBusy(false)
@@ -64,12 +96,12 @@ export default function Auth() {
           {mode === 'signup'
             ? 'Sign up, then choose a money adventure.'
             : mode === 'reset'
-              ? 'Enter your account email and Firebase will send a secure reset link.'
+              ? 'Enter the exact email used for your account. TAYU will request a secure Firebase reset link.'
               : 'Log in to continue your money adventure.'}
         </p>
         <GuestModeButton />
         <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">
-          {[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => (
+          {[["signin", 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => (
             <button key={tabMode} type="button" role="tab" aria-selected={mode === tabMode} onClick={() => changeMode(tabMode)}
               className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold transition active:scale-95 ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
               {label}
@@ -136,13 +168,30 @@ export default function Auth() {
           {ok && <p className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}
         </div>
 
+        {mode === 'reset' && recovery && (
+          <div className="mt-3 rounded-2xl bg-white/5 p-4 text-sm font-semibold text-white/75">
+            <p>Use the newest reset email. Older reset links stop working after a newer one is requested.</p>
+            <p className="mt-2">Nothing after a few minutes? Check Spam and Promotions, then confirm the email above exactly matches the account.</p>
+            {recovery.legacyActivationAvailable && (
+              <button type="button" onClick={activateOlderAccount} className="mt-3 min-h-[44px] w-full rounded-xl bg-amber-300 px-3 font-extrabold text-navy">
+                Activate older account and set a new password
+              </button>
+            )}
+          </div>
+        )}
+
         <button type="submit" disabled={busy} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">
-          {busy ? 'One moment...' : mode === 'signup' ? 'Create my account' : mode === 'signin' ? 'Log in' : 'Send reset link'}
+          {busy ? 'One moment...' : mode === 'signup' ? 'Create my account' : mode === 'signin' ? 'Log in' : recovery ? 'Send reset link again' : 'Send reset link'}
         </button>
 
         {mode === 'signin' && (
           <button type="button" onClick={() => changeMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
             Forgot password?
+          </button>
+        )}
+        {mode === 'reset' && (
+          <button type="button" onClick={() => changeMode('signin')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
+            Back to login
           </button>
         )}
       </form>
