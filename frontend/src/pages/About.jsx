@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
+import { MODULE_CATALOG } from '../constants/modules.js'
 
 // About Us (Round 2, Part A) - persuasive and credible: stat-backed Who We
 // Are, the real team with photos and LinkedIn, ONE merged track-record story
@@ -221,16 +222,13 @@ export default function About() {
               saves automatically, and no data collected beyond a first name. The concepts each module covers:
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {[
-                ['1. The Market', 'Allowance, spend/save/give jars, needs vs wants at the shop'],
-                ['2. The Lemonade Stand', 'Costs, fair pricing, wages, profit, and a simple tax on profit'],
-                ['3. Budget Town', 'Living within your means, needs first, planning a real day'],
-                ['4. The Bank of TAYU', 'Safekeeping, account types, interest, debit vs credit, what borrowing costs, scam safety'],
-                ['5. The Money Garden', 'Why people invest, diversification, patience through ups and downs'],
-              ].map(([m, c]) => (
-                <div key={m} className="rounded-2xl bg-navy/5 p-3">
-                  <div className="font-display text-sm font-extrabold text-electric">{m}</div>
-                  <div className="mt-0.5 text-sm font-semibold text-navy/75">{c}</div>
+              {MODULE_CATALOG.map((module) => (
+                <div key={module.n} className="rounded-2xl bg-navy/5 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="font-display text-sm font-extrabold text-electric">{module.n}. {module.title}</div>
+                    <div className="rounded-full bg-electric/10 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-electric">{module.grades}</div>
+                  </div>
+                  <div className="mt-0.5 text-sm font-semibold text-navy/75">{module.desc}</div>
                 </div>
               ))}
             </div>
