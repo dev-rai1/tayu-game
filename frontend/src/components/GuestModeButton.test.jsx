@@ -29,6 +29,7 @@ function renderGuestButton() {
 
 describe('guest mode', () => {
   beforeEach(() => {
+    localStorage.clear()
     loadProfile.mockReset()
     loadWallet.mockReset()
     startGuestSession.mockReset()
