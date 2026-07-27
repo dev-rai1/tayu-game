@@ -1,74 +1,65 @@
-// MODULE 3 - BUDGET TOWN v4 (Round 9, Part 5): A DAY IN THE LIFE.
-// The child WALKS to real buildings and does real little activities - rent
-// coin on the house, a grocery basket mini-game, the school bus, the health
-// jar, an optional Fun Park want - with needs-vs-wants woven INTO the doing.
-// The leftover then flows into the pocket/bank/garden sliders + live pie
-// (the CLIMAX, kept from Round 8), the flat-tire emergency, and a physical
-// coin walk to the bank kiosk and garden gate. Continuous flow: the Budget
-// Keeper narrates in one-line nudges; the child never re-starts dialogue.
+// MODULE 3 - BUDGET TOWN v5: A DAY IN THE LIFE.
+// Every choice now names the tradeoff, gives immediate outcome-based feedback,
+// and asks the player to revise plans that leave core needs or emergency cash uncovered.
 
-// ---- the day's costs (kid-scale, deducted from the real wallet) ----
 export const RENT_COST = 6
 export const FOOD_BUDGET = 6
 export const BUS_COST = 2
 export const CLINIC_COST = 2
 export const FUN_COST = 2
-export const MIN_FOODS = 3 // tummies first: at least 3 real foods in the basket
+export const MIN_FOODS = 3
 
 export const DAY_INTRO = (amt) =>
-  `You arrive with $${amt} - nicely earned! Before money can grow, it pays for LIFE. Let's live one day in Budget Town. Follow your arrow!`
+  `You arrive with $${amt} - nicely earned! Today you will make real budget choices. Cover needs first, decide which wants are worth it, and keep enough for a surprise. Each decision changes what happens next.`
 
-// One-line copy for each stop: prompt card (title/line/button) + takeaway.
 export const STOPS = {
   house: {
     title: 'The House',
-    line: `A roof over your head comes first. Rent: $${RENT_COST}.`,
-    button: `Pay the rent ($${RENT_COST})`,
-    takeaway: 'Shelter is a NEED - usually the biggest slice.',
+    line: `Your family needs a safe place to live. Rent costs $${RENT_COST}. Paying it leaves less for later, but skipping it means the family has no home.`,
+    button: `Cover this need ($${RENT_COST})`,
+    takeaway: 'Good decision: shelter is a NEED and belongs near the top of a budget.',
     tag: 'NEED',
   },
   grocery: {
     title: 'The Grocery',
-    line: `Fill the family basket! You have $${FOOD_BUDGET} for food.`,
-    button: 'Open my basket',
-    takeaway: 'Food is a NEED - a treat or two is okay!',
+    line: `You have $${FOOD_BUDGET} for food. Choose enough real food first. Treats are allowed only when the family is fed and the total still fits your budget.`,
+    button: 'Build my basket',
+    takeaway: 'Your basket affects both the family and the money left for the rest of the day.',
     tag: 'NEED',
   },
   bus: {
     title: 'The Bus Stop',
-    line: `The school bus is coming. A week of rides: $${BUS_COST}.`,
-    button: `Hop on ($${BUS_COST})`,
-    takeaway: 'Getting to school is a NEED.',
+    line: `A week of school rides costs $${BUS_COST}. This is a need because it gets the kids to school.`,
+    button: `Cover transportation ($${BUS_COST})`,
+    takeaway: 'Transportation is a NEED. Planning for it prevents a problem later.',
     tag: 'NEED',
   },
   clinic: {
     title: 'The Clinic',
-    line: `The health jar keeps checkups covered. Drop in $${CLINIC_COST}.`,
-    button: `Fill the health jar ($${CLINIC_COST})`,
-    takeaway: 'Health care is a NEED you plan for.',
+    line: `A checkup costs $${CLINIC_COST}. Paying now protects the family's health and keeps the budget ready for care.`,
+    button: `Cover health care ($${CLINIC_COST})`,
+    takeaway: 'Health care is a NEED you plan for before optional spending.',
     tag: 'NEED',
   },
   fun: {
     title: 'The Fun Park',
-    line: `Every NEED is covered - so now you get to choose. The mini-wheel costs $${FUN_COST}.`,
-    ride: `Ride the wheel ($${FUN_COST})`,
-    save: 'Save it instead',
-    takeawayRide: 'Wants come AFTER needs - and yours were covered. Enjoy the ride!',
-    takeawaySave: 'Skipping a want you did not need - that is real budget power!',
+    line: `Every need is covered. The mini-wheel costs $${FUN_COST}. You may enjoy it now or keep the money for your future and emergencies. Both choices have a different outcome.`,
+    ride: `Enjoy the want ($${FUN_COST})`,
+    save: 'Keep the money',
+    takeawayRide: 'You chose a want after covering every need. That works when the rest of the plan still stays safe.',
+    takeawaySave: 'You delayed a want and kept more flexibility for saving or surprises.',
     tag: 'WANT',
   },
 }
 
-// the walking nudges between stops (the Keeper's one-liners)
 export const NEXT_STOP_TOAST = {
-  house: 'First stop: the HOUSE. Follow your arrow!',
-  grocery: 'Next: the GROCERY - the basket is waiting.',
-  bus: 'Next: the BUS STOP - school days!',
-  clinic: 'Next: the CLINIC - the health jar.',
-  fun: 'Last stop: the FUN PARK... if you want to.',
+  house: 'Decision 1: cover housing first.',
+  grocery: 'Decision 2: build a food basket that fits the limit.',
+  bus: 'Decision 3: plan for transportation.',
+  clinic: 'Decision 4: protect the health budget.',
+  fun: 'Decision 5: compare a want today with more money later.',
 }
 
-// ---- the grocery basket mini-game ----
 export const GROCERY_ITEMS = [
   { id: 'milk', name: 'Milk', cost: 1, need: true },
   { id: 'bread', name: 'Bread', cost: 1, need: true },
@@ -79,55 +70,49 @@ export const GROCERY_ITEMS = [
   { id: 'chips', name: 'Chips', cost: 1, need: false },
   { id: 'comic', name: 'Comic', cost: 2, need: false },
 ]
-export const GROCERY_GATE = `Tummies first! Grab at least ${MIN_FOODS} real foods, then treats if there is room.`
+export const GROCERY_GATE = `Your basket is not ready yet. Choose at least ${MIN_FOODS} real foods, stay within $${FOOD_BUDGET}, and only add a treat if the family is fed first.`
 
-// After the day: the Keeper sums the ledger and hands over to the split.
 export const DAY_SUMMARY = (needs, fun, left) =>
-  `What a day! Needs cost $${needs}${fun > 0 ? ` and fun cost $${fun}` : ' and you skipped the want'} - you have $${left} left. Grown-ups give leftover money three homes. Tap each one to see what it does!`
+  `Here is the result of your decisions: needs used $${needs}${fun > 0 ? `, your want used $${fun}` : ', and you skipped the optional want'}. You have $${left} left. Now decide how much stays ready, how much grows safely, and how much takes more risk. Your split will be tested by a surprise.`
 
-// Beat: the three homes for money (tap each card; a tiny animation teaches)
 export const OPTION_CARDS = [
-  { id: 'pocket', title: 'POCKET', line: 'Cash you keep close. Safe, ready anytime - but it never grows.', color: '#9aa6b8', anim: 'flat' },
-  { id: 'bank', title: 'BANK', line: 'Money you store at the bank. It grows a little, slow and steady.', color: '#1464F0', anim: 'slope' },
-  { id: 'garden', title: 'MONEY GARDEN', line: 'Money you plant to grow the most - but it can wiggle up AND down. There is a risk.', color: '#00b37f', anim: 'wiggle' },
+  { id: 'pocket', title: 'POCKET', line: 'Ready cash for surprises. It stays steady but does not grow.', color: '#9aa6b8', anim: 'flat' },
+  { id: 'bank', title: 'BANK', line: 'Safer long-term money. It grows slowly and stays available later.', color: '#1464F0', anim: 'slope' },
+  { id: 'garden', title: 'MONEY GARDEN', line: 'Higher growth potential with real risk. It may rise or fall.', color: '#00b37f', anim: 'wiggle' },
 ]
 
-// The advisor's EXACT per-slice hover feedback (pct = the child's actual
-// percentage; the tone stays exactly like her lines).
 export function sliceLine(id, pct) {
-  if (id === 'pocket') return `You have ${pct}% in safe cash, which will stay steady. It will not grow, but it's safe.`
-  if (id === 'bank') return `You have kept ${pct}% of your money in the bank. It will grow over time - smaller amounts, slow and steady.`
-  return `You have decided to put ${pct}% of your money here. Just keep in mind: this money has a risk. It may grow, or it may be lost.`
+  if (id === 'pocket') return `${pct}% is ready for emergencies. More pocket money is safer now, but it will not grow.`
+  if (id === 'bank') return `${pct}% is in the bank. This part grows slowly and steadily.`
+  return `${pct}% is in the Money Garden. This part may grow more, but it can also lose value.`
 }
 
-// Nudges - never blocks (the advisor: nudge toward a middle, never force).
 export function splitNudge(split, total) {
-  if (split.pocket >= total) return 'If it all naps in your pocket, none of it grows - try putting a little to work!'
-  if (split.garden >= total) return 'Brave! But smart gardeners keep some safe in case of surprises.'
-  if (split.bank === 0 && split.garden === 0) return 'All pocket cash so far - the bank and garden are where money grows.'
-  if (split.pocket === 0) return 'A little pocket cash is handy for surprises - grown-ups call it emergency money.'
-  return null
+  if (split.pocket >= total) return 'Redo this plan: all pocket money leaves nothing growing. Move some money to the bank or garden.'
+  if (split.garden >= total) return 'Redo this plan: all garden money leaves nothing ready for a surprise. Keep at least a little in your pocket.'
+  if (split.bank >= total) return 'Redo this plan: the bank is safer, but you still need ready emergency cash and may choose some growth.'
+  if (split.bank === 0 && split.garden === 0) return 'Your money is only sitting in your pocket. Move some to a place where it can grow.'
+  if (split.pocket === 0) return 'Your plan has no emergency cash. Move at least $2 into Pocket before continuing.'
+  if (split.pocket < Math.min(2, total)) return 'Your emergency cushion is too small for the surprise ahead. Put at least $2 in Pocket.'
+  if (split.garden > Math.round(total * 0.7)) return 'Most of your money is taking risk. Consider moving some to Pocket or Bank.'
+  return 'Balanced plan: you have money ready now, safer growth, and higher-risk growth.'
 }
 
-export const SPLIT_PROMPT = 'Split your leftover three ways. Slide each one - the pie shows your plan!'
-export const SPLIT_CONFIRM = "Here's your plan!"
+export const SPLIT_PROMPT = 'Build a plan that can survive a surprise: keep at least $2 in Pocket, then divide the rest between Bank and Money Garden. Read the feedback as you move each slider.'
+export const SPLIT_CONFIRM = "Here is the result of your budget decision. Check that you have emergency cash before sending the money."
 
-// The physical split (5.1): WALK the coins to their homes.
-export const CARRY_PROMPT = 'Now walk your money home! Take the BANK coins to the BANK KIOSK, and the GARDEN coins to the GARDEN GATE.'
-export const CARRY_BANK_DONE = (amt) => `$${amt} tucked at the bank kiosk - Banker Bea will collect it.`
-export const CARRY_GARDEN_DONE = (amt) => `$${amt} waits at the garden gate, ready to grow.`
+export const CARRY_PROMPT = 'Your plan is ready. Send the BANK money to the bank and the GARDEN money to the garden.'
+export const CARRY_BANK_DONE = (amt) => `$${amt} moved to the bank for slower, steadier growth.`
+export const CARRY_GARDEN_DONE = (amt) => `$${amt} moved to the Money Garden for higher potential growth and higher risk.`
 
-// Emergency savings (the advisor's explicit lesson)
-export const EMERGENCY_INTRO = "One more thing - a gardener's secret: always keep a little in your pocket for SURPRISES. A flat bike tire, a rainy day. That's called emergency money."
+export const EMERGENCY_INTRO = "Now your plan gets tested. A surprise expense appears. Pocket money is what protects the rest of your plan from being interrupted."
 export const EMERGENCY_EVENT = { label: 'Flat bike tire!', cost: 2 }
-export const EMERGENCY_PRAISE = 'See? Because you kept a little in your pocket, the surprise was no problem.'
-export const EMERGENCY_REPLAY = 'Uh oh - no pocket cash for the surprise! Let\'s set your split again and keep a little close.'
+export const EMERGENCY_PRAISE = 'Your decision worked: the pocket money covered the surprise, so your bank and garden money stayed untouched.'
+export const EMERGENCY_REPLAY = 'Your plan did not leave enough ready cash for the $2 surprise. Return to the sliders, put at least $2 in Pocket, and adjust Bank and Garden so the total still matches.'
 
-// The hand-off with the running numbers (the connective tissue)
 export const HANDOFF = (bank, garden) =>
-  `Your plan is set! The $${bank} you're saving - let's go to the Bank and open a real account. And the $${garden} you're growing? That comes later, at the Money Garden. Follow the path to the Bank - Banker Bea is waiting!`
+  `Your revised budget works. You kept emergency cash ready, placed $${bank} in the bank, and chose $${garden} for the Money Garden. Next, learn what happens to each part.`
 
-// default starting split suggestion (child adjusts freely): ~20/35/45
 export function defaultSplit(total) {
   const pocket = Math.max(2, Math.round(total * 0.2))
   const bank = Math.round(total * 0.35)
