@@ -58,8 +58,31 @@ export const PARTY_HOUSE = (() => {
   return [px + (dx / d) * 7.2, pz + (dz / d) * 7.2]
 })()
 
-// The ring road + a short spur to every ENTRANCE. No segment ever ends at a
-// wall or runs through a building; the ring itself is continuous (closed).
+const partyDx = PARTY_HOUSE[0] - CENTER[0]
+const partyDz = PARTY_HOUSE[1] - CENTER[1]
+const partyDistance = Math.hypot(partyDx, partyDz)
+const partyRadial = [partyDx / partyDistance, partyDz / partyDistance]
+const partyTangent = [-partyRadial[1], partyRadial[0]]
+const partyEntrance = [
+  PARTY_HOUSE[0] - partyRadial[0] * 2.7,
+  PARTY_HOUSE[1] - partyRadial[1] * 2.7,
+]
+const partyForecourt = [
+  PARTY_HOUSE[0] - partyRadial[0] * 5.0,
+  PARTY_HOUSE[1] - partyRadial[1] * 5.0,
+]
+
+export const ROYAL_APPROACH = {
+  leftGate: ringPoint(STOP_ANGLES.party + 14),
+  rightGate: ringPoint(STOP_ANGLES.party - 14),
+  leftForecourt: [partyForecourt[0] - partyTangent[0] * 1.8, partyForecourt[1] - partyTangent[1] * 1.8],
+  rightForecourt: [partyForecourt[0] + partyTangent[0] * 1.8, partyForecourt[1] + partyTangent[1] * 1.8],
+  entrance: partyEntrance,
+}
+
+// The ring road + a clean spur to every module entrance. The Finale Area is
+// different on purpose: both directions around the ring branch into matching
+// royal paths, then converge at a shared forecourt and central entrance.
 export const PATHS = {
   ring: RING_POINTS,
   spurAllowance: [ringPoint(152), sc([-0.2, -21.5])],
@@ -69,13 +92,8 @@ export const PATHS = {
   spurBudget: [ringPoint(64), sc([48, -37.6])],
   spurBank: [ringPoint(40), sc([59.1, -27.2])],
   spurGarden: [ringPoint(14), sc([64.6, -15.2])],
-  spurParty: (() => {
-    const road = ringPoint(STOP_ANGLES.party)
-    const dx = PARTY_HOUSE[0] - CENTER[0], dz = PARTY_HOUSE[1] - CENTER[1]
-    const d = Math.hypot(dx, dz)
-    const entrance = [PARTY_HOUSE[0] - (dx / d) * 2.7, PARTY_HOUSE[1] - (dz / d) * 2.7]
-    return [road, entrance]
-  })(),
+  royalPartyLeft: [ROYAL_APPROACH.leftGate, ROYAL_APPROACH.leftForecourt, ROYAL_APPROACH.entrance],
+  royalPartyRight: [ROYAL_APPROACH.rightGate, ROYAL_APPROACH.rightForecourt, ROYAL_APPROACH.entrance],
 }
 
 const pointToSegmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
@@ -100,6 +118,18 @@ export function distanceToPaths(point) {
 }
 
 export const isClearOfPaths = (point, radius = 0) => distanceToPaths(point) >= radius
+
+const normalizeAngle = (angle) => ((angle + 180) % 360 + 360) % 360 - 180
+const pointAngle = ([x, z]) => (Math.atan2(-(z - CENTER[1]), x - CENTER[0]) * 180) / Math.PI
+const approachAngles = Object.values(STOP_ANGLES)
+
+// Decorations must stop well before every module spur. This leaves a readable,
+// calm gateway around each entrance even when the spaces between modules are lush.
+export const MODULE_GATE_CLEAR_DEGREES = 7.5
+export function isClearOfModuleGates(point, extraDegrees = 0) {
+  const angle = pointAngle(point)
+  return approachAngles.every((stop) => Math.abs(normalizeAngle(angle - stop)) >= MODULE_GATE_CLEAR_DEGREES + extraDegrees)
+}
 
 
 export const PLAY_BOUNDS = 96 // legacy import
