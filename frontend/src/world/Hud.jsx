@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from './store.js'
-import { JARS } from './config.js'
+import { JARS, STORE_ITEMS } from './config.js'
 import {
   BUNDLES, PROFIT_GOAL, HOURS_OPTIONS, QUALITY, SIGNS, WAGE_RATES,
   PRICE_MIN, PRICE_MAX, PRICE_STEP, PRICE_STEP_BIG,
@@ -151,13 +151,23 @@ function MarketMissionBar() {
   const spend = useGame((s) => s.allocations.spend)
   const bought = useGame((s) => s.bought)
   if (week !== 1 || objective !== 'store' || !talked) return null
+  const basket = bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
+  const hasFood = basket.some((item) => item.tags?.includes('food'))
+  const hasDrink = basket.some((item) => item.tags?.includes('drink'))
+  const readyForCheckout = hasFood && hasDrink
   return (
     <div className="absolute left-1/2 top-[72px] z-[165] w-[min(94vw,32rem)] -translate-x-1/2 rounded-2xl bg-navy/90 px-4 py-3 text-center text-white shadow-xl">
-      <div className="font-extrabold">Pick 1 healthy food + 1 healthy drink</div>
+      <div className={readyForCheckout ? "text-lg font-extrabold text-sun" : "font-extrabold"}>
+        {readyForCheckout ? 'Food and drink ready! Go to CHECKOUT ↓' : 'Pick 1 healthy food + 1 healthy drink'}
+      </div>
       <div className="mt-1 text-sm font-bold text-white/75">
         SPEND money left: <span className="text-sun">${fmt(spend)}</span> · Basket: {bought.length} item{bought.length === 1 ? '' : 's'}
       </div>
-      <div className="text-xs text-teal">You may spend it or save what is left for later.</div>
+      <div className={readyForCheckout ? "mt-1 rounded-xl bg-teal px-3 py-2 text-sm font-extrabold text-navy" : "text-xs text-teal"}>
+        {readyForCheckout
+          ? `Walk to the glowing green CHECKOUT at the front of the store and ${USES_TOUCH_CONTROLS ? 'tap the blue button' : 'press E'}.`
+          : 'You may spend it or save what is left for later.'}
+      </div>
     </div>
   )
 }
