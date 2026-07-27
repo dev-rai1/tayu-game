@@ -1,7 +1,7 @@
 // ROUND 8 (7.3): THE SIMPLIFIED ADMIN PANEL.
 // A low-key Admin button on every screen, password-gated (tayu1234).
 // SOLID opaque gray background, and exactly THREE working controls:
-//   1. Skip module or jump to party  2. Week back / forward  3. Add money
+//   1. Skip module  2. Week back / forward  3. Add money
 // Everything else from Round 6 (fast-forward, auto-play, set name, unlock
 // all, reset) is gone by design.
 import { useState, useEffect } from 'react'
@@ -44,10 +44,18 @@ export function AdminPanel({ showButton = true }) {
     else setPwError(true)
   }
 
-  // 1) module navigation - BOTH directions plus a direct finale jump
-  const moduleBack = guard(() => { const wk = g().week; if (wk > 1) g().adminJumpModule(wk - 1) })
-  const moduleForward = guard(() => g().adminCompleteModule())
-  const jumpParty = guard(() => { g().adminJumpModule(6); setOpen(false) })
+  // 1) module navigation. The Party Area is the sixth and final admin stop.
+  const moduleStep = open && adminUnlocked
+    ? (g().gameComplete && g().objective === 'party' ? 6 : g().week)
+    : 1
+  const moduleBack = guard(() => {
+    const step = g().gameComplete && g().objective === 'party' ? 6 : g().week
+    if (step > 1) g().adminJumpModule(step - 1)
+  })
+  const moduleForward = guard(() => {
+    const step = g().gameComplete && g().objective === 'party' ? 6 : g().week
+    if (step < 6) g().adminJumpModule(step + 1)
+  })
 
   // 2) one week back / forward inside the current module
   const wkInfo = open && adminUnlocked ? (() => { try { return g().adminCurrentWeek() } catch { return { n: 1, max: 1 } } })() : { n: 1, max: 1 }
@@ -105,22 +113,25 @@ export function AdminPanel({ showButton = true }) {
             <button className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold active:scale-95" onClick={() => setOpen(false)}>Close</button>
           </div>
 
-          <div className="mt-3 text-[11px] font-bold text-white/70">MODULE {g().week} of 5</div>
+          <div className="mt-3 text-[11px] font-bold text-white/70">
+            {moduleStep === 6 ? 'PARTY AREA 6 of 6' : `MODULE ${moduleStep} of 6`}
+          </div>
           {currentUser()?.role === 'admin' && (
             <a href="/dashboard" className="mt-2 grid min-h-[44px] place-items-center rounded-lg bg-teal px-3 text-sm font-bold text-navy">
               View player data
             </a>
           )}
           <div className="mt-1 flex gap-2">
-            <button className={`${B} flex-1 bg-white/20`} disabled={g().week <= 1} onClick={moduleBack}>&lt; Module</button>
-            <button className={`${B} flex-1 bg-white text-black`} onClick={moduleForward}>Module &gt;</button>
+            <button className={`${B} flex-1 bg-white/20`} disabled={moduleStep <= 1} onClick={moduleBack}>&lt; Module</button>
+            <button className={`${B} flex-1 bg-white text-black`} disabled={moduleStep >= 6} onClick={moduleForward}>
+              {moduleStep === 5 ? 'Party >' : 'Module >'}
+            </button>
           </div>
-          <button className={`${B} mt-2 w-full bg-teal text-navy`} onClick={jumpParty}>Skip to Party Area</button>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">WEEK {wkInfo.n} of {wkInfo.max}</div>
           <div className="mt-1 flex gap-2">
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
+            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1 || moduleStep === 6} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
+            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max || moduleStep === 6} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
           </div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">ADD MONEY</div>
