@@ -244,6 +244,8 @@ export function Ambient() {
         [34, -38, 2.2, '#ffffff', 9, 6], [50, -30, 3.3, '#c9b7ff', 13, 9],
         [62, -12, 4.4, '#ffffff', 11, 7], [54, 10, 5.5, '#b8d8ff', 14, 8],
         [32, 18, 6.6, '#ffffff', 10, 6], [10, 9, 7.7, '#c9b7ff', 12, 7],
+        [4, -4, 8.8, '#ffffff', 15, 9], [25, -12, 9.9, '#b8d8ff', 13, 7],
+        [45, 3, 11, '#fff4cf', 16, 10], [68, -35, 12.1, '#ffffff', 14, 8],
       ].map(([x, z, phase, color, altitude, orbit], i) => (
         <Bird key={`sky-bird-${i}`} x={x} z={z} phase={phase} color={color} altitude={altitude} orbit={orbit} />
       ))}
