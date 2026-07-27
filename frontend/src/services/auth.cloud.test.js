@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  addDoc: vi.fn(),
   createUserWithEmailAndPassword: vi.fn(),
   signInWithEmailAndPassword: vi.fn(),
   sendPasswordResetEmail: vi.fn(),
@@ -11,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   setDoc: vi.fn(),
   getDoc: vi.fn(),
   getDocs: vi.fn(),
+  increment: vi.fn((value) => ({ __increment: value })),
   loadWallet: vi.fn(),
   saveWallet: vi.fn(),
   loadProfile: vi.fn(),
@@ -26,10 +28,12 @@ vi.mock('firebase/auth', () => ({
 }))
 
 vi.mock('firebase/firestore', () => ({
+  addDoc: mocks.addDoc,
   collection: vi.fn((_, name) => name),
   doc: vi.fn((_, collectionName, id) => `${collectionName}/${id}`),
   getDoc: mocks.getDoc,
   getDocs: mocks.getDocs,
+  increment: mocks.increment,
   setDoc: mocks.setDoc,
 }))
 
@@ -50,14 +54,16 @@ import { resetPassword, signIn, signUp } from './auth.js'
 
 const firebase = { auth: { name: 'auth' }, firestore: { name: 'firestore' } }
 
-describe('Firebase cloud account migration and reset', () => {
+describe('Firebase cloud account migration, activity, and reset', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.clearAllMocks()
     mocks.prepareFirebaseAuth.mockResolvedValue(firebase)
     mocks.getFirebaseServices.mockReturnValue(firebase)
     mocks.getDoc.mockResolvedValue({ exists: () => false, data: () => null })
     mocks.getDocs.mockResolvedValue({ docs: [] })
+    mocks.addDoc.mockResolvedValue({ id: 'activity-1' })
     mocks.sendPasswordResetEmail.mockResolvedValue(undefined)
     mocks.setDoc.mockResolvedValue(undefined)
   })
@@ -69,7 +75,7 @@ describe('Firebase cloud account migration and reset', () => {
     expect(message).toContain('password-reset link was sent')
   })
 
-  it('explains how to move an older device-only account into Firebase', async () => {
+  it('explains how to activate an older device-only account in Firebase', async () => {
     localStorage.setItem('tayu-accounts-v1', JSON.stringify({
       'student@example.com': {
         email: 'student@example.com',
@@ -79,7 +85,7 @@ describe('Firebase cloud account migration and reset', () => {
     }))
     mocks.signInWithEmailAndPassword.mockRejectedValue({ code: 'auth/invalid-credential' })
 
-    await expect(signIn('student@example.com', 'password123')).rejects.toThrow('older device-only account system')
+    await expect(signIn('student@example.com', 'password123')).rejects.toThrow('has not been activated')
   })
 
   it('uploads saved local progress when the same email signs up for Firebase', async () => {
@@ -118,9 +124,47 @@ describe('Firebase cloud account migration and reset', () => {
       expect.objectContaining({ data: progress, updatedAt: progress.savedAt }),
       { merge: true },
     )
+    expect(mocks.addDoc).toHaveBeenCalledWith(
+      'authActivity',
+      expect.objectContaining({
+        uid: 'firebase-user-1',
+        email: 'student@example.com',
+        type: 'sign_up',
+      }),
+    )
     expect(JSON.parse(localStorage.getItem('tayu-accounts-v1'))['student@example.com']).toMatchObject({
       migratedToFirebase: true,
       firebaseUid: 'firebase-user-1',
     })
+  })
+
+  it('records a successful login and increments the profile login count', async () => {
+    mocks.signInWithEmailAndPassword.mockResolvedValue({
+      user: { uid: 'firebase-user-2', email: 'student@example.com' },
+    })
+    mocks.getDoc
+      .mockResolvedValueOnce({ exists: () => true, data: () => ({ role: 'student' }) })
+      .mockResolvedValueOnce({ exists: () => false, data: () => null })
+
+    await signIn('student@example.com', 'password123')
+
+    expect(mocks.increment).toHaveBeenCalledWith(1)
+    expect(mocks.setDoc).toHaveBeenCalledWith(
+      'profiles/firebase-user-2',
+      expect.objectContaining({
+        lastLoginAt: expect.any(String),
+        lastActiveAt: expect.any(String),
+        loginCount: { __increment: 1 },
+      }),
+      { merge: true },
+    )
+    expect(mocks.addDoc).toHaveBeenCalledWith(
+      'authActivity',
+      expect.objectContaining({
+        uid: 'firebase-user-2',
+        email: 'student@example.com',
+        type: 'sign_in',
+      }),
+    )
   })
 })
