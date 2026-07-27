@@ -11,6 +11,7 @@ import { MODULE_CATALOG } from '../constants/modules.js'
 // canonical link row (the footer) plus the two Partner CTA buttons.
 
 const LOGO = '/assets/tayu-logo.webp'
+const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -197,17 +198,25 @@ export default function About() {
                 </p>
               </div>
             </div>
-            {/* R13 11.4: the Fox interview, embedded inline */}
+            {/* R13 11.4: media coverage, embedded inline */}
             <div className="mt-6">
-              <h3 className="font-display text-lg font-extrabold text-navy">As seen on Fox</h3>
-              <div className="mt-2 overflow-hidden rounded-2xl shadow-md" style={{ position: 'relative', paddingTop: '56.25%' }}>
-                <iframe
-                  src="https://www.youtube.com/embed/HjfuUGCowW4"
-                  title="TAYU on Fox"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+              <h3 className="font-display text-lg font-extrabold text-navy">As seen on FOX 5 DC &amp; WTOP</h3>
+              <div className="mt-2 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+                <div className="overflow-hidden rounded-2xl shadow-md" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                  <iframe
+                    src="https://www.youtube.com/embed/HjfuUGCowW4"
+                    title="TAYU on FOX 5 DC"
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="flex flex-col justify-center rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
+                  <span className="font-display text-xs font-extrabold uppercase tracking-[0.16em] text-electric">WTOP News</span>
+                  <h4 className="mt-2 font-display text-lg font-extrabold leading-tight text-navy">Fairfax students teach financial literacy</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read WTOP&rsquo;s feature about our book, classroom outreach, and mission.</p>
+                  <span className="mt-4 text-sm font-extrabold text-electric">Read the WTOP article →</span>
+                </a>
               </div>
             </div>
           </section>
