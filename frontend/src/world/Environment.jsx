@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, SCENERY_ZONES, STOP_ANGLES, isClearOfModuleGates, isClearOfPaths, ringPoint, worldScale } from './config.js'
+import { BLOCKERS, CENTER_BUILDINGS, HOME, PATHS, RING, RING_POINTS, LAKE, SCENERY_ZONES, STOP_ANGLES, isClearOfModuleGates, isClearOfPaths, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -454,10 +454,41 @@ function LearningGreenhouse({ x, z }) {
   )
 }
 
+function TownCenterBuilding({ building, index }) {
+  const { x, z, wall, roof } = building
+  const rotation = index % 2 ? -0.18 : 0.18
+  return (
+    <group position={[x, 0, z]} rotation={[0, rotation, 0]}>
+      <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[3.15, 24]} /><Clay color="#d8c89f" rough={1} />
+      </mesh>
+      <RoundedBox args={[3.5, 2.2, 3]} radius={0.18} smoothness={3} position={[0, 1.1, 0]} castShadow receiveShadow>
+        <Clay color={wall} />
+      </RoundedBox>
+      <mesh position={[0, 2.65, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[2.75, 1.35, 4]} /><Clay color={roof} />
+      </mesh>
+      <RoundedBox args={[0.7, 1.25, 0.16]} radius={0.08} position={[0, 0.64, 1.54]}>
+        <Clay color="#76523b" />
+      </RoundedBox>
+      {[-1.08, 1.08].map((wx) => (
+        <group key={wx}>
+          <RoundedBox args={[0.68, 0.68, 0.12]} radius={0.06} position={[wx, 1.35, 1.55]}>
+            <Clay color="#9ed9ed" />
+          </RoundedBox>
+          <mesh position={[wx, 1.35, 1.63]}><boxGeometry args={[0.08, 0.72, 0.04]} /><Clay color="#fff6df" /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 3.5, 0]}><sphereGeometry args={[0.13, 10, 10]} /><Clay color="#ffd96a" /></mesh>
+    </group>
+  )
+}
+
 function CentralCommons() {
   return (
     <group>
       {/* Calm, optional support spaces: visually interesting but never mistaken for modules. */}
+      {CENTER_BUILDINGS.map((building, index) => <TownCenterBuilding key={building.id} building={building} index={index} />)}
       <ParkPavilion x={16.5} z={-5} roof="#6f8fc9" rotation={0.2} />
       <LearningGreenhouse x={43.5} z={-5} />
       <ParkPavilion x={30} z={9} roof="#c98762" rotation={Math.PI / 6} />
@@ -487,12 +518,22 @@ function PathLine({ points, w, color, y }) {
   return segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={w} color={color} y={y} />)
 }
 
+function ModuleApproach({ points }) {
+  return (
+    <group>
+      {/* A cool stone edge makes every entrance visibly separate from the ring. */}
+      <PathLine points={points} w={4.2} color="#aebfc4" y={0.021} />
+      <PathLine points={points} w={3.15} color="#f1dfb7" y={0.029} />
+    </group>
+  )
+}
+
 // THE TWO-WAY RING ROAD: wide segments around the circle + a dashed center
 // line so the two lanes read clearly. Sits slightly above the grass.
 function RoyalFinaleApproach() {
   return (
     <group>
-      {/* Gold borders under warm stone create a clear, symmetrical royal fork. */}
+      {/* Gold borders trace a short, curved semicircular crown into the Finale. */}
       <PathLine points={PATHS.royalPartyLeft} w={4.8} color="#d6aa35" y={0.021} />
       <PathLine points={PATHS.royalPartyRight} w={4.8} color="#d6aa35" y={0.021} />
       <PathLine points={PATHS.royalPartyLeft} w={3.5} color="#f4e5bd" y={0.029} />
@@ -548,13 +589,13 @@ export function Environment3D() {
 
       {/* PART 1: the two-way ring road + entrance spurs */}
       <RingRoad />
-      <PathLine points={PATHS.spurAllowance} />
-      <PathLine points={PATHS.spurJars} />
-      <PathLine points={PATHS.spurMarket} />
-      <PathLine points={PATHS.spurLemonade} />
-      <PathLine points={PATHS.spurBudget} />
-      <PathLine points={PATHS.spurBank} />
-      <PathLine points={PATHS.spurGarden} />
+      <ModuleApproach points={PATHS.spurAllowance} />
+      <ModuleApproach points={PATHS.spurJars} />
+      <ModuleApproach points={PATHS.spurMarket} />
+      <ModuleApproach points={PATHS.spurLemonade} />
+      <ModuleApproach points={PATHS.spurBudget} />
+      <ModuleApproach points={PATHS.spurBank} />
+      <ModuleApproach points={PATHS.spurGarden} />
       <RoyalFinaleApproach />
 
       <Home />

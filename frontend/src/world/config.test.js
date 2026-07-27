@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BANK_DISTRICT,
   BUDGET_TOWN,
+  CENTER_BUILDINGS,
   DISTRICT_GAP_ANGLES,
   HOME,
   LEMONADE,
@@ -69,6 +70,18 @@ describe('world path separation', () => {
       ROYAL_APPROACH.entrance[1] - PARTY_HOUSE[1],
     )
     expect(distanceToHouse).toBeGreaterThanOrEqual(2.65)
+  })
+
+  it('starts the short finale crown immediately after the last module', () => {
+    expect(ROYAL_APPROACH.leftGate).toEqual(ringPoint(2))
+    expect(PATHS.royalPartyLeft.length).toBeGreaterThanOrEqual(6)
+    expect(PATHS.royalPartyRight.length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('keeps all center buildings outside every walking path', () => {
+    CENTER_BUILDINGS.forEach(({ x, z, r }) => {
+      expect(isClearOfPaths([x, z], r)).toBe(true)
+    })
   })
 
   it('keeps all path coordinates finite', () => {
