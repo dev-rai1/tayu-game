@@ -1,6 +1,4 @@
-// R12 PART 2: LOGIN / SIGN UP / FORGOT PASSWORD - one page, three modes.
-// Email IS the username (capturing it is the whole point of sign-up).
-// Manual accounts only - no Google button by design.
+// Login / sign-up / forgot-password page. Email is the account username.
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { signUp, signIn, resetPassword, isCloud } from '../services/auth.js'
@@ -12,13 +10,19 @@ const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
 
 export default function Auth() {
   const [params] = useSearchParams()
-  const [mode, setMode] = useState(params.get('mode') || 'signin') // signin | signup | reset
+  const [mode, setMode] = useState(params.get('mode') || 'signin')
   const nav = useNavigate()
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const [ok, setOk] = useState(null)
   const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'teacher', gradeLevels: '', foundVia: '', organizationName: '' })
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const set = (key) => (event) => setF({ ...f, [key]: event.target.value })
+
+  const changeMode = (nextMode) => {
+    setMode(nextMode)
+    setErr(null)
+    setOk(null)
+  }
 
   const submit = async (event) => {
     event?.preventDefault()
@@ -27,18 +31,17 @@ export default function Auth() {
       if (mode === 'signup') {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
         await signUp(f)
-        // 2.4: brand-new accounts meet TAYU on About Us FIRST, then play
         nav('/about?welcome=1')
       } else if (mode === 'signin') {
-        const u = await signIn(f.email, f.password)
-        if (u.role === 'admin') nav('/dashboard')
+        const user = await signIn(f.email, f.password)
+        if (user.role === 'admin') nav('/dashboard')
         else if (!loadProfile()?.assessment?.pre) nav('/assessment/pre')
         else nav(loadWallet() ? '/world' : '/modules')
       } else {
         setOk(await resetPassword(f.email))
       }
-    } catch (e) {
-      setErr(e.message || String(e))
+    } catch (error) {
+      setErr(error.message || String(error))
     } finally {
       setBusy(false)
     }
@@ -55,32 +58,36 @@ export default function Auth() {
           {mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}
         </h1>
         <p className="mt-1 text-sm font-semibold text-white/75">
-          {mode === 'signup' ? 'Sign up, then choose a money adventure.' : mode === 'reset' ? 'We will send instructions to your email.' : 'Log in to continue your money adventure.'}
+          {mode === 'signup'
+            ? 'Sign up, then choose a money adventure.'
+            : mode === 'reset'
+              ? 'Enter your account email and Firebase will send a secure reset link.'
+              : 'Log in to continue your money adventure.'}
         </p>
         <GuestModeButton />
         <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">
-          {[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([m, l]) => (
-            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr(null); setOk(null) }}
-              className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold transition active:scale-95 ${mode === m ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
-              {l}
+          {[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => (
+            <button key={tabMode} type="button" role="tab" aria-selected={mode === tabMode} onClick={() => changeMode(tabMode)}
+              className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold transition active:scale-95 ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
+              {label}
             </button>
           ))}
         </div>
 
         <label className={LABEL}>Email {mode === 'signup' && <span className="text-white/50">(this is your username)</span>}
-          <input className={FIELD} type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@school.org" />
+          <input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@school.org" />
         </label>
 
         {mode !== 'reset' && (
           <label className={LABEL}>Password
-            <input className={FIELD} type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={6} value={f.password} onChange={set('password')} placeholder="At least 6 characters" />
+            <input className={FIELD} required type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={6} value={f.password} onChange={set('password')} placeholder="At least 6 characters" />
           </label>
         )}
 
         {mode === 'signup' && (
           <>
             <label className={LABEL}>Confirm password
-              <input className={FIELD} type="password" autoComplete="new-password" value={f.confirm} onChange={set('confirm')} />
+              <input className={FIELD} required type="password" autoComplete="new-password" minLength={6} value={f.confirm} onChange={set('confirm')} />
             </label>
             <label className={LABEL}>Which best describes you?
               <select className={FIELD} value={f.role} onChange={set('role')}>
@@ -131,13 +138,13 @@ export default function Auth() {
         </button>
 
         {mode === 'signin' && (
-          <button type="button" onClick={() => setMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
+          <button type="button" onClick={() => changeMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
             Forgot password?
           </button>
         )}
         {!isCloud() && (
           <p className="mt-4 text-center text-xs font-semibold text-white/70">
-            Practice mode: this account is saved only on this device.
+            Practice mode: this account is saved only on this device. Connect Firebase to enable cross-device accounts and reset emails.
           </p>
         )}
       </form>
