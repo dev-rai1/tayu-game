@@ -101,6 +101,24 @@ function PlanCheck({ label, current, target }) {
   )
 }
 
+function savedPlan(feedback, event) {
+  const saved = feedback?.recommended
+  if (!saved || (saved.eventId && saved.eventId !== event?.id)) return null
+  const bundle = BUNDLES.find((item) => item.id === saved.bundleId)
+  const quality = QUALITY.find((item) => item.id === saved.qualityId)
+  const sign = SIGNS.find((item) => item.id === saved.signId)
+  if (!bundle || !quality || !sign) return null
+  return {
+    price: saved.price,
+    hours: saved.hours,
+    bundle,
+    quality,
+    sign,
+    wageRate: saved.wageRate,
+    sim: { keep: saved.expectedKeep, sold: saved.expectedSold },
+  }
+}
+
 function LemonadeSupplyDemandCoach() {
   const week = useGame((s) => s.week)
   const objective = useGame((s) => s.objective)
@@ -129,21 +147,22 @@ function LemonadeSupplyDemandCoach() {
   const activePhase = ['toMarket', 'supplies', 'toStand2', 'template'].includes(phase)
   if (week !== 2 || objective !== 'lemonade' || !activePhase || weekComplete) return null
 
-  // Before buying, optimize across every affordable batch. After a batch is
-  // purchased, respect it and calculate the best profitable settings for it.
+  // A previous result owns the exact plan until the next sale. This is the same
+  // plan generated on the end card. The first round uses a live affordable plan.
   const fullBudget = save + (bundle?.cost || 0)
-  const plan = findProfitablePlan(
+  const calculated = findProfitablePlan(
     features,
     event,
     fullBudget,
     bundle ? { bundleId: bundle.id } : {},
   )
+  const plan = savedPlan(feedback, event) || calculated
   const signal = estimateDemandSignal(plan.hours, event, plan.sign)
   const supply = bundle?.cups ?? plan.bundle.cups
   const pressure = signal.potential > supply + 3
-    ? `Demand may be higher than ${supply} cups. The guided price keeps demand manageable, but a larger batch may be needed before purchase.`
+    ? `Demand may be higher than ${supply} cups. Follow the pinned batch and price before selling.`
     : supply > signal.potential + 3
-      ? `${supply} cups may exceed demand. The pinned plan reduces the risk of leftovers.`
+      ? `${supply} cups may exceed demand. Follow the pinned plan to reduce leftovers.`
       : `${supply} cups is close to the expected customer level.`
 
   const applyPlan = () => {
