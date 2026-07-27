@@ -4,7 +4,7 @@ import { useFeedbackCoach } from './feedbackCoach.js'
 import { STORE_ITEMS } from './config.js'
 import { checkAllocation } from '../scenarios/jarScenario.js'
 import { cartFeedback } from '../scenarios/storeMission.js'
-import { analyzeLemonadeResult, BUNDLES, EVENTS, QUALITY, SIGNS } from '../scenarios/lemonade.js'
+import { BUNDLES, EVENTS, QUALITY, SIGNS, nextTip } from '../scenarios/lemonade.js'
 import { weekSpec } from '../scenarios/marketScenarios.js'
 import { EMERGENCY_EVENT } from '../scenarios/budgetTown.js'
 
@@ -102,7 +102,9 @@ export function PersistentImprovementCoach() {
       }
       if (state.storeMissionDone && !previous.storeMissionDone) clearFeedback('market')
 
-      // LEMONADE: analyze the complete combination immediately after every sale.
+      // LEMONADE: use the same nextTip calculation as the end-of-round card.
+      // That guarantees the exact recommendation shown at the end is the one
+      // saved and pinned throughout the following selection screen.
       if (state.lemResult && state.lemResult !== previous.lemResult) {
         const result = state.lemResult
         const levers = {
@@ -113,12 +115,12 @@ export function PersistentImprovementCoach() {
           sign: result.sign || SIGNS[0],
           wageRate: result.wageRate ?? 1,
         }
-        const analysis = analyzeLemonadeResult(
+        const analysis = nextTip(
           result,
           levers,
           result.event || EVENTS[0],
           state.lemFeatures,
-          Math.max(state.allocations.save, BUNDLES[0].cost),
+          state.lemTipHistory,
         )
         setFeedback('lemonade', {
           sourceKey: `lemonade-${result.round}`,
@@ -138,6 +140,8 @@ export function PersistentImprovementCoach() {
             wageRate: analysis.plan.wageRate,
             expectedKeep: analysis.plan.sim.keep,
             expectedSold: analysis.plan.sim.sold,
+            eventId: analysis.targetEvent?.id,
+            eventLine: analysis.targetEvent?.line,
           },
         })
       }
@@ -206,7 +210,7 @@ export function PersistentImprovementCoach() {
   const feedback = activeKey ? feedbackByModule[activeKey] : null
 
   // Lemonade owns a larger combination coach inside its decision panel.
-  if (!feedback || activeKey === 'lemonade' || weekComplete) return null
+  if (!feedback || weekComplete) return null
 
   return (
     <aside
