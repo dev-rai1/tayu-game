@@ -314,12 +314,18 @@ export const useGame = create((set, get) => ({
       return
     }
     const batch = { id: `buy-${item.id}-${Date.now() % 100000}`, from: { x: playerPos.x, y: 1.2, z: playerPos.z }, to: { x: playerPos.x, y: 0.4, z: playerPos.z - 0.5 }, count: Math.max(2, Math.ceil(item.price / 2)) }
+    const nextBought = [...s.bought, item.id]
+    const nextBasket = nextBought.map(itemById).filter(Boolean)
+    const readyForCheckout = nextBasket.some((entry) => entry.tags?.includes('food'))
+      && nextBasket.some((entry) => entry.tags?.includes('drink'))
     set({
       allocations: { ...s.allocations, spend: spendJar - item.price },
-      bought: [...s.bought, item.id],
+      bought: nextBought,
       panelItem: null,
       coinBatches: [...s.coinBatches, batch],
+      ...(readyForCheckout ? { toast: 'Great choices! Go to the glowing green CHECKOUT at the front of the store.' } : {}),
     })
+    if (readyForCheckout) setTimeout(() => set((x) => (x.toast?.includes('glowing green CHECKOUT') ? { toast: null } : {})), 5200)
     get().persist()
   },
 
