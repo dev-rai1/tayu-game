@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, DISTRICT_GAP_ANGLES, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfModuleGates, isClearOfPaths, ringPoint, worldScale } from './config.js'
+import { BLOCKERS, HOME, PATHS, RING, RING_POINTS, LAKE, SCENERY_ZONES, STOP_ANGLES, isClearOfModuleGates, isClearOfPaths, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -131,30 +131,35 @@ const roadsideSpot = (angle, radialOffset, tangentOffset = 0) => {
   }
 }
 
-// Each gap gets a layered grove on the OUTSIDE of the route: three trees,
-// four bushes, and a flower ribbon. This creates visible scenery between
-// buildings while preserving an open road and entrance sightlines.
-const GROVE_TREE_SPOTS = DISTRICT_GAP_ANGLES.flatMap((angle, i) => [
-  { ...roadsideSpot(angle, 6.8, -2.7), s: 1.05, c: i * 3 },
-  { ...roadsideSpot(angle, 7.8, 0.2), s: 1.25, c: i * 3 + 1 },
-  { ...roadsideSpot(angle, 6.6, 2.8), s: 0.9, c: i * 3 + 2 },
-]).filter((item) => isClearOfModuleGates([item.x, item.z], 1.5))
+// Density and arrangement vary by zone, so the landscape never repeats the
+// exact same three-tree/four-bush template from one district gap to the next.
+const GROVE_TREE_SPOTS = SCENERY_ZONES.flatMap((zone, i) => {
+  const tangents = zone.density === 1 ? [0] : zone.density === 2 ? [-2.8, 2.4] : [-3.4, 0, 3.1]
+  return tangents.map((tangent, n) => ({
+    ...roadsideSpot(zone.angle, 6.6 + ((i + n) % 3) * 0.7, tangent),
+    s: 0.82 + ((i * 2 + n) % 4) * 0.13,
+    c: i * 3 + n,
+  }))
+}).filter((item) => isClearOfPaths([item.x, item.z], 1.5) && isClearOfModuleGates([item.x, item.z], 1.5))
 
-const TRANSITION_BUSHES = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
-  [-4.2, -1.4, 1.4, 4.2].map((tangent, n) => ({
-    ...roadsideSpot(angle, 4.9 + (n % 2) * 0.5, tangent),
+const TRANSITION_BUSHES = SCENERY_ZONES.flatMap((zone, i) => {
+  const count = zone.theme === 'rock-garden' || zone.theme === 'sculpture-garden' ? 2 : zone.density + 2
+  return Array.from({ length: count }, (_, n) => ({
+    ...roadsideSpot(zone.angle, 4.8 + (n % 2) * 0.6, (n - (count - 1) / 2) * 2.1),
     y: 0.42,
-    s: 0.8 + (n % 3) * 0.12,
+    s: 0.72 + ((i + n) % 4) * 0.12,
     c: i + n,
-  })),
-).filter((item) => isClearOfModuleGates([item.x, item.z], 1))
+  }))
+}).filter((item) => isClearOfPaths([item.x, item.z], 1) && isClearOfModuleGates([item.x, item.z], 1))
 
-const TRANSITION_FLOWERS = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
-  [-4.8, -3.2, -1.6, 0, 1.6, 3.2, 4.8].map((tangent, n) => ({
-    ...roadsideSpot(angle, 3.9, tangent),
+const TRANSITION_FLOWERS = SCENERY_ZONES.flatMap((zone, i) => {
+  const count = zone.theme.includes('flower') || zone.theme.includes('meadow') || zone.theme.includes('sunflower')
+    ? 9 : zone.theme.includes('rock') || zone.theme.includes('pine') ? 3 : 5
+  return Array.from({ length: count }, (_, n) => ({
+    ...roadsideSpot(zone.angle, 3.8 + (n % 2) * 0.35, (n - (count - 1) / 2) * 1.25),
     c: i + n,
-  })),
-).filter((item) => isClearOfModuleGates([item.x, item.z], 0.5))
+  }))
+}).filter((item) => isClearOfPaths([item.x, item.z], 0.55) && isClearOfModuleGates([item.x, item.z], 0.5))
 
 const GEO = {
   trunk: new THREE.CylinderGeometry(0.16, 0.26, 1.3, 7),
@@ -180,6 +185,92 @@ function InstancedTrees() {
       <Scatter geometry={GEO.blobB} colors={[P.leaf3, P.leaf2, P.leaf1]} items={blobsB} />
     </group>
   )
+}
+
+function SceneryZoneAccent({ zone, index }) {
+  const center = roadsideSpot(zone.angle, 9.4, 0)
+  if (!isClearOfPaths([center.x, center.z], 2) || !isClearOfModuleGates([center.x, center.z], 1)) return null
+  const color = zone.accent
+
+  if (zone.theme === 'picnic-grove') return <Picnic x={center.x} z={center.z} />
+  if (zone.theme === 'lantern-garden') {
+    const a = roadsideSpot(zone.angle, 8.8, -2.2), b = roadsideSpot(zone.angle, 8.8, 2.2)
+    return <group><Lamp x={a.x} z={a.z} /><Lamp x={b.x} z={b.z} /></group>
+  }
+  if (zone.theme === 'wildflower-hill' || zone.theme === 'butterfly-meadow') {
+    return (
+      <group>
+        {[-3, -2, -1, 0, 1, 2, 3].map((t, i) => {
+          const p = roadsideSpot(zone.angle, 8.7 + (i % 2) * 0.6, t)
+          return <Flower key={t} x={p.x} z={p.z} color={i % 2 ? color : '#FFD700'} />
+        })}
+      </group>
+    )
+  }
+
+  return (
+    <group position={[center.x, 0, center.z]}>
+      {zone.theme === 'orchard' && (
+        <group>
+          {[-0.9, 0, 0.9].map((x, i) => <mesh key={x} position={[x, 0.25 + i * 0.05, 0]} castShadow><sphereGeometry args={[0.22, 10, 10]} /><Clay color={i % 2 ? '#f5c542' : '#e05252'} /></mesh>)}
+          <mesh position={[0, 0.18, 0.8]} castShadow><boxGeometry args={[1.4, 0.35, 0.8]} /><Clay color="#a9743f" /></mesh>
+        </group>
+      )}
+      {zone.theme === 'rock-garden' && [-1.2, 0, 1.3].map((x, i) => (
+        <mesh key={x} position={[x, 0.25 + i * 0.08, (i % 2) * 0.7]} rotation={[0.2, i, 0.1]} castShadow>
+          <dodecahedronGeometry args={[0.55 + i * 0.12, 0]} /><Clay color={i === 1 ? '#b7a98e' : '#8f969e'} flat />
+        </mesh>
+      ))}
+      {zone.theme === 'sunflower-field' && [-1.3, -0.45, 0.45, 1.3].map((x, i) => (
+        <group key={x} position={[x, 0, (i % 2) * 0.6]}>
+          <mesh position={[0, 0.7, 0]}><cylinderGeometry args={[0.035, 0.04, 1.4, 6]} /><Clay color="#4f9a3f" /></mesh>
+          <mesh position={[0, 1.45, 0]}><circleGeometry args={[0.3, 12]} /><Clay color="#FFD700" /></mesh>
+          <mesh position={[0, 1.45, 0.03]}><circleGeometry args={[0.12, 10]} /><Clay color="#7a531f" /></mesh>
+        </group>
+      ))}
+      {zone.theme === 'birdhouse-grove' && (
+        <group>
+          <mesh position={[0, 1, 0]} castShadow><cylinderGeometry args={[0.07, 0.09, 2, 8]} /><Clay color="#7a531f" /></mesh>
+          <mesh position={[0, 2.05, 0]} castShadow><boxGeometry args={[0.8, 0.7, 0.65]} /><Clay color="#5aa6ff" /></mesh>
+          <mesh position={[0, 2.5, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[0.65, 0.55, 4]} /><Clay color="#e05252" /></mesh>
+          <mesh position={[0, 2.05, 0.34]}><circleGeometry args={[0.12, 12]} /><Clay color="#2f3b52" /></mesh>
+        </group>
+      )}
+      {zone.theme === 'mushroom-woods' && [-1.2, -0.35, 0.55, 1.25].map((x, i) => (
+        <group key={x} position={[x, 0, (i % 2) * 0.7]}>
+          <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[0.1, 0.15, 0.5, 8]} /><Clay color="#f2e4c9" /></mesh>
+          <mesh position={[0, 0.58, 0]} scale={[1, 0.5, 1]}><sphereGeometry args={[0.36 + i * 0.04, 10, 10]} /><Clay color={i % 2 ? '#e8626f' : '#c77dff'} /></mesh>
+        </group>
+      ))}
+      {zone.theme === 'reeds-and-pond' && (
+        <group>
+          <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[1.8, 24]} /><Clay color="#5aa6d8" /></mesh>
+          {[-1.5, -0.9, 1, 1.5].map((x, i) => <mesh key={x} position={[x, 0.45, i % 2 ? 0.8 : -0.7]}><cylinderGeometry args={[0.035, 0.045, 0.9, 5]} /><Clay color="#5a8f3c" /></mesh>)}
+        </group>
+      )}
+      {zone.theme === 'pine-trail' && [-1.4, 0, 1.4].map((x, i) => (
+        <group key={x} position={[x, 0, (i % 2) * 0.7]}>
+          <mesh position={[0, 0.55, 0]}><cylinderGeometry args={[0.1, 0.14, 1.1, 7]} /><Clay color="#7a531f" /></mesh>
+          <mesh position={[0, 1.35, 0]}><coneGeometry args={[0.75, 1.6, 8]} /><Clay color="#3f7f45" /></mesh>
+        </group>
+      ))}
+      {zone.theme === 'sculpture-garden' && (
+        <group>
+          <mesh position={[0, 0.25, 0]}><cylinderGeometry args={[0.9, 1.1, 0.5, 16]} /><Clay color="#d8c394" /></mesh>
+          <mesh position={[0, 1.35, 0]} rotation={[Math.PI / 2, 0.4, 0]}><torusGeometry args={[0.75, 0.18, 12, 24]} /><meshStandardMaterial color={color} metalness={0.45} roughness={0.35} /></mesh>
+        </group>
+      )}
+      {zone.theme === 'autumn-grove' && [-1.2, -0.4, 0.5, 1.3].map((x, i) => (
+        <mesh key={x} position={[x, 0.18, (i % 2) * 0.7]} scale={[1.1, 0.45, 0.9]}>
+          <icosahedronGeometry args={[0.45, 1]} /><Clay color={['#e8893a', '#d95f3d', '#f0b23d'][i % 3]} flat />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+function VariedSceneryAccents() {
+  return <group>{SCENERY_ZONES.map((zone, i) => <SceneryZoneAccent key={zone.theme} zone={zone} index={i} />)}</group>
 }
 
 // Faraway low hills ringing the play area (faded by fog -> depth).
@@ -475,7 +566,8 @@ export function Environment3D() {
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
-      {/* Dense transition landscaping between every pair of module districts. */}
+      {/* Varied transition landscaping continues around the full map. */}
+      <VariedSceneryAccents />
       <Scatter geometry={GEO.bush} colors={[P.leaf1, P.leaf2, P.leaf3]} items={TRANSITION_BUSHES} castShadow />
       <Scatter geometry={GEO.stem} colors={['#4f9a3f']} items={TRANSITION_FLOWERS.map((f) => ({ ...f, y: 0.18 }))} flat={false} />
       <Scatter geometry={GEO.petal} colors={['#ef6f6f', '#f5c542', '#7aa6ff', '#c77dff', '#ff9f43', '#ff8fb3']} items={TRANSITION_FLOWERS.map((f) => ({ ...f, y: 0.4 }))} />
