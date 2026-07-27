@@ -45,7 +45,7 @@ export const BK = {
     bill: `Your $${CARD_PURCHASE} credit-card bill arrived. Paying the full bill avoids extra interest.`,
     card: 'The bill is here. Paying all of it on time costs exactly what you borrowed. Paying only a little leaves debt behind, and interest can make that debt grow.',
     full: `Pay it ALL ($${CARD_PURCHASE})`,
-    little: `Pay only $${CARD_MIN_PAY})`,
+    little: `Pay only $${CARD_MIN_PAY}`,
     doneFull: 'You paid the whole bill on time. No extra interest was added.',
     puff: 'The unpaid part of the bill grew because interest worked against you.',
     doneLittle: 'You paid only part of the bill, so the remaining debt grew and cost $1 extra.',
