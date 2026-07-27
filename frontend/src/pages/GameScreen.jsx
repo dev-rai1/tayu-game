@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import PhaserGame from '../game/PhaserGame.jsx'
@@ -17,19 +17,15 @@ export default function GameScreen() {
   const [modal, setModal] = useState(null) // 'bank' | 'business' | 'job'
   const [toast, setToast] = useState('')
   const controlsRef = useRef(null)
-  const toastTimer = useRef(null)
 
   const avatar = useMemo(
     () => ({ color: state.player.avatarColor, icon: state.player.avatarIcon, name: state.player.name || 'You' }),
     [state.player]
   )
 
-  const flash = (msg) => {
-    setToast(msg)
-    clearTimeout(toastTimer.current)
-    toastTimer.current = setTimeout(() => setToast(''), 2200)
-  }
-  useEffect(() => () => clearTimeout(toastTimer.current), [])
+  // Notifications wait for the player. A newer notification can replace the old
+  // one, but no instruction disappears after an arbitrary short timer.
+  const flash = (msg) => setToast(msg)
 
   const handleInteract = (id) => {
     if (modal) return
@@ -84,10 +80,15 @@ export default function GameScreen() {
         </div>
       )}
 
-      {/* toast */}
+      {/* Persistent, player-dismissible notification */}
       {toast && (
-        <div className="pointer-events-none absolute inset-x-0 top-24 flex justify-center">
-          <div className="rounded-2xl bg-black/80 px-5 py-2 text-white shadow-lg">{toast}</div>
+        <div className="pointer-events-auto absolute inset-x-0 top-24 z-30 flex justify-center px-4">
+          <div role="status" aria-live="polite" className="flex max-w-lg items-start gap-3 rounded-2xl bg-black/90 px-5 py-3 text-white shadow-lg">
+            <p className="flex-1 font-semibold leading-snug">{toast}</p>
+            <button type="button" onClick={() => setToast('')} className="min-h-[40px] rounded-xl bg-white/15 px-3 text-xs font-extrabold active:scale-95">
+              Got it
+            </button>
+          </div>
         </div>
       )}
 

@@ -218,11 +218,8 @@ export function Player({ avatar }) {
         const mod = HOST_MODULE[host]
         if (mod > st.week) { st.setToast(LOCKED_LINES[host]); return }
         if (mod < st.week) { st.setToast(DONE_LINES[host] || 'Hello again, friend!'); return }
-        // the CURRENT host re-explains the step with a hint (the host rule)
-        if (host === 'penny') {
-          if (st.lemPhase === 'toMarket') st.showLesson('Buy supplies from Mr. Bram - follow your arrow to the market!')
-          else st.showLesson('Set up your stand: pick your hours, your pay, and your price. Tap "How do I pick?" to re-read the price formula!')
-        } else if (host === 'keeper') st.enterBudget()
+        // Only a host required by the active objective is offered as an E action.
+        if (host === 'keeper') st.enterBudget()
         else if (host === 'bea') st.enterBank()
       }
       else if (near.id.startsWith('item:')) { const it = STORE_ITEMS.find((i) => i.id === near.id.split(':')[1]); if (it) st.openItem(it) }
@@ -384,7 +381,9 @@ export function Player({ avatar }) {
         let best = Infinity
         const skx = STORE[0] + SHOPKEEPER.pos[0], skz = STORE[1] + SHOPKEEPER.pos[1]
         const dSk = dist2(playerPos.x, playerPos.z, skx, skz)
-        if (dSk < NPC_RADIUS + (st.bramTalked ? 0 : 1)) { best = dSk; near = { id: 'shopkeeper', label: `Talk to ${SHOPKEEPER.name}` } }
+        // Once the required introduction is complete, Mr. Bram no longer shows an
+        // unnecessary E-to-talk prompt. Shopping controls take over immediately.
+        if (!st.bramTalked && dSk < NPC_RADIUS + 1) { best = dSk; near = { id: 'shopkeeper', label: `Talk to ${SHOPKEEPER.name}` } }
         // HARD GATE (C3): no buying or checkout until the Mr. Bram talk is done
         if (st.bramTalked) {
           const ckx = STORE[0] + 0, ckz = STORE[1] + 4.2
@@ -401,19 +400,19 @@ export function Player({ avatar }) {
     }
     // R9 Part 8.2: crossing into the Finale Area triggers the town party
     if (st.gameComplete && dist2(playerPos.x, playerPos.z, PARTY_HOUSE[0], PARTY_HOUSE[1]) < 12) st.finaleCelebrate()
-    // E9: host proximity - every host is approachable in EVERY module (locked
-    // ones answer with their friendly not-yet line)
-    if (!near) {
-      for (const hid of ['penny', 'sprout', 'keeper', 'bea']) {
-        if (hid === 'sprout' && st.week === 3) continue // week 3 uses the garden flow
-        const a = stage.actors[hid]
-        if (a && dist2(playerPos.x, playerPos.z, a.x, a.z) < NPC_RADIUS) {
-          near = { id: `host:${hid}`, label: HOST_LABEL[hid] }
-          break
-        }
+
+    // Only show a host interaction when that host is the CURRENT objective.
+    // Future, completed, and purely optional hosts no longer create E prompts.
+    const requiredHost = st.objective === 'keeper' ? 'keeper' : st.objective === 'bea' ? 'bea' : null
+    if (!near && requiredHost) {
+      const a = stage.actors[requiredHost]
+      if (a && dist2(playerPos.x, playerPos.z, a.x, a.z) < NPC_RADIUS) {
+        near = { id: `host:${requiredHost}`, label: HOST_LABEL[requiredHost] }
       }
     }
-    // R9 Part 7: EVERY townsperson is talkable - stage cast and park folk
+
+    // R9 Part 7: EVERY townsperson is talkable - stage cast and park folk.
+    // Optional NPCs remain discoverable without becoming a required E prompt.
     if (!near) {
       for (const id of Object.keys(stage.actors)) {
         if (['penny', 'sprout', 'keeper', 'bea', 'bram'].includes(id)) continue // hosts have their own flows
