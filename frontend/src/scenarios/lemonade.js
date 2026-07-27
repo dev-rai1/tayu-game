@@ -43,17 +43,26 @@ export const EVENTS = [
   { id: 'thrifty', line: 'Allowance day is late this week. Kids are watching every penny.', traffic: 1, appeal: -0.35, signBoost: 1 },
 ]
 
+const EVENT_CYCLE = EVENTS.filter((event) => event.id !== 'normal')
+
+// Predictable Town News lets Penny calculate the next week's exact plan before
+// the player leaves the result screen. rollEvent and nextTip use this same helper.
+export function nextEventFor(lastId) {
+  if (!lastId || lastId === 'normal') return EVENT_CYCLE[0]
+  const index = EVENT_CYCLE.findIndex((event) => event.id === lastId)
+  return EVENT_CYCLE[(index + 1 + EVENT_CYCLE.length) % EVENT_CYCLE.length]
+}
+
 export function rollEvent(unlocked, lastId) {
   if (!unlocked) return EVENTS[0]
-  const pool = EVENTS.filter((e) => e.id !== lastId && e.id !== 'normal')
-  return pool[(Math.random() * pool.length) | 0]
+  return nextEventFor(lastId)
 }
 
 export const FEATURE_QUEUE = ['quality', 'sign', 'events']
 export const FEATURE_CARDS = {
   quality: 'NEW TEST: recipe quality. Extra Lemony costs more per cup but may support a stronger price. Less Sugar is cheaper and healthier. Penny will keep the exact recipe suggestion pinned while you decide.',
   sign: 'NEW TEST: a promotion sign. A sign costs money but may increase demand. Penny will compare the extra sign cost with the extra sales and tell you whether to use it.',
-  events: 'NEW TEST: Town News. Weather and crowds change demand. Read the forecast, then follow the pinned price, supply, hours, recipe, and promotion plan.',
+  events: 'NEW TEST: Town News. Weather and crowds change demand. Penny previews the next news and pins the exact price, supply, hours, recipe, and promotion plan before you choose.',
 }
 
 const r2 = (n) => Math.round(n * 100) / 100
@@ -178,10 +187,12 @@ function exactPlanLine(plan) {
 }
 
 // Analyze the player's actual combination and return a pinned, structured repair.
-// The exact recommendation is simulated, so following it produces the projected
-// positive result shown in the coach box.
-export function analyzeLemonadeResult(sim, levers, event, features, nextBudget = Infinity) {
-  const plan = findProfitablePlan(features, event, nextBudget)
+// The recommendation is simulated, affordable from the minimum money created by
+// the previous sales result, and projects positive profit whenever the game can.
+export function analyzeLemonadeResult(sim, levers, event, features, nextBudget = null) {
+  const inferredBudget = Math.max(BUNDLES[0].cost, r2(sim.revenue - sim.tax))
+  const available = Number.isFinite(nextBudget) ? Math.max(BUNDLES[0].cost, nextBudget) : inferredBudget
+  const plan = findProfitablePlan(features, event, available)
   const actualCost = r2(sim.supplies + sim.wages)
   const priceGap = r2(levers.price - plan.price)
   let lever = 'plan'
@@ -239,15 +250,27 @@ export function analyzeLemonadeResult(sim, levers, event, features, nextBudget =
     goal,
     plan,
     expectedKeep: plan.sim.keep,
+    targetEvent: event,
     text: `${diagnosis} ${supplyNote} NEXT MOVE: ${action} ${goal}`,
     exactPlan: exactPlanLine(plan),
   }
 }
 
-// Backward-compatible API used by the existing end-of-round card.
+// Backward-compatible API used by the existing end-of-round card. When Town
+// News is unlocked, this previews the exact same next event that afterRound sets.
 export function nextTip(sim, levers, event, features, history = []) {
   void history
-  return analyzeLemonadeResult(sim, levers, event, features, Infinity)
+  const targetEvent = features >= 3 ? nextEventFor(event?.id) : (event || EVENTS[0])
+  const analysis = analyzeLemonadeResult(sim, levers, targetEvent, features)
+  if (targetEvent.id !== event?.id) {
+    const news = `NEXT WEEK'S TOWN NEWS: ${targetEvent.line}`
+    return {
+      ...analysis,
+      diagnosis: `${analysis.diagnosis} ${news}`,
+      text: `${analysis.diagnosis} ${news} NEXT MOVE: ${analysis.action} ${analysis.goal}`,
+    }
+  }
+  return analysis
 }
 
 export const INTRO_LINE = (moneyAvailable) =>
