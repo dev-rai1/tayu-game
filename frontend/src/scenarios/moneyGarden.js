@@ -31,6 +31,9 @@ export const COMPANIES = {
   },
 }
 export const COMPANY_IDS = ['toy', 'snack', 'game']
+export const COMPANY_PATH_TARGET = [0, 9.2]
+export const companyFacingAngle = ([x, z]) =>
+  Math.atan2(COMPANY_PATH_TARGET[0] - x, COMPANY_PATH_TARGET[1] - z)
 
 export function initCompanies() {
   const out = {}
