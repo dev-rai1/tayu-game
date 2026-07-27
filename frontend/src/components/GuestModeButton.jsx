@@ -24,7 +24,7 @@ export default function GuestModeButton() {
         Play in guest mode
       </button>
       <p className="mt-2 text-center text-sm font-semibold text-white/70">
-        Skip login and start playing. Your progress stays on this device.
+        Skip login and start playing right away.
       </p>
 
       <div className="my-5 flex items-center gap-3" aria-hidden="true">
