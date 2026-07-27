@@ -1,0 +1,1 @@
+This file marks the Money Garden guidance split point. The functional guidance module is in `moneyGardenGuidance.js` and is intended to be consumed by the HUD portfolio panel.
