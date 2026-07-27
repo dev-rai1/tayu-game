@@ -169,6 +169,42 @@ function Bunny({ x, z, phase }) {
   )
 }
 
+function SkyBird({ offset = [0, 0, 0], color = '#34495e' }) {
+  return (
+    <group position={offset} scale={0.85}>
+      <mesh rotation={[0, 0, 0.42]} position={[-0.34, 0, 0]}>
+        <boxGeometry args={[0.72, 0.055, 0.18]} /><Clay color={color} />
+      </mesh>
+      <mesh rotation={[0, 0, -0.42]} position={[0.34, 0, 0]}>
+        <boxGeometry args={[0.72, 0.055, 0.18]} /><Clay color={color} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[0.11, 0.52, 6]} /><Clay color="#253747" /></mesh>
+    </group>
+  )
+}
+
+function SkyFlock({ x, y, z, phase, speed = 0.1, color }) {
+  const ref = useRef()
+  useFrame(({ clock }) => {
+    const g = ref.current
+    if (!g) return
+    const t = clock.elapsedTime * speed + phase
+    g.position.set(x + Math.cos(t) * 16, y + Math.sin(t * 1.7) * 1.1, z + Math.sin(t) * 12)
+    g.rotation.y = -t + Math.PI / 2
+    const flap = Math.sin(clock.elapsedTime * 4.5 + phase) * 0.08
+    g.rotation.z = flap
+  })
+  return (
+    <group ref={ref}>
+      <SkyBird color={color} />
+      <SkyBird offset={[-2.2, -0.35, 1.6]} color={color} />
+      <SkyBird offset={[2.2, -0.35, 1.6]} color={color} />
+      <SkyBird offset={[-4.0, -0.7, 3.2]} color={color} />
+      <SkyBird offset={[4.0, -0.7, 3.2]} color={color} />
+    </group>
+  )
+}
+
 function ParkAnimal({ x, z, phase, color = '#b8794d', kind = 'dog' }) {
   const ref = useRef()
   useFrame(({ clock }) => {
@@ -212,6 +248,11 @@ export function Ambient() {
   return (
     <group>
       {AMBIENT_NPCS.map((npc, i) => <Villager key={npc.id} npc={npc} phase={i * 1.9} />)}
+      {/* High, slow flocks add motion across the whole skyline without crowding gameplay. */}
+      <SkyFlock x={8} y={15} z={-18} phase={0.2} speed={0.085} color="#34495e" />
+      <SkyFlock x={31} y={20} z={8} phase={2.0} speed={0.07} color="#516476" />
+      <SkyFlock x={58} y={17} z={-24} phase={3.8} speed={0.095} color="#2f4050" />
+      <SkyFlock x={74} y={23} z={12} phase={5.1} speed={0.065} color="#607080" />
       {/* Friendly park animals animate in small pockets beside the town buildings. */}
       <ParkAnimal x={15} z={10} phase={0.2} color="#bf7a4f" kind="dog" />
       <ParkAnimal x={45} z={10} phase={1.8} color="#6f8796" kind="cat" />
