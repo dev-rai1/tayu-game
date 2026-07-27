@@ -5,7 +5,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { playerPos } from './store.js'
-import { AMBIENT_NPCS, DISTRICT_GAP_ANGLES, LAKE, RING, ringPoint } from './config.js'
+import { AMBIENT_NPCS, LAKE, RING, SCENERY_ZONES, ringPoint } from './config.js'
 
 // v8 Section 4: reduced-motion stills all decorative life
 const STILL = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -120,6 +120,29 @@ function Butterfly({ x, z, phase, color }) {
   )
 }
 
+function Bird({ x, z, phase, color = '#5aa6ff' }) {
+  const ref = useRef()
+  useFrame(() => {
+    const g = ref.current
+    if (!g) return
+    const t = Date.now() * 0.0011 + phase
+    g.position.set(x + Math.cos(t) * 2.2, 2.4 + Math.sin(t * 2) * 0.25, z + Math.sin(t) * 2.2)
+    g.rotation.y = -t - Math.PI / 2
+    g.rotation.z = Math.sin(t * 8) * 0.08
+  })
+  return (
+    <group ref={ref}>
+      <mesh><sphereGeometry args={[0.12, 8, 8]} /><Clay color={color} /></mesh>
+      <mesh position={[0.13, 0.02, 0]} rotation={[0, 0, -Math.PI / 2]}><coneGeometry args={[0.04, 0.12, 6]} /><Clay color="#f5a623" /></mesh>
+      {[-0.16, 0.16].map((zWing) => (
+        <mesh key={zWing} position={[0, 0, zWing]} rotation={[0.15, 0, zWing > 0 ? 0.45 : -0.45]}>
+          <boxGeometry args={[0.32, 0.035, 0.12]} /><Clay color={color} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 function Bunny({ x, z, phase }) {
   const ref = useRef()
   useFrame(() => {
@@ -168,15 +191,18 @@ export function Ambient() {
       <Butterfly x={19} z={-2} phase={0.4} color="#ffb3cf" />
       <Butterfly x={41} z={-2} phase={2.1} color="#8fc9ff" />
       <Butterfly x={30} z={5} phase={3.7} color="#ffe47a" />
-      {/* Wildlife now fills the landscaped gaps BETWEEN outside districts. */}
-      {DISTRICT_GAP_ANGLES.filter((_, i) => i % 2 === 0).map((angle, i) => {
-        const [x, z] = gapSpot(angle, 10.5, i % 2 ? 5.2 : -5.2)
-        return <Bunny key={`gap-bunny-${angle}`} x={x} z={z} phase={i * 1.7} />
+      {/* Wildlife matches each neighborhood instead of repeating everywhere. */}
+      {SCENERY_ZONES.filter((zone) => ['orchard', 'mushroom-woods', 'picnic-grove', 'pine-trail', 'autumn-grove'].includes(zone.theme)).map((zone, i) => {
+        const [x, z] = gapSpot(zone.angle, 10.5, i % 2 ? 5.2 : -5.2)
+        return <Bunny key={`gap-bunny-${zone.theme}`} x={x} z={z} phase={i * 1.7} />
       })}
-      {DISTRICT_GAP_ANGLES.map((angle, i) => {
-        const [x, z] = gapSpot(angle, 6.0, i % 2 ? 4.8 : -4.8)
-        const colors = ['#ff8fb3', '#FFD700', '#7850F0', '#5aa6ff', '#00DCA0']
-        return <Butterfly key={`gap-butterfly-${angle}`} x={x} z={z} phase={i * 1.1} color={colors[i % colors.length]} />
+      {SCENERY_ZONES.filter((zone) => ['butterfly-meadow', 'sunflower-field', 'wildflower-hill'].includes(zone.theme)).map((zone, i) => {
+        const [x, z] = gapSpot(zone.angle, 6.2, i % 2 ? 4.5 : -4.5)
+        return <Butterfly key={`gap-butterfly-${zone.theme}`} x={x} z={z} phase={i * 1.3} color={zone.accent} />
+      })}
+      {SCENERY_ZONES.filter((zone) => ['birdhouse-grove', 'pine-trail', 'sculpture-garden'].includes(zone.theme)).map((zone, i) => {
+        const [x, z] = gapSpot(zone.angle, 8.2, i % 2 ? 3.8 : -3.8)
+        return <Bird key={`gap-bird-${zone.theme}`} x={x} z={z} phase={i * 1.8} color={zone.accent} />
       })}
     </group>
   )
