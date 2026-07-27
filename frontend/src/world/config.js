@@ -10,12 +10,12 @@
 // spawn -> Allowance Bank -> Home/Jars -> Market -> Lemonade -> Budget Town
 // -> Bank -> Money Garden -> ... -> FINALE AREA -> back to spawn.
 
-// R14 PART 3: the whole map is tightened by a uniform SIMILARITY transform
-// about the ring center - shorter walks, a smaller footprint, no more big empty
-// middle - while every spur/district/collision keeps its exact alignment
-// (scaling about one point preserves all the geometry). MAP_SCALE < 1 shrinks.
+// The districts need to read as separate places, with landscaped breathing
+// room between them. Scale the complete outer route about the park center so
+// buildings, entrances, arrows, and blockers preserve their alignment while
+// gaining substantially more space between stops.
 const CENTER = [30, -6]
-export const MAP_SCALE = 0.82
+export const MAP_SCALE = 1.18
 const sc = ([x, z]) => [CENTER[0] + (x - CENTER[0]) * MAP_SCALE, CENTER[1] + (z - CENTER[1]) * MAP_SCALE]
 export const worldScale = sc // for decorative scenery to match the tighter map
 
@@ -25,6 +25,10 @@ export const ringPoint = (deg) => [RING.c[0] + RING.r * Math.cos(rad(deg)), RING
 // the ring angle of every stop, in STORY order (θ decreases as you walk it).
 // R14: the finale is pulled MUCH closer (was -108) so the last leg is short.
 export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 40, garden: 14, party: -46 }
+
+// Landscaped transition zones centered in the empty arcs BETWEEN module stops.
+// These deliberately live around the outside route, not in the central park.
+export const DISTRICT_GAP_ANGLES = [166, 141.5, 120.5, 99, 76, 52, 27, 2, -18]
 // closed loop polyline (θ 180 -> -180, the story direction)
 export const RING_POINTS = Array.from({ length: 49 }, (_, i) => ringPoint(180 - i * 7.5))
 
