@@ -83,6 +83,33 @@ function Duck({ r, speed, phase, dir = 1 }) {
   )
 }
 
+function Butterfly({ x, z, phase, color }) {
+  const ref = useRef()
+  const leftWing = useRef()
+  const rightWing = useRef()
+  useFrame(() => {
+    const g = ref.current
+    if (!g) return
+    const t = Date.now() * 0.001 + phase
+    g.position.set(x + Math.cos(t * 0.8) * 1.25, 1.15 + Math.sin(t * 1.7) * 0.35, z + Math.sin(t * 0.8) * 1.25)
+    g.rotation.y = -t * 0.8
+    const flap = Math.sin(t * 12) * 0.75
+    if (leftWing.current) leftWing.current.rotation.y = flap
+    if (rightWing.current) rightWing.current.rotation.y = -flap
+  })
+  return (
+    <group ref={ref}>
+      <mesh position={[0, 0, 0]}><capsuleGeometry args={[0.025, 0.12, 3, 6]} /><Clay color="#3b2a35" /></mesh>
+      <mesh ref={leftWing} position={[-0.1, 0, 0]} rotation={[0, 0.35, 0.15]}>
+        <circleGeometry args={[0.16, 10]} /><meshStandardMaterial color={color} side={2} roughness={0.65} />
+      </mesh>
+      <mesh ref={rightWing} position={[0.1, 0, 0]} rotation={[0, -0.35, -0.15]}>
+        <circleGeometry args={[0.16, 10]} /><meshStandardMaterial color={color} side={2} roughness={0.65} />
+      </mesh>
+    </group>
+  )
+}
+
 function Bunny({ x, z, phase }) {
   const ref = useRef()
   useFrame(() => {
@@ -127,8 +154,13 @@ export function Ambient() {
       <Duck r={2.7} speed={0.5} phase={0} />
       <Duck r={3.8} speed={0.4} phase={2.4} dir={-1} />
       <Duck r={2.0} speed={0.62} phase={4.4} />
-      <Bunny x={15} z={-16} phase={0} />
-      <Bunny x={43} z={-5} phase={2.6} />
+      {/* Animals and butterflies stay in the central lawns, away from the ring road. */}
+      <Bunny x={18} z={-6} phase={0} />
+      <Bunny x={42} z={-6} phase={2.6} />
+      <Butterfly x={19} z={-1} phase={0} color="#ff8fb3" />
+      <Butterfly x={41} z={-11} phase={1.3} color="#FFD700" />
+      <Butterfly x={30} z={-17} phase={2.7} color="#7850F0" />
+      <Butterfly x={29} z={5} phase={4.1} color="#5aa6ff" />
     </group>
   )
 }
