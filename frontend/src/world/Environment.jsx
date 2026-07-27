@@ -15,7 +15,7 @@ const P = {
   hill: '#7fb88e', water: '#5aa6d8', waterDeep: '#3f8dc4', lane: '#f7ecd2',
 }
 
-const radForRoadsideNature = (x, z) => Math.atan2(x - RING.c[0], z - RING.c[1])
+const radForPathBanner = (x, z) => Math.atan2(x - RING.c[0], z - RING.c[1])
 
 function Clay({ color, rough = 0.95, flat = false, ...p }) {
   return <meshStandardMaterial color={color} roughness={rough} metalness={0} flatShading={flat} {...p} />
@@ -419,50 +419,21 @@ function RoyalPond({ x, z, scale = 1 }) {
   )
 }
 
-// Friendly roadside nature replaces the tall purple banners. The compact
-// clusters stay outside the walking lane and keep the route feeling alive.
-function RoadsideAnimalGrove({ x, z, angle = 0, variant = 0 }) {
-  const rabbit = variant % 2 === 0
-  const coat = rabbit ? ['#d7c5ad', '#c8b39a', '#eee4d6'][variant % 3] : ['#b97845', '#c98a54', '#aa6840'][variant % 3]
-  const dark = rabbit ? '#8f7a68' : '#70462f'
+function RoyalBanner({ x, z, angle = 0 }) {
   return (
     <group position={[x, 0, z]} rotation={[0, angle, 0]}>
-      {/* A layered bush backdrop makes each animal feel nestled into the town. */}
-      {[[-0.92, 0.48, -0.2, 0.72], [0.86, 0.42, -0.12, 0.66], [-0.1, 0.38, -0.55, 0.58]].map(([bx, by, bz, s], i) => (
-        <mesh key={i} position={[bx, by, bz]} scale={[s * 1.15, s, s]} castShadow>
-          <icosahedronGeometry args={[0.75, 1]} /><Clay color={[P.leaf1, P.leaf2, P.leaf3][(variant + i) % 3]} flat />
+      {[-0.72, 0.72].map((px) => (
+        <mesh key={px} position={[px, 1.35, 0]} castShadow>
+          <cylinderGeometry args={[0.045, 0.06, 2.7, 8]} /><Clay color="#8a6428" />
         </mesh>
       ))}
-      <group position={[0, 0, 0.35]} scale={rabbit ? 0.82 : 0.9}>
-        <mesh position={[0, 0.48, 0]} scale={[0.62, 0.48, 0.82]} castShadow>
-          <sphereGeometry args={[0.62, 12, 10]} /><Clay color={coat} flat />
-        </mesh>
-        <mesh position={[0, 0.82, 0.48]} scale={[0.5, 0.46, 0.48]} castShadow>
-          <sphereGeometry args={[0.5, 12, 10]} /><Clay color={coat} flat />
-        </mesh>
-        {/* Long rabbit ears alternate with wider woodland-deer ears. */}
-        {[-0.2, 0.2].map((ex) => (
-          <mesh key={ex} position={[ex, rabbit ? 1.28 : 1.16, 0.45]} rotation={[rabbit ? -0.08 : 0.12, 0, ex * (rabbit ? -0.7 : -2.2)]} scale={rabbit ? [0.15, 0.48, 0.13] : [0.24, 0.28, 0.14]} castShadow>
-            <coneGeometry args={[0.3, 0.9, 8]} /><Clay color={dark} flat />
-          </mesh>
-        ))}
-        {[-0.28, 0.28].map((lx) => (
-          <mesh key={lx} position={[lx, 0.2, 0.12]} castShadow>
-            <cylinderGeometry args={[0.09, 0.11, 0.42, 7]} /><Clay color={dark} flat />
-          </mesh>
-        ))}
-        <mesh position={[-0.15, 0.88, 0.87]}><sphereGeometry args={[0.045, 8, 8]} /><Clay color="#182036" /></mesh>
-        <mesh position={[0.15, 0.88, 0.87]}><sphereGeometry args={[0.045, 8, 8]} /><Clay color="#182036" /></mesh>
-        <mesh position={[0, 0.73, 0.94]}><sphereGeometry args={[0.055, 8, 8]} /><Clay color="#453329" /></mesh>
-        <mesh position={[0, 0.56, -0.7]} scale={rabbit ? 1 : 0.72} castShadow>
-          <sphereGeometry args={[0.22, 9, 8]} /><Clay color={rabbit ? '#fff7eb' : dark} flat />
-        </mesh>
-        {!rabbit && [0.2, -0.2, 0].map((sx, i) => (
-          <mesh key={i} position={[sx, 0.62 + i * 0.06, -0.25 + i * 0.08]} scale={[0.08, 0.08, 0.04]}>
-            <sphereGeometry args={[1, 7, 7]} /><Clay color="#f6dfbd" />
-          </mesh>
-        ))}
-      </group>
+      <mesh position={[0, 2.05, 0]}>
+        <planeGeometry args={[1.25, 0.85]} />
+        <meshStandardMaterial color="#7850F0" side={2} roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 2.05, 0.012]}>
+        <circleGeometry args={[0.16, 16]} /><meshStandardMaterial color="#FFD700" emissive="#7a5a00" emissiveIntensity={0.2} />
+      </mesh>
     </group>
   )
 }
@@ -624,14 +595,20 @@ function PathLine({ points, w, color, y }) {
   return segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={w} color={color} y={y} />)
 }
 
-// The party approach uses the same gold layers, so the route reads as one
-// continuous journey rather than a second path.
 function RoyalFinaleApproach() {
   return (
     <group>
-      <PathLine points={PATHS.royalParty} w={5.8} color="#a66d16" y={0.020} />
-      <PathLine points={PATHS.royalParty} w={5.0} color="#FFD45A" y={0.026} />
-      <PathLine points={PATHS.royalParty} w={3.8} color="#fff1b8" y={0.032} />
+      <PathLine points={PATHS.royalParty} w={5.0} color="#d6aa35" y={0.021} />
+      <PathLine points={PATHS.royalParty} w={3.55} color="#fff0bd" y={0.029} />
+    </group>
+  )
+}
+
+function ModuleApproach({ points }) {
+  return (
+    <group>
+      <PathLine points={points} w={4.2} color="#aebfc4" y={0.021} />
+      <PathLine points={points} w={3.15} color="#f1dfb7" y={0.029} />
     </group>
   )
 }
@@ -639,11 +616,19 @@ function RoyalFinaleApproach() {
 function RingRoad() {
   const segs = []
   for (let i = 0; i < RING_POINTS.length - 1; i++) segs.push([RING_POINTS[i], RING_POINTS[i + 1]])
+  const dashes = segs.map(([a, b]) => ({
+    mx: (a[0] + b[0]) / 2,
+    mz: (a[1] + b[1]) / 2,
+    ang: Math.atan2(b[0] - a[0], b[1] - a[1]),
+  }))
   return (
     <group>
-      {segs.map(([a, b], i) => <PathSegment key={`edge-${i}`} from={a} to={b} w={5.8} color="#a66d16" y={0.020} />)}
-      {segs.map(([a, b], i) => <PathSegment key={`gold-${i}`} from={a} to={b} w={5.0} color="#FFD45A" y={0.026} />)}
-      {segs.map(([a, b], i) => <PathSegment key={`clean-${i}`} from={a} to={b} w={3.8} color="#fff1b8" y={0.032} />)}
+      {segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={4.8} />)}
+      {dashes.map((dash, i) => (
+        <mesh key={`d${i}`} position={[dash.mx, 0.032, dash.mz]} rotation={[-Math.PI / 2, 0, -dash.ang]}>
+          <planeGeometry args={[0.24, 1.7]} /><Clay color={P.lane} rough={1} />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -658,15 +643,14 @@ export function Environment3D() {
     const d = Math.hypot(dx, dz)
     return [x + (dx / d) * 3.4, z + (dz / d) * 3.4]
   })
-  const roadsideNature = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden'].map((k, i) => {
+  const banners = ['allowance', 'home', 'market', 'lemonade', 'budget', 'bank', 'garden'].map((k, i) => {
     const [x, z] = ringPoint(STOP_ANGLES[k] - 5)
     const dx = RING.c[0] - x, dz = RING.c[1] - z
     const d = Math.hypot(dx, dz)
     return {
       x: x + (dx / d) * 3.8,
       z: z + (dz / d) * 3.8,
-      angle: radForRoadsideNature(x, z),
-      variant: i,
+      angle: radForPathBanner(x, z),
       key: `${k}-${i}`,
     }
   })
@@ -681,24 +665,34 @@ export function Environment3D() {
       ))}
 
       <Hills />
-      {/* sun */}
-      <mesh position={[50, 24, -50]}><sphereGeometry args={[3, 24, 24]} /><meshStandardMaterial color="#fff4cf" emissive="#ffe9a3" emissiveIntensity={0.9} /></mesh>
-      {/* Low horizon layer: the normal follow camera is 7 units high and
-          looks down, so clouds above ~15 units never enter its view. These
-          larger groups stay visibly overhead throughout the full route. */}
-      <SkyCloud x={-8} y={8.5} z={-29} scale={2.8} />
-      <SkyCloud x={10} y={10.5} z={-43} scale={2.35} />
-      <SkyCloud x={31} y={9.5} z={-46} scale={3.0} />
-      <SkyCloud x={53} y={11} z={-39} scale={2.45} />
-      <SkyCloud x={70} y={8.5} z={-23} scale={3.1} />
-      <SkyCloud x={72} y={10} z={1} scale={2.55} />
-      <SkyCloud x={57} y={8.5} z={20} scale={2.9} />
-      <SkyCloud x={34} y={11} z={28} scale={2.4} />
-      <SkyCloud x={11} y={9} z={22} scale={2.75} />
-      <SkyCloud x={-8} y={10.5} z={5} scale={2.5} />
+      {/* A warm layered sun stays readable behind the higher cloud line. */}
+      <group position={[50, 24, -50]}>
+        <mesh><sphereGeometry args={[3, 24, 24]} /><meshStandardMaterial color="#fff4cf" emissive="#ffe9a3" emissiveIntensity={0.9} /></mesh>
+        <mesh rotation={[0, 0, Math.PI / 8]}><torusGeometry args={[4.2, 0.12, 8, 32]} /><meshBasicMaterial color="#ffe47a" transparent opacity={0.75} toneMapped={false} /></mesh>
+        <mesh rotation={[0, 0, -Math.PI / 8]}><torusGeometry args={[4.8, 0.07, 8, 32]} /><meshBasicMaterial color="#fff0a8" transparent opacity={0.55} toneMapped={false} /></mesh>
+      </group>
+      {/* Higher than the former horizon-hugging clouds, but still below the
+          camera's usual cutoff so they remain visible around the whole route. */}
+      <SkyCloud x={-8} y={11.5} z={-29} scale={2.8} />
+      <SkyCloud x={10} y={13.5} z={-43} scale={2.35} />
+      <SkyCloud x={31} y={12.5} z={-46} scale={3.0} />
+      <SkyCloud x={53} y={14} z={-39} scale={2.45} />
+      <SkyCloud x={70} y={11.5} z={-23} scale={3.1} />
+      <SkyCloud x={72} y={13} z={1} scale={2.55} />
+      <SkyCloud x={57} y={11.5} z={20} scale={2.9} />
+      <SkyCloud x={34} y={14} z={28} scale={2.4} />
+      <SkyCloud x={11} y={12} z={22} scale={2.75} />
+      <SkyCloud x={-8} y={13.5} z={5} scale={2.5} />
 
-      {/* One clean gold main path; modules face it with no side-path clutter. */}
+      {/* Restore the familiar town road and its short, readable module entrances. */}
       <RingRoad />
+      <ModuleApproach points={PATHS.spurAllowance} />
+      <ModuleApproach points={PATHS.spurJars} />
+      <ModuleApproach points={PATHS.spurMarket} />
+      <ModuleApproach points={PATHS.spurLemonade} />
+      <ModuleApproach points={PATHS.spurBudget} />
+      <ModuleApproach points={PATHS.spurBank} />
+      <ModuleApproach points={PATHS.spurGarden} />
       <RoyalFinaleApproach />
 
       <Home />
@@ -707,7 +701,7 @@ export function Environment3D() {
       <CentralCommons />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
-      {roadsideNature.map((spot) => <RoadsideAnimalGrove key={spot.key} {...spot} />)}
+      {banners.map((banner) => <RoyalBanner key={banner.key} {...banner} />)}
 
       {/* R12 PERF: every tree in town in 4 instanced draw calls */}
       <InstancedTrees />
