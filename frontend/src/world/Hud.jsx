@@ -18,9 +18,9 @@ const JAR_LABEL = { spend: 'SPEND', save: 'SAVE', give: 'GIVE' }
 const JAR_TEXT = { spend: 'text-electric', save: 'text-teal', give: 'text-brandpurple' }
 const JAR_HEX = { spend: '#1464F0', save: '#00DCA0', give: '#7850F0' }
 const LOGO = '/assets/tayu-logo.webp' // the new TAYU logo asset (A7)
-// N1: UA sniffing alone missed some phones/tablets (the 'no two-finger hint on
-// mobile' bug) - maxTouchPoints catches everything with a real touchscreen.
-import { isTouch as IS_TOUCH } from './MobileControls.jsx'
+// Keep the help text and the visible controls in the same input mode. A
+// touchscreen laptop still gets keyboard/mouse instructions.
+import { usesTouchControls as USES_TOUCH_CONTROLS } from './controlMode.js'
 
 function useCountUp(value) {
   const [shown, setShown] = useState(value)
@@ -1062,7 +1062,7 @@ const DESKTOP_HINT = 'Walk with W, A, S, D or the up and down arrow keys. Look a
 const TOUCH_HINT = 'Use the stick in the corner to walk. Drag anywhere to look around. Tap the blue button to do things. Follow the arrows - they show you where to go next!'
 
 function ControlsTab() {
-  const rows = IS_TOUCH
+  const rows = USES_TOUCH_CONTROLS
     ? [['Walk', 'Use the stick in the corner to walk'], ['Look around', 'Drag anywhere to look around'], ['Act', 'Tap the blue button to do things'], ['Where to go', 'Follow the arrows!']]
     : [
         ['Walk', 'W, A, S, D or the up and down arrow keys'],
@@ -1192,7 +1192,7 @@ function HelpCard() {
           <div id="help-panel-controls" role="tabpanel">
             <h2 className="mt-3 font-display text-2xl font-extrabold text-teal text-legible">How to Play</h2>
             <ControlsTab />
-            <SpeakButton text={IS_TOUCH ? TOUCH_HINT : DESKTOP_HINT} dark />
+            <SpeakButton text={USES_TOUCH_CONTROLS ? TOUCH_HINT : DESKTOP_HINT} dark />
           </div>
         )}
         {tab === 'modules' && (
@@ -1360,14 +1360,14 @@ export function Hud({ playerName, onContinue }) {
         </div>
       )}
 
-      {promptOpen && !IS_TOUCH && (
+      {promptOpen && !USES_TOUCH_CONTROLS && (
         <div className="pointer-events-auto absolute inset-x-0 bottom-28 z-[250] flex justify-center sm:bottom-24">
           {/* D4: the prompt IS the button - clicking fires the same interaction as E */}
           <button
             onClick={() => window.dispatchEvent(new Event('tayu-interact'))}
             className="tayu-btn-glass min-h-[52px] animate-pulse text-lg transition hover:scale-105 active:scale-95"
           >
-            {IS_TOUCH ? `Tap - ${near.label}` : `Click or press E - ${near.label}`}
+            {USES_TOUCH_CONTROLS ? `Tap - ${near.label}` : `Click or press E - ${near.label}`}
           </button>
         </div>
       )}

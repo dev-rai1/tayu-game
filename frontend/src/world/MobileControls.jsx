@@ -14,15 +14,6 @@ import { joystick } from './store.js'
 import { useGame } from './store.js'
 import { isFrozen } from './Player.jsx'
 
-// Capability-based detection (v8 1.0): a touchscreen laptop gets touch
-// controls too. Never decide by screen size.
-export const isTouch = typeof window !== 'undefined' && (
-  navigator.maxTouchPoints > 0 ||
-  'ontouchstart' in window ||
-  (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
-  new URLSearchParams(window.location.search).has('touch') // QA override
-)
-
 const MAX_R = 48 // knob travel
 const DEAD = 0.12 // resting-thumb dead zone (v8 1.1)
 const SAFE_BOTTOM = 'calc(18px + env(safe-area-inset-bottom, 0px))'
