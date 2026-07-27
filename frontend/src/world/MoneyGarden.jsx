@@ -301,10 +301,12 @@ export function MoneyGarden() {
       <BankSprout />
       {/* E8: one big shared header - BEHIND the storefront row and above the
           rooflines, so it never covers a shop's own floating title */}
-      <mesh position={[0, 6.8, -4.2]}>
-        <planeGeometry args={[7, 2.19]} />
-        <meshBasicMaterial map={labelTexture('THE THREE COMPANIES', { bg: '#071748', color: '#ffffff', accent: '#FFD700' })} transparent side={2} />
-      </mesh>
+      <Billboard position={[0, 6.8, -4.2]}>
+        <mesh>
+          <planeGeometry args={[7, 2.19]} />
+          <meshBasicMaterial map={labelTexture('THE THREE COMPANIES', { bg: '#071748', color: '#ffffff', accent: '#FFD700' })} transparent toneMapped={false} depthTest={false} />
+        </mesh>
+      </Billboard>
       {COMPANY_IDS.map((id) => {
         const Front = FRONTS[id]
         const [lx, lz] = COMPANIES[id].pos
