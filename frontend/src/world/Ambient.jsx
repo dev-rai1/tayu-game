@@ -164,6 +164,10 @@ export function Ambient() {
       <Duck r={2.7} speed={0.5} phase={0} />
       <Duck r={3.8} speed={0.4} phase={2.4} dir={-1} />
       <Duck r={2.0} speed={0.62} phase={4.4} />
+      {/* A few gentle butterflies tie the new center pavilions to the lake. */}
+      <Butterfly x={19} z={-2} phase={0.4} color="#ffb3cf" />
+      <Butterfly x={41} z={-2} phase={2.1} color="#8fc9ff" />
+      <Butterfly x={30} z={5} phase={3.7} color="#ffe47a" />
       {/* Wildlife now fills the landscaped gaps BETWEEN outside districts. */}
       {DISTRICT_GAP_ANGLES.filter((_, i) => i % 2 === 0).map((angle, i) => {
         const [x, z] = gapSpot(angle, 10.5, i % 2 ? 5.2 : -5.2)
