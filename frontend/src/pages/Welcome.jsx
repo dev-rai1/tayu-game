@@ -5,6 +5,7 @@ import { currentUser } from '../services/auth.js'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { startMusic } from '../services/audio.js'
+import { EDUCATOR_GRADE_BANDS } from '../constants/modules.js'
 
 // TAYU landing: the first viewport stays playful and student-friendly, while
 // the content directly below it gives educators and search engines a clear
@@ -129,15 +130,31 @@ export default function Welcome() {
             <p className="mx-auto mt-3 max-w-2xl text-lg text-navy/70">Start with everyday money choices, then build toward the real financial decisions students will make as adults.</p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              ['Elementary', 'Grades K-5', 'Spend, save, give, budget, bank, and grow money through concrete, playful choices.', '#1464F0'],
-              ['Middle School', 'Grades 6-8', 'Build on the core game with credit, taxes, insurance, careers, and investing.', '#7850F0'],
-              ['High School', 'Grades 9-12', 'Prepare for college costs, tax filing, retirement, fintech, and a personal life roadmap.', '#00a77a'],
-            ].map(([title, grades, copy, color]) => (
-              <article key={title} className="rounded-3xl border-2 border-navy/10 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                <div className="font-display text-sm font-extrabold" style={{ color }}>{grades}</div>
-                <h2 className="mt-1 font-display text-2xl font-extrabold">{title}</h2>
-                <p className="mt-3 leading-relaxed text-navy/70">{copy}</p>
+            {EDUCATOR_GRADE_BANDS.map((band) => (
+              <article key={band.title} className="rounded-3xl border-2 border-navy/10 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                <div className="font-display text-sm font-extrabold" style={{ color: band.color }}>{band.grades}</div>
+                <h2 className="mt-1 font-display text-2xl font-extrabold">{band.title}</h2>
+                <p className="mt-3 leading-relaxed text-navy/70">{band.copy}</p>
+                <div className="mt-4 border-t border-navy/10 pt-4">
+                  <div className="text-xs font-extrabold uppercase tracking-wide text-navy/50">
+                    {band.currentModules.length ? 'Playable now' : 'Coming next'}
+                  </div>
+                  {band.currentModules.length > 0 && (
+                    <ul className="mt-2 space-y-1.5">
+                      {band.currentModules.map((module) => (
+                        <li key={module.n} className="text-sm font-bold text-navy/80">
+                          Module {module.n}: {module.title} <span className="text-navy/50">({module.grades})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {band.plannedModules.length > 0 && (
+                    <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/65">
+                      <span className="font-extrabold">{band.currentModules.length ? 'In development: ' : ''}</span>
+                      {band.plannedModules.join(' • ')}
+                    </p>
+                  )}
+                </div>
               </article>
             ))}
           </div>
