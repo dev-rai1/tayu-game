@@ -1,7 +1,7 @@
 // Login / sign-up / forgot-password page. Email is the account username.
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { signUp, signIn, resetPassword, isCloud } from '../services/auth.js'
+import { signUp, signIn, resetPassword } from '../services/auth.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
 
@@ -141,11 +141,6 @@ export default function Auth() {
           <button type="button" onClick={() => changeMode('reset')} className="mt-3 w-full text-center text-sm font-bold text-white/75 hover:text-white">
             Forgot password?
           </button>
-        )}
-        {!isCloud() && (
-          <p className="mt-4 text-center text-xs font-semibold text-white/70">
-            Practice mode: this account is saved only on this device. Connect Firebase to enable cross-device accounts and reset emails.
-          </p>
         )}
       </form>
       <Link to="/" className="mt-4 text-center text-sm font-bold text-white/75 hover:text-white">Back to the home page</Link>

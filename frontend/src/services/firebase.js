@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from 'firebase/app'
-import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth'
+import { browserSessionPersistence, getAuth, setPersistence } from 'firebase/auth'
 import { getDatabase } from 'firebase/database'
 import { getFirestore } from 'firebase/firestore'
 
@@ -81,7 +81,9 @@ export async function prepareFirebaseAuth() {
   const ready = initializeServices()
   if (!ready) return null
   if (!persistenceReady) {
-    persistenceReady = setPersistence(ready.auth, browserLocalPersistence).catch(() => undefined)
+    // Keep the login only for the current browser session. Closing the browser
+    // requires the user to log in again, while normal page refreshes still work.
+    persistenceReady = setPersistence(ready.auth, browserSessionPersistence).catch(() => undefined)
   }
   await persistenceReady
   return ready
