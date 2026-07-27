@@ -1,31 +1,25 @@
-// R12 PART 2/3: THE ACCOUNT LAYER.
-// CLOUD MODE when VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY are set (Vercel
-// env vars): real Supabase Auth (hashed passwords, reset emails) + profiles/
-// progress tables - see supabase-setup.sql and AUTH_README.md.
-// LOCAL DEMO MODE otherwise: the full flow works on this device only -
-// accounts live in localStorage with SHA-256 salted password hashes, reset
-// emails are unavailable (the UI says so). Email/password ONLY - no Google.
+// TAYU account layer.
+// FIREBASE MODE when the VITE_FIREBASE_* variables are present: real Firebase
+// Authentication, password-reset emails, Firestore profiles, and synced progress.
+// LOCAL DEMO MODE otherwise: accounts and progress remain on this device only.
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth'
+import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
+import { getFirebaseServices, isFirebaseConfigured, prepareFirebaseAuth } from './firebase.js'
 import { loadWallet, saveWallet, loadProfile, saveProfile } from './walletStore.js'
 
-const SB_URL = import.meta.env.VITE_SUPABASE_URL
-const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-export const isCloud = () => !!(SB_URL && SB_KEY)
-
-let sb = null
-async function client() {
-  if (!isCloud()) return null
-  if (!sb) {
-    const { createClient } = await import('@supabase/supabase-js')
-    sb = createClient(SB_URL, SB_KEY)
-  }
-  return sb
-}
+export const isCloud = () => isFirebaseConfigured()
 
 // ---- local demo store ----
 const LKEY = 'tayu-accounts-v1'
 const SKEY = 'tayu-session-v1'
 const GKEY = 'tayu-guest-progress-v1'
-const DEMO_ADMIN_CREDENTIAL_VERSION = 2
+const DEMO_ADMIN_CREDENTIAL_VERSION = 3
 const readAccounts = () => { try { return JSON.parse(localStorage.getItem(LKEY) || '{}') } catch { return {} } }
 const writeAccounts = (a) => localStorage.setItem(LKEY, JSON.stringify(a))
 
@@ -35,17 +29,15 @@ async function hashPw(pw, salt) {
   return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-// The admin + Dev accounts exist from the first run (local mode). In cloud
-// mode they are created via supabase-setup.sql / the Supabase dashboard so
-// the credential never ships in client code beyond this demo fallback.
+// These demo accounts are used only when Firebase is not configured. Production
+// Firebase credentials are never stored in the client code.
 export async function seedLocalAccounts() {
   const acc = readAccounts()
   if (!acc['tayu.finance@gmail.com'] || acc['tayu.finance@gmail.com'].credentialVersion !== DEMO_ADMIN_CREDENTIAL_VERSION) {
-    const salt = 'tayu-admin-salt'
     acc['tayu.finance@gmail.com'] = {
       ...acc['tayu.finance@gmail.com'],
-      email: 'tayu.finance@gmail.com', salt, hash: await hashPw('tayuadmin9587', salt),
-      credentialVersion: DEMO_ADMIN_CREDENTIAL_VERSION, needsPassword: false,
+      email: 'tayu.finance@gmail.com', salt: null, hash: null,
+      credentialVersion: DEMO_ADMIN_CREDENTIAL_VERSION, needsPassword: true,
       role: 'admin', gradeLevels: '', foundVia: 'founder', social: '',
       createdAt: acc['tayu.finance@gmail.com']?.createdAt || new Date().toISOString(),
       progress: acc['tayu.finance@gmail.com']?.progress ?? null,
@@ -76,9 +68,6 @@ function saveGuestProgress() {
 }
 
 export function startGuestSession() {
-  // Guest/demo progress belongs to the device, not to whichever account was
-  // used most recently. Capture an active guest before changing the session,
-  // then restore its dedicated snapshot whenever demo mode is reopened.
   if (currentUser()?.guest) saveGuestProgress()
   const saved = readGuestProgress()
   const guest = { role: 'guest', cloud: false, guest: true }
@@ -94,46 +83,89 @@ function setSession(user) {
   window.dispatchEvent(new Event('tayu-auth-changed'))
 }
 
-// ---- sign up (captures the email + all profile questions) ----
+function normalizeRole(role) {
+  return ['teacher', 'student', 'other'].includes(role) ? role : 'student'
+}
+
+function firebaseError(error, fallback) {
+  const messages = {
+    'auth/email-already-in-use': 'That email already has an account. Try logging in.',
+    'auth/invalid-email': 'Please enter a real email address.',
+    'auth/invalid-credential': 'Email or password did not match.',
+    'auth/user-disabled': 'This account has been disabled. Please contact TAYU.',
+    'auth/weak-password': 'Password needs at least 6 characters.',
+    'auth/too-many-requests': 'Too many attempts. Please wait a little and try again.',
+    'auth/network-request-failed': 'We could not reach Firebase. Check your internet connection and try again.',
+  }
+  return new Error(messages[error?.code] || fallback || error?.message || 'Something went wrong. Please try again.')
+}
+
+async function firebaseProfile(firestore, uid) {
+  const snap = await getDoc(doc(firestore, 'profiles', uid))
+  return snap.exists() ? snap.data() : null
+}
+
+// ---- sign up ----
 export async function signUp({ email, password, role, gradeLevels, foundVia, organizationName }) {
   email = String(email || '').trim().toLowerCase()
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
   if (!password || password.length < 6) throw new Error('Password needs at least 6 characters.')
-  if ((role === 'teacher' || role === 'student') && !String(organizationName || '').trim())
+  if ((role === 'teacher' || role === 'student') && !String(organizationName || '').trim()) {
     throw new Error('Please enter your school or organization name.')
+  }
+
   const profile = {
-    role: role || 'student', gradeLevels: gradeLevels || '', foundVia: foundVia || '',
+    email,
+    role: normalizeRole(role),
+    gradeLevels: gradeLevels || '',
+    foundVia: foundVia || '',
     organizationName: String(organizationName || '').trim(),
+    social: '',
+    createdAt: new Date().toISOString(),
   }
-  const c = await client()
-  if (c) {
-    const { data, error } = await c.auth.signUp({ email, password })
-    if (error) throw new Error(error.message)
-    await c.from('profiles').upsert({ id: data.user.id, email, ...profile, created_at: new Date().toISOString() })
-    setSession({ email, role: profile.role, cloud: true, id: data.user.id })
-    return { email }
+
+  const firebase = await prepareFirebaseAuth()
+  if (firebase) {
+    try {
+      const credential = await createUserWithEmailAndPassword(firebase.auth, email, password)
+      await setDoc(doc(firebase.firestore, 'profiles', credential.user.uid), profile)
+      setSession({ email, role: profile.role, cloud: true, id: credential.user.uid })
+      return { email, role: profile.role }
+    } catch (error) {
+      throw firebaseError(error, 'We could not create the account. Please try again.')
+    }
   }
+
   const acc = readAccounts()
   if (acc[email] && !acc[email].needsPassword) throw new Error('That email already has an account. Try logging in.')
   const salt = Math.random().toString(36).slice(2)
-  acc[email] = { ...(acc[email] || {}), email, salt, hash: await hashPw(password, salt), needsPassword: false, ...profile, role: acc[email]?.role === 'admin' ? 'admin' : profile.role, createdAt: acc[email]?.createdAt || new Date().toISOString(), progress: acc[email]?.progress ?? null }
+  acc[email] = {
+    ...(acc[email] || {}), email, salt, hash: await hashPw(password, salt), needsPassword: false,
+    ...profile, role: acc[email]?.role === 'admin' ? 'admin' : profile.role,
+    createdAt: acc[email]?.createdAt || profile.createdAt, progress: acc[email]?.progress ?? null,
+  }
   writeAccounts(acc)
   setSession({ email, role: acc[email].role, cloud: false })
-  return { email }
+  return { email, role: acc[email].role }
 }
 
 // ---- sign in: restores the saved progress tied to the account ----
 export async function signIn(email, password) {
   email = String(email || '').trim().toLowerCase()
-  const c = await client()
-  if (c) {
-    const { data, error } = await c.auth.signInWithPassword({ email, password })
-    if (error) throw new Error('Email or password did not match.')
-    const { data: prof } = await c.from('profiles').select('*').eq('id', data.user.id).single()
-    setSession({ email, role: prof?.role || 'student', cloud: true, id: data.user.id })
-    await syncDown()
-    return { email, role: prof?.role || 'student' }
+  const firebase = await prepareFirebaseAuth()
+  if (firebase) {
+    try {
+      const credential = await signInWithEmailAndPassword(firebase.auth, email, password)
+      const profile = await firebaseProfile(firebase.firestore, credential.user.uid)
+      const role = profile?.role || 'student'
+      setSession({ email: credential.user.email || email, role, cloud: true, id: credential.user.uid })
+      await syncDown()
+      return { email, role }
+    } catch (error) {
+      throw firebaseError(error, 'Email or password did not match.')
+    }
   }
+
   const acc = readAccounts()
   const a = acc[email]
   if (!a || a.needsPassword) throw new Error(a ? 'This account needs a password - use Sign Up to set one.' : 'No account with that email yet.')
@@ -144,37 +176,58 @@ export async function signIn(email, password) {
 }
 
 export async function signOutUser() {
-  const c = await client()
-  if (c) await c.auth.signOut()
+  const firebase = await prepareFirebaseAuth()
+  if (firebase) await signOut(firebase.auth)
   setSession(null)
 }
 
 // ---- forgot password ----
 export async function resetPassword(email) {
   email = String(email || '').trim().toLowerCase()
-  const c = await client()
-  if (c) {
-    const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/login' })
-    if (error) throw new Error(error.message)
-    return 'Check your email for the reset link!'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Please enter a real email address.')
+  const firebase = await prepareFirebaseAuth()
+  if (!firebase) {
+    throw new Error('Password-reset emails need Firebase to be connected. This device is currently using practice mode.')
   }
-  throw new Error('Reset emails need the cloud backend (Supabase keys). In demo mode, sign up again with the same email to set a new password.')
+
+  try {
+    await sendPasswordResetEmail(firebase.auth, email, {
+      url: `${window.location.origin}/login?mode=signin`,
+      handleCodeInApp: false,
+    })
+    return 'If an account uses that email, Firebase has sent a password-reset link. Check your inbox and spam folder.'
+  } catch (error) {
+    if (error?.code === 'auth/user-not-found') {
+      return 'If an account uses that email, Firebase has sent a password-reset link. Check your inbox and spam folder.'
+    }
+    throw firebaseError(error, 'We could not send the reset email. Please try again.')
+  }
 }
 
-// ---- progress sync (wallet + profile snapshots tied to the account) ----
+function serializableSnapshot() {
+  return JSON.parse(JSON.stringify({
+    wallet: loadWallet(),
+    profile: loadProfile(),
+    savedAt: new Date().toISOString(),
+  }))
+}
+
+// ---- progress sync ----
 export async function syncUp() {
   const u = currentUser()
   if (!u) return
-  const snapshot = { wallet: loadWallet(), profile: loadProfile(), savedAt: new Date().toISOString() }
+  const snapshot = serializableSnapshot()
   if (u.guest) {
     try { localStorage.setItem(GKEY, JSON.stringify(snapshot)) } catch { /* storage unavailable */ }
     return
   }
-  const c = await client()
-  if (c && u.id) {
-    await c.from('progress').upsert({ user_id: u.id, data: snapshot, updated_at: snapshot.savedAt })
+
+  const firebase = getFirebaseServices()
+  if (firebase && u.id) {
+    await setDoc(doc(firebase.firestore, 'progress', u.id), { data: snapshot, updatedAt: snapshot.savedAt }, { merge: true })
     return
   }
+
   const acc = readAccounts()
   if (acc[u.email]) { acc[u.email].progress = snapshot; writeAccounts(acc) }
 }
@@ -183,48 +236,79 @@ export async function syncDown() {
   const u = currentUser()
   if (!u) return false
   let snap = null
-  const c = await client()
-  if (c && u.id) {
-    const { data } = await c.from('progress').select('data').eq('user_id', u.id).single()
-    snap = data?.data || null
+  const firebase = getFirebaseServices()
+  if (firebase && u.id) {
+    const progress = await getDoc(doc(firebase.firestore, 'progress', u.id))
+    snap = progress.exists() ? progress.data()?.data : null
   } else {
     snap = readAccounts()[u.email]?.progress || null
   }
   if (snap?.wallet) saveWallet(snap.wallet)
   if (snap?.profile) saveProfile(snap.profile)
-  return !!snap
+  return Boolean(snap)
 }
 
-// ---- the admin dashboard's data (role=admin only) ----
+// ---- admin dashboard data ----
 export async function adminData() {
   const u = currentUser()
   if (!u || u.role !== 'admin') throw new Error('Admin only.')
-  const c = await client()
-  if (c) {
-    const { data: profiles } = await c.from('profiles').select('*')
-    const { data: progress } = await c.from('progress').select('*')
-    const progById = Object.fromEntries((progress || []).map((p) => [p.user_id, p.data]))
-    return (profiles || []).map((p) => ({
-      email: p.email, role: p.role, gradeLevels: p.grade_levels ?? p.gradeLevels ?? '', foundVia: p.found_via ?? p.foundVia ?? '',
-      social: p.social ?? '',
-      organizationName: p.organization_name ?? p.organizationName ?? '', organizationEmail: p.organization_email ?? p.organizationEmail ?? '',
-      createdAt: p.created_at, progress: progById[p.id] || null,
-    }))
+  const firebase = getFirebaseServices()
+  if (firebase) {
+    const [profileSnapshot, progressSnapshot] = await Promise.all([
+      getDocs(collection(firebase.firestore, 'profiles')),
+      getDocs(collection(firebase.firestore, 'progress')),
+    ])
+    const progressById = Object.fromEntries(progressSnapshot.docs.map((item) => [item.id, item.data()?.data || null]))
+    return profileSnapshot.docs.map((item) => {
+      const profile = item.data()
+      return {
+        email: profile.email || '',
+        role: profile.role || 'student',
+        gradeLevels: profile.gradeLevels || '',
+        foundVia: profile.foundVia || '',
+        social: profile.social || '',
+        organizationName: profile.organizationName || '',
+        organizationEmail: profile.organizationEmail || '',
+        createdAt: profile.createdAt || '',
+        progress: progressById[item.id] || null,
+      }
+    })
   }
+
   return Object.values(readAccounts()).map((a) => ({
     email: a.email, role: a.role, gradeLevels: a.gradeLevels, foundVia: a.foundVia,
-    social: a.social || '',
-    organizationName: a.organizationName || '', organizationEmail: a.organizationEmail || '',
-    createdAt: a.createdAt, progress: a.progress,
+    social: a.social || '', organizationName: a.organizationName || '',
+    organizationEmail: a.organizationEmail || '', createdAt: a.createdAt, progress: a.progress,
   }))
 }
 
-// keep cloud/local progress fresh: the wallet store announces every save
+// Keep a locally cached session aligned with Firebase's persisted auth state.
+let stopFirebaseAuthSync = null
+async function startFirebaseAuthSync() {
+  if (!isCloud() || stopFirebaseAuthSync) return
+  const firebase = await prepareFirebaseAuth()
+  if (!firebase) return
+  stopFirebaseAuthSync = onAuthStateChanged(firebase.auth, async (user) => {
+    if (!user) {
+      if (currentUser()?.cloud) setSession(null)
+      return
+    }
+    try {
+      const profile = await firebaseProfile(firebase.firestore, user.uid)
+      setSession({ email: user.email || '', role: profile?.role || 'student', cloud: true, id: user.uid })
+    } catch {
+      setSession({ email: user.email || '', role: currentUser()?.role || 'student', cloud: true, id: user.uid })
+    }
+  })
+}
+
+// Keep cloud/local progress fresh: the wallet store announces every save.
 let syncTimer = null
 if (typeof window !== 'undefined') {
   window.addEventListener('tayu-progress-saved', () => {
     clearTimeout(syncTimer)
     syncTimer = setTimeout(() => syncUp().catch(() => {}), 2500)
   })
-  seedLocalAccounts().catch(() => {})
+  if (isCloud()) startFirebaseAuthSync().catch(() => {})
+  else seedLocalAccounts().catch(() => {})
 }
