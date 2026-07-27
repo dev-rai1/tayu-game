@@ -8,13 +8,15 @@ describe('module grade-level catalog', () => {
   })
 
   it('gives each educator grade band its respective modules', () => {
-    const elementary = EDUCATOR_GRADE_BANDS.find((band) => band.title === 'Elementary')
-    const middle = EDUCATOR_GRADE_BANDS.find((band) => band.title === 'Middle School')
-    const high = EDUCATOR_GRADE_BANDS.find((band) => band.title === 'High School')
+    const bands = Object.fromEntries(EDUCATOR_GRADE_BANDS.map((band) => [band.title, band]))
 
-    expect(elementary.currentModules.map((module) => module.n)).toEqual([1, 2, 3, 4, 5])
-    expect(middle.currentModules.map((module) => module.n)).toEqual([4, 5])
-    expect(high.currentModules).toEqual([])
-    expect(high.plannedModules).toContain('College Costs')
+    expect(bands['Elementary School']).toBeDefined()
+    expect(bands['Middle School']).toBeDefined()
+    expect(bands['High School']).toBeDefined()
+
+    expect(bands['Elementary School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3])
+    expect(bands['Middle School'].currentModules.map((module) => module.n)).toEqual([3, 4, 5])
+    expect(bands['High School'].currentModules.map((module) => module.n)).toEqual([5])
+    expect(bands['High School'].plannedModules).toContain('College costs and financial aid')
   })
 })
