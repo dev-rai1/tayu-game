@@ -51,7 +51,6 @@ export const useGame = create((set, get) => ({
   coinBatches: [],
   weekComplete: false,
   pendingWeekComplete: false, // G2/C7: summary waits until the message queue drains
-  clickMarker: null,
 
   // ONE-AT-A-TIME message discipline (G2). `lessons` = simple tap-to-dismiss
   // cards; `cards` = decision cards with buttons (the module-3 bottom sheet).
@@ -128,7 +127,6 @@ export const useGame = create((set, get) => ({
     const cur = get().near
     if ((cur?.id ?? null) !== (near?.id ?? null)) set({ near })
   },
-  setClickMarker: (m) => set({ clickMarker: m }),
   setHelpOpen: (v) => set({ helpOpen: v }),
 
   persist: () => {
@@ -1758,7 +1756,7 @@ export const useGame = create((set, get) => ({
   _baseState: () => ({
     wallet: 0, allocations: { spend: 0, save: 0, give: 0 }, week: 1, objective: 'mailbox',
     mailboxOpened: false, near: null, panelJar: null, toast: null, coinBatches: [], weekComplete: false,
-    pendingWeekComplete: false, clickMarker: null, lessons: [], lessonSeen: {}, cards: [],
+    pendingWeekComplete: false, lessons: [], lessonSeen: {}, cards: [],
     scenario: null, scenarioIndex: 0, scenarioState: 'IDLE', scenarioLocked: false, attempt: 0, jarGhost: false,
     dialog: null, panelItem: null, bought: [], bramTalked: false, storeMissionDone: false, storeAttempt: 0, storeGhost: false,
     lemPhase: null, lemRound: 1, lemBundle: null, lemHours: DEFAULT_HOURS, lemPrice: null, lemResult: null,
