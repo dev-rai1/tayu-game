@@ -169,6 +169,35 @@ function Bunny({ x, z, phase }) {
   )
 }
 
+function ParkAnimal({ x, z, phase, color = '#b8794d', kind = 'dog' }) {
+  const ref = useRef()
+  useFrame(({ clock }) => {
+    const g = ref.current
+    if (!g) return
+    const t = clock.elapsedTime * 0.55 + phase
+    g.position.set(x + Math.sin(t) * 0.7, 0, z + Math.cos(t * 0.8) * 0.55)
+    g.rotation.y = Math.atan2(Math.cos(t), -Math.sin(t * 0.8))
+  })
+  const earHeight = kind === 'deer' ? 0.34 : 0.25
+  return (
+    <group ref={ref}>
+      <mesh position={[0, 0.34, 0]} castShadow><capsuleGeometry args={[0.18, 0.42, 6, 10]} /><Clay color={color} /></mesh>
+      <mesh position={[0.28, 0.53, 0]} castShadow><sphereGeometry args={[0.2, 10, 10]} /><Clay color={color} /></mesh>
+      {[-0.1, 0.1].map((ez) => (
+        <mesh key={ez} position={[0.28, 0.73, ez]} rotation={[0, 0, ez * 2]}>
+          <coneGeometry args={[0.065, earHeight, 6]} /><Clay color={color} />
+        </mesh>
+      ))}
+      <mesh position={[-0.27, 0.5, 0]} rotation={[0, 0, -0.65]}>
+        <capsuleGeometry args={[0.035, 0.28, 4, 6]} /><Clay color={kind === 'cat' ? '#6f8796' : color} />
+      </mesh>
+      {[[-0.12, 0.13], [0.12, 0.13]].map(([lx, lz], i) => (
+        <mesh key={i} position={[lx, 0.14, lz]}><capsuleGeometry args={[0.045, 0.22, 4, 6]} /><Clay color={color} /></mesh>
+      ))}
+    </group>
+  )
+}
+
 export function Ambient() {
   if (STILL) return (
     <group>
@@ -183,6 +212,11 @@ export function Ambient() {
   return (
     <group>
       {AMBIENT_NPCS.map((npc, i) => <Villager key={npc.id} npc={npc} phase={i * 1.9} />)}
+      {/* Friendly park animals animate in small pockets beside the town buildings. */}
+      <ParkAnimal x={15} z={10} phase={0.2} color="#bf7a4f" kind="dog" />
+      <ParkAnimal x={45} z={10} phase={1.8} color="#6f8796" kind="cat" />
+      <ParkAnimal x={20} z={-24} phase={3.1} color="#c49a6c" kind="deer" />
+      <ParkAnimal x={40} z={-24} phase={4.6} color="#d89b65" kind="dog" />
       {/* R14 P3: duck orbits fit the smaller pond (lake r ~5.2) */}
       <Duck r={2.7} speed={0.5} phase={0} />
       <Duck r={3.8} speed={0.4} phase={2.4} dir={-1} />
