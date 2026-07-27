@@ -6,7 +6,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBox, Billboard } from '@react-three/drei'
-import { BLOCKERS, DISTRICT_GAP_ANGLES, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfPaths, ringPoint, worldScale } from './config.js'
+import { BLOCKERS, DISTRICT_GAP_ANGLES, HOME, PATHS, RING, RING_POINTS, LAKE, STOP_ANGLES, isClearOfModuleGates, isClearOfPaths, ringPoint, worldScale } from './config.js'
 import { cardTexture } from './textures.js'
 
 const P = {
@@ -100,7 +100,7 @@ const TREE_SPOTS = [
 ].map((t, i) => {
   const [x, z] = worldScale([t.x, t.z])
   return { ...t, x, z, c: i }
-}).filter((t) => isClearOfPaths([t.x, t.z], 1.5)) // keep trunks and canopies out of every walking lane
+}).filter((t) => isClearOfPaths([t.x, t.z], 1.5) && isClearOfModuleGates([t.x, t.z], 1)) // keep every module gateway readable
 
 const PALM_SPOTS = [
   [21, -9, 1], [39, -10.5, 1.05], [21.5, -2, 0.95], [38.5, -0.5, 1],
@@ -108,7 +108,7 @@ const PALM_SPOTS = [
 ].map(([x, z, s], i) => {
   const [sx, sz] = worldScale([x, z])
   return { x: sx, z: sz, s, i }
-}).filter((p) => isClearOfPaths([p.x, p.z], 1.5))
+}).filter((p) => isClearOfPaths([p.x, p.z], 1.5) && isClearOfModuleGates([p.x, p.z], 1))
 
 const FLOWER_SPOTS = [
   [4, -14, 0], [12, -24, 1], [24, -26, 2], [36, -26, 3], [46, -24, 4],
@@ -117,7 +117,7 @@ const FLOWER_SPOTS = [
 ].map(([x, z, c]) => {
   const [sx, sz] = worldScale([x, z])
   return [sx, sz, c]
-}).filter(([x, z]) => isClearOfPaths([x, z], 0.55))
+}).filter(([x, z]) => isClearOfPaths([x, z], 0.55) && isClearOfModuleGates([x, z]))
 
 const roadsideSpot = (angle, radialOffset, tangentOffset = 0) => {
   const [x, z] = ringPoint(angle)
@@ -138,7 +138,7 @@ const GROVE_TREE_SPOTS = DISTRICT_GAP_ANGLES.flatMap((angle, i) => [
   { ...roadsideSpot(angle, 6.8, -2.7), s: 1.05, c: i * 3 },
   { ...roadsideSpot(angle, 7.8, 0.2), s: 1.25, c: i * 3 + 1 },
   { ...roadsideSpot(angle, 6.6, 2.8), s: 0.9, c: i * 3 + 2 },
-])
+]).filter((item) => isClearOfModuleGates([item.x, item.z], 1.5))
 
 const TRANSITION_BUSHES = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
   [-4.2, -1.4, 1.4, 4.2].map((tangent, n) => ({
@@ -147,14 +147,14 @@ const TRANSITION_BUSHES = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
     s: 0.8 + (n % 3) * 0.12,
     c: i + n,
   })),
-)
+).filter((item) => isClearOfModuleGates([item.x, item.z], 1))
 
 const TRANSITION_FLOWERS = DISTRICT_GAP_ANGLES.flatMap((angle, i) =>
   [-4.8, -3.2, -1.6, 0, 1.6, 3.2, 4.8].map((tangent, n) => ({
     ...roadsideSpot(angle, 3.9, tangent),
     c: i + n,
   })),
-)
+).filter((item) => isClearOfModuleGates([item.x, item.z], 0.5))
 
 const GEO = {
   trunk: new THREE.CylinderGeometry(0.16, 0.26, 1.3, 7),
@@ -317,26 +317,99 @@ function Home() {
   )
 }
 
-function PathSegment({ from, to, w = 2.2 }) {
+function ParkPavilion({ x, z, roof, rotation = 0 }) {
+  return (
+    <group position={[x, 0, z]} rotation={[0, rotation, 0]}>
+      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[2.5, 28]} /><Clay color="#d8c394" />
+      </mesh>
+      {Array.from({ length: 6 }, (_, i) => {
+        const a = (i / 6) * Math.PI * 2
+        return (
+          <mesh key={i} position={[Math.cos(a) * 1.8, 1.25, Math.sin(a) * 1.8]} castShadow>
+            <cylinderGeometry args={[0.11, 0.14, 2.5, 8]} /><Clay color="#f2e4c9" />
+          </mesh>
+        )
+      })}
+      <mesh position={[0, 2.8, 0]} castShadow>
+        <coneGeometry args={[2.8, 1.35, 8]} /><Clay color={roof} />
+      </mesh>
+      <mesh position={[0, 0.48, 0]} castShadow>
+        <cylinderGeometry args={[1.1, 1.1, 0.45, 16]} /><Clay color="#a9743f" />
+      </mesh>
+    </group>
+  )
+}
+
+function LearningGreenhouse({ x, z }) {
+  return (
+    <group position={[x, 0, z]}>
+      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[2.8, 28]} /><Clay color="#c8dca8" />
+      </mesh>
+      <RoundedBox args={[4.2, 2.5, 3.2]} radius={0.12} smoothness={2} position={[0, 1.25, 0]} castShadow>
+        <meshPhysicalMaterial color="#bfe8d3" transparent opacity={0.38} roughness={0.25} transmission={0.15} />
+      </RoundedBox>
+      {[-1.2, 0, 1.2].map((px, i) => (
+        <group key={px} position={[px, 0, 0]}>
+          <mesh position={[0, 0.28, 0]} castShadow><boxGeometry args={[0.75, 0.42, 1.8]} /><Clay color="#9a6b43" /></mesh>
+          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.42 + i * 0.05, 10, 10]} /><Clay color={i === 1 ? "#7cc25c" : "#5fa84a"} flat /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 2.9, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[2.6, 1.1, 4]} /><meshPhysicalMaterial color="#d7f4e8" transparent opacity={0.55} roughness={0.2} />
+      </mesh>
+    </group>
+  )
+}
+
+function CentralCommons() {
+  return (
+    <group>
+      {/* Calm, optional support spaces: visually interesting but never mistaken for modules. */}
+      <ParkPavilion x={16.5} z={-5} roof="#6f8fc9" rotation={0.2} />
+      <LearningGreenhouse x={43.5} z={-5} />
+      <ParkPavilion x={30} z={9} roof="#c98762" rotation={Math.PI / 6} />
+      <Bench x={22} z={4.5} rot={2.7} />
+      <Bench x={38} z={4.5} rot={-2.7} />
+      <Picnic x={23.5} z={-16} />
+      <Picnic x={36.5} z={-16} />
+    </group>
+  )
+}
+
+function PathSegment({ from, to, w = 2.2, color = P.path, y = 0.02 }) {
   const mx = (from[0] + to[0]) / 2, mz = (from[1] + to[1]) / 2
   const dx = to[0] - from[0], dz = to[1] - from[1]
   const len = Math.hypot(dx, dz) + 1.6
   const angle = Math.atan2(dx, dz)
   return (
-    <mesh position={[mx, 0.02, mz]} rotation={[-Math.PI / 2, 0, -angle]} receiveShadow>
-      <planeGeometry args={[w, len]} /><Clay color={P.path} rough={1} />
+    <mesh position={[mx, y, mz]} rotation={[-Math.PI / 2, 0, -angle]} receiveShadow>
+      <planeGeometry args={[w, len]} /><Clay color={color} rough={1} />
     </mesh>
   )
 }
 
-function PathLine({ points, w }) {
+function PathLine({ points, w, color, y }) {
   const segs = []
   for (let i = 0; i < points.length - 1; i++) segs.push([points[i], points[i + 1]])
-  return segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={w} />)
+  return segs.map(([a, b], i) => <PathSegment key={i} from={a} to={b} w={w} color={color} y={y} />)
 }
 
 // THE TWO-WAY RING ROAD: wide segments around the circle + a dashed center
 // line so the two lanes read clearly. Sits slightly above the grass.
+function RoyalFinaleApproach() {
+  return (
+    <group>
+      {/* Gold borders under warm stone create a clear, symmetrical royal fork. */}
+      <PathLine points={PATHS.royalPartyLeft} w={4.8} color="#d6aa35" y={0.021} />
+      <PathLine points={PATHS.royalPartyRight} w={4.8} color="#d6aa35" y={0.021} />
+      <PathLine points={PATHS.royalPartyLeft} w={3.5} color="#f4e5bd" y={0.029} />
+      <PathLine points={PATHS.royalPartyRight} w={3.5} color="#f4e5bd" y={0.029} />
+    </group>
+  )
+}
+
 function RingRoad() {
   const segs = []
   for (let i = 0; i < RING_POINTS.length - 1; i++) segs.push([RING_POINTS[i], RING_POINTS[i + 1]])
@@ -391,15 +464,12 @@ export function Environment3D() {
       <PathLine points={PATHS.spurBudget} />
       <PathLine points={PATHS.spurBank} />
       <PathLine points={PATHS.spurGarden} />
-      <PathLine points={PATHS.spurParty} />
+      <RoyalFinaleApproach />
 
       <Home />
-      {/* THE PARK: lake at the heart of the circle */}
+      {/* THE PARK: lake and calm supporting spaces at the heart of the circle */}
       <Lake />
-      <Picnic x={23} z={2} />
-      <Bench x={38} z={-13} rot={2.2} />
-      <Bench x={22} z={-13} rot={0.9} />
-      <Bench x={30} z={5} rot={Math.PI} />
+      <CentralCommons />
 
       {lamps.map(([x, z], i) => <Lamp key={`l${i}`} x={x} z={z} />)}
 
