@@ -18,7 +18,7 @@ service cloud.firestore {
 
     function isDashboardViewer() {
       return signedIn()
-        && request.auth.token.email == 'dashboard.viewer.v2@tayufinance.app';
+        && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app';
     }
 
     function hasAdminProfile() {
@@ -76,6 +76,14 @@ service cloud.firestore {
       allow read: if canReadDashboard();
       allow delete: if isAdmin();
       allow update: if false;
+    }
+
+    match /usageSessions/{sessionId} {
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email;
+      allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow delete: if isAdmin();
     }
   }
 }
