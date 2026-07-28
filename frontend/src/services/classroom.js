@@ -150,15 +150,32 @@ export async function loadTeacherStudents() {
   const user = currentUser()
   if (!user?.id || user.role !== 'teacher') throw new Error('Teacher account required.')
   const db = await firestore()
-  const profiles = await getDocs(query(collection(db, 'profiles'), where('teacherId', '==', user.id)))
+
+  let profiles
+  try {
+    // This query is intentionally constrained to the signed-in teacher's UID so
+    // Firestore can authorize it through the matching teacher-only list rule.
+    profiles = await getDocs(query(collection(db, 'profiles'), where('teacherId', '==', user.id)))
+  } catch (error) {
+    if (error?.code === 'permission-denied') {
+      throw new Error('Teacher analytics permissions are not active yet. Refresh after the latest update is deployed.')
+    }
+    throw error
+  }
+
   const rows = await Promise.all(profiles.docs.map(async (profileDoc) => {
-    const [progressDoc, sessions] = await Promise.all([
+    // A legacy or partially migrated student may be missing one analytics
+    // document. Keep the rest of the roster visible instead of failing the
+    // entire teacher dashboard because of one incomplete record.
+    const [progressResult, sessionsResult] = await Promise.allSettled([
       getDoc(doc(db, 'progress', profileDoc.id)),
       getDocs(query(collection(db, 'usageSessions'), where('uid', '==', profileDoc.id))),
     ])
+    const progressDoc = progressResult.status === 'fulfilled' ? progressResult.value : null
+    const sessions = sessionsResult.status === 'fulfilled' ? sessionsResult.value : null
     const profile = profileDoc.data()
-    const progress = progressDoc.exists() ? progressDoc.data()?.data : null
-    const usage = sessions.docs.map((item) => item.data())
+    const progress = progressDoc?.exists() ? progressDoc.data()?.data : null
+    const usage = sessions?.docs?.map((item) => item.data()) || []
     const badges = progress?.profile?.badges || []
     return {
       uid: profileDoc.id,
@@ -171,6 +188,7 @@ export async function loadTeacherStudents() {
       wrongAnswers: Number(progress?.profile?.wrongAnswers || 0),
       timeSpent: usage.reduce((sum, item) => sum + Number(item.durationSeconds || 0), 0),
       currentModule: progress?.wallet?.week || 1,
+      analyticsLimited: progressResult.status === 'rejected' || sessionsResult.status === 'rejected',
       progress,
     }
   }))

@@ -20,7 +20,11 @@ service cloud.firestore {
 
     match /profiles/{userId} {
       allow create: if owns(userId) && request.resource.data.email == request.auth.token.email && validProfileRole(request.resource.data.role);
-      allow read: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
+      allow get: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
+      // Teachers load their roster with a query constrained to teacherId == their UID.
+      // Firestore requires an explicit list rule for that filtered query; a get-only
+      // permission is not enough and otherwise returns "missing or insufficient permissions".
+      allow list: if canReadDashboard() || (signedIn() && resource.data.teacherId == request.auth.uid);
       allow update: if isAdmin() || (owns(userId) && request.resource.data.email == resource.data.email && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
