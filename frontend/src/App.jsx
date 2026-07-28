@@ -5,9 +5,11 @@ import About from './pages/About.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
 import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
+import { recordPageView } from './services/siteAnalytics.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import AdminDashboardButton from './components/AdminDashboardButton.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
+import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { currentUser } from './services/auth.js'
@@ -55,6 +57,14 @@ function UsageTracker() {
   return null
 }
 
+function SiteViewTracker() {
+  const { pathname, search } = useLocation()
+  useEffect(() => {
+    recordPageView(`${pathname}${search}`).catch(() => {})
+  }, [pathname, search])
+  return null
+}
+
 function CertificateMusicTrigger() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -83,7 +93,7 @@ export default function App() {
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
-              <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><Dashboard /></Suspense></AdminRoute>} />
+              <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><><SiteTrafficSummary /><Dashboard /></></Suspense></AdminRoute>} />
               <Route path="/assessment/:phase" element={<Suspense fallback={<LoadingScreen />}><KnowledgeQuiz /></Suspense>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -91,6 +101,7 @@ export default function App() {
         </Boundary>
       </div>
       <UsageTracker />
+      <SiteViewTracker />
       <CertificateMusicTrigger />
       <AccountMusicControl />
       <AdminDashboardButton />
