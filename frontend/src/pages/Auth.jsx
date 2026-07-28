@@ -96,7 +96,7 @@ export default function Auth() {
           {mode === 'signup'
             ? 'Sign up, then choose a money adventure.'
             : mode === 'reset'
-              ? 'Enter the exact email used for your account. TAYU will request a secure Firebase reset link.'
+              ? 'Enter the exact email used for your account. After requesting the link, check your inbox and your Spam or Junk folder.'
               : 'Log in to continue your money adventure.'}
         </p>
         <GuestModeButton />
@@ -171,7 +171,7 @@ export default function Auth() {
         {mode === 'reset' && recovery && (
           <div className="mt-3 rounded-2xl bg-white/5 p-4 text-sm font-semibold text-white/75">
             <p>Use the newest reset email. Older reset links stop working after a newer one is requested.</p>
-            <p className="mt-2">Nothing after a few minutes? Check Spam and Promotions, then confirm the email above exactly matches the account.</p>
+            <p className="mt-2 font-extrabold text-amber-200">Important: The reset email may go to Spam, Junk, or Promotions. Check those folders if it does not appear in your inbox within a few minutes.</p>
             {recovery.legacyActivationAvailable && (
               <button type="button" onClick={activateOlderAccount} className="mt-3 min-h-[44px] w-full rounded-xl bg-amber-300 px-3 font-extrabold text-navy">
                 Activate older account and set a new password
