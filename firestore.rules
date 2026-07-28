@@ -48,5 +48,15 @@ service cloud.firestore {
       allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid) || (signedIn() && teacherOwnsStudent(resource.data.uid));
       allow delete: if isAdmin();
     }
+
+    match /sitePageViews/{viewId} {
+      allow create: if request.resource.data.visitorId is string
+        && request.resource.data.sessionId is string
+        && request.resource.data.path is string
+        && request.resource.data.viewedAt is string;
+      allow read: if canReadDashboard();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
   }
 }
