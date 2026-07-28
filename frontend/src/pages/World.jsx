@@ -12,7 +12,6 @@ import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
-import { ReadingPaceGuard } from '../world/ReadingPaceGuard.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 
 // Full-screen 3D world page (Module 1, Week 1).
@@ -75,7 +74,6 @@ export default function World() {
       <PersistentCoach />
       <PersistentImprovementCoach />
       <GuidedCommerceOverlay />
-      {!welcome && <ReadingPaceGuard />}
       {use3D && usesTouchControls && <MobileControls />}
 
       {/* Welcome instructions wait for the player instead of disappearing on a timer. */}
