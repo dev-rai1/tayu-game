@@ -18,7 +18,7 @@ service cloud.firestore {
 
     function isDashboardViewer() {
       return signedIn()
-        && request.auth.token.email == 'dashboard.viewer@tayufinance.app';
+        && request.auth.token.email == 'dashboard.viewer.v2@tayufinance.app';
     }
 
     function hasAdminProfile() {
