@@ -18,13 +18,21 @@ const World = lazy(() => import('./pages/World.jsx'))
 const Guru = lazy(() => import('./pages/Guru.jsx'))
 const Auth = lazy(() => import('./pages/Auth.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
 
 function PreQuizGate({ children }) {
   const user = currentUser()
   if (!user) return <Navigate to="/login" replace />
-  if (user.role !== 'admin' && !loadProfile()?.assessment?.pre) return <Navigate to="/assessment/pre" replace />
+  if (user.role !== 'admin' && user.role !== 'teacher' && !loadProfile()?.assessment?.pre) return <Navigate to="/assessment/pre" replace />
+  return children
+}
+
+function TeacherGate({ children }) {
+  const user = currentUser()
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role !== 'teacher') return <Navigate to="/modules" replace />
   return children
 }
 
@@ -66,6 +74,7 @@ export default function App() {
               <Route path="/guru" element={<Suspense fallback={<LoadingScreen label="Rolling out the red carpet..." />}><Guru /></Suspense>} />
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
+              <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
               <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><Dashboard /></Suspense></AdminRoute>} />
               <Route path="/assessment/:phase" element={<Suspense fallback={<LoadingScreen />}><KnowledgeQuiz /></Suspense>} />
               <Route path="*" element={<Navigate to="/" replace />} />
