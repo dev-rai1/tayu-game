@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { currentUser } from '../services/auth.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
@@ -10,23 +10,64 @@ const duration = (seconds) => {
   return minutes ? `${minutes}m ${value % 60}s` : `${value}s`
 }
 
+const withTimeout = (promise, milliseconds, message) => Promise.race([
+  promise,
+  new Promise((_, reject) => window.setTimeout(() => reject(new Error(message)), milliseconds)),
+])
+
 export default function TeacherDashboard() {
   const nav = useNavigate()
   const [classroom, setClassroom] = useState(null)
   const [students, setStudents] = useState([])
   const [error, setError] = useState('')
+  const [studentError, setStudentError] = useState('')
+  const [loadingClassroom, setLoadingClassroom] = useState(true)
+  const [loadingStudents, setLoadingStudents] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const load = async () => {
+  const loadStudents = useCallback(async () => {
+    setLoadingStudents(true)
+    setStudentError('')
+    try {
+      const rows = await withTimeout(
+        loadTeacherStudents(),
+        10000,
+        'Student analytics took too long to load. Your classroom is still available; try refreshing the analytics.',
+      )
+      setStudents(rows)
+    } catch (err) {
+      setStudentError(err.message || String(err))
+    } finally {
+      setLoadingStudents(false)
+    }
+  }, [])
+
+  const load = useCallback(async () => {
+    setLoadingClassroom(true)
+    setError('')
     try {
       const user = currentUser()
-      if (!user || user.role !== 'teacher') { nav('/login', { replace: true }); return }
-      const [room, rows] = await Promise.all([createOrLoadTeacherClass(), loadTeacherStudents()])
-      setClassroom(room); setStudents(rows)
-    } catch (err) { setError(err.message || String(err)) }
-  }
+      if (!user || user.role !== 'teacher') {
+        nav('/login', { replace: true })
+        return
+      }
 
-  useEffect(() => { load() }, [])
+      // Load the classroom first so slow student analytics can never block the page.
+      const room = await withTimeout(
+        createOrLoadTeacherClass(),
+        8000,
+        'The classroom service took too long to respond. Check your connection and try again.',
+      )
+      setClassroom(room)
+      loadStudents()
+    } catch (err) {
+      setError(err.message || String(err))
+    } finally {
+      setLoadingClassroom(false)
+    }
+  }, [loadStudents, nav])
+
+  useEffect(() => { load() }, [load])
 
   const toggleModule = (n) => {
     setClassroom((current) => {
@@ -43,7 +84,22 @@ export default function TeacherDashboard() {
     finally { setSaving(false) }
   }
 
-  if (!classroom) return <main className="grid min-h-screen place-items-center">Loading teacher classroom…</main>
+  if (loadingClassroom) {
+    return <main className="grid min-h-screen place-items-center px-6 text-center"><div><div className="text-xl font-extrabold">Loading teacher classroom…</div><p className="mt-2 text-sm text-white/55">This should only take a few seconds.</p></div></main>
+  }
+
+  if (!classroom) {
+    return (
+      <main className="grid min-h-screen place-items-center px-6 text-center">
+        <div className="max-w-md rounded-3xl bg-white/5 p-6">
+          <h1 className="font-display text-2xl font-extrabold">Could not load your classroom</h1>
+          <p className="mt-3 rounded-xl bg-red-500/15 p-3 text-sm font-bold text-red-200">{error || 'The classroom service did not respond.'}</p>
+          <button type="button" onClick={load} className="btn-primary mt-5 min-h-[48px] w-full">Try again</button>
+          <Link to="/" className="mt-3 block text-sm font-bold text-white/70">Back home</Link>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-8">
@@ -70,9 +126,13 @@ export default function TeacherDashboard() {
       </section>
 
       <section className="mt-6 overflow-x-auto rounded-3xl bg-white/5 p-6">
-        <h2 className="font-display text-2xl font-extrabold">Student analytics</h2>
-        <table className="mt-4 w-full min-w-[950px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Student</th><th className="pr-3">Modules completed</th><th className="pr-3">Completion state</th><th className="pr-3">Amount done</th><th className="pr-3">Wrong answers</th><th className="pr-3">Time spent</th><th>Current progress</th></tr></thead><tbody>{students.map((student) => <tr key={student.uid} className="border-t border-white/10"><td className="py-3 pr-3 font-bold">{student.email}</td><td className="pr-3">{student.completed}</td><td className="pr-3">{student.completionState}</td><td className="pr-3">{student.amountDone}</td><td className="pr-3">{student.wrongAnswers}</td><td className="pr-3">{duration(student.timeSpent)}</td><td>Module {student.currentModule}</td></tr>)}</tbody></table>
-        {!students.length && <p className="mt-4 text-white/55">No students have joined this class code yet.</p>}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-2xl font-extrabold">Student analytics</h2>
+          <button type="button" onClick={loadStudents} disabled={loadingStudents} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold disabled:opacity-50">{loadingStudents ? 'Loading…' : 'Refresh analytics'}</button>
+        </div>
+        {studentError && <p className="mt-4 rounded-xl bg-amber-300/15 p-3 text-sm font-bold text-amber-200">{studentError}</p>}
+        {loadingStudents && !students.length ? <p className="mt-4 text-white/55">Loading student analytics…</p> : <table className="mt-4 w-full min-w-[950px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Student</th><th className="pr-3">Modules completed</th><th className="pr-3">Completion state</th><th className="pr-3">Amount done</th><th className="pr-3">Wrong answers</th><th className="pr-3">Time spent</th><th>Current progress</th></tr></thead><tbody>{students.map((student) => <tr key={student.uid} className="border-t border-white/10"><td className="py-3 pr-3 font-bold">{student.email}</td><td className="pr-3">{student.completed}</td><td className="pr-3">{student.completionState}</td><td className="pr-3">{student.amountDone}</td><td className="pr-3">{student.wrongAnswers}</td><td className="pr-3">{duration(student.timeSpent)}</td><td>Module {student.currentModule}</td></tr>)}</tbody></table>}
+        {!loadingStudents && !students.length && !studentError && <p className="mt-4 text-white/55">No students have joined this class code yet.</p>}
       </section>
     </main>
   )
