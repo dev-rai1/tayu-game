@@ -5,6 +5,7 @@ import About from './pages/About.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
 import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
+import { recordPageView } from './services/siteAnalytics.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import AdminDashboardButton from './components/AdminDashboardButton.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
@@ -55,6 +56,14 @@ function UsageTracker() {
   return null
 }
 
+function SiteViewTracker() {
+  const { pathname, search } = useLocation()
+  useEffect(() => {
+    recordPageView(`${pathname}${search}`).catch(() => {})
+  }, [pathname, search])
+  return null
+}
+
 function CertificateMusicTrigger() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -91,6 +100,7 @@ export default function App() {
         </Boundary>
       </div>
       <UsageTracker />
+      <SiteViewTracker />
       <CertificateMusicTrigger />
       <AccountMusicControl />
       <AdminDashboardButton />
