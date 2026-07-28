@@ -13,22 +13,22 @@ const money = (value) => `$${Number(value || 0).toLocaleString('en-US', { minimu
 function bankRetryAction(week) {
   if (week === 4) {
     return {
-      title: 'Pay the credit bill the safer way',
-      action: 'Choose “Pay in full” on the retry. Paying only the minimum adds interest, so the same purchase costs more.',
-      goal: 'Finish the purchase with $0 added interest.',
+      title: 'Pay the credit bill safely',
+      action: 'Choose “Pay in full” so you do not add interest.',
+      goal: 'Finish with $0 added interest.',
     }
   }
   if (week === 6) {
     return {
       title: 'Stop the scam',
-      action: 'Choose “Refuse.” Do not send money or private information to someone who pressures you.',
-      goal: 'Keep your money and personal information protected.',
+      action: 'Choose “Refuse.” Never send money or private information when someone pressures you.',
+      goal: 'Protect your money and information.',
     }
   }
   return {
-    title: 'Retry the safer bank choice',
-    action: 'Choose “Let’s try that again,” reread Bea’s explanation, and select the choice that avoids the extra cost or risk.',
-    goal: 'Complete the lesson without losing money or trust.',
+    title: 'Try the safer bank choice',
+    action: 'Retry and choose the option that avoids extra cost or risk.',
+    goal: 'Complete the lesson safely.',
   }
 }
 
@@ -59,8 +59,6 @@ export function PersistentImprovementCoach() {
     const clearFeedback = useFeedbackCoach.getState().clearFeedback
 
     const unsubscribe = useGame.subscribe((state, previous) => {
-      // A fresh module begins with fresh coaching. Reloaded sessions keep their
-      // saved pinned feedback because this transition only runs in live play.
       if (state.week !== previous.week) {
         const entered = { 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }[state.week]
         if (entered) clearFeedback(entered)
@@ -68,7 +66,6 @@ export function PersistentImprovementCoach() {
       if (state.objective === 'kitchen' && previous.objective !== 'kitchen') clearFeedback('jars')
       if (state.objective === 'store' && previous.objective !== 'store') clearFeedback('market')
 
-      // JARS: capture the actual failed split before the animation resets it.
       if (
         previous.objective === 'kitchen'
         && previous.scenarioState === 'ALLOCATING'
@@ -80,31 +77,27 @@ export function PersistentImprovementCoach() {
           const target = previous.scenario.target
           setFeedback('jars', {
             sourceKey: `jars-${previous.scenario.id}-${previous.attempt}`,
-            title: 'Fix your jar plan',
-            diagnosis: `${previous.scenario.recap(previous.allocations)} That split did not match this situation. ${result.hint}`,
-            action: `On this retry, set SPEND to about ${money(target.spend)}, SAVE to about ${money(target.save)}, and GIVE to about ${money(target.give)}.`,
-            goal: `Use all three jars. Each amount can be within ${money(target.tolerance)} of the suggested amount.`,
+            title: 'Adjust the jars',
+            diagnosis: previous.scenario.recap(previous.allocations),
+            action: `Try about ${money(target.spend)} in SPEND, ${money(target.save)} in SAVE, and ${money(target.give)} in GIVE.`,
+            goal: 'Use all three jars and keep the total balanced.',
           })
         }
       }
       if (state.scenarioState === 'SUCCESS' && previous.scenarioState !== 'SUCCESS') clearFeedback('jars')
 
-      // MARKET: retain the exact cart diagnosis after the basket is refunded.
       if (state.storeAttempt > previous.storeAttempt) {
         const basket = previous.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
         setFeedback('market', {
           sourceKey: `market-${state.storeAttempt}`,
           title: 'Fix your basket',
           diagnosis: cartFeedback(basket),
-          action: 'Buy exactly one healthy food and one healthy drink first. Only add a want after both needs are covered and you still have enough SPEND money.',
-          goal: 'The Food and Drink checks should both turn green before checkout.',
+          action: 'Choose one healthy food and one healthy drink. Add a want only if money is left.',
+          goal: 'Turn both Food and Drink checks green.',
         })
       }
       if (state.storeMissionDone && !previous.storeMissionDone) clearFeedback('market')
 
-      // LEMONADE: use the same nextTip calculation as the end-of-round card.
-      // That guarantees the exact recommendation shown at the end is the one
-      // saved and pinned throughout the following selection screen.
       if (state.lemResult && state.lemResult !== previous.lemResult) {
         const result = state.lemResult
         const levers = {
@@ -146,7 +139,6 @@ export function PersistentImprovementCoach() {
         })
       }
 
-      // MONEY GARDEN: the week log records whether the lesson was followed.
       const previousLogs = previous.mg?.weekLog?.length || 0
       const currentLogs = state.mg?.weekLog?.length || 0
       if (currentLogs > previousLogs) {
@@ -157,15 +149,14 @@ export function PersistentImprovementCoach() {
         } else {
           setFeedback('garden', {
             sourceKey: `garden-${log.week}`,
-            title: `Fix Week ${log.week}'s decision`,
-            diagnosis: `${spec.coach} Your garden ended the week at ${money(log.total)}.`,
-            action: spec.intro,
-            goal: spec.nudge || 'Follow the pinned lesson before starting the next week.',
+            title: `Adjust Week ${log.week}`,
+            diagnosis: `Your garden ended at ${money(log.total)}.`,
+            action: spec.nudge || spec.intro,
+            goal: 'Make the next choice match the week’s lesson.',
           })
         }
       }
 
-      // BUDGET TOWN: a failed emergency test returns the player to the split.
       if (
         previous.bt?.stage === 'emergency'
         && state.bt?.stage === 'split'
@@ -174,15 +165,14 @@ export function PersistentImprovementCoach() {
         const pocket = previous.bt?.split?.pocket ?? previous.split?.pocket ?? 0
         setFeedback('budget', {
           sourceKey: `budget-emergency-${Date.now()}`,
-          title: 'Put enough money in Pocket',
-          diagnosis: `Your Pocket had ${money(pocket)}, but the surprise cost ${money(EMERGENCY_EVENT.cost)}. The plan could not cover the emergency.`,
-          action: `Move at least ${money(EMERGENCY_EVENT.cost)} into Pocket before confirming the split. Then divide the rest between Bank and Money Garden.`,
-          goal: `Pocket must be ${money(EMERGENCY_EVENT.cost)} or more so the surprise can be paid without undoing the plan.`,
+          title: 'Add more to Pocket',
+          diagnosis: `Pocket had ${money(pocket)}, but the surprise cost ${money(EMERGENCY_EVENT.cost)}.`,
+          action: `Put at least ${money(EMERGENCY_EVENT.cost)} in Pocket, then split the rest between Bank and Money Garden.`,
+          goal: 'Keep enough ready for the surprise cost.',
         })
       }
       if (state.bt?.stage === 'handoff' && previous.bt?.stage !== 'handoff') clearFeedback('budget')
 
-      // BANK: failed choices create a feedback card with a retry button.
       const currentCard = state.cards.at(-1)
       const previousCard = previous.cards.at(-1)
       if (currentCard && currentCard !== previousCard && currentCard.id === 'bkfb') {
@@ -209,32 +199,17 @@ export function PersistentImprovementCoach() {
   const activeKey = activeKeyForState(currentState)
   const feedback = activeKey ? feedbackByModule[activeKey] : null
 
-  // Lemonade owns a larger combination coach inside its decision panel.
   if (!feedback || weekComplete) return null
 
   return (
     <aside
       aria-live="polite"
-      className="pointer-events-none fixed left-3 top-[92px] z-[485] max-h-[calc(100vh-7rem)] w-[min(92vw,27rem)] overflow-y-auto rounded-3xl border-2 border-sun bg-navy/95 p-4 text-white shadow-2xl"
+      className="pointer-events-none fixed left-3 top-[92px] z-[485] w-[min(92vw,24rem)] rounded-3xl border-2 border-sun bg-navy/95 p-3 text-white shadow-2xl"
     >
-      <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">
-        Pinned improvement guide — stays until corrected
-      </div>
+      <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">Quick tip</div>
       <h2 className="mt-1 font-display text-lg font-extrabold text-white">{feedback.title}</h2>
-
-      <div className="mt-3 rounded-2xl bg-white/10 p-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">What happened</div>
-        <p className="mt-1 text-sm font-bold leading-snug text-white/85">{feedback.diagnosis}</p>
-      </div>
-
       <div className="mt-2 rounded-2xl bg-sun p-3 text-navy">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide">Change this now</div>
-        <p className="mt-1 text-sm font-extrabold leading-snug">{feedback.action}</p>
-      </div>
-
-      <div className="mt-2 rounded-2xl border border-teal/60 bg-teal/10 p-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">Goal before continuing</div>
-        <p className="mt-1 text-sm font-bold leading-snug text-white/85">{feedback.goal}</p>
+        <p className="text-sm font-extrabold leading-snug">{feedback.action}</p>
       </div>
     </aside>
   )
