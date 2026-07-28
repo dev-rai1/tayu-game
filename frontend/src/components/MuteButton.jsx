@@ -1,13 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { isMuted, toggleMute } from '../services/audio.js'
 
-// The always-visible speaker toggle (F2). Simple inline SVG icons - no emojis.
+// The always-visible speaker toggle. It listens for global audio changes so the
+// certificate's automatic celebration music is reflected immediately.
 export function MuteButton({ className = '', showLabel = false }) {
   const [muted, setMuted] = useState(isMuted())
+
+  useEffect(() => {
+    const sync = () => setMuted(isMuted())
+    window.addEventListener('tayu-audio-changed', sync)
+    return () => window.removeEventListener('tayu-audio-changed', sync)
+  }, [])
+
   return (
     <button
-      aria-label={muted ? 'Unmute music' : 'Mute music'}
-      aria-pressed={muted}
+      type="button"
+      aria-label={muted ? 'Turn music on' : 'Turn music off'}
+      aria-pressed={!muted}
       onClick={() => setMuted(toggleMute())}
       className={`pointer-events-auto flex h-11 items-center justify-center gap-2 rounded-2xl bg-navy/80 px-3 text-white shadow-lg transition active:scale-95 ${className}`}
     >

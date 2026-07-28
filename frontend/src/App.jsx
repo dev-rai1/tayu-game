@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Welcome from './pages/Welcome.jsx'
 import About from './pages/About.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
-import { initAutoplay } from './services/audio.js'
+import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import AdminDashboardButton from './components/AdminDashboardButton.jsx'
@@ -47,6 +47,14 @@ function UsageTracker() {
   return null
 }
 
+function CertificateMusicTrigger() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname === '/guru') celebrateWithMusic()
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   useEffect(() => {
     if (!/^\/(world|party|guru)/.test(window.location.pathname)) initAutoplay()
@@ -74,6 +82,7 @@ export default function App() {
         </Boundary>
       </div>
       <UsageTracker />
+      <CertificateMusicTrigger />
       <AccountMusicControl />
       <AdminDashboardButton />
       <AdminPanel showButton />
