@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Welcome from './pages/Welcome.jsx'
 import About from './pages/About.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
@@ -7,6 +7,7 @@ import { initAutoplay } from './services/audio.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import AdminDashboardButton from './components/AdminDashboardButton.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
+import { MuteButton } from './components/MuteButton.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { currentUser } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
@@ -27,6 +28,18 @@ function PreQuizGate({ children }) {
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'admin' && !loadProfile()?.assessment?.pre) return <Navigate to="/assessment/pre" replace />
   return children
+}
+
+function AccountMusicControl() {
+  const { pathname } = useLocation()
+  const show = pathname === '/login' || pathname.startsWith('/assessment/')
+  if (!show) return null
+  return (
+    <MuteButton
+      showLabel
+      className="fixed right-4 top-4 z-[700] border border-white/15 backdrop-blur-sm"
+    />
+  )
 }
 
 // TAYU - Landing → (About) → Avatar creator → walkable 3D world.
@@ -60,6 +73,7 @@ export default function App() {
           </Suspense>
         </Boundary>
       </div>
+      <AccountMusicControl />
       <AdminDashboardButton />
       <AdminPanel showButton />
     </div>
