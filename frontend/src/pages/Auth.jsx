@@ -29,12 +29,12 @@ export default function Auth() {
 
   const setAffiliation = (event) => {
     const affiliation = event.target.value
-    setF((current) => ({ ...current, affiliation, role: affiliation === 'individual' ? 'other' : '', organizationName: '', gradeLevels: '', studentCode: '' }))
+    setF((current) => ({ ...current, affiliation, role: affiliation === 'individual' ? 'other' : '', organizationName: '', studentCode: '' }))
   }
 
   const setOrganizationRole = (event) => {
     const role = event.target.value
-    setF((current) => ({ ...current, role, gradeLevels: '', studentCode: role === 'student' ? current.studentCode : '' }))
+    setF((current) => ({ ...current, role, studentCode: role === 'student' ? current.studentCode : '' }))
   }
 
   const changeMode = (nextMode) => { setMode(nextMode); setErr(null); setOk(null); setRecovery(null) }
@@ -52,6 +52,7 @@ export default function Auth() {
       if (mode === 'signup') {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
         if (!f.affiliation) throw new Error('Choose Organization or Individual.')
+        if (!f.gradeLevels) throw new Error('Please select a grade level.')
         if (f.affiliation === 'organization' && !f.organizationName.trim()) throw new Error('Enter your organization name.')
         if (f.affiliation === 'organization' && !['teacher', 'student'].includes(f.role)) throw new Error('Choose Teacher or Student.')
         if (f.role === 'student' && !f.studentCode.trim()) throw new Error('Students joining an organization need their teacher’s class code.')
@@ -73,6 +74,8 @@ export default function Auth() {
     finally { setBusy(false) }
   }
 
+  const gradeLabel = f.role === 'teacher' ? 'Grades you teach' : f.role === 'student' ? 'Your grade level' : 'Your grade level'
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
       <Link to="/" className="mb-4 flex items-center gap-3"><img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" /><span className="font-display text-2xl font-extrabold text-white">TAYU</span></Link>
@@ -92,7 +95,7 @@ export default function Auth() {
             <label className={LABEL}>Organization name<input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} /></label>
             <label className={LABEL}>Role<select className={SELECT} required value={f.role} onChange={setOrganizationRole}><option value="">Choose one...</option><option value="teacher">Teacher</option><option value="student">Student</option></select></label>
           </>}
-          {f.affiliation === 'organization' && ['teacher', 'student'].includes(f.role) && <label className={LABEL}>{f.role === 'teacher' ? 'Grades you teach' : 'Your grade range'}<select className={SELECT} value={f.gradeLevels} onChange={set('gradeLevels')}><option value="">Choose...</option><option value="K-2">K–2</option><option value="3-5">3–5</option><option value="6-8">6–8</option><option value="9-12">9–12</option><option value="mixed">Mixed</option></select></label>}
+          {f.affiliation && <label className={LABEL}>{gradeLabel} <span className="text-white/50">(required)</span><select className={SELECT} required value={f.gradeLevels} onChange={set('gradeLevels')}><option value="">Choose...</option><option value="K-2">K–2</option><option value="3-5">3–5</option><option value="6-8">6–8</option><option value="9-12">9–12</option><option value="mixed">Mixed / multiple grades</option></select></label>}
           {f.role === 'student' && <label className={LABEL}>Teacher’s class code <span className="text-white/50">(required)</span><input className={FIELD} required value={f.studentCode} onChange={set('studentCode')} placeholder="Example: ABC234" /></label>}
           <label className={LABEL}>How did you find TAYU?<select className={SELECT} value={f.foundVia} onChange={set('foundVia')}><option value="">Choose one...</option><option value="teacher">A teacher</option><option value="friend">Friend or family</option><option value="school">School or district</option><option value="social">Social media</option><option value="search">Web search</option><option value="event">Event</option><option value="other">Other</option></select></label>
         </>}
