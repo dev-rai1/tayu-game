@@ -153,8 +153,6 @@ export async function loadTeacherStudents() {
 
   let profiles
   try {
-    // This query is intentionally constrained to the signed-in teacher's UID so
-    // Firestore can authorize it through the matching teacher-only list rule.
     profiles = await getDocs(query(collection(db, 'profiles'), where('teacherId', '==', user.id)))
   } catch (error) {
     if (error?.code === 'permission-denied') {
@@ -164,32 +162,47 @@ export async function loadTeacherStudents() {
   }
 
   const rows = await Promise.all(profiles.docs.map(async (profileDoc) => {
-    // A legacy or partially migrated student may be missing one analytics
-    // document. Keep the rest of the roster visible instead of failing the
-    // entire teacher dashboard because of one incomplete record.
-    const [progressResult, sessionsResult] = await Promise.allSettled([
+    const [progressResult, sessionsResult, activityResult] = await Promise.allSettled([
       getDoc(doc(db, 'progress', profileDoc.id)),
       getDocs(query(collection(db, 'usageSessions'), where('uid', '==', profileDoc.id))),
+      getDocs(query(collection(db, 'authActivity'), where('uid', '==', profileDoc.id))),
     ])
     const progressDoc = progressResult.status === 'fulfilled' ? progressResult.value : null
-    const sessions = sessionsResult.status === 'fulfilled' ? sessionsResult.value : null
+    const sessionsSnapshot = sessionsResult.status === 'fulfilled' ? sessionsResult.value : null
+    const activitySnapshot = activityResult.status === 'fulfilled' ? activityResult.value : null
     const profile = profileDoc.data()
     const progress = progressDoc?.exists() ? progressDoc.data()?.data : null
-    const usage = sessions?.docs?.map((item) => item.data()) || []
+    const sessions = (sessionsSnapshot?.docs || [])
+      .map((item) => ({ id: item.id, ...item.data() }))
+      .sort((a, b) => String(b.startedAt || '').localeCompare(String(a.startedAt || '')))
+    const activity = (activitySnapshot?.docs || [])
+      .map((item) => ({ id: item.id, ...item.data() }))
+      .sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || '')))
     const badges = progress?.profile?.badges || []
     return {
       uid: profileDoc.id,
       email: profile.email || '',
+      role: profile.role || 'student',
       gradeLevels: profile.gradeLevels || '',
+      foundVia: profile.foundVia || '',
+      createdAt: profile.createdAt || '',
+      joinedClassAt: profile.joinedClassAt || '',
+      lastLoginAt: profile.lastLoginAt || '',
+      lastLogoutAt: profile.lastLogoutAt || '',
+      lastActiveAt: profile.lastActiveAt || '',
+      loginCount: Number(profile.loginCount || 0),
       badges,
       completed: badges.length,
       completionState: progress?.profile?.guru ? 'Certificate earned' : badges.length ? 'In progress' : 'Not started',
       amountDone: `${badges.length}/5`,
       wrongAnswers: Number(progress?.profile?.wrongAnswers || 0),
-      timeSpent: usage.reduce((sum, item) => sum + Number(item.durationSeconds || 0), 0),
+      timeSpent: sessions.reduce((sum, item) => sum + Number(item.durationSeconds || 0), 0),
       currentModule: progress?.wallet?.week || 1,
-      analyticsLimited: progressResult.status === 'rejected' || sessionsResult.status === 'rejected',
+      certificateEarned: Boolean(progress?.profile?.guru),
+      analyticsLimited: progressResult.status === 'rejected' || sessionsResult.status === 'rejected' || activityResult.status === 'rejected',
       progress,
+      sessions,
+      activity,
     }
   }))
   return rows.sort((a, b) => a.email.localeCompare(b.email))

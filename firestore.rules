@@ -21,9 +21,6 @@ service cloud.firestore {
     match /profiles/{userId} {
       allow create: if owns(userId) && request.resource.data.email == request.auth.token.email && validProfileRole(request.resource.data.role);
       allow get: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
-      // Teachers load their roster with a query constrained to teacherId == their UID.
-      // Firestore requires an explicit list rule for that filtered query; a get-only
-      // permission is not enough and otherwise returns "missing or insufficient permissions".
       allow list: if canReadDashboard() || (signedIn() && resource.data.teacherId == request.auth.uid);
       allow update: if isAdmin() || (owns(userId) && request.resource.data.email == resource.data.email && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
@@ -42,7 +39,9 @@ service cloud.firestore {
 
     match /authActivity/{activityId} {
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && validAuthActivityType(request.resource.data.type);
-      allow read: if canReadDashboard();
+      allow get: if canReadDashboard() || (signedIn() && (resource.data.uid == request.auth.uid || teacherOwnsStudent(resource.data.uid)));
+      // Teacher queries must be constrained to one assigned student's uid.
+      allow list: if canReadDashboard() || (signedIn() && teacherOwnsStudent(resource.data.uid));
       allow delete: if isAdmin();
       allow update: if false;
     }
