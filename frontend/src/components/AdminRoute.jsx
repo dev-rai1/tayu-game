@@ -23,18 +23,14 @@ export default function AdminRoute({ children }) {
         return
       }
 
-      if (user.role === 'admin' || isDashboardViewerEmail(user.email)) {
-        await ensureAdminAccess(user)
-        if (active) setStatus('allowed')
-        return
-      }
-
-      if (isAdminEmail(user.email)) {
+      if (isDashboardViewerEmail(user.email) || isAdminEmail(user.email)) {
         const promoted = await ensureAdminAccess(user)
         if (active) setStatus(promoted?.role === 'admin' ? 'allowed' : 'password')
         return
       }
 
+      // Old dashboard-viewer identities and ordinary accounts must re-enter the
+      // current shared password instead of inheriting stale admin state.
       if (active) setStatus('password')
     }
 
@@ -70,9 +66,7 @@ export default function AdminRoute({ children }) {
             <span className="font-display text-2xl font-extrabold text-white">TAYU</span>
           </Link>
           <h1 className="font-display text-3xl font-extrabold">Admin Dashboard</h1>
-          <p className="mt-2 text-sm font-semibold text-white/65">
-            Enter the shared dashboard password to view TAYU account activity, learning progress, and analytics.
-          </p>
+          <p className="mt-2 text-sm font-semibold text-white/65">Enter the shared dashboard password to view real account sessions, survey answers, module activity, and learning analytics.</p>
 
           <label className="mt-6 block text-sm font-extrabold text-teal">
             Dashboard password
