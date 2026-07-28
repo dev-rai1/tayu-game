@@ -2,87 +2,50 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function owns(userId) {
-      return signedIn() && request.auth.uid == userId;
-    }
-
-    function isApprovedAdminEmail() {
+    function signedIn() { return request.auth != null; }
+    function owns(userId) { return signedIn() && request.auth.uid == userId; }
+    function isApprovedAdminEmail() { return signedIn() && (request.auth.token.email == 'tayu.finance@gmail.com' || request.auth.token.email == 'devr53247@gmail.com'); }
+    function isDashboardViewer() { return signedIn() && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app'; }
+    function hasAdminProfile() { return signedIn() && exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin'; }
+    function isAdmin() { return !isDashboardViewer() && (isApprovedAdminEmail() || hasAdminProfile()); }
+    function canReadDashboard() { return isAdmin() || isDashboardViewer(); }
+    function validPublicRole(role) { return role == 'student' || role == 'teacher' || role == 'other'; }
+    function validProfileRole(role) { return validPublicRole(role) || (isApprovedAdminEmail() && role == 'admin') || (isDashboardViewer() && role == 'admin'); }
+    function validAuthActivityType(type) { return type == 'sign_up' || type == 'sign_in' || type == 'sign_out'; }
+    function teacherOwnsStudent(studentId) {
       return signedIn()
-        && (request.auth.token.email == 'tayu.finance@gmail.com'
-          || request.auth.token.email == 'devr53247@gmail.com');
-    }
-
-    function isDashboardViewer() {
-      return signedIn()
-        && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app';
-    }
-
-    function hasAdminProfile() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
-        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    function isAdmin() {
-      return !isDashboardViewer() && (isApprovedAdminEmail() || hasAdminProfile());
-    }
-
-    function canReadDashboard() {
-      return isAdmin() || isDashboardViewer();
-    }
-
-    function validPublicRole(role) {
-      return role == 'student' || role == 'teacher' || role == 'other';
-    }
-
-    function validProfileRole(role) {
-      return validPublicRole(role)
-        || (isApprovedAdminEmail() && role == 'admin')
-        || (isDashboardViewer() && role == 'admin');
-    }
-
-    function validAuthActivityType(type) {
-      return type == 'sign_up' || type == 'sign_in' || type == 'sign_out';
+        && exists(/databases/$(database)/documents/profiles/$(studentId))
+        && get(/databases/$(database)/documents/profiles/$(studentId)).data.teacherId == request.auth.uid;
     }
 
     match /profiles/{userId} {
-      allow create: if owns(userId)
-        && request.resource.data.email == request.auth.token.email
-        && validProfileRole(request.resource.data.role);
-      allow read: if owns(userId) || canReadDashboard();
-      allow update: if isAdmin() || (
-        owns(userId)
-        && request.resource.data.email == resource.data.email
-        && request.resource.data.role == resource.data.role
-      );
+      allow create: if owns(userId) && request.resource.data.email == request.auth.token.email && validProfileRole(request.resource.data.role);
+      allow read: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
+      allow update: if isAdmin() || (owns(userId) && request.resource.data.email == resource.data.email && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
 
     match /progress/{userId} {
-      allow read: if owns(userId) || canReadDashboard();
+      allow read: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
       allow create, update: if owns(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
+    match /classes/{teacherId} {
+      allow create, update, delete: if owns(teacherId);
+      allow read: if signedIn();
+    }
+
     match /authActivity/{activityId} {
-      allow create: if signedIn()
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email
-        && validAuthActivityType(request.resource.data.type);
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && validAuthActivityType(request.resource.data.type);
       allow read: if canReadDashboard();
       allow delete: if isAdmin();
       allow update: if false;
     }
 
     match /usageSessions/{sessionId} {
-      allow create, update: if signedIn()
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email;
-      allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email;
+      allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid) || (signedIn() && teacherOwnsStudent(resource.data.uid));
       allow delete: if isAdmin();
     }
   }
