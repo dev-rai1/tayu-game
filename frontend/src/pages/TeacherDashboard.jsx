@@ -90,6 +90,8 @@ export default function TeacherDashboard() {
     return <main className="grid min-h-screen place-items-center px-6 text-center"><div><p className="font-bold text-red-200">Teacher account information is missing.</p><Link to="/login" className="btn-primary mt-4 inline-block">Log in again</Link></div></main>
   }
 
+  const hasLimitedAnalytics = students.some((student) => student.analyticsLimited)
+
   return (
     <main className="mx-auto max-w-7xl px-5 py-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -123,6 +125,7 @@ export default function TeacherDashboard() {
       <section className="mt-6 overflow-x-auto rounded-3xl bg-white/5 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-2xl font-extrabold">Student analytics</h2><button type="button" onClick={loadStudents} disabled={loadingStudents} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold disabled:opacity-50">{loadingStudents ? 'Loading…' : 'Refresh analytics'}</button></div>
         {studentError && <p className="mt-4 rounded-xl bg-amber-300/15 p-3 text-sm font-bold text-amber-200">{studentError}</p>}
+        {hasLimitedAnalytics && <p className="mt-4 rounded-xl bg-white/5 p-3 text-sm font-semibold text-white/65">The class roster loaded, but one or more older accounts are missing part of their historical progress or timing data. Available analytics are still shown below.</p>}
         {loadingStudents && !students.length ? <p className="mt-4 text-white/55">Loading analytics in the background…</p> : <table className="mt-4 w-full min-w-[950px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Student</th><th className="pr-3">Modules completed</th><th className="pr-3">Completion state</th><th className="pr-3">Amount done</th><th className="pr-3">Wrong answers</th><th className="pr-3">Time spent</th><th>Current progress</th></tr></thead><tbody>{students.map((student) => <tr key={student.uid} className="border-t border-white/10"><td className="py-3 pr-3 font-bold">{student.email}</td><td className="pr-3">{student.completed}</td><td className="pr-3">{student.completionState}</td><td className="pr-3">{student.amountDone}</td><td className="pr-3">{student.wrongAnswers}</td><td className="pr-3">{duration(student.timeSpent)}</td><td>Module {student.currentModule}</td></tr>)}</tbody></table>}
         {!loadingStudents && !students.length && !studentError && <p className="mt-4 text-white/55">No students have joined this class code yet.</p>}
       </section>
