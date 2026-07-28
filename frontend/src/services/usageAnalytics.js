@@ -106,11 +106,17 @@ export function startUsageHeartbeat(pathname) {
     if (document.visibilityState === 'visible') touchUsage({ path: window.location.pathname }).catch(() => {})
   }
   const onPageHide = () => closeUsageSession().catch(() => {})
+  const onAuthChange = () => {
+    if (authUser()) touchUsage({ path: window.location.pathname }).catch(() => {})
+    else closeUsageSession().catch(() => {})
+  }
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener('pagehide', onPageHide)
+  window.addEventListener('tayu-auth-changed', onAuthChange)
   return () => {
     window.clearInterval(timer)
     document.removeEventListener('visibilitychange', onVisibility)
     window.removeEventListener('pagehide', onPageHide)
+    window.removeEventListener('tayu-auth-changed', onAuthChange)
   }
 }
