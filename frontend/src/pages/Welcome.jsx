@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { loadProfile, loadWallet, clearWallet } from '../services/walletStore.js'
-import { currentUser } from '../services/auth.js'
+import { signOutUser } from '../services/auth.js'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { startMusic } from '../services/audio.js'
@@ -64,14 +64,15 @@ export default function Welcome() {
   const [choice, setChoice] = useState(false)
   const hasSave = !!loadWallet()
 
-  const onPlay = () => {
+  const onPlay = async () => {
     startMusic('loading') // F2: music begins on the first user gesture
-    // R14 P2: PLAY *is* the login. Signed-out players go straight to
-    // login/sign-up; signed-in returning players continue their world.
-    if (!currentUser()) { navigate('/login'); return }
-    if (!loadProfile()?.assessment?.pre) { navigate('/assessment/pre'); return }
-    if (hasSave) setChoice(true) // G1: Continue vs Restart
-    else navigate('/avatar')
+    // Require fresh authentication every time a player starts from the landing page.
+    // Progress remains saved, but the previous account session is cleared first.
+    try {
+      await signOutUser()
+    } finally {
+      navigate('/login')
+    }
   }
   const onContinue = () => navigate('/world')
   const onRestart = () => { clearWallet(); navigate('/avatar') }
