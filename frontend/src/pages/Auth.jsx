@@ -8,6 +8,7 @@ import { loadProfile, loadWallet } from '../services/walletStore.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
 
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
+const SELECT = 'mt-1 w-full rounded-xl border border-white/20 bg-white px-4 py-3 font-bold text-navy outline-none focus:border-teal'
 const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
 
 export default function Auth() {
@@ -22,7 +23,18 @@ export default function Auth() {
       : null,
   )
   const [recovery, setRecovery] = useState(null)
-  const [f, setF] = useState({ email: '', password: '', confirm: '', role: 'teacher', gradeLevels: '', foundVia: '', organizationName: '' })
+  const [f, setF] = useState({
+    email: '',
+    password: '',
+    confirm: '',
+    affiliation: '',
+    role: '',
+    gradeLevels: '',
+    foundVia: '',
+    organizationName: '',
+    studentCode: '',
+  })
+
   const set = (key) => (event) => {
     const value = event.target.value
     setF((current) => ({ ...current, [key]: value }))
@@ -30,6 +42,28 @@ export default function Auth() {
       setRecovery(null)
       setOk(null)
     }
+  }
+
+  const setAffiliation = (event) => {
+    const affiliation = event.target.value
+    setF((current) => ({
+      ...current,
+      affiliation,
+      role: affiliation === 'individual' ? 'other' : '',
+      organizationName: '',
+      gradeLevels: '',
+      studentCode: '',
+    }))
+  }
+
+  const setOrganizationRole = (event) => {
+    const role = event.target.value
+    setF((current) => ({
+      ...current,
+      role,
+      gradeLevels: '',
+      studentCode: role === 'student' ? current.studentCode : '',
+    }))
   }
 
   const changeMode = (nextMode) => {
@@ -44,9 +78,11 @@ export default function Auth() {
     setF((current) => ({
       ...current,
       ...profile,
+      affiliation: profile.organizationName ? 'organization' : 'individual',
       email: recovery?.email || current.email,
       password: '',
       confirm: '',
+      studentCode: profile.studentCode || '',
     }))
     setMode('signup')
     setRecovery(null)
@@ -60,6 +96,9 @@ export default function Auth() {
     try {
       if (mode === 'signup') {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
+        if (!f.affiliation) throw new Error('Please choose whether you are with an organization or signing up as an individual.')
+        if (f.affiliation === 'organization' && !f.organizationName.trim()) throw new Error('Please enter your organization name.')
+        if (f.affiliation === 'organization' && !['teacher', 'student'].includes(f.role)) throw new Error('Please choose Teacher or Student.')
         const user = await signUp(f)
         const admin = await ensureAdminAccess(user)
         nav(admin ? '/dashboard' : '/about?welcome=1')
@@ -124,21 +163,34 @@ export default function Auth() {
             <label className={LABEL}>Confirm password
               <input className={FIELD} required type="password" autoComplete="new-password" minLength={6} value={f.confirm} onChange={set('confirm')} />
             </label>
-            <label className={LABEL}>Which best describes you?
-              <select className={FIELD} value={f.role} onChange={set('role')}>
-                <option value="teacher">Teacher</option>
-                <option value="student">Student</option>
-                <option value="other">Other</option>
+
+            <label className={LABEL}>Are you with an organization or signing up individually?
+              <select className={SELECT} required value={f.affiliation} onChange={setAffiliation}>
+                <option value="">Choose one...</option>
+                <option value="organization">Organization (teacher/student)</option>
+                <option value="individual">Individual</option>
               </select>
             </label>
-            {(f.role === 'teacher' || f.role === 'student') && (
-              <label className={LABEL}>School / high school / organization name <span className="text-white/50">(required)</span>
-                <input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} placeholder="e.g. Lincoln Elementary School" />
-              </label>
+
+            {f.affiliation === 'organization' && (
+              <>
+                <label className={LABEL}>What organization are you with? <span className="text-white/50">(required)</span>
+                  <input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} placeholder="School, nonprofit, community group, etc." />
+                </label>
+
+                <label className={LABEL}>Are you a teacher or student?
+                  <select className={SELECT} required value={f.role} onChange={setOrganizationRole}>
+                    <option value="">Choose one...</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="student">Student</option>
+                  </select>
+                </label>
+              </>
             )}
-            {(f.role === 'teacher' || f.role === 'student') && (
+
+            {f.affiliation === 'organization' && (f.role === 'teacher' || f.role === 'student') && (
               <label className={LABEL}>{f.role === 'teacher' ? 'What grade level(s) do you teach?' : 'What grade level(s) are you in?'}
-                <select className={FIELD} value={f.gradeLevels} onChange={set('gradeLevels')}>
+                <select className={SELECT} value={f.gradeLevels} onChange={set('gradeLevels')}>
                   <option value="">Choose a grade range...</option>
                   <option value="K-2">Elementary (K–2)</option>
                   <option value="3-5">Elementary (3–5)</option>
@@ -148,8 +200,15 @@ export default function Auth() {
                 </select>
               </label>
             )}
+
+            {f.affiliation === 'organization' && f.role === 'student' && (
+              <label className={LABEL}>Have an organization or class code? <span className="text-white/50">(optional)</span>
+                <input className={FIELD} value={f.studentCode} onChange={set('studentCode')} placeholder="Enter code if you have one" />
+              </label>
+            )}
+
             <label className={LABEL}>How did you find TAYU?
-              <select className={FIELD} value={f.foundVia} onChange={set('foundVia')}>
+              <select className={SELECT} value={f.foundVia} onChange={set('foundVia')}>
                 <option value="">Choose one...</option>
                 <option value="teacher">A teacher</option>
                 <option value="friend">A friend or family</option>
