@@ -10,6 +10,7 @@ import GuestModeButton from '../components/GuestModeButton.jsx'
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
 const SELECT = 'mt-1 w-full rounded-xl border border-white/20 bg-white px-4 py-3 font-bold text-navy outline-none focus:border-teal'
 const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
+const REQUIRED = <span className="text-white/55">(required)</span>
 
 export default function Auth() {
   const [params] = useSearchParams()
@@ -53,6 +54,7 @@ export default function Auth() {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
         if (!f.affiliation) throw new Error('Choose Organization or Individual.')
         if (!f.gradeLevels) throw new Error('Please select a grade level.')
+        if (!f.foundVia) throw new Error('Please tell us how you found TAYU.')
         if (f.affiliation === 'organization' && !f.organizationName.trim()) throw new Error('Enter your organization name.')
         if (f.affiliation === 'organization' && !['teacher', 'student'].includes(f.role)) throw new Error('Choose Teacher or Student.')
         if (f.role === 'student' && !f.studentCode.trim()) throw new Error('Students joining an organization need their teacher’s class code.')
@@ -74,30 +76,30 @@ export default function Auth() {
     finally { setBusy(false) }
   }
 
-  const gradeLabel = f.role === 'teacher' ? 'Grades you teach' : f.role === 'student' ? 'Your grade level' : 'Your grade level'
+  const gradeLabel = f.role === 'teacher' ? 'Grades you teach' : 'Your grade level'
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
       <Link to="/" className="mb-4 flex items-center gap-3"><img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" /><span className="font-display text-2xl font-extrabold text-white">TAYU</span></Link>
       <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
         <h1 className="font-display text-2xl font-extrabold">{mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</h1>
-        <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'Teachers create a classroom. Students join with their teacher’s code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
+        <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'All questions are required. Teachers create a classroom, and students join with their teacher’s code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
         <GuestModeButton />
         <div className="mt-4 flex gap-1.5" role="tablist">{[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => <button key={tabMode} type="button" onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
 
-        <label className={LABEL}>Email {mode === 'signup' && <span className="text-white/50">(username)</span>}<input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} /></label>
-        {mode !== 'reset' && <label className={LABEL}>Password<input className={FIELD} required type="password" minLength={6} value={f.password} onChange={set('password')} /></label>}
+        <label className={LABEL}>Email {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} /></label>
+        {mode !== 'reset' && <label className={LABEL}>Password {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="password" minLength={6} value={f.password} onChange={set('password')} /></label>}
 
         {mode === 'signup' && <>
-          <label className={LABEL}>Confirm password<input className={FIELD} required type="password" minLength={6} value={f.confirm} onChange={set('confirm')} /></label>
-          <label className={LABEL}>Account type<select className={SELECT} required value={f.affiliation} onChange={setAffiliation}><option value="">Choose one...</option><option value="organization">Organization (teacher/student)</option><option value="individual">Individual</option></select></label>
+          <label className={LABEL}>Confirm password {REQUIRED}<input className={FIELD} required type="password" minLength={6} value={f.confirm} onChange={set('confirm')} /></label>
+          <label className={LABEL}>Account type {REQUIRED}<select className={SELECT} required value={f.affiliation} onChange={setAffiliation}><option value="">Choose one...</option><option value="organization">Organization (teacher/student)</option><option value="individual">Individual</option></select></label>
           {f.affiliation === 'organization' && <>
-            <label className={LABEL}>Organization name<input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} /></label>
-            <label className={LABEL}>Role<select className={SELECT} required value={f.role} onChange={setOrganizationRole}><option value="">Choose one...</option><option value="teacher">Teacher</option><option value="student">Student</option></select></label>
+            <label className={LABEL}>Organization name {REQUIRED}<input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} /></label>
+            <label className={LABEL}>Role {REQUIRED}<select className={SELECT} required value={f.role} onChange={setOrganizationRole}><option value="">Choose one...</option><option value="teacher">Teacher</option><option value="student">Student</option></select></label>
           </>}
-          {f.affiliation && <label className={LABEL}>{gradeLabel} <span className="text-white/50">(required)</span><select className={SELECT} required value={f.gradeLevels} onChange={set('gradeLevels')}><option value="">Choose...</option><option value="K-2">K–2</option><option value="3-5">3–5</option><option value="6-8">6–8</option><option value="9-12">9–12</option><option value="mixed">Mixed / multiple grades</option></select></label>}
-          {f.role === 'student' && <label className={LABEL}>Teacher’s class code <span className="text-white/50">(required)</span><input className={FIELD} required value={f.studentCode} onChange={set('studentCode')} placeholder="Example: ABC234" /></label>}
-          <label className={LABEL}>How did you find TAYU?<select className={SELECT} value={f.foundVia} onChange={set('foundVia')}><option value="">Choose one...</option><option value="teacher">A teacher</option><option value="friend">Friend or family</option><option value="school">School or district</option><option value="social">Social media</option><option value="search">Web search</option><option value="event">Event</option><option value="other">Other</option></select></label>
+          {f.affiliation && <label className={LABEL}>{gradeLabel} {REQUIRED}<select className={SELECT} required value={f.gradeLevels} onChange={set('gradeLevels')}><option value="">Choose...</option><option value="K-2">K–2</option><option value="3-5">3–5</option><option value="6-8">6–8</option><option value="9-12">9–12</option><option value="mixed">Mixed / multiple grades</option></select></label>}
+          {f.role === 'student' && <label className={LABEL}>Teacher’s class code {REQUIRED}<input className={FIELD} required value={f.studentCode} onChange={set('studentCode')} placeholder="Example: ABC234" /></label>}
+          <label className={LABEL}>How did you find TAYU? {REQUIRED}<select className={SELECT} required value={f.foundVia} onChange={set('foundVia')}><option value="">Choose one...</option><option value="teacher">A teacher</option><option value="friend">Friend or family</option><option value="school">School or district</option><option value="social">Social media</option><option value="search">Web search</option><option value="event">Event</option><option value="other">Other</option></select></label>
         </>}
 
         <div aria-live="polite">{err && <p className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-200">{err}</p>}{ok && <p className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}</div>
