@@ -1,6 +1,4 @@
-// Original TAYU procedural soundtrack. It intentionally uses no third-party
-// melodies or recordings. The sound is a quiet, casual mix of soft keys,
-// warm bass, brushed percussion, and a slightly brighter certificate groove.
+// Original TAYU procedural soundtrack. No third-party recordings are used.
 import { loadProfile, saveProfile } from './walletStore.js'
 
 const NORMAL_GAIN = 0.035
@@ -29,7 +27,8 @@ const MODES = {
 const savedMuted = loadProfile()?.muted
 const state = {
   started: false,
-  muted: savedMuted === undefined ? true : Boolean(savedMuted),
+  // Music is on by default for new players. Existing mute choices are respected.
+  muted: savedMuted === undefined ? false : Boolean(savedMuted),
   mode: 'loading',
   context: null,
   master: null,
@@ -40,7 +39,9 @@ const state = {
 }
 
 function emitChange() {
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('tayu-audio-changed', { detail: { muted: state.muted, mode: state.mode } }))
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tayu-audio-changed', { detail: { muted: state.muted, mode: state.mode } }))
+  }
 }
 
 function ensureContext() {
@@ -51,6 +52,9 @@ function ensureContext() {
   state.master = state.context.createGain()
   state.master.gain.value = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
   state.master.connect(state.context.destination)
+  state.context.addEventListener?.('statechange', () => {
+    if (state.context?.state === 'running' && !state.muted) startScheduler()
+  })
   return state.context
 }
 
@@ -96,7 +100,7 @@ function softHat(at) {
   const length = Math.max(1, Math.floor(ctx.sampleRate * 0.035))
   const buffer = ctx.createBuffer(1, length, ctx.sampleRate)
   const data = buffer.getChannelData(0)
-  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length)
+  for (let i = 0; i < length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / length)
   const source = ctx.createBufferSource()
   const filter = ctx.createBiquadFilter()
   const gain = ctx.createGain()
@@ -114,28 +118,23 @@ function scheduleStep(at) {
   const config = MODES[state.mode] || MODES.loading
   const beat = 60 / config.bpm
   const eighth = beat / 2
-  const step = state.step
-  const barStep = step % 8
-  const chordIndex = Math.floor(step / 8) % config.chords.length
-  const chord = config.chords[chordIndex]
-
+  const barStep = state.step % 8
+  const chord = config.chords[Math.floor(state.step / 8) % config.chords.length]
   if (barStep === 0) {
     chord.forEach((freq, index) => tone(freq, at, beat * 1.8, 0.055, index === 1 ? 'triangle' : 'sine', index * 2))
     tone(chord[0] / 2, at, beat * 1.2, 0.09, 'sine')
   }
   if (barStep === 0 || barStep === 4) softKick(at)
   if (barStep % 2 === 1) softHat(at)
-
   const note = config.melody[barStep]
   if (note) tone(note, at, eighth * 0.72, state.mode === 'party' ? 0.075 : 0.045, 'triangle')
-
   state.step += 1
   state.nextNoteAt += eighth
 }
 
 function scheduler() {
   const ctx = ensureContext()
-  if (!ctx) return
+  if (!ctx || ctx.state !== 'running') return
   while (state.nextNoteAt < ctx.currentTime + SCHEDULE_AHEAD_SECONDS) scheduleStep(state.nextNoteAt)
 }
 
@@ -147,35 +146,49 @@ function startScheduler() {
   scheduler()
 }
 
-function resume() {
+async function resume() {
   const ctx = ensureContext()
-  if (!ctx) return
-  ctx.resume?.().catch(() => {})
-  startScheduler()
+  if (!ctx) return false
+  try {
+    if (ctx.state !== 'running') await ctx.resume()
+    if (ctx.state === 'running') {
+      startScheduler()
+      return true
+    }
+  } catch {
+    armFirstGesture()
+  }
+  return false
 }
 
 function setMasterGain() {
   if (!state.master || !state.context) return
   const target = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
   state.master.gain.cancelScheduledValues(state.context.currentTime)
-  state.master.gain.linearRampToValueAtTime(target, state.context.currentTime + 0.35)
+  state.master.gain.linearRampToValueAtTime(target, state.context.currentTime + 0.15)
 }
 
 export function armFirstGesture() {
   if (state.gestureArmed || typeof window === 'undefined') return
   state.gestureArmed = true
-  const kick = () => {
+  const kick = async () => {
     state.gestureArmed = false
-    resume()
+    window.removeEventListener('pointerdown', kick, true)
+    window.removeEventListener('keydown', kick, true)
+    if (!state.muted) {
+      await resume()
+      setMasterGain()
+    }
   }
-  window.addEventListener('pointerdown', kick, { once: true, capture: true })
-  window.addEventListener('keydown', kick, { once: true, capture: true })
+  window.addEventListener('pointerdown', kick, { capture: true })
+  window.addEventListener('keydown', kick, { capture: true })
 }
 
 export function initAutoplay() {
   state.started = true
-  state.mode = 'loading'
+  if (!state.muted) resume()
   armFirstGesture()
+  setMasterGain()
   emitChange()
 }
 
@@ -185,18 +198,20 @@ export function startMusic(name = 'loading') {
   state.step = 0
   resume()
   setMasterGain()
+  armFirstGesture()
   emitChange()
 }
 
 export function crossfadeTo(name) {
   const next = name === 'town1' || name === 'town2' || name === 'town3' ? 'town' : (MODES[name] ? name : 'loading')
-  if (!state.started) state.started = true
+  state.started = true
   if (state.mode !== next) {
     state.mode = next
     state.step = 0
   }
   resume()
   setMasterGain()
+  armFirstGesture()
   emitChange()
 }
 
@@ -209,12 +224,11 @@ export function toggleMute() {
   saveProfile({ muted: state.muted })
   if (!state.muted) resume()
   setMasterGain()
+  armFirstGesture()
   emitChange()
   return state.muted
 }
 
-// Certificate-only behavior: intentionally starts the quiet celebration music.
-// The visible mute button remains available and can silence it immediately.
 export function celebrateWithMusic() {
   state.muted = false
   saveProfile({ muted: false })
