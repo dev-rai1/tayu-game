@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const PASSWORD_HASH = '6ee14ba73bd03864e1e997245afeacd832a23d24d6f3ac9f5e243fac8f3a3b8e'
+const PASSWORD_HASH = 'faef517dac0d52529db44ce91f07a860efebc208abcf4c8e8530e85fa300e512'
 const hashBytes = Uint8Array.from(PASSWORD_HASH.match(/../g).map((value) => Number.parseInt(value, 16)))
 
 const mocks = vi.hoisted(() => ({
