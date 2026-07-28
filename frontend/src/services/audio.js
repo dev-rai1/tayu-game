@@ -1,189 +1,226 @@
-// Music v3 (Round 5, Part B): ONE global AudioManager owns every track.
-// Three musical identities, all original TAYU compositions bundled with the
-// app (fully royalty-free):
-//   lobby ('loading')  - one playful loop for Welcome/About/builder
-//   game  ('town')     - a ROTATING PLAYLIST of same-vibe tracks, shuffled,
-//                        1.8s crossfades, never the same track twice in a row
-//   party ('party')    - the Money Guru celebration song (finale only)
-// B1: the mute toggle flips a single master flag that sets `.muted` on EVERY
-// registered Audio element instantly - landing page included. No orphans:
-// every element is created through el(), which registers it.
+// Original TAYU procedural soundtrack. It intentionally uses no third-party
+// melodies or recordings. The sound is a quiet, casual mix of soft keys,
+// warm bass, brushed percussion, and a slightly brighter certificate groove.
 import { loadProfile, saveProfile } from './walletStore.js'
 
-const TRACKS = {
-  loading: '/assets/music/loading_theme.wav',
-  town1: '/assets/music/town_theme.wav',
-  town2: '/assets/music/town_theme_2.wav',
-  town3: '/assets/music/town_theme_3.wav',
-  party: '/assets/music/money_song.wav',
-}
-const PLAYLIST = ['town1', 'town2', 'town3']
-// Keep music comfortably behind narration and gameplay sounds. HTMLAudioElement
-// volume is perceptual enough that 0.16 is substantially gentler than the old
-// 0.4 setting while still being easy to hear on laptop speakers.
-const BASE_VOL = 0.16
-const XFADE_MS = 1800
+const NORMAL_GAIN = 0.035
+const PARTY_GAIN = 0.065
+const LOOKAHEAD_MS = 100
+const SCHEDULE_AHEAD_SECONDS = 0.3
 
+const MODES = {
+  loading: {
+    bpm: 76,
+    chords: [[261.63, 329.63, 392], [220, 261.63, 329.63], [174.61, 220, 261.63], [196, 246.94, 293.66]],
+    melody: [659.25, null, 587.33, null, 523.25, null, 587.33, null],
+  },
+  town: {
+    bpm: 82,
+    chords: [[261.63, 329.63, 392], [293.66, 349.23, 440], [220, 261.63, 329.63], [246.94, 293.66, 369.99]],
+    melody: [659.25, 783.99, null, 698.46, 659.25, null, 587.33, null],
+  },
+  party: {
+    bpm: 94,
+    chords: [[261.63, 329.63, 392], [349.23, 440, 523.25], [293.66, 369.99, 440], [392, 493.88, 587.33]],
+    melody: [783.99, 880, 987.77, null, 880, 783.99, 698.46, 783.99],
+  },
+}
+
+const savedMuted = loadProfile()?.muted
 const state = {
   started: false,
-  muted: !!loadProfile()?.muted,
-  els: {}, // name -> HTMLAudioElement (the registry - ALL audio lives here)
-  current: null,
-  playlist: false, // true while the in-game rotation is active
-  order: [], // shuffled upcoming track names
-  fadeTimer: null,
+  muted: savedMuted === undefined ? true : Boolean(savedMuted),
+  mode: 'loading',
+  context: null,
+  master: null,
+  timer: null,
+  nextNoteAt: 0,
+  step: 0,
   gestureArmed: false,
 }
 
-function el(name) {
-  if (!state.els[name]) {
-    const a = new Audio(TRACKS[name])
-    a.loop = name === 'loading' || name === 'party' // playlist tracks hand off instead
-    a.volume = 0
-    a.muted = state.muted // B1: every new element inherits the master flag
-    // rotation: as a playlist track nears its end, crossfade into the next
-    a.addEventListener('timeupdate', () => {
-      if (!state.playlist || state.current !== name) return
-      if (a.duration && a.duration - a.currentTime < XFADE_MS / 1000 && !a._handoff) {
-        a._handoff = true
-        fadeBetween(name, nextInPlaylist(), XFADE_MS)
-      }
-    })
-    a.addEventListener('play', () => { a._handoff = false })
-    state.els[name] = a
+function emitChange() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('tayu-audio-changed', { detail: { muted: state.muted, mode: state.mode } }))
+}
+
+function ensureContext() {
+  if (state.context || typeof window === 'undefined') return state.context
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextClass) return null
+  state.context = new AudioContextClass()
+  state.master = state.context.createGain()
+  state.master.gain.value = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
+  state.master.connect(state.context.destination)
+  return state.context
+}
+
+function envelope(gain, at, peak, duration) {
+  gain.gain.setValueAtTime(0.0001, at)
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), at + 0.02)
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + duration)
+}
+
+function tone(freq, at, duration, peak = 0.16, type = 'sine', detune = 0) {
+  const ctx = ensureContext()
+  if (!ctx || !state.master) return
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.type = type
+  osc.frequency.setValueAtTime(freq, at)
+  osc.detune.setValueAtTime(detune, at)
+  envelope(gain, at, peak, duration)
+  osc.connect(gain)
+  gain.connect(state.master)
+  osc.start(at)
+  osc.stop(at + duration + 0.04)
+}
+
+function softKick(at) {
+  const ctx = ensureContext()
+  if (!ctx || !state.master) return
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(95, at)
+  osc.frequency.exponentialRampToValueAtTime(48, at + 0.12)
+  envelope(gain, at, 0.18, 0.16)
+  osc.connect(gain)
+  gain.connect(state.master)
+  osc.start(at)
+  osc.stop(at + 0.2)
+}
+
+function softHat(at) {
+  const ctx = ensureContext()
+  if (!ctx || !state.master) return
+  const length = Math.max(1, Math.floor(ctx.sampleRate * 0.035))
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length)
+  const source = ctx.createBufferSource()
+  const filter = ctx.createBiquadFilter()
+  const gain = ctx.createGain()
+  source.buffer = buffer
+  filter.type = 'highpass'
+  filter.frequency.value = 4200
+  envelope(gain, at, state.mode === 'party' ? 0.035 : 0.02, 0.04)
+  source.connect(filter)
+  filter.connect(gain)
+  gain.connect(state.master)
+  source.start(at)
+}
+
+function scheduleStep(at) {
+  const config = MODES[state.mode] || MODES.loading
+  const beat = 60 / config.bpm
+  const eighth = beat / 2
+  const step = state.step
+  const barStep = step % 8
+  const chordIndex = Math.floor(step / 8) % config.chords.length
+  const chord = config.chords[chordIndex]
+
+  if (barStep === 0) {
+    chord.forEach((freq, index) => tone(freq, at, beat * 1.8, 0.055, index === 1 ? 'triangle' : 'sine', index * 2))
+    tone(chord[0] / 2, at, beat * 1.2, 0.09, 'sine')
   }
-  return state.els[name]
+  if (barStep === 0 || barStep === 4) softKick(at)
+  if (barStep % 2 === 1) softHat(at)
+
+  const note = config.melody[barStep]
+  if (note) tone(note, at, eighth * 0.72, state.mode === 'party' ? 0.075 : 0.045, 'triangle')
+
+  state.step += 1
+  state.nextNoteAt += eighth
 }
 
-// Fisher-Yates over the playlist, re-dealt when it runs dry; the first card of
-// a fresh deal may never repeat the track that just finished.
-function nextInPlaylist() {
-  if (state.order.length === 0) {
-    const deck = [...PLAYLIST]
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0
-      ;[deck[i], deck[j]] = [deck[j], deck[i]]
-    }
-    if (deck[0] === state.current && deck.length > 1) [deck[0], deck[1]] = [deck[1], deck[0]]
-    state.order = deck
-  }
-  return state.order.shift()
+function scheduler() {
+  const ctx = ensureContext()
+  if (!ctx) return
+  while (state.nextNoteAt < ctx.currentTime + SCHEDULE_AHEAD_SECONDS) scheduleStep(state.nextNoteAt)
 }
 
-function tryPlay(a) {
-  const p = a.play()
-  if (p?.catch) p.catch(() => armGestureStart())
+function startScheduler() {
+  const ctx = ensureContext()
+  if (!ctx || state.timer) return
+  state.nextNoteAt = Math.max(ctx.currentTime + 0.05, state.nextNoteAt || 0)
+  state.timer = window.setInterval(scheduler, LOOKAHEAD_MS)
+  scheduler()
 }
 
-// B1: if autoplay is blocked, the FIRST gesture of any kind starts the music.
-const GESTURES = ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'wheel']
-function armGestureStart() {
-  if (state.gestureArmed) return
-  state.gestureArmed = true
-  const fire = () => {
-    for (const g of GESTURES) window.removeEventListener(g, fire)
-    state.gestureArmed = false
-    if (state.current) {
-      const a = el(state.current)
-      a.volume = BASE_VOL
-      tryPlay(a)
-    }
-  }
-  for (const g of GESTURES) window.addEventListener(g, fire, { passive: true })
+function resume() {
+  const ctx = ensureContext()
+  if (!ctx) return
+  ctx.resume?.().catch(() => {})
+  startScheduler()
 }
 
-// Honest autoplay attempt at site load (called from App mount). Muted players
-// still get the track rolling silently - unmuting resumes instantly.
-// v9 0.2: browsers block sound until the first user gesture - so the FIRST
-// pointer or key event anywhere unlocks audio and starts the current track
-// in that same handler. Music then persists across routes (the audio
-// elements live at module scope, never inside a component that unmounts).
-let gestureArmed = false
+function setMasterGain() {
+  if (!state.master || !state.context) return
+  const target = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
+  state.master.gain.cancelScheduledValues(state.context.currentTime)
+  state.master.gain.linearRampToValueAtTime(target, state.context.currentTime + 0.35)
+}
+
 export function armFirstGesture() {
-  if (gestureArmed || typeof window === 'undefined') return
-  gestureArmed = true
+  if (state.gestureArmed || typeof window === 'undefined') return
+  state.gestureArmed = true
   const kick = () => {
-    try {
-      if (state.muted) return
-      if (state.current) {
-        const a = state.els[state.current]
-        if (a && a.paused) a.play().catch(() => {})
-      } else {
-        startMusic(/^\/(world)/.test(window.location.pathname) ? 'town1' : 'loading')
-      }
-    } catch { /* audio unavailable */ }
+    state.gestureArmed = false
+    resume()
   }
   window.addEventListener('pointerdown', kick, { once: true, capture: true })
   window.addEventListener('keydown', kick, { once: true, capture: true })
 }
 
 export function initAutoplay() {
-  if (state.started) return
-  startMusic('loading')
+  state.started = true
+  state.mode = 'loading'
+  armFirstGesture()
+  emitChange()
 }
 
 export function startMusic(name = 'loading') {
   state.started = true
-  if (name === 'town') { state.playlist = true; name = nextInPlaylist() }
-  else if (name !== 'town1' && name !== 'town2' && name !== 'town3') state.playlist = false
-  state.current = name
-  const a = el(name)
-  a.volume = BASE_VOL
-  tryPlay(a)
+  state.mode = name === 'town1' || name === 'town2' || name === 'town3' ? 'town' : (MODES[name] ? name : 'loading')
+  state.step = 0
+  resume()
+  setMasterGain()
+  emitChange()
 }
 
-function fadeBetween(fromName, toName, ms) {
-  const from = fromName ? el(fromName) : null
-  const to = el(toName)
-  state.current = toName
-  to.volume = 0
-  if (!to.loop) to.currentTime = 0
-  tryPlay(to)
-  clearInterval(state.fadeTimer)
-  const steps = 24
-  let i = 0
-  state.fadeTimer = setInterval(() => {
-    i++
-    const p = i / steps
-    if (from) from.volume = Math.max(0, BASE_VOL * (1 - p))
-    to.volume = Math.min(BASE_VOL, BASE_VOL * p)
-    if (i >= steps) {
-      clearInterval(state.fadeTimer)
-      if (from && from !== to) from.pause()
-    }
-  }, ms / steps)
-}
-
-// Cross-fade to another musical identity ('loading' | 'town' | 'party').
-export function crossfadeTo(name, ms = 1500) {
-  if (!state.started) { startMusic(name); return }
-  if (name === 'town') {
-    if (state.playlist) return // already rotating
-    state.playlist = true
-    fadeBetween(state.current, nextInPlaylist(), ms)
-    return
+export function crossfadeTo(name) {
+  const next = name === 'town1' || name === 'town2' || name === 'town3' ? 'town' : (MODES[name] ? name : 'loading')
+  if (!state.started) state.started = true
+  if (state.mode !== next) {
+    state.mode = next
+    state.step = 0
   }
-  state.playlist = false
-  if (state.current === name) return
-  fadeBetween(state.current, name, ms)
+  resume()
+  setMasterGain()
+  emitChange()
 }
 
-export function isMuted() { return state.muted }
-
-if (import.meta.env.DEV && typeof window !== 'undefined') {
-  window.__tayuAudio = state // debug handle: inspect els/current/muted in dev
+export function isMuted() {
+  return state.muted
 }
 
-// THE master switch (B1): flips `.muted` on every registered element at once.
-// Playback keeps rolling silently, so unmute is instant, on any screen.
 export function toggleMute() {
   state.muted = !state.muted
   saveProfile({ muted: state.muted })
-  for (const el2 of Object.values(state.els)) el2.muted = state.muted
-  if (!state.muted && state.started && state.current) {
-    const cur = el(state.current)
-    cur.volume = BASE_VOL
-    tryPlay(cur) // in case the track never got a gesture to start
-  }
+  if (!state.muted) resume()
+  setMasterGain()
+  emitChange()
   return state.muted
 }
+
+// Certificate-only behavior: intentionally starts the quiet celebration music.
+// The visible mute button remains available and can silence it immediately.
+export function celebrateWithMusic() {
+  state.muted = false
+  saveProfile({ muted: false })
+  crossfadeTo('party')
+  emitChange()
+  return state.muted
+}
+
+if (import.meta.env.DEV && typeof window !== 'undefined') window.__tayuAudio = state
