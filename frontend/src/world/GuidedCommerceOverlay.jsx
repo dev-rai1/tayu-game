@@ -1,13 +1,8 @@
 import { useGame } from './store.js'
-import { useFeedbackCoach } from './feedbackCoach.js'
 import { STORE_ITEMS } from './config.js'
-import {
-  BUNDLES, QUALITY, SIGNS,
-  estimateDemandSignal, findProfitablePlan,
-} from '../scenarios/lemonade.js'
+import { estimateDemandSignal } from '../scenarios/lemonade.js'
 
 const fmt = (value) => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })
-const money = (value) => `$${Number(value || 0).toFixed(2)}`
 
 function MarketClickShop() {
   const week = useGame((s) => s.week)
@@ -41,7 +36,7 @@ function MarketClickShop() {
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">TAYU Market — click to buy</div>
           <h2 className="mt-1 font-display text-xl font-extrabold">Pick a healthy food and drink</h2>
-          <p className="mt-1 text-xs font-semibold leading-snug text-white/75">No extra E press is needed. Click a product once to put it in your basket.</p>
+          <p className="mt-1 text-xs font-semibold leading-snug text-white/75">Click a product once to put it in your basket.</p>
         </div>
         <div className="shrink-0 rounded-2xl bg-white/10 px-3 py-2 text-center">
           <div className="text-[10px] font-extrabold text-white/60">SPEND LEFT</div>
@@ -92,33 +87,6 @@ function MarketClickShop() {
   )
 }
 
-function PlanCheck({ label, current, target }) {
-  const matches = current === target
-  return (
-    <div className={`rounded-xl px-2 py-1.5 text-xs font-extrabold ${matches ? 'bg-teal/20 text-[#087a5e]' : 'bg-sun/25 text-navy'}`}>
-      <span aria-hidden>{matches ? '✓' : '→'}</span> {label}: {target}
-    </div>
-  )
-}
-
-function savedPlan(feedback, event) {
-  const saved = feedback?.recommended
-  if (!saved || (saved.eventId && saved.eventId !== event?.id)) return null
-  const bundle = BUNDLES.find((item) => item.id === saved.bundleId)
-  const quality = QUALITY.find((item) => item.id === saved.qualityId)
-  const sign = SIGNS.find((item) => item.id === saved.signId)
-  if (!bundle || !quality || !sign) return null
-  return {
-    price: saved.price,
-    hours: saved.hours,
-    bundle,
-    quality,
-    sign,
-    wageRate: saved.wageRate,
-    sim: { keep: saved.expectedKeep, sold: saved.expectedSold },
-  }
-}
-
 function LemonadeSupplyDemandCoach() {
   const week = useGame((s) => s.week)
   const objective = useGame((s) => s.objective)
@@ -131,142 +99,101 @@ function LemonadeSupplyDemandCoach() {
   const sign = useGame((s) => s.lemSign)
   const wageRate = useGame((s) => s.lemWageRate)
   const event = useGame((s) => s.lemEvent)
-  const features = useGame((s) => s.lemFeatures)
-  const save = useGame((s) => s.allocations.save)
+  const result = useGame((s) => s.lemResult)
   const weekComplete = useGame((s) => s.weekComplete)
   const openSupplies = useGame((s) => s.openSupplies)
-  const chooseBundle = useGame((s) => s.chooseBundle)
   const openTemplate = useGame((s) => s.openTemplate)
-  const setPrice = useGame((s) => s.setLemPrice)
-  const setHours = useGame((s) => s.setLemHours)
-  const setQuality = useGame((s) => s.setLemQuality)
-  const setSign = useGame((s) => s.setLemSign)
-  const setWage = useGame((s) => s.setLemWageRate)
-  const feedback = useFeedbackCoach((s) => s.feedbackByModule.lemonade)
 
   const activePhase = ['toMarket', 'supplies', 'toStand2', 'template'].includes(phase)
   if (week !== 2 || objective !== 'lemonade' || !activePhase || weekComplete) return null
 
-  // A previous result owns the exact plan until the next sale. This is the same
-  // plan generated on the end card. The first round uses a live affordable plan.
-  const fullBudget = save + (bundle?.cost || 0)
-  const calculated = findProfitablePlan(
-    features,
-    event,
-    fullBudget,
-    bundle ? { bundleId: bundle.id } : {},
-  )
-  const plan = savedPlan(feedback, event) || calculated
-  const signal = estimateDemandSignal(plan.hours, event, plan.sign)
-  const supply = bundle?.cups ?? plan.bundle.cups
-  const pressure = signal.potential > supply + 3
-    ? `Demand may be higher than ${supply} cups. Follow the pinned batch and price before selling.`
-    : supply > signal.potential + 3
-      ? `${supply} cups may exceed demand. Follow the pinned plan to reduce leftovers.`
-      : `${supply} cups is close to the expected customer level.`
+  const signal = estimateDemandSignal(hours, event, sign)
+  const totalCost = bundle
+    ? bundle.cost + (quality?.addPerCup || 0) * bundle.cups + (sign?.cost || 0) + wageRate * hours
+    : 0
+  const costPerCup = bundle ? totalCost / Math.max(1, bundle.cups) : null
 
-  const applyPlan = () => {
-    setHours(plan.hours)
-    setQuality(plan.quality.id)
-    setSign(plan.sign.id)
-    setWage(plan.wageRate)
-    setPrice(plan.price)
-  }
+  const previousHint = !result
+    ? 'Use the demand clue, then make your own plan.'
+    : result.keep < 0
+      ? 'Last round lost money. Lower costs or improve sales.'
+      : result.leftover >= 2
+        ? 'You had leftovers. Try a smaller batch or a slightly lower price.'
+        : result.missed >= 2
+          ? 'You sold out early. Try a larger batch or stay open longer.'
+          : result.keep <= 2
+            ? 'Profit was small. Raise the price a little or lower a cost.'
+            : 'Your last round made a profit. Test one small change at a time.'
 
-  const title = feedback?.title || 'First round: use this guided profitable plan'
-  const diagnosis = feedback?.diagnosis
-    || 'There is no previous round yet. Penny calculated a complete starter combination so you can learn the process without guessing.'
-  const action = feedback?.action
-    || `Start with price ${money(plan.price)}, ${plan.bundle.label}, ${plan.hours} hours, ${plan.quality.label}, and ${plan.sign.label}.`
-  const goal = feedback?.goal
-    || `Projected result: sell ${plan.sim.sold} cups and keep ${money(plan.sim.keep)} profit after tax.`
+  const supplyHint = !bundle
+    ? signal.label === 'Low'
+      ? 'Demand looks low, so start with a smaller batch.'
+      : signal.label === 'High' || signal.label === 'Very high'
+        ? 'Demand looks busy, so a larger batch may make sense if you can afford it.'
+        : 'Demand looks normal. Choose a batch that fits your budget without making too much.'
+    : bundle.cups < signal.potential - 3
+      ? 'Your batch may be too small for this demand. Consider going one size larger.'
+      : bundle.cups > signal.potential + 3
+        ? 'Your batch may leave extras. Consider going one size smaller.'
+        : 'Your batch looks close to the demand level.'
 
-  const priceInstruction = price === null
-    ? `Set the price to ${money(plan.price)}.`
-    : price > plan.price + 0.01
-      ? `Lower the price by ${money(price - plan.price)} to ${money(plan.price)}.`
-      : price < plan.price - 0.01
-        ? `Raise the price by ${money(plan.price - price)} to ${money(plan.price)}.`
-        : `Price is correct at ${money(plan.price)}.`
+  const priceHint = !bundle
+    ? 'Choose a batch before setting the rest of your plan.'
+    : price === null
+      ? 'Set a price that covers the cost per cup but still feels affordable.'
+      : price <= costPerCup + 0.05
+        ? 'Your price may be too low to leave profit. Raise it a little.'
+        : signal.label === 'Low' && price >= 2
+          ? 'Demand is low, so a high price may reduce sales. Lower it a little.'
+          : 'Your price is above cost. Sell and use the result to adjust.'
 
   return (
-    <aside className="pointer-events-auto fixed right-3 top-24 z-[475] max-h-[calc(100vh-7rem)] w-[min(94vw,28rem)] overflow-y-auto rounded-3xl border-2 border-sun bg-white p-4 text-navy shadow-2xl">
+    <aside className="pointer-events-auto fixed right-3 top-24 z-[475] max-h-[calc(100vh-7rem)] w-[min(94vw,25rem)] overflow-y-auto rounded-3xl border-2 border-sun bg-white p-4 text-navy shadow-2xl">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Lemonade profit coach · Round {round}</div>
-          <h2 className="mt-1 font-display text-lg font-extrabold">{title}</h2>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Lemonade helper · Round {round}</div>
+          <h2 className="mt-1 font-display text-lg font-extrabold">{previousHint}</h2>
         </div>
-        <span className="rounded-full bg-sun/30 px-3 py-1 text-xs font-extrabold">{signal.label} demand</span>
+        <span className="shrink-0 rounded-full bg-sun/30 px-3 py-1 text-xs font-extrabold">{signal.label} demand</span>
       </div>
 
       <div className="mt-3 rounded-2xl bg-navy p-3 text-white">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">What happened last round</div>
-        <p className="mt-1 text-sm font-bold leading-snug">{diagnosis}</p>
+        <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">Batch</div>
+        <p className="mt-1 text-sm font-bold leading-snug">{supplyHint}</p>
       </div>
 
       <div className="mt-2 rounded-2xl bg-sun p-3 text-navy">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide">Change this now — pinned</div>
-        <p className="mt-1 text-sm font-extrabold leading-snug">{action}</p>
-        <p className="mt-2 rounded-xl bg-white/55 px-3 py-2 text-sm font-extrabold">{priceInstruction}</p>
+        <div className="text-[10px] font-extrabold uppercase tracking-wide">Price</div>
+        <p className="mt-1 text-sm font-extrabold leading-snug">{priceHint}</p>
       </div>
 
-      <div className="mt-2 rounded-2xl border-2 border-teal/40 bg-teal/10 p-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide text-[#087a5e]">Exact plan for this week's news</div>
-        <div className="mt-2 grid grid-cols-2 gap-1.5">
-          <PlanCheck label="Price" current={price === null ? 'Not set' : money(price)} target={money(plan.price)} />
-          <PlanCheck label="Batch" current={bundle?.label || 'Not chosen'} target={plan.bundle.label} />
-          <PlanCheck label="Hours" current={`${hours}`} target={`${plan.hours}`} />
-          <PlanCheck label="Recipe" current={quality?.label} target={plan.quality.label} />
-          <PlanCheck label="Promotion" current={sign?.label} target={plan.sign.label} />
-          <PlanCheck label="Your pay" current={money(wageRate)} target={money(plan.wageRate)} />
-        </div>
-        <p className="mt-2 text-sm font-extrabold text-[#087a5e]">{goal}</p>
-      </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <div className="rounded-2xl bg-electric/10 p-3">
-          <div className="text-[10px] font-extrabold uppercase text-electric">Expected demand</div>
-          <div className="mt-1 text-lg font-extrabold">About {signal.potential} passers-by</div>
-        </div>
-        <div className="rounded-2xl bg-navy/5 p-3">
-          <div className="text-[10px] font-extrabold uppercase text-navy/60">Supply</div>
-          <div className="mt-1 text-lg font-extrabold">{bundle ? `${bundle.cups} cups` : `${plan.bundle.cups} cups recommended`}</div>
-        </div>
-      </div>
-      <p className="mt-2 rounded-2xl bg-sun/20 px-3 py-2 text-xs font-bold leading-snug">{pressure}</p>
+      <p className="mt-2 rounded-2xl bg-teal/10 px-3 py-2 text-xs font-bold leading-snug text-[#087a5e]">
+        Keep it simple: change one or two choices, sell, and learn from the result.
+      </p>
 
       {phase === 'toMarket' && (
         <button type="button" onClick={openSupplies} className="mt-3 min-h-[54px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95">
-          Step 1: Open the supply shelf
+          Open the supply shelf
         </button>
       )}
 
       {phase === 'supplies' && !bundle && (
-        <button
-          type="button"
-          disabled={save < plan.bundle.cost}
-          onClick={() => chooseBundle(plan.bundle.id)}
-          className="mt-3 min-h-[54px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95 disabled:opacity-40"
-        >
-          Choose guided batch: {plan.bundle.label} · ${plan.bundle.cost}
-        </button>
+        <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
+          Choose a batch that fits demand and your budget.
+        </div>
       )}
 
       {phase === 'toStand2' && (
         <button type="button" onClick={openTemplate} className="mt-3 min-h-[54px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95">
-          Step 2: Open the planning board
+          Open the planning board
         </button>
       )}
 
       {phase === 'template' && bundle && (
-        <button type="button" onClick={applyPlan} className="mt-3 min-h-[58px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95">
-          Apply the exact profitable settings
-        </button>
+        <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
+          Adjust your choices on the board, then start selling.
+        </div>
       )}
-
-      <p className="mt-2 text-center text-[11px] font-extrabold text-navy/55">
-        This coach cannot be dismissed. It updates only after the next selling result.
-      </p>
     </aside>
   )
 }
