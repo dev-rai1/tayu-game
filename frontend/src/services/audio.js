@@ -1,8 +1,15 @@
 // Original TAYU procedural soundtrack. No third-party recordings are used.
+//
+// Browser audio is intentionally unlocked from a real pointer/key gesture. The
+// context is primed even while music is muted so the certificate can later turn
+// celebration music on without being blocked by autoplay rules.
 import { loadProfile, saveProfile } from './walletStore.js'
 
-const NORMAL_GAIN = 0.035
-const PARTY_GAIN = 0.065
+// The previous 0.035 master value was multiplied by each instrument envelope,
+// making the final signal nearly inaudible. These values remain gentle, but are
+// high enough to be heard clearly on normal laptop and tablet speakers.
+const NORMAL_GAIN = 0.18
+const PARTY_GAIN = 0.26
 const LOOKAHEAD_MS = 100
 const SCHEDULE_AHEAD_SECONDS = 0.3
 
@@ -27,11 +34,12 @@ const MODES = {
 const savedMuted = loadProfile()?.muted
 const state = {
   started: false,
-  // Music is on by default for new players. Existing mute choices are respected.
-  muted: savedMuted === undefined ? false : Boolean(savedMuted),
+  // New players start with music off. A player's explicit saved choice remains.
+  muted: savedMuted === undefined ? true : Boolean(savedMuted),
   mode: 'loading',
   context: null,
   master: null,
+  compressor: null,
   timer: null,
   nextNoteAt: 0,
   step: 0,
@@ -40,20 +48,44 @@ const state = {
 
 function emitChange() {
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('tayu-audio-changed', { detail: { muted: state.muted, mode: state.mode } }))
+    window.dispatchEvent(new CustomEvent('tayu-audio-changed', {
+      detail: { muted: state.muted, mode: state.mode, running: state.context?.state === 'running' },
+    }))
   }
+}
+
+function targetGain() {
+  if (state.muted) return 0
+  return state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN
 }
 
 function ensureContext() {
   if (state.context || typeof window === 'undefined') return state.context
   const AudioContextClass = window.AudioContext || window.webkitAudioContext
   if (!AudioContextClass) return null
+
   state.context = new AudioContextClass()
   state.master = state.context.createGain()
-  state.master.gain.value = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
-  state.master.connect(state.context.destination)
+  state.compressor = state.context.createDynamicsCompressor()
+
+  // Prevent stacked notes from becoming harsh while keeping the quiet mix clear.
+  state.compressor.threshold.value = -24
+  state.compressor.knee.value = 24
+  state.compressor.ratio.value = 5
+  state.compressor.attack.value = 0.005
+  state.compressor.release.value = 0.25
+
+  state.master.gain.value = 0
+  state.master.connect(state.compressor)
+  state.compressor.connect(state.context.destination)
+  state.nextNoteAt = state.context.currentTime + 0.05
+
   state.context.addEventListener?.('statechange', () => {
-    if (state.context?.state === 'running' && !state.muted) startScheduler()
+    if (state.context?.state === 'running') {
+      startScheduler()
+      setMasterGain()
+    }
+    emitChange()
   })
   return state.context
 }
@@ -135,6 +167,12 @@ function scheduleStep(at) {
 function scheduler() {
   const ctx = ensureContext()
   if (!ctx || ctx.state !== 'running') return
+  if (state.muted) {
+    // Do not create silent oscillator nodes indefinitely. Reset the clock so
+    // unmuting starts from the next beat instead of scheduling a large backlog.
+    state.nextNoteAt = ctx.currentTime + 0.05
+    return
+  }
   while (state.nextNoteAt < ctx.currentTime + SCHEDULE_AHEAD_SECONDS) scheduleStep(state.nextNoteAt)
 }
 
@@ -146,49 +184,64 @@ function startScheduler() {
   scheduler()
 }
 
-async function resume() {
+function setMasterGain(immediate = false) {
+  if (!state.master || !state.context) return
+  const now = state.context.currentTime
+  const gain = state.master.gain
+  gain.cancelScheduledValues(now)
+  gain.setValueAtTime(gain.value, now)
+  if (immediate) gain.setValueAtTime(targetGain(), now)
+  else gain.linearRampToValueAtTime(targetGain(), now + 0.12)
+}
+
+function playOnCue() {
+  const ctx = state.context
+  if (!ctx || ctx.state !== 'running' || state.muted) return
+  const at = ctx.currentTime + 0.03
+  tone(523.25, at, 0.18, 0.035, 'sine')
+  tone(659.25, at + 0.08, 0.22, 0.03, 'triangle')
+}
+
+async function resumeAudio({ cue = false } = {}) {
   const ctx = ensureContext()
   if (!ctx) return false
   try {
     if (ctx.state !== 'running') await ctx.resume()
     if (ctx.state === 'running') {
       startScheduler()
+      setMasterGain()
+      if (cue) playOnCue()
+      emitChange()
       return true
     }
   } catch {
-    armFirstGesture()
+    // A browser may reject a non-gesture resume. The next pointer/key event will
+    // retry from inside the user gesture.
   }
+  armFirstGesture()
+  emitChange()
   return false
-}
-
-function setMasterGain() {
-  if (!state.master || !state.context) return
-  const target = state.muted ? 0 : (state.mode === 'party' ? PARTY_GAIN : NORMAL_GAIN)
-  state.master.gain.cancelScheduledValues(state.context.currentTime)
-  state.master.gain.linearRampToValueAtTime(target, state.context.currentTime + 0.15)
 }
 
 export function armFirstGesture() {
   if (state.gestureArmed || typeof window === 'undefined') return
   state.gestureArmed = true
+  const gestures = ['pointerdown', 'keydown', 'touchstart']
   const kick = async () => {
+    gestures.forEach((eventName) => window.removeEventListener(eventName, kick, true))
     state.gestureArmed = false
-    window.removeEventListener('pointerdown', kick, true)
-    window.removeEventListener('keydown', kick, true)
-    if (!state.muted) {
-      await resume()
-      setMasterGain()
-    }
+    // Prime the AudioContext even while muted. This is what lets the certificate
+    // safely turn celebration music on later without requiring an extra click.
+    const running = await resumeAudio()
+    if (!running) armFirstGesture()
   }
-  window.addEventListener('pointerdown', kick, { capture: true })
-  window.addEventListener('keydown', kick, { capture: true })
+  gestures.forEach((eventName) => window.addEventListener(eventName, kick, { capture: true, passive: eventName !== 'keydown' }))
 }
 
 export function initAutoplay() {
   state.started = true
-  if (!state.muted) resume()
+  // Do not create a suspended context during page load. Wait for a real gesture.
   armFirstGesture()
-  setMasterGain()
   emitChange()
 }
 
@@ -196,7 +249,8 @@ export function startMusic(name = 'loading') {
   state.started = true
   state.mode = name === 'town1' || name === 'town2' || name === 'town3' ? 'town' : (MODES[name] ? name : 'loading')
   state.step = 0
-  resume()
+  state.nextNoteAt = state.context ? state.context.currentTime + 0.05 : 0
+  resumeAudio()
   setMasterGain()
   armFirstGesture()
   emitChange()
@@ -208,8 +262,9 @@ export function crossfadeTo(name) {
   if (state.mode !== next) {
     state.mode = next
     state.step = 0
+    state.nextNoteAt = state.context ? state.context.currentTime + 0.05 : 0
   }
-  resume()
+  resumeAudio()
   setMasterGain()
   armFirstGesture()
   emitChange()
@@ -222,8 +277,12 @@ export function isMuted() {
 export function toggleMute() {
   state.muted = !state.muted
   saveProfile({ muted: state.muted })
-  if (!state.muted) resume()
-  setMasterGain()
+  if (state.muted) {
+    setMasterGain()
+  } else {
+    state.nextNoteAt = state.context ? state.context.currentTime + 0.05 : 0
+    resumeAudio({ cue: true }).then(() => setMasterGain())
+  }
   armFirstGesture()
   emitChange()
   return state.muted
@@ -231,8 +290,13 @@ export function toggleMute() {
 
 export function celebrateWithMusic() {
   state.muted = false
+  state.mode = 'party'
+  state.started = true
+  state.step = 0
+  state.nextNoteAt = state.context ? state.context.currentTime + 0.05 : 0
   saveProfile({ muted: false })
-  crossfadeTo('party')
+  resumeAudio({ cue: true }).then(() => setMasterGain())
+  armFirstGesture()
   emitChange()
   return state.muted
 }
