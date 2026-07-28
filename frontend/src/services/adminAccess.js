@@ -5,7 +5,7 @@ import { prepareFirebaseAuth } from './firebase.js'
 const SESSION_KEY = 'tayu-session-v1'
 const DASHBOARD_PASSWORD_HASH = 'faef517dac0d52529db44ce91f07a860efebc208abcf4c8e8530e85fa300e512'
 
-export const DASHBOARD_VIEWER_EMAIL = 'dashboard.viewer.v2@tayufinance.app'
+export const DASHBOARD_VIEWER_EMAIL = 'dashboard.viewer.v3@tayufinance.app'
 
 export const ADMIN_EMAILS = Object.freeze([
   'tayu.finance@gmail.com',
@@ -25,11 +25,7 @@ export function isDashboardViewerEmail(email) {
 }
 
 function readSession() {
-  try {
-    return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null')
-  } catch {
-    return null
-  }
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null') } catch { return null }
 }
 
 function saveSession(user) {
@@ -69,10 +65,9 @@ async function saveDashboardViewer(firebase, firebaseUser) {
 }
 
 export async function openDashboardWithPassword(password) {
-  if (!(await isDashboardPassword(password))) throw new Error('Incorrect dashboard password.')
-
+  if (!(await isDashboardPassword(password))) throw new Error('Incorrect dashboard password. Use tayuadmin9587 exactly.')
   const firebase = await prepareFirebaseAuth()
-  if (!firebase) throw new Error('Dashboard access is temporarily unavailable. Please refresh and try again.')
+  if (!firebase) throw new Error('Dashboard access is temporarily unavailable. Refresh and try again.')
 
   let credential
   try {
@@ -80,15 +75,14 @@ export async function openDashboardWithPassword(password) {
   } catch (error) {
     if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error?.code)) throw error
     try {
-      // The first successful use initializes the dedicated, read-only Firebase viewer.
-      // The actual password is never stored in the public source code.
       credential = await createUserWithEmailAndPassword(firebase.auth, DASHBOARD_VIEWER_EMAIL, password)
     } catch (createError) {
-      if (createError?.code === 'auth/email-already-in-use') throw new Error('Incorrect dashboard password.')
+      if (createError?.code === 'auth/email-already-in-use') {
+        throw new Error('The dashboard viewer account is out of sync. Refresh once and enter tayuadmin9587 again.')
+      }
       throw createError
     }
   }
-
   return saveDashboardViewer(firebase, credential.user)
 }
 
@@ -102,12 +96,10 @@ export async function ensureAdminAccess(user = null) {
     saveSession(promoted)
     return promoted
   }
-
   if (!isAdminEmail(email)) return null
 
   const promoted = { ...candidate, email, role: 'admin' }
   saveSession(promoted)
-
   try {
     const firebase = await prepareFirebaseAuth()
     const uid = promoted.id || firebase?.auth?.currentUser?.uid
@@ -118,10 +110,6 @@ export async function ensureAdminAccess(user = null) {
         lastActiveAt: new Date().toISOString(),
       }, { merge: true })
     }
-  } catch {
-    // The allowlisted Firebase rules still permit dashboard reads. Profile repair
-    // can retry on the next login without blocking the admin from continuing.
-  }
-
+  } catch { /* profile repair can retry later */ }
   return promoted
 }

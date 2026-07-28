@@ -8,13 +8,15 @@ import { usesTouchControls } from '../world/controlMode.js'
 import { useGame } from '../world/store.js'
 import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
+import { setUsageModule } from '../services/usageAnalytics.js'
 import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 
-// Full-screen 3D world page (Module 1, Week 1).
+const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
+
 export default function World() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
@@ -22,7 +24,13 @@ export default function World() {
   const [welcome, setWelcome] = useState(true)
   const initWorld = useGame((s) => s.initWorld)
   const enterParty = useGame((s) => s.enterParty)
+  const week = useGame((s) => s.week)
   const [use3D] = useState(hasWebGL)
+
+  useEffect(() => {
+    setUsageModule(MODULE_BY_WEEK[week] || '').catch(() => {})
+    return () => { setUsageModule('').catch(() => {}) }
+  }, [week])
 
   useEffect(() => {
     if (enterParty) {
@@ -31,8 +39,6 @@ export default function World() {
     }
   }, [enterParty, navigate])
 
-  // No name in memory? Repair it from the saved profile (B2: Continue must
-  // remember the player) - only send to the creator if no profile exists at all.
   useEffect(() => {
     if (state.player.name) return
     const prof = loadProfile()
@@ -45,24 +51,21 @@ export default function World() {
   }, [state.player.name, navigate, dispatch])
 
   useEffect(() => {
-    // resumes a saved Week 2 (persistent wallet), else starts Week 1 fresh
     initWorld()
-    // R12 Part 4: a module picked on /modules jumps straight in
     const jump = localStorage.getItem('tayu-jump-module')
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
       setTimeout(() => { try { useGame.getState().adminJumpModule(Number(jump)) } catch (e) { console.error(e) } }, 400)
     }
-    crossfadeTo('town') // F2: loading theme fades into the town theme
+    crossfadeTo('town')
     const t1 = setTimeout(() => setFaded(true), 60)
     return () => clearTimeout(t1)
   }, [initWorld])
 
   const onContinue = () => {
     const g = useGame.getState()
-    if (g.week === 1) { g.startWeek2(); return } // Week 1 → Week 2 (lemonade)
-    if (g.week === 2) { g.startBudget(); return } // Week 2 → Budget Town (Round 8 order)
-    // Part J: all stages complete - the mystery house unlocks, the player stays
+    if (g.week === 1) { g.startWeek2(); return }
+    if (g.week === 2) { g.startBudget(); return }
     dispatch({ type: 'COMPLETE_MODULE1', allocation: g.allocations, badge: 'Week 3 Complete' })
     g.unlockParty()
   }
@@ -75,8 +78,6 @@ export default function World() {
       <PersistentImprovementCoach />
       <GuidedCommerceOverlay />
       {use3D && usesTouchControls && <MobileControls />}
-
-      {/* Welcome instructions wait for the player instead of disappearing on a timer. */}
       {welcome && (
         <div className="pointer-events-auto absolute inset-0 z-[520] flex items-center justify-center bg-navy/35 p-4 backdrop-blur-sm">
           <div role="dialog" aria-modal="true" aria-labelledby="world-welcome-title" className="w-full max-w-md rounded-3xl border-2 border-teal bg-navy/95 px-6 py-5 text-center text-white shadow-2xl">
@@ -87,18 +88,11 @@ export default function World() {
                 ? <><b className="text-sun">Follow the glowing arrows.</b> Each stop unlocks the next part of your money adventure.</>
                 : <><b className="text-sun">Use the step buttons.</b> They show you exactly where to go next.</>}
             </p>
-            <button type="button" onClick={() => setWelcome(false)} className="btn-primary mt-5 min-h-[56px] w-full text-lg">
-              Start exploring
-            </button>
+            <button type="button" onClick={() => setWelcome(false)} className="btn-primary mt-5 min-h-[56px] w-full text-lg">Start exploring</button>
           </div>
         </div>
       )}
-
-      {/* spawn fade-in */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000"
-        style={{ opacity: faded ? 0 : 1 }}
-      />
+      <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
     </div>
   )
 }
