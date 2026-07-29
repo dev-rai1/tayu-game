@@ -1,3 +1,5 @@
+import { loadProfile, saveProfile } from '../services/walletStore.js'
+
 export const GRADE_PATHS = [
   {
     id: 'early-elementary',
@@ -40,6 +42,22 @@ const BADGES_BY_MODULE = {
   5: 'garden',
 }
 
+function normalizeModules(modules) {
+  return [...new Set((modules || []).map(Number).filter((number) => number >= 1 && number <= 5))].sort((a, b) => a - b)
+}
+
+export function normalizeLearningPath(path) {
+  if (!path) return null
+  const modules = normalizeModules(path.modules)
+  if (!modules.length) return null
+  return {
+    id: String(path.id || 'custom-path'),
+    label: String(path.label || 'Assigned path'),
+    title: String(path.title || 'Assigned Learning Path'),
+    modules,
+  }
+}
+
 export function getGradePath(id) {
   return GRADE_PATHS.find((path) => path.id === id) || null
 }
@@ -49,7 +67,7 @@ export function moduleNumbersForPath(id) {
 }
 
 export function requiredModules({ pathId, classroomModules, teacherPreview = false, plain = true }) {
-  if (teacherPreview || !plain) return [...new Set(classroomModules || [])].sort((a, b) => a - b)
+  if (teacherPreview || !plain) return normalizeModules(classroomModules)
   return moduleNumbersForPath(pathId)
 }
 
@@ -59,7 +77,7 @@ export function completedRequiredModules(required, completed) {
 }
 
 export function badgesForModules(modules) {
-  return (modules || []).map((moduleNumber) => BADGES_BY_MODULE[moduleNumber]).filter(Boolean)
+  return normalizeModules(modules).map((moduleNumber) => BADGES_BY_MODULE[moduleNumber]).filter(Boolean)
 }
 
 export function isLearningPathComplete(modules, badges) {
@@ -68,17 +86,35 @@ export function isLearningPathComplete(modules, badges) {
   return requiredBadges.length > 0 && requiredBadges.every((badge) => badgeSet.has(badge))
 }
 
+// Some modules historically awarded their badge only when the player entered the
+// next module. These milestones describe the actual learning endpoint so shorter
+// grade/classroom paths can finish cleanly without opening a locked module.
+export function milestoneBadges(state = {}) {
+  const badges = []
+  if (state.week === 1 && state.weekComplete) badges.push('jars')
+  if (state.week === 2 && state.weekComplete) badges.push('lemonade')
+  if (state.btStage === 'handoff') badges.push('budget')
+  if (Number(state.bkWeek || 0) >= 7) badges.push('bank')
+  if (state.mgPhase === 'done' || state.gameComplete) badges.push('garden')
+  return badges
+}
+
 export function saveActiveLearningPath(path) {
+  const value = normalizeLearningPath(path)
+  if (!value) return null
   try {
-    localStorage.setItem(ACTIVE_PATH_KEY, JSON.stringify(path))
+    localStorage.setItem(ACTIVE_PATH_KEY, JSON.stringify(value))
   } catch { /* local persistence is optional */ }
-  return path
+  // The profile is synchronized for signed-in accounts, so the selected path
+  // follows the student instead of depending only on one browser's localStorage.
+  saveProfile({ activeLearningPath: value })
+  return value
 }
 
 export function loadActiveLearningPath() {
+  const profileValue = normalizeLearningPath(loadProfile()?.activeLearningPath)
+  if (profileValue) return profileValue
   try {
-    const value = JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null')
-    if (!value || !Array.isArray(value.modules) || !value.modules.length) return null
-    return { ...value, modules: [...new Set(value.modules.map(Number).filter((n) => n >= 1 && n <= 5))].sort((a, b) => a - b) }
+    return normalizeLearningPath(JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null'))
   } catch { return null }
 }
