@@ -33,10 +33,37 @@ export async function adminAnalyticsData() {
     }
   })
 
+  const guestAccounts = Object.entries(sessionsByUid)
+    .filter(([uid, guestSessions]) => uid.startsWith('guest_') || guestSessions.some((session) => session.guest))
+    .map(([uid, guestSessions], index) => {
+      const latest = guestSessions[0] || {}
+      const oldest = guestSessions[guestSessions.length - 1] || latest
+      const guestProgress = latest.guestProgress || null
+      return {
+        uid,
+        email: '',
+        displayName: `Guest ${String(index + 1).padStart(3, '0')}`,
+        role: 'guest',
+        accountType: 'guest',
+        gradeLevels: '',
+        foundVia: 'Guest mode',
+        social: '',
+        organizationName: '',
+        organizationEmail: '',
+        createdAt: oldest.startedAt || '',
+        lastLoginAt: latest.lastSeenAt || latest.startedAt || '',
+        lastLogoutAt: latest.endedAt || '',
+        lastActiveAt: latest.lastSeenAt || '',
+        loginCount: guestSessions.length,
+        progress: guestProgress ? { profile: { name: guestProgress.playerName || '', avatar: guestProgress.avatar || '', assessment: guestProgress.assessment || null, completedModules: guestProgress.completedModules || [] }, wallet: { week: guestProgress.currentWeek || 1, objective: guestProgress.objective || '', gameComplete: Boolean(guestProgress.gameComplete) } } : null,
+        sessions: guestSessions,
+      }
+    })
+
   const activity = activitySnapshot.docs.map((item) => ({ id: item.id, ...item.data() })).sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || '')))
   const pageViews = pageViewsSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
   const uniqueVisitors = new Set(pageViews.map((view) => view.visitorId).filter(Boolean)).size
   const uniqueSessions = new Set(pageViews.map((view) => view.sessionId).filter(Boolean)).size
 
-  return { accounts, activity, sessions, siteTraffic: { totalPageViews: pageViews.length, uniqueVisitors, uniqueSessions } }
+  return { accounts: [...accounts, ...guestAccounts], activity, sessions, siteTraffic: { totalPageViews: pageViews.length, uniqueVisitors, uniqueSessions } }
 }
