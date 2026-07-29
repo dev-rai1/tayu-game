@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { coachVisibility, isBlockingGameOverlay, isCommerceOverlayActive } from './overlayVisibility.js'
+import {
+  coachVisibility,
+  isBlockingGameOverlay,
+  isCommerceOverlayActive,
+  isSpecializedCoachActive,
+} from './overlayVisibility.js'
 
 describe('overlay visibility', () => {
   it('treats decision panels and lesson cards as blocking overlays', () => {
@@ -24,6 +29,13 @@ describe('overlay visibility', () => {
       objective: 'lemonade',
       lemPhase: 'template',
     })).toBe(true)
+  })
+
+  it('reserves Money Garden decisions for the specialized coach', () => {
+    const state = { week: 5, mg: { phase: 'adjust', week: 6 } }
+    expect(isSpecializedCoachActive(state)).toBe(true)
+    expect(coachVisibility(state).showGuidance).toBe(false)
+    expect(coachVisibility(state).showSavedMessage).toBe(false)
   })
 
   it('shows the persistent coach only when the play area is clear', () => {
