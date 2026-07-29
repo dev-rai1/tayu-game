@@ -11,8 +11,9 @@ export const SURPRISE_BILL = 4
 export const BANK_DRIP_MIN = 5
 
 export const OPENING = [
-  'This is the grow part of your plan. Company seeds can rise or fall, while Pocket and Bank do different jobs.',
-  'Each decision works the same way: read one clue, adjust the portfolio, and test what happens.',
+  'This is the grow part of your plan. Company seeds can rise or fall.',
+  'Pocket stays ready, Bank grows more steadily, and the Money Garden takes more risk.',
+  'For each decision, read one clue, adjust the portfolio, and test what happens.',
 ]
 
 export const COMPANY_CHOICE = {
