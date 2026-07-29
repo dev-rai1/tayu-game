@@ -12,7 +12,7 @@ export default function PathCompletionWatcher() {
   const checkCompletion = useCallback(() => {
     if (handling.current || location.pathname !== '/world') return
     const user = currentUser()
-    if (!user || user.role === 'teacher') return
+    if (!user || user.role === 'teacher' || user.role === 'admin') return
 
     const path = loadActiveLearningPath()
     // The complete five-module path keeps the existing Money Guru finale.
