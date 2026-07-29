@@ -9,6 +9,7 @@ const LANGUAGES = [
   { code: 'de', short: 'DE', label: 'Deutsch' },
   { code: 'pt', short: 'PT', label: 'Português' },
   { code: 'hi', short: 'HI', label: 'हिन्दी' },
+  { code: 'mr', short: 'MR', label: 'मराठी' },
   { code: 'bn', short: 'BN', label: 'বাংলা' },
   { code: 'ur', short: 'UR', label: 'اردو' },
   { code: 'ar', short: 'AR', label: 'العربية' },
