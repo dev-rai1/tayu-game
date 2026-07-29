@@ -4,11 +4,22 @@ import { isMuted, toggleMute } from '../services/audio.js'
 const LANGUAGES = [
   { code: 'en', short: 'EN', label: 'English' },
   { code: 'es', short: 'ES', label: 'Español' },
+  { code: 'fr', short: 'FR', label: 'Français' },
+  { code: 'it', short: 'IT', label: 'Italiano' },
+  { code: 'de', short: 'DE', label: 'Deutsch' },
+  { code: 'pt', short: 'PT', label: 'Português' },
   { code: 'hi', short: 'HI', label: 'हिन्दी' },
+  { code: 'bn', short: 'BN', label: 'বাংলা' },
+  { code: 'ur', short: 'UR', label: 'اردو' },
+  { code: 'ar', short: 'AR', label: 'العربية' },
   { code: 'mn', short: 'MN', label: 'Монгол' },
   { code: 'ru', short: 'RU', label: 'Русский' },
   { code: 'zh-CN', short: '中文', label: '中文' },
+  { code: 'ja', short: 'JA', label: '日本語' },
+  { code: 'ko', short: 'KO', label: '한국어' },
 ]
+
+const INCLUDED_LANGUAGES = LANGUAGES.map(({ code }) => code).join(',')
 
 function readCurrentLanguage() {
   const saved = window.localStorage.getItem('tayu-language')
@@ -24,9 +35,53 @@ function setTranslationCookie(language) {
   }
 }
 
+function hideGoogleTranslateChrome() {
+  if (!document.getElementById('tayu-hide-google-translate-ui')) {
+    const style = document.createElement('style')
+    style.id = 'tayu-hide-google-translate-ui'
+    style.textContent = `
+      html, body { top: 0 !important; }
+      .goog-te-banner-frame,
+      .goog-te-banner-frame.skiptranslate,
+      iframe.goog-te-banner-frame,
+      #goog-gt-tt,
+      .goog-te-balloon-frame,
+      .goog-te-spinner-pos,
+      .goog-tooltip,
+      .goog-tooltip:hover,
+      .goog-text-highlight {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      .goog-text-highlight {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      body > .skiptranslate { display: none !important; }
+    `
+    document.head.appendChild(style)
+  }
+
+  const removeChrome = () => {
+    document.documentElement.style.setProperty('top', '0px', 'important')
+    document.body?.style.setProperty('top', '0px', 'important')
+    document.querySelectorAll('.goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame, body > .skiptranslate').forEach((node) => {
+      if (node.id !== 'google_translate_element') node.remove()
+    })
+  }
+
+  removeChrome()
+  const observer = new MutationObserver(removeChrome)
+  observer.observe(document.documentElement, { childList: true, subtree: true })
+  return () => observer.disconnect()
+}
+
 function LanguageControls() {
   const [open, setOpen] = useState(false)
   const [language, setLanguage] = useState(readCurrentLanguage)
+
+  useEffect(() => hideGoogleTranslateChrome(), [])
 
   useEffect(() => {
     if (document.getElementById('google-translate-script')) return
@@ -36,7 +91,7 @@ function LanguageControls() {
       new window.google.translate.TranslateElement(
         {
           pageLanguage: 'en',
-          includedLanguages: 'en,es,hi,mn,ru,zh-CN',
+          includedLanguages: INCLUDED_LANGUAGES,
           autoDisplay: false,
         },
         'google_translate_element',
@@ -75,7 +130,7 @@ function LanguageControls() {
       </button>
 
       {open && (
-        <div className="pointer-events-auto absolute left-0 top-full z-[900] mt-2 grid min-w-[210px] grid-cols-2 gap-2 rounded-2xl border border-white/30 bg-navy/95 p-2 shadow-2xl backdrop-blur-md">
+        <div className="pointer-events-auto absolute left-0 top-full z-[900] mt-2 grid max-h-[65vh] min-w-[270px] grid-cols-2 gap-2 overflow-y-auto rounded-2xl border border-white/30 bg-navy/95 p-2 shadow-2xl backdrop-blur-md sm:grid-cols-3">
           {LANGUAGES.map((item) => (
             <button
               key={item.code}
