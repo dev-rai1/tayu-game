@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGame } from './store.js'
-import { moneyGardenDecision, moneyGardenPart, MONEY_GARDEN_FLOW } from '../scenarios/moneyGardenGuidance.js'
-
-const PART_TWO_KEY = 'tayu-money-garden-part-two-started-v1'
+import {
+  moneyGardenDecision,
+  moneyGardenPart,
+  MONEY_GARDEN_FLOW,
+  shouldPauseBetweenGardenParts,
+} from '../scenarios/moneyGardenGuidance.js'
 
 // Keeps one short decision prompt visible, opens the portfolio once per week,
 // and adds a natural stopping point between the two five-week parts.
@@ -19,19 +22,12 @@ export function MoneyGardenFlowGuide() {
   const startTheWeek = useGame((state) => state.startTheWeek)
   const persist = useGame((state) => state.persist)
   const openedForWeek = useRef(null)
-  const [partTwoStarted, setPartTwoStarted] = useState(() => localStorage.getItem(PART_TWO_KEY) === '1')
 
   const decisionWeek = mg?.week ?? 1
+  const partTwoStarted = Boolean(mg?.partTwoStarted)
   const isDecision = week === 5 && mg?.phase === 'adjust'
-  const intermission = isDecision && decisionWeek === 6 && !partTwoStarted
+  const intermission = isDecision && shouldPauseBetweenGardenParts(decisionWeek, partTwoStarted)
   const canOpen = isDecision && !intermission && cards.length === 0 && !dialog
-
-  useEffect(() => {
-    if (week === 5 && decisionWeek <= 5) {
-      localStorage.removeItem(PART_TWO_KEY)
-      setPartTwoStarted(false)
-    }
-  }, [decisionWeek, week])
 
   useEffect(() => {
     if (!canOpen || panelPortfolio || openedForWeek.current === decisionWeek) return
@@ -52,8 +48,10 @@ export function MoneyGardenFlowGuide() {
             <button
               type="button"
               onClick={() => {
-                localStorage.setItem(PART_TWO_KEY, '1')
-                setPartTwoStarted(true)
+                useGame.setState((state) => ({
+                  mg: state.mg ? { ...state.mg, partTwoStarted: true } : state.mg,
+                }))
+                persist()
               }}
               className="min-h-[58px] rounded-2xl bg-electric px-5 text-lg font-extrabold text-white active:scale-95"
             >
