@@ -3,6 +3,7 @@ import { STORE_ITEMS } from './config.js'
 import { estimateDemandSignal } from '../scenarios/lemonade.js'
 
 const fmt = (value) => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })
+const MOBILE_SHEET = 'pointer-events-auto fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[475] max-h-[min(74vh,42rem)] overflow-y-auto overscroll-contain rounded-3xl shadow-2xl'
 
 function MarketClickShop() {
   const week = useGame((s) => s.week)
@@ -31,7 +32,7 @@ function MarketClickShop() {
   const ready = hasFood && hasDrink
 
   return (
-    <aside className="pointer-events-auto fixed bottom-3 right-3 z-[470] max-h-[68vh] w-[min(94vw,32rem)] overflow-y-auto rounded-3xl border-2 border-teal bg-navy/95 p-4 text-white shadow-2xl">
+    <aside className={`${MOBILE_SHEET} border-2 border-teal bg-navy/95 p-4 text-white sm:inset-x-auto sm:right-3 sm:w-[min(94vw,32rem)]`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">TAYU Market — click to buy</div>
@@ -127,28 +128,28 @@ function LemonadeSupplyDemandCoach() {
 
   const supplyHint = !bundle
     ? signal.label === 'Low'
-      ? 'Demand looks low, so start with a smaller batch.'
+      ? 'Demand looks low. Compare the smaller batches.'
       : signal.label === 'High' || signal.label === 'Very high'
-        ? 'Demand looks busy, so a larger batch may make sense if you can afford it.'
-        : 'Demand looks normal. Choose a batch that fits your budget without making too much.'
+        ? 'Demand looks busy. Compare how many cups each batch can serve.'
+        : 'Demand looks normal. Choose a batch that fits your budget.'
     : bundle.cups < signal.potential - 3
-      ? 'Your batch may be too small for this demand. Consider going one size larger.'
+      ? 'Your batch may be too small for this demand.'
       : bundle.cups > signal.potential + 3
-        ? 'Your batch may leave extras. Consider going one size smaller.'
+        ? 'Your batch may leave extras.'
         : 'Your batch looks close to the demand level.'
 
   const priceHint = !bundle
     ? 'Choose a batch before setting the rest of your plan.'
     : price === null
-      ? 'Set a price that covers the cost per cup but still feels affordable.'
+      ? 'Set a price above cost per cup, then test it.'
       : price <= costPerCup + 0.05
-        ? 'Your price may be too low to leave profit. Raise it a little.'
+        ? 'Your price may leave little or no profit.'
         : signal.label === 'Low' && price >= 2
-          ? 'Demand is low, so a high price may reduce sales. Lower it a little.'
-          : 'Your price is above cost. Sell and use the result to adjust.'
+          ? 'Demand is low. Think about how price affects buyers.'
+          : 'Your price is above cost. Sell and learn from the result.'
 
   return (
-    <aside className="pointer-events-auto fixed right-3 top-24 z-[475] max-h-[calc(100vh-7rem)] w-[min(94vw,25rem)] overflow-y-auto rounded-3xl border-2 border-sun bg-white p-4 text-navy shadow-2xl">
+    <aside className={`${MOBILE_SHEET} border-2 border-sun bg-white p-4 text-navy md:inset-x-auto md:bottom-auto md:right-3 md:top-24 md:max-h-[calc(100vh-7rem)] md:w-[min(94vw,25rem)]`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Lemonade helper · Round {round}</div>
@@ -157,18 +158,20 @@ function LemonadeSupplyDemandCoach() {
         <span className="shrink-0 rounded-full bg-sun/30 px-3 py-1 text-xs font-extrabold">{signal.label} demand</span>
       </div>
 
-      <div className="mt-3 rounded-2xl bg-navy p-3 text-white">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">Batch</div>
-        <p className="mt-1 text-sm font-bold leading-snug">{supplyHint}</p>
-      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+        <div className="rounded-2xl bg-navy p-3 text-white">
+          <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">Batch clue</div>
+          <p className="mt-1 text-sm font-bold leading-snug">{supplyHint}</p>
+        </div>
 
-      <div className="mt-2 rounded-2xl bg-sun p-3 text-navy">
-        <div className="text-[10px] font-extrabold uppercase tracking-wide">Price</div>
-        <p className="mt-1 text-sm font-extrabold leading-snug">{priceHint}</p>
+        <div className="rounded-2xl bg-sun p-3 text-navy">
+          <div className="text-[10px] font-extrabold uppercase tracking-wide">Price clue</div>
+          <p className="mt-1 text-sm font-extrabold leading-snug">{priceHint}</p>
+        </div>
       </div>
 
       <p className="mt-2 rounded-2xl bg-teal/10 px-3 py-2 text-xs font-bold leading-snug text-[#087a5e]">
-        Keep it simple: change one or two choices, sell, and learn from the result.
+        Change one or two choices, sell, and compare the result.
       </p>
 
       {phase === 'toMarket' && (
@@ -179,7 +182,7 @@ function LemonadeSupplyDemandCoach() {
 
       {phase === 'supplies' && !bundle && (
         <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
-          Choose a batch that fits demand and your budget.
+          Choose a batch, then test your plan.
         </div>
       )}
 
@@ -191,7 +194,7 @@ function LemonadeSupplyDemandCoach() {
 
       {phase === 'template' && bundle && (
         <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
-          Adjust your choices on the board, then start selling.
+          Make your choices, then start selling.
         </div>
       )}
     </aside>
