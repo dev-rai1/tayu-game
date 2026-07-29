@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { isLearningPathComplete, loadActiveLearningPath } from '../constants/learningPaths.js'
-import { loadProfile } from '../services/walletStore.js'
+import { loadProfile, saveProfile } from '../services/walletStore.js'
 
 export default function PathComplete() {
   const navigate = useNavigate()
@@ -10,13 +10,30 @@ export default function PathComplete() {
   const path = loadActiveLearningPath()
   const completed = path && isLearningPathComplete(path.modules, profile.badges || [])
   const modules = MODULE_CATALOG.filter((module) => path?.modules?.includes(module.n))
-  const date = new Date(profile.pathCompletion?.completedAt || Date.now()).toLocaleDateString('en-US', {
+  const completedAt = profile.pathCompletion?.pathId === path?.id
+    ? profile.pathCompletion.completedAt
+    : new Date().toISOString()
+  const date = new Date(completedAt || Date.now()).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
 
   useEffect(() => {
-    if (!completed) navigate('/modules', { replace: true })
-  }, [completed, navigate])
+    if (!completed || !path) {
+      navigate('/modules', { replace: true })
+      return
+    }
+    if (profile.pathCompletion?.pathId !== path.id) {
+      saveProfile({
+        pathCompletion: {
+          pathId: path.id,
+          label: path.label,
+          title: path.title,
+          modules: path.modules,
+          completedAt,
+        },
+      })
+    }
+  }, [completed, completedAt, navigate, path, profile.pathCompletion?.pathId])
 
   if (!completed || !path) return null
 
