@@ -69,6 +69,10 @@ export function moneyGardenPart(week) {
   return week <= 5 ? MONEY_GARDEN_PARTS[0] : MONEY_GARDEN_PARTS[1]
 }
 
+export function shouldPauseBetweenGardenParts(week, partTwoStarted) {
+  return Number(week) === 6 && !partTwoStarted
+}
+
 export function moneyGardenDecision(week) {
   return MONEY_GARDEN_DECISIONS[week] || {
     title: 'Use evidence and keep the plan balanced',
