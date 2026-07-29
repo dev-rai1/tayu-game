@@ -27,6 +27,15 @@ export function MediaCoverage({ compact = false, about = false }) {
             Vienna Ledger story
           </a>
         </div>
+        {about && (
+          <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="group mx-auto mt-3 flex max-w-4xl flex-col gap-2 rounded-2xl border-2 border-brandpurple/20 bg-white/95 p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="font-display text-xs font-extrabold uppercase tracking-[0.16em] text-brandpurple">Featured by Vienna Ledger</span>
+              <p className="mt-1 font-display text-base font-extrabold leading-snug text-navy">Oakton High students&rsquo; financial literacy book reaches 12 Fairfax County schools and four countries</p>
+            </div>
+            <span className="shrink-0 text-sm font-extrabold text-brandpurple">Read article →</span>
+          </a>
+        )}
       </section>
     )
   }
