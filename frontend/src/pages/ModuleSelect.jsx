@@ -4,7 +4,13 @@ import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
-import { completedRequiredModules, getGradePath, GRADE_PATHS, requiredModules } from '../constants/learningPaths.js'
+import {
+  completedRequiredModules,
+  getGradePath,
+  GRADE_PATHS,
+  requiredModules,
+  saveActiveLearningPath,
+} from '../constants/learningPaths.js'
 
 export const MODULE_CARDS = MODULE_CATALOG
 const GRADE_PATH_KEY = 'tayu-grade-path-v1'
@@ -38,6 +44,18 @@ export default function ModuleSelect() {
   const completedNumbers = useMemo(() => MODULE_CARDS.filter((module) => badges.includes(module.badge)).map((module) => module.n), [badges])
   const completedRequired = useMemo(() => completedRequiredModules(required, completedNumbers), [completedNumbers, required])
   const firstIncompleteRequired = required.find((moduleNumber) => !completedNumbers.includes(moduleNumber)) || required[0] || 1
+
+  useEffect(() => {
+    if (!context || teacherPreview || !required.length) return
+    const classPath = context.plain === false
+    saveActiveLearningPath({
+      id: classPath ? `classroom-${context.id || 'assigned'}` : gradePath?.id,
+      label: classPath ? `Class session from ${context.teacherEmail || 'your teacher'}` : gradePath?.label,
+      title: classPath ? 'Classroom Path' : gradePath?.title,
+      modules: required,
+      source: classPath ? 'classroom' : 'grade',
+    })
+  }, [context, gradePath, required, teacherPreview])
 
   const chooseGradePath = (id) => {
     localStorage.setItem(GRADE_PATH_KEY, id)
@@ -123,7 +141,7 @@ export default function ModuleSelect() {
       })}</div>
 
       <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
-        Your certificate unlocks after the {required.length} module{required.length === 1 ? '' : 's'} in this path are completed ({completedRequired.length}/{required.length}).
+        Your path certificate unlocks after the {required.length} module{required.length === 1 ? '' : 's'} in this path are completed ({completedRequired.length}/{required.length}).
       </p>
     </main>
   )
