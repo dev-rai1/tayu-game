@@ -9,6 +9,7 @@ import { recordPageView } from './services/siteAnalytics.js'
 import { AdminPanel } from './components/AdminPanel.jsx'
 import AdminDashboardButton from './components/AdminDashboardButton.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
+import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
@@ -18,6 +19,7 @@ import { loadProfile } from './services/walletStore.js'
 const AvatarCreate = lazy(() => import('./pages/AvatarCreate.jsx'))
 const World = lazy(() => import('./pages/World.jsx'))
 const Guru = lazy(() => import('./pages/Guru.jsx'))
+const PathComplete = lazy(() => import('./pages/PathComplete.jsx'))
 const Auth = lazy(() => import('./pages/Auth.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
@@ -69,14 +71,14 @@ function SiteViewTracker() {
 function CertificateMusicTrigger() {
   const { pathname } = useLocation()
   useEffect(() => {
-    if (pathname === '/guru') celebrateWithMusic()
+    if (pathname === '/guru' || pathname === '/path-complete') celebrateWithMusic()
   }, [pathname])
   return null
 }
 
 export default function App() {
   useEffect(() => {
-    if (!/^\/(world|party|guru)/.test(window.location.pathname)) initAutoplay()
+    if (!/^\/(world|party|guru|path-complete)/.test(window.location.pathname)) initAutoplay()
   }, [])
   return (
     <div className="min-h-screen bg-navy text-white font-body">
@@ -91,6 +93,7 @@ export default function App() {
               <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
               <Route path="/guru" element={<Suspense fallback={<LoadingScreen label="Rolling out the red carpet..." />}><Guru /></Suspense>} />
+              <Route path="/path-complete" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your path certificate..." />}><PathComplete /></Suspense></PreQuizGate>} />
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
@@ -105,6 +108,7 @@ export default function App() {
       <UsageTracker />
       <SiteViewTracker />
       <CertificateMusicTrigger />
+      <PathCompletionWatcher />
       <AccountMusicControl />
       <AdminDashboardButton />
       <AdminPanel showButton />
