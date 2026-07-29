@@ -63,14 +63,14 @@ export function MoneyGardenFlowGuide() {
               type="button"
               onClick={() => {
                 persist()
-                navigate('/')
+                navigate('/modules')
               }}
               className="min-h-[58px] rounded-2xl bg-navy/10 px-5 text-lg font-extrabold text-navy active:scale-95"
             >
               Save and exit
             </button>
           </div>
-          <p className="mt-3 text-xs font-bold text-navy/55">Part 2 begins from this same saved point.</p>
+          <p className="mt-3 text-xs font-bold text-navy/55">Part 2 begins from this same saved point when you resume Module 5.</p>
         </section>
       </div>
     )
