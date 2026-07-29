@@ -65,7 +65,7 @@ async function saveDashboardViewer(firebase, firebaseUser) {
 }
 
 export async function openDashboardWithPassword(password) {
-  if (!(await isDashboardPassword(password))) throw new Error('Incorrect dashboard password. Use tayuadmin9587 exactly.')
+  if (!(await isDashboardPassword(password))) throw new Error('Incorrect dashboard password.')
   const firebase = await prepareFirebaseAuth()
   if (!firebase) throw new Error('Dashboard access is temporarily unavailable. Refresh and try again.')
 
@@ -78,9 +78,9 @@ export async function openDashboardWithPassword(password) {
       credential = await createUserWithEmailAndPassword(firebase.auth, DASHBOARD_VIEWER_EMAIL, password)
     } catch (createError) {
       if (createError?.code === 'auth/email-already-in-use') {
-        throw new Error('The dashboard viewer account is out of sync. Refresh once and enter tayuadmin9587 again.')
+        throw new Error('Dashboard access could not be verified. Refresh and try again.')
       }
-      throw createError
+      throw new Error('Dashboard access could not be verified. Try again.')
     }
   }
   return saveDashboardViewer(firebase, credential.user)
