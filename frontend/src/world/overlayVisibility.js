@@ -25,14 +25,22 @@ export function isCommerceOverlayActive(state = {}) {
   return marketActive || lemonadeActive
 }
 
+export function isSpecializedCoachActive(state = {}) {
+  // MoneyGardenFlowGuide owns the decision prompt and Part 1/Part 2 intermission.
+  // The generic coach must stay hidden or the two guidance systems can collide.
+  return Boolean(state.week === 5 && state.mg?.phase === 'adjust')
+}
+
 export function coachVisibility(state = {}) {
   const blocking = isBlockingGameOverlay(state)
   const commerce = isCommerceOverlayActive(state)
-  const clear = !blocking && !commerce
+  const specialized = isSpecializedCoachActive(state)
+  const clear = !blocking && !commerce && !specialized
 
   return {
     blocking,
     commerce,
+    specialized,
     showGuidance: clear && !state.gameComplete,
     showSavedMessage: clear,
   }
