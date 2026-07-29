@@ -1,60 +1,77 @@
-// Persistent, player-facing guidance for the Money Garden decision screen.
-// This is intentionally kept separate from market outcomes so the HUD can pin
-// the same clear instructions above the portfolio without hiding the lesson.
+// Decision prompts for the Money Garden. These prompts identify the question to
+// investigate without revealing the exact company or trade the player should make.
+
+export const MONEY_GARDEN_PARTS = [
+  {
+    part: 1,
+    title: 'Investing Foundations',
+    weeks: [1, 2, 3, 4, 5],
+    goal: 'Research businesses, spread risk, and separate evidence from price alone.',
+  },
+  {
+    part: 2,
+    title: 'Markets, Risk, and Patience',
+    weeks: [6, 7, 8, 9, 10],
+    goal: 'Protect emergency money, respond to new evidence, resist hype, and rebalance.',
+  },
+]
 
 export const MONEY_GARDEN_FLOW = [
-  '1. Read Mr. Sprout’s clue.',
-  '2. Adjust the highlighted part of your portfolio.',
-  '3. Check that your choice matches the clue.',
-  '4. Press Start the Week to see the outcome.',
+  '1. Read the clue.',
+  '2. Make one evidence-based change.',
+  '3. Start the week and compare the result.',
 ]
 
 export const MONEY_GARDEN_DECISIONS = {
   1: {
-    title: 'Choose with clues, not luck',
-    instruction: 'Study each company story, then split your seeds across more than one company. Keep some cash available instead of planting blindly.',
+    title: 'Research before planting',
+    instruction: 'Compare the company stories. Which details describe the businesses, and how can you avoid depending on only one?',
   },
   2: {
-    title: 'Spread out your risk',
-    instruction: 'Make sure you own seeds in at least two companies. One company can fall, but your other company can help protect the garden.',
+    title: 'Test diversification',
+    instruction: 'Imagine one company falls. What mix would stop that single result from controlling the whole garden?',
   },
   3: {
-    title: 'Do not panic-sell',
-    instruction: 'A temporary price dip is not automatically a reason to sell. Hold the dipping company unless the lesson gives a real warning sign.',
+    title: 'A price dip needs context',
+    instruction: 'Did the business itself change, or did only the price move? Use that difference before changing the portfolio.',
   },
   4: {
-    title: 'Follow real business clues',
-    instruction: 'Favor the busy company and avoid adding money to the empty, dusty company. Customers are evidence.',
+    title: 'Customers are evidence',
+    instruction: 'Compare the storefront activity. Which company appears healthier based on customers rather than price alone?',
   },
   5: {
-    title: 'Cheap is not always healthy',
-    instruction: 'Buy the company that is both discounted and busy. Do not buy the empty company only because its price is low.',
+    title: 'Cheap is not the same as healthy',
+    instruction: 'A low price can be an opportunity or a warning. Which business clues help you tell the difference?',
   },
   6: {
-    title: 'Keep emergency money',
-    instruction: 'Move enough money into Pocket to cover a surprise bill. Do not put every dollar into company seeds.',
+    title: 'Protect the plan from surprises',
+    instruction: 'A bill may arrive before investments recover. How much should remain ready instead of exposed to the market?',
   },
   7: {
-    title: 'Respond to warning signs',
-    instruction: 'Sell seeds from the unhealthy company before it closes, then keep the remaining money spread across healthier companies.',
+    title: 'New warnings change a decision',
+    instruction: 'Look for evidence that a company’s business weakened. Which holding now creates the greatest risk?',
   },
   8: {
-    title: 'Do not chase hype',
-    instruction: 'Do not buy the company only because its price just jumped. Keep your plan based on business clues, not excitement.',
+    title: 'Price excitement is not research',
+    instruction: 'A company just jumped. What business evidence would justify buying, and what would make the move only hype?',
   },
   9: {
-    title: 'Steady can beat flashy',
-    instruction: 'Add or keep money in the steady company instead of placing everything in the companies with the biggest short-term moves.',
+    title: 'Compare steady and flashy results',
+    instruction: 'Which company has supported the portfolio over several weeks instead of only producing one dramatic move?',
   },
   10: {
-    title: 'Rebalance the garden',
-    instruction: 'Sell a little from any company holding too much and add to smaller holdings so one company does not control the whole portfolio.',
+    title: 'Check concentration risk',
+    instruction: 'What percentage depends on the largest holding? Adjust only if one company has too much control over the outcome.',
   },
+}
+
+export function moneyGardenPart(week) {
+  return week <= 5 ? MONEY_GARDEN_PARTS[0] : MONEY_GARDEN_PARTS[1]
 }
 
 export function moneyGardenDecision(week) {
   return MONEY_GARDEN_DECISIONS[week] || {
-    title: 'Keep the garden balanced',
-    instruction: 'Keep your seeds spread across companies, leave some safe money available, and press Start the Week when your plan matches the clue.',
+    title: 'Use evidence and keep the plan balanced',
+    instruction: 'Compare business clues, portfolio balance, and ready cash before changing one part of the plan.',
   }
 }
