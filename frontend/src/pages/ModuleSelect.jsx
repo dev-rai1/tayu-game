@@ -14,6 +14,7 @@ import {
 
 export const MODULE_CARDS = MODULE_CATALOG
 const GRADE_PATH_KEY = 'tayu-grade-path-v1'
+const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5], allowSkip: false } }
 
 export default function ModuleSelect() {
   const nav = useNavigate()
@@ -30,11 +31,11 @@ export default function ModuleSelect() {
 
   useEffect(() => {
     loadCurrentClassContext()
-      .then(setContext)
-      .catch(() => setContext({ plain: true, settings: { enabledModules: [1, 2, 3, 4, 5], allowSkip: false } }))
+      .then((value) => setContext(value || DEFAULT_CONTEXT))
+      .catch(() => setContext(DEFAULT_CONTEXT))
   }, [])
 
-  const teacherEnabled = context?.settings?.enabledModules || [1, 2, 3, 4, 5]
+  const teacherEnabled = context?.settings?.enabledModules || DEFAULT_CONTEXT.settings.enabledModules
   const required = useMemo(() => requiredModules({
     pathId: gradePathId,
     classroomModules: teacherEnabled,
