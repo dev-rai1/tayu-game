@@ -8,19 +8,23 @@ import {
   completedRequiredModules,
   getGradePath,
   GRADE_PATHS,
+  isLearningPathComplete,
+  loadActiveLearningPath,
   requiredModules,
   saveActiveLearningPath,
 } from '../constants/learningPaths.js'
 
 export const MODULE_CARDS = MODULE_CATALOG
-const GRADE_PATH_KEY = 'tayu-grade-path-v1'
 const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5], allowSkip: false } }
 
 export default function ModuleSelect() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const [context, setContext] = useState(null)
-  const [gradePathId, setGradePathId] = useState(() => localStorage.getItem(GRADE_PATH_KEY) || '')
+  const [gradePathId, setGradePathId] = useState(() => {
+    const saved = loadActiveLearningPath()
+    return getGradePath(saved?.id)?.id || ''
+  })
   const prof = loadProfile()
   const wallet = loadWallet()
   const badges = prof?.badges || []
@@ -44,6 +48,7 @@ export default function ModuleSelect() {
   }), [context?.plain, gradePathId, teacherEnabled, teacherPreview])
   const completedNumbers = useMemo(() => MODULE_CARDS.filter((module) => badges.includes(module.badge)).map((module) => module.n), [badges])
   const completedRequired = useMemo(() => completedRequiredModules(required, completedNumbers), [completedNumbers, required])
+  const pathComplete = isLearningPathComplete(required, badges)
   const firstIncompleteRequired = required.find((moduleNumber) => !completedNumbers.includes(moduleNumber)) || required[0] || 1
 
   useEffect(() => {
@@ -54,13 +59,13 @@ export default function ModuleSelect() {
       label: classPath ? `Class session from ${context.teacherEmail || 'your teacher'}` : gradePath?.label,
       title: classPath ? 'Classroom Path' : gradePath?.title,
       modules: required,
-      source: classPath ? 'classroom' : 'grade',
     })
   }, [context, gradePath, required, teacherPreview])
 
   const chooseGradePath = (id) => {
-    localStorage.setItem(GRADE_PATH_KEY, id)
-    setGradePathId(id)
+    const path = getGradePath(id)
+    if (path) saveActiveLearningPath(path)
+    setGradePathId(path?.id || '')
   }
 
   const canPlay = (moduleNumber) => {
@@ -71,11 +76,11 @@ export default function ModuleSelect() {
   }
 
   const play = (moduleNumber) => {
-    const target = canPlay(moduleNumber) ? moduleNumber : firstIncompleteRequired
-    const targetCard = MODULE_CARDS.find((module) => module.n === target)
-    const canResume = Boolean(wallet && target === current && targetCard && !badges.includes(targetCard.badge))
+    if (!canPlay(moduleNumber)) return
+    const targetCard = MODULE_CARDS.find((module) => module.n === moduleNumber)
+    const canResume = Boolean(wallet && moduleNumber === current && targetCard && !badges.includes(targetCard.badge))
 
-    if (!canResume) localStorage.setItem('tayu-jump-module', String(target))
+    if (!canResume) localStorage.setItem('tayu-jump-module', String(moduleNumber))
     nav('/world')
   }
 
@@ -121,13 +126,19 @@ export default function ModuleSelect() {
         </div>
       </div>
 
+      {!teacherPreview && pathComplete && required.length < 5 && (
+        <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">
+          Path complete — view your certificate
+        </Link>
+      )}
+
       <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
         const done = badges.includes(module.badge)
         const accessible = canPlay(module.n)
         const inRequiredPath = required.includes(module.n)
         const enabledByTeacher = teacherEnabled.includes(module.n)
         const canResume = Boolean(wallet && module.n === current && !done)
-        return <button key={module.n} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition active:scale-[0.98] ${accessible ? 'bg-white/5 hover:bg-white/10' : 'bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
+        return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
           <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
           <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
           <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
@@ -142,7 +153,9 @@ export default function ModuleSelect() {
       })}</div>
 
       <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
-        Your path certificate unlocks after the {required.length} module{required.length === 1 ? '' : 's'} in this path are completed ({completedRequired.length}/{required.length}).
+        {pathComplete && required.length < 5
+          ? `You completed all ${required.length} modules in this path. Your certificate is ready.`
+          : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
       </p>
     </main>
   )
