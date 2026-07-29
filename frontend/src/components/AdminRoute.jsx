@@ -29,8 +29,6 @@ export default function AdminRoute({ children }) {
         return
       }
 
-      // Old dashboard-viewer identities and ordinary accounts must re-enter the
-      // current shared password instead of inheriting stale admin state.
       if (active) setStatus('password')
     }
 
@@ -46,8 +44,9 @@ export default function AdminRoute({ children }) {
       await openDashboardWithPassword(password)
       setPassword('')
       setStatus('allowed')
-    } catch (err) {
-      setError(err?.message || 'Could not open the dashboard.')
+    } catch {
+      setPassword('')
+      setError('Incorrect dashboard password.')
     } finally {
       setBusy(false)
     }
@@ -76,7 +75,7 @@ export default function AdminRoute({ children }) {
               autoFocus
               autoComplete="current-password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => { setPassword(event.target.value); setError('') }}
               className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal"
               placeholder="Enter password"
             />
