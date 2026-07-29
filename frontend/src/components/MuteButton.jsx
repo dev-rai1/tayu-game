@@ -9,6 +9,7 @@ const LANGUAGES = [
   { code: 'de', short: 'DE', label: 'Deutsch' },
   { code: 'pt', short: 'PT', label: 'Português' },
   { code: 'hi', short: 'HI', label: 'हिन्दी' },
+  { code: 'mr', short: 'MR', label: 'मराठी' },
   { code: 'bn', short: 'BN', label: 'বাংলা' },
   { code: 'ur', short: 'UR', label: 'اردو' },
   { code: 'ar', short: 'AR', label: 'العربية' },
@@ -35,53 +36,9 @@ function setTranslationCookie(language) {
   }
 }
 
-function hideGoogleTranslateChrome() {
-  if (!document.getElementById('tayu-hide-google-translate-ui')) {
-    const style = document.createElement('style')
-    style.id = 'tayu-hide-google-translate-ui'
-    style.textContent = `
-      html, body { top: 0 !important; }
-      .goog-te-banner-frame,
-      .goog-te-banner-frame.skiptranslate,
-      iframe.goog-te-banner-frame,
-      #goog-gt-tt,
-      .goog-te-balloon-frame,
-      .goog-te-spinner-pos,
-      .goog-tooltip,
-      .goog-tooltip:hover,
-      .goog-text-highlight {
-        display: none !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-      }
-      .goog-text-highlight {
-        background: transparent !important;
-        box-shadow: none !important;
-      }
-      body > .skiptranslate { display: none !important; }
-    `
-    document.head.appendChild(style)
-  }
-
-  const removeChrome = () => {
-    document.documentElement.style.setProperty('top', '0px', 'important')
-    document.body?.style.setProperty('top', '0px', 'important')
-    document.querySelectorAll('.goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame, body > .skiptranslate').forEach((node) => {
-      if (node.id !== 'google_translate_element') node.remove()
-    })
-  }
-
-  removeChrome()
-  const observer = new MutationObserver(removeChrome)
-  observer.observe(document.documentElement, { childList: true, subtree: true })
-  return () => observer.disconnect()
-}
-
 function LanguageControls() {
   const [open, setOpen] = useState(false)
   const [language, setLanguage] = useState(readCurrentLanguage)
-
-  useEffect(() => hideGoogleTranslateChrome(), [])
 
   useEffect(() => {
     if (document.getElementById('google-translate-script')) return
@@ -92,7 +49,7 @@ function LanguageControls() {
         {
           pageLanguage: 'en',
           includedLanguages: INCLUDED_LANGUAGES,
-          autoDisplay: false,
+          autoDisplay: true,
         },
         'google_translate_element',
       )
