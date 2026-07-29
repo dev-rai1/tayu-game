@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { completedRequiredModules, moduleNumbersForPath, requiredModules } from './learningPaths.js'
+import {
+  badgesForModules,
+  completedRequiredModules,
+  isLearningPathComplete,
+  moduleNumbersForPath,
+  requiredModules,
+} from './learningPaths.js'
 
 describe('grade-aware learning paths', () => {
   it('ends the early-elementary path after the Lemonade Stand', () => {
@@ -21,5 +27,15 @@ describe('grade-aware learning paths', () => {
 
   it('counts only completed modules that belong to the required path', () => {
     expect(completedRequiredModules([1, 2, 3], [1, 3, 5])).toEqual([1, 3])
+  })
+
+  it('maps required modules to the badges used by the game', () => {
+    expect(badgesForModules([1, 2, 4])).toEqual(['jars', 'lemonade', 'bank'])
+  })
+
+  it('unlocks a short-path certificate only when every required badge exists', () => {
+    expect(isLearningPathComplete([1, 2], ['jars'])).toBe(false)
+    expect(isLearningPathComplete([1, 2], ['jars', 'lemonade'])).toBe(true)
+    expect(isLearningPathComplete([2, 4], ['lemonade', 'bank', 'garden'])).toBe(true)
   })
 })
