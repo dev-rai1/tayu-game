@@ -5,6 +5,7 @@ import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import {
+  clearActiveLearningPath,
   completedRequiredModules,
   getGradePath,
   GRADE_PATHS,
@@ -65,6 +66,7 @@ export default function ModuleSelect() {
   const chooseGradePath = (id) => {
     const path = getGradePath(id)
     if (path) saveActiveLearningPath(path)
+    else clearActiveLearningPath()
     setGradePathId(path?.id || '')
   }
 
@@ -79,7 +81,6 @@ export default function ModuleSelect() {
     if (!canPlay(moduleNumber)) return
     const targetCard = MODULE_CARDS.find((module) => module.n === moduleNumber)
     const canResume = Boolean(wallet && moduleNumber === current && targetCard && !badges.includes(targetCard.badge))
-
     if (!canResume) localStorage.setItem('tayu-jump-module', String(moduleNumber))
     nav('/world')
   }
@@ -127,9 +128,7 @@ export default function ModuleSelect() {
       </div>
 
       {!teacherPreview && pathComplete && required.length < 5 && (
-        <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">
-          Path complete — view your certificate
-        </Link>
+        <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Path complete — view your certificate</Link>
       )}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
@@ -142,20 +141,12 @@ export default function ModuleSelect() {
           <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
           <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
           <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
-          <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>
-            {accessible
-              ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →'
-              : !inRequiredPath ? 'Not included in this grade path'
-                : !enabledByTeacher ? 'Locked by teacher'
-                  : `Complete Module ${firstIncompleteRequired} first`}
-          </div>
+          <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →' : !inRequiredPath ? 'Not included in this grade path' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
         </button>
       })}</div>
 
       <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
-        {pathComplete && required.length < 5
-          ? `You completed all ${required.length} modules in this path. Your certificate is ready.`
-          : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
+        {pathComplete && required.length < 5 ? `You completed all ${required.length} modules in this path. Your certificate is ready.` : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
       </p>
     </main>
   )
