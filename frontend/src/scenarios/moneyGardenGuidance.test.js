@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { MONEY_GARDEN_DECISIONS, MONEY_GARDEN_PARTS, moneyGardenPart } from './moneyGardenGuidance.js'
+import {
+  MONEY_GARDEN_DECISIONS,
+  MONEY_GARDEN_PARTS,
+  moneyGardenPart,
+  shouldPauseBetweenGardenParts,
+} from './moneyGardenGuidance.js'
 import { OPENING, WEEKS } from './marketScenarios.js'
 
 describe('Money Garden playtest redesign', () => {
@@ -9,6 +14,13 @@ describe('Money Garden playtest redesign', () => {
     expect(MONEY_GARDEN_PARTS[1].weeks).toEqual([6, 7, 8, 9, 10])
     expect(moneyGardenPart(5).part).toBe(1)
     expect(moneyGardenPart(6).part).toBe(2)
+  })
+
+  it('pauses once at the Part 1 save point and resumes from saved state', () => {
+    expect(shouldPauseBetweenGardenParts(5, false)).toBe(false)
+    expect(shouldPauseBetweenGardenParts(6, false)).toBe(true)
+    expect(shouldPauseBetweenGardenParts(6, true)).toBe(false)
+    expect(shouldPauseBetweenGardenParts(7, false)).toBe(false)
   })
 
   it('frames every week as a clue rather than an exact trade instruction', () => {

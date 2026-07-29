@@ -1,43 +1,31 @@
+import { loadProfile, saveProfile } from '../services/walletStore.js'
+
 export const GRADE_PATHS = [
-  {
-    id: 'early-elementary',
-    label: 'Grades K–2',
-    title: 'Early Elementary',
-    modules: [1, 2],
-    copy: 'Everyday money choices and a first business challenge.',
-  },
-  {
-    id: 'upper-elementary',
-    label: 'Grades 3–5',
-    title: 'Upper Elementary',
-    modules: [1, 2, 3],
-    copy: 'Foundations, business choices, and a complete daily budget.',
-  },
-  {
-    id: 'middle-school',
-    label: 'Grades 6–8',
-    title: 'Middle School',
-    modules: [1, 2, 3, 4, 5],
-    copy: 'The full pathway, with banking and investing in shorter decision sections.',
-  },
-  {
-    id: 'high-school',
-    label: 'Grades 9–12',
-    title: 'High School',
-    modules: [1, 2, 3, 4, 5],
-    copy: 'The full pathway with advanced discussion prompts in later modules.',
-  },
+  { id: 'early-elementary', label: 'Grades K–2', title: 'Early Elementary', modules: [1, 2], copy: 'Everyday money choices and a first business challenge.' },
+  { id: 'upper-elementary', label: 'Grades 3–5', title: 'Upper Elementary', modules: [1, 2, 3], copy: 'Foundations, business choices, and a complete daily budget.' },
+  { id: 'middle-school', label: 'Grades 6–8', title: 'Middle School', modules: [1, 2, 3, 4, 5], copy: 'The full pathway, with banking and investing in shorter decision sections.' },
+  { id: 'high-school', label: 'Grades 9–12', title: 'High School', modules: [1, 2, 3, 4, 5], copy: 'The full pathway with advanced discussion prompts in later modules.' },
 ]
 
 export const DEFAULT_GRADE_PATH = 'middle-school'
 export const ACTIVE_PATH_KEY = 'tayu-active-learning-path-v1'
 
-const BADGES_BY_MODULE = {
-  1: 'jars',
-  2: 'lemonade',
-  3: 'budget',
-  4: 'bank',
-  5: 'garden',
+const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
+
+function normalizeModules(modules) {
+  return [...new Set((modules || []).map(Number).filter((number) => number >= 1 && number <= 5))].sort((a, b) => a - b)
+}
+
+export function normalizeLearningPath(path) {
+  if (!path) return null
+  const modules = normalizeModules(path.modules)
+  if (!modules.length) return null
+  return {
+    id: String(path.id || 'custom-path'),
+    label: String(path.label || 'Assigned path'),
+    title: String(path.title || 'Assigned Learning Path'),
+    modules,
+  }
 }
 
 export function getGradePath(id) {
@@ -49,7 +37,7 @@ export function moduleNumbersForPath(id) {
 }
 
 export function requiredModules({ pathId, classroomModules, teacherPreview = false, plain = true }) {
-  if (teacherPreview || !plain) return [...new Set(classroomModules || [])].sort((a, b) => a - b)
+  if (teacherPreview || !plain) return normalizeModules(classroomModules)
   return moduleNumbersForPath(pathId)
 }
 
@@ -59,7 +47,7 @@ export function completedRequiredModules(required, completed) {
 }
 
 export function badgesForModules(modules) {
-  return (modules || []).map((moduleNumber) => BADGES_BY_MODULE[moduleNumber]).filter(Boolean)
+  return normalizeModules(modules).map((moduleNumber) => BADGES_BY_MODULE[moduleNumber]).filter(Boolean)
 }
 
 export function isLearningPathComplete(modules, badges) {
@@ -68,17 +56,31 @@ export function isLearningPathComplete(modules, badges) {
   return requiredBadges.length > 0 && requiredBadges.every((badge) => badgeSet.has(badge))
 }
 
+export function milestoneBadges(state = {}) {
+  const badges = []
+  if (state.week === 1 && state.weekComplete) badges.push('jars')
+  if (state.week === 2 && state.weekComplete) badges.push('lemonade')
+  if (state.btStage === 'handoff') badges.push('budget')
+  if (Number(state.bkWeek || 0) >= 7) badges.push('bank')
+  if (state.mgPhase === 'done' || state.gameComplete) badges.push('garden')
+  return badges
+}
+
 export function saveActiveLearningPath(path) {
-  try {
-    localStorage.setItem(ACTIVE_PATH_KEY, JSON.stringify(path))
-  } catch { /* local persistence is optional */ }
-  return path
+  const value = normalizeLearningPath(path)
+  if (!value) return null
+  try { localStorage.setItem(ACTIVE_PATH_KEY, JSON.stringify(value)) } catch { /* optional */ }
+  saveProfile({ activeLearningPath: value })
+  return value
+}
+
+export function clearActiveLearningPath() {
+  try { localStorage.removeItem(ACTIVE_PATH_KEY) } catch { /* optional */ }
+  saveProfile({ activeLearningPath: null })
 }
 
 export function loadActiveLearningPath() {
-  try {
-    const value = JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null')
-    if (!value || !Array.isArray(value.modules) || !value.modules.length) return null
-    return { ...value, modules: [...new Set(value.modules.map(Number).filter((n) => n >= 1 && n <= 5))].sort((a, b) => a - b) }
-  } catch { return null }
+  const profileValue = normalizeLearningPath(loadProfile()?.activeLearningPath)
+  if (profileValue) return profileValue
+  try { return normalizeLearningPath(JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null')) } catch { return null }
 }
