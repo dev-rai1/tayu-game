@@ -72,10 +72,8 @@ export default function Auth() {
       } else {
         const result = await requestPasswordReset(f.email); setRecovery(result); setOk(result.message)
       }
-    } catch (error) {
-      setRecovery(null)
-      setErr(mode === 'signin' ? 'Email or password is incorrect.' : (error.message || String(error)))
-    } finally { setBusy(false) }
+    } catch (error) { setRecovery(null); setErr(error.message || String(error)) }
+    finally { setBusy(false) }
   }
 
   const gradeLabel = f.role === 'teacher' ? 'Grades you teach' : 'Your grade level'

@@ -1,11 +1,15 @@
-// Simplified teacher/admin testing panel.
-// Access stays locked in memory and resets on every page reload.
+// ROUND 8 (7.3): THE SIMPLIFIED ADMIN PANEL.
+// A low-key Admin button on every screen, password-gated (tayu1234).
+// SOLID opaque gray background, and exactly THREE working controls:
+//   1. Skip module  2. Week back / forward  3. Add money
+// Everything else from Round 6 (fast-forward, auto-play, set name, unlock
+// all, reset) is gone by design.
 import { useState, useEffect } from 'react'
 import { useGame } from '../world/store.js'
 import { currentUser } from '../services/auth.js'
 
 const ADMIN_PW = 'tayu1234'
-let adminUnlocked = false
+let adminUnlocked = false // memory only - re-locks on every reload
 
 const B = 'min-h-[44px] rounded-lg px-3 text-sm font-bold transition active:scale-95 disabled:opacity-40'
 
@@ -28,18 +32,19 @@ export function AdminPanel({ showButton = true }) {
     if (adminUnlocked) { setOpen(true); return }
     setAsking(true); setPw(''); setPwError(false)
   }
-
+  // R10 v8 6.3: on kid-facing screens the button is GONE; teachers open the
+  // gate with 5 quick taps on the TAYU logo (Hud dispatches this event).
   useEffect(() => {
     const openGate = () => onAdminClick()
     window.addEventListener('tayu-admin-gesture', openGate)
     return () => window.removeEventListener('tayu-admin-gesture', openGate)
   }, [])
-
   const tryPw = () => {
     if (pw === ADMIN_PW) { adminUnlocked = true; setAsking(false); setOpen(true) }
-    else { setPw(''); setPwError(true) }
+    else setPwError(true)
   }
 
+  // 1) module navigation. The Party Area is the sixth and final admin stop.
   const moduleStep = open && adminUnlocked
     ? (g().gameComplete && g().objective === 'party' ? 6 : g().week)
     : 1
@@ -52,9 +57,11 @@ export function AdminPanel({ showButton = true }) {
     if (step < 6) g().adminJumpModule(step + 1)
   })
 
+  // 2) one week back / forward inside the current module
   const wkInfo = open && adminUnlocked ? (() => { try { return g().adminCurrentWeek() } catch { return { n: 1, max: 1 } } })() : { n: 1, max: 1 }
   const jumpWeek = (d) => guard(() => g().adminJumpWeek(Math.max(1, Math.min(wkInfo.max, wkInfo.n + d))))()
 
+  // 3) add money to whatever wallet the current module uses
   const addMoney = guard(() => {
     const amt = Math.max(0, Number(money) || 0)
     if (!amt) return
@@ -88,10 +95,9 @@ export function AdminPanel({ showButton = true }) {
               onChange={(e) => { setPw(e.target.value); setPwError(false) }}
               onKeyDown={(e) => e.key === 'Enter' && tryPw()}
               placeholder="Password"
-              autoComplete="current-password"
               className="mt-2 w-full rounded-lg border border-white/30 bg-black/30 px-3 py-2 text-sm text-white outline-none"
             />
-            {pwError && <div className="mt-1 text-xs text-red-300">Access denied. Check your credentials and try again.</div>}
+            {pwError && <div className="mt-1 text-xs text-red-300">Incorrect password</div>}
             <div className="mt-3 flex gap-2">
               <button className={`${B} flex-1 bg-white/20 text-white`} onClick={() => setAsking(false)}>Cancel</button>
               <button className={`${B} flex-1 bg-white text-black`} onClick={tryPw}>Unlock</button>
