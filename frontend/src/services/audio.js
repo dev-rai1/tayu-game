@@ -3,7 +3,7 @@
 // Browser audio is intentionally unlocked from a real pointer/key gesture. The
 // context is primed even while music is muted so the certificate can later turn
 // celebration music on without being blocked by autoplay rules.
-import { saveProfile } from './walletStore.js'
+import { loadProfile, saveProfile } from './walletStore.js'
 
 // The previous 0.035 master value was multiplied by each instrument envelope,
 // making the final signal nearly inaudible. These values remain gentle, but are
@@ -31,11 +31,12 @@ const MODES = {
   },
 }
 
+const savedMuted = loadProfile()?.muted
+
 const state = {
   started: false,
-  // Every new browser visit starts silent, exactly as requested. The player can
-  // turn music on for the current visit, and the certificate can enable it too.
-  muted: true,
+  // Music is on by default for new players. A saved manual preference still wins.
+  muted: savedMuted === undefined ? false : Boolean(savedMuted),
   mode: 'loading',
   context: null,
   master: null,
