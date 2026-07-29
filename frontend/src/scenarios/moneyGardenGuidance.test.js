@@ -19,8 +19,9 @@ describe('Money Garden playtest redesign', () => {
     }
   })
 
-  it('keeps opening and weekly prompts bite-sized', () => {
-    expect(OPENING).toHaveLength(2)
+  it('keeps the existing three-card opening and weekly prompts bite-sized', () => {
+    expect(OPENING).toHaveLength(3)
+    for (const line of OPENING) expect(line.length).toBeLessThan(120)
     expect(WEEKS).toHaveLength(10)
     for (const week of WEEKS) expect(week.intro.length).toBeLessThan(190)
   })
