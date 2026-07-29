@@ -1,8 +1,10 @@
 import { doc, setDoc } from 'firebase/firestore'
 import { getFirebaseServices } from './firebase.js'
+import { loadProfile, loadWallet } from './walletStore.js'
 
 const AUTH_SESSION_KEY = 'tayu-session-v1'
 const USAGE_SESSION_KEY = 'tayu-usage-session-v1'
+const GUEST_ID_KEY = 'tayu-anonymous-guest-id-v1'
 const HEARTBEAT_CAP_SECONDS = 45
 
 function authUser() {
@@ -18,12 +20,48 @@ function writeUsage(value) {
   else sessionStorage.removeItem(USAGE_SESSION_KEY)
 }
 
+function guestId() {
+  try {
+    const existing = localStorage.getItem(GUEST_ID_KEY)
+    if (existing) return existing
+    const created = `guest_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
+    localStorage.setItem(GUEST_ID_KEY, created)
+    return created
+  } catch {
+    return `guest_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
+  }
+}
+
+function analyticsUser() {
+  const user = authUser()
+  if (!user || user.accountType === 'dashboard_viewer') return null
+  if (user.guest) return { ...user, id: guestId(), email: '', role: 'guest', guest: true }
+  return user.id ? user : null
+}
+
+function guestProgressSnapshot() {
+  const profile = loadProfile() || {}
+  const wallet = loadWallet() || {}
+  return {
+    playerName: String(profile.name || '').slice(0, 40),
+    avatar: profile.avatar || '',
+    assessment: profile.assessment || null,
+    completedModules: profile.completedModules || wallet.completedModules || [],
+    currentWeek: Number(wallet.week || 1),
+    objective: wallet.objective || '',
+    gameComplete: Boolean(wallet.gameComplete),
+    updatedAt: new Date().toISOString(),
+  }
+}
+
 function newSession(user, path = '') {
   const now = new Date().toISOString()
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
     uid: user.id,
     email: String(user.email || '').toLowerCase(),
+    role: user.role || (user.guest ? 'guest' : 'student'),
+    guest: Boolean(user.guest),
     startedAt: now,
     lastSeenAt: now,
     lastTickAt: now,
@@ -57,9 +95,11 @@ function advance(existing, path, moduleName) {
 async function persist(session) {
   const firebase = getFirebaseServices()
   if (!firebase?.firestore || !session?.uid) return false
-  await setDoc(doc(firebase.firestore, 'usageSessions', `${session.uid}_${session.id}`), {
+  const payload = {
     uid: session.uid,
     email: session.email,
+    role: session.role || '',
+    guest: Boolean(session.guest),
     sessionId: session.id,
     startedAt: session.startedAt,
     lastSeenAt: session.lastSeenAt,
@@ -69,13 +109,15 @@ async function persist(session) {
     currentModule: session.currentModule || '',
     moduleSeconds: session.moduleSeconds || {},
     device: session.device || 'Unknown',
-  }, { merge: true })
+  }
+  if (session.guest) payload.guestProgress = guestProgressSnapshot()
+  await setDoc(doc(firebase.firestore, 'usageSessions', `${session.uid}_${session.id}`), payload, { merge: true })
   return true
 }
 
 export async function touchUsage({ path, moduleName } = {}) {
-  const user = authUser()
-  if (!user?.id || user.guest || user.accountType === 'dashboard_viewer') return null
+  const user = analyticsUser()
+  if (!user) return null
   let session = readUsage()
   if (!session || session.uid !== user.id || session.endedAt) session = newSession(user, path || window.location.pathname)
   session = advance(session, path, moduleName)
