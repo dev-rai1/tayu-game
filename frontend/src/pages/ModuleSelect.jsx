@@ -4,56 +4,146 @@ import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
+import {
+  completedRequiredModules,
+  getGradePath,
+  GRADE_PATHS,
+  requiredModules,
+  saveActiveLearningPath,
+} from '../constants/learningPaths.js'
 
 export const MODULE_CARDS = MODULE_CATALOG
+const GRADE_PATH_KEY = 'tayu-grade-path-v1'
+const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5], allowSkip: false } }
 
 export default function ModuleSelect() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const [context, setContext] = useState(null)
+  const [gradePathId, setGradePathId] = useState(() => localStorage.getItem(GRADE_PATH_KEY) || '')
   const prof = loadProfile()
   const wallet = loadWallet()
   const badges = prof?.badges || []
   const current = Number(wallet?.week || 1)
   const user = currentUser()
   const teacherPreview = user?.role === 'teacher' && params.get('teacherPreview') === '1'
+  const gradePath = getGradePath(gradePathId)
 
-  useEffect(() => { loadCurrentClassContext().then(setContext).catch(() => setContext({ plain: true, settings: { enabledModules: [1, 2, 3, 4, 5], allowSkip: false } })) }, [])
+  useEffect(() => {
+    loadCurrentClassContext()
+      .then((value) => setContext(value || DEFAULT_CONTEXT))
+      .catch(() => setContext(DEFAULT_CONTEXT))
+  }, [])
 
-  const enabled = context?.settings?.enabledModules || [1, 2, 3, 4, 5]
-  const completedNumbers = useMemo(() => MODULE_CARDS.filter((m) => badges.includes(m.badge)).map((m) => m.n), [badges])
-  const firstIncompleteEnabled = enabled.find((n) => !completedNumbers.includes(n)) || enabled[0] || 1
+  const teacherEnabled = context?.settings?.enabledModules || DEFAULT_CONTEXT.settings.enabledModules
+  const required = useMemo(() => requiredModules({
+    pathId: gradePathId,
+    classroomModules: teacherEnabled,
+    teacherPreview,
+    plain: context?.plain !== false,
+  }), [context?.plain, gradePathId, teacherEnabled, teacherPreview])
+  const completedNumbers = useMemo(() => MODULE_CARDS.filter((module) => badges.includes(module.badge)).map((module) => module.n), [badges])
+  const completedRequired = useMemo(() => completedRequiredModules(required, completedNumbers), [completedNumbers, required])
+  const firstIncompleteRequired = required.find((moduleNumber) => !completedNumbers.includes(moduleNumber)) || required[0] || 1
 
-  const canPlay = (n) => {
-    if (teacherPreview) return enabled.includes(n)
-    if (!enabled.includes(n)) return false
-    if (context?.settings?.allowSkip) return true
-    return n === firstIncompleteEnabled || completedNumbers.includes(n)
+  useEffect(() => {
+    if (!context || teacherPreview || !required.length) return
+    const classPath = context.plain === false
+    saveActiveLearningPath({
+      id: classPath ? `classroom-${context.id || 'assigned'}` : gradePath?.id,
+      label: classPath ? `Class session from ${context.teacherEmail || 'your teacher'}` : gradePath?.label,
+      title: classPath ? 'Classroom Path' : gradePath?.title,
+      modules: required,
+      source: classPath ? 'classroom' : 'grade',
+    })
+  }, [context, gradePath, required, teacherPreview])
+
+  const chooseGradePath = (id) => {
+    localStorage.setItem(GRADE_PATH_KEY, id)
+    setGradePathId(id)
   }
 
-  const play = (n) => {
-    const target = canPlay(n) ? n : firstIncompleteEnabled
-    localStorage.setItem('tayu-jump-module', String(target))
+  const canPlay = (moduleNumber) => {
+    if (teacherPreview) return teacherEnabled.includes(moduleNumber)
+    if (!required.includes(moduleNumber)) return false
+    if (context?.settings?.allowSkip) return true
+    return moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)
+  }
+
+  const play = (moduleNumber) => {
+    const target = canPlay(moduleNumber) ? moduleNumber : firstIncompleteRequired
+    const targetCard = MODULE_CARDS.find((module) => module.n === target)
+    const canResume = Boolean(wallet && target === current && targetCard && !badges.includes(targetCard.badge))
+
+    if (!canResume) localStorage.setItem('tayu-jump-module', String(target))
     nav('/world')
   }
 
   if (!context) return <main className="grid min-h-screen place-items-center">Loading your session…</main>
 
+  if (!teacherPreview && context.plain && !gradePath) {
+    return (
+      <main className="mx-auto grid min-h-screen max-w-4xl place-items-center px-6 py-10">
+        <section className="w-full rounded-3xl border-2 border-teal/40 bg-white/5 p-6 text-center shadow-2xl">
+          <img src="/assets/tayu-logo.webp" alt="TAYU" className="mx-auto h-16 w-16 rounded-2xl" />
+          <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Choose your learning path</p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">What grade are you in?</h1>
+          <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">This keeps the game challenging without opening sections that may feel overwhelming. You can change it later.</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {GRADE_PATHS.map((path) => (
+              <button key={path.id} type="button" onClick={() => chooseGradePath(path.id)} className="rounded-2xl border-2 border-white/15 bg-black/20 p-5 text-left transition hover:border-teal hover:bg-white/10 active:scale-[0.98]">
+                <div className="text-xs font-extrabold uppercase tracking-wide text-teal">{path.label}</div>
+                <div className="mt-1 font-display text-xl font-extrabold">{path.title}</div>
+                <p className="mt-2 text-sm font-semibold text-white/70">{path.copy}</p>
+                <div className="mt-3 text-sm font-extrabold text-sun">Modules {path.modules.join(', ')}</div>
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" /><div><h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : 'Your learning path'}</h1><p className="text-sm font-semibold text-white/75">{context.plain ? 'Complete modules in order to earn your certificate.' : `Class session from ${context.teacherEmail || 'your teacher'}`}</p></div></div><Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
+          <div>
+            <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : 'Your learning path'}</h1>
+            <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected path'} · complete the recommended modules in order.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}
+          {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}
+          <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link>
+        </div>
+      </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((m) => {
-        const done = badges.includes(m.badge)
-        const accessible = canPlay(m.n)
-        const enabledByTeacher = enabled.includes(m.n)
-        return <button key={m.n} onClick={() => play(m.n)} className={`rounded-3xl border-2 p-5 text-left transition active:scale-[0.98] ${accessible ? 'bg-white/5 hover:bg-white/10' : 'bg-black/25 opacity-70'}`} style={{ borderColor: done ? m.color : 'rgba(255,255,255,0.1)' }}>
-          <div className="flex items-center justify-between"><span className="font-display text-lg font-extrabold" style={{ color: m.color }}>{m.n}. {m.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? 'AVAILABLE' : 'LOCKED'}</span></div>
-          <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{m.grades}</div><p className="mt-2 text-sm font-semibold text-white/80">{m.desc}</p>
-          <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? m.color : 'rgba(255,255,255,.55)' }}>{accessible ? (done ? 'Play again →' : 'Start →') : enabledByTeacher ? `Complete Module ${firstIncompleteEnabled} first` : `Locked by teacher — opens Module ${firstIncompleteEnabled}`}</div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
+        const done = badges.includes(module.badge)
+        const accessible = canPlay(module.n)
+        const inRequiredPath = required.includes(module.n)
+        const enabledByTeacher = teacherEnabled.includes(module.n)
+        const canResume = Boolean(wallet && module.n === current && !done)
+        return <button key={module.n} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition active:scale-[0.98] ${accessible ? 'bg-white/5 hover:bg-white/10' : 'bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
+          <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
+          <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
+          <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
+          <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>
+            {accessible
+              ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →'
+              : !inRequiredPath ? 'Not included in this grade path'
+                : !enabledByTeacher ? 'Locked by teacher'
+                  : `Complete Module ${firstIncompleteRequired} first`}
+          </div>
         </button>
       })}</div>
-      <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">The certificate unlocks after all five modules are completed ({badges.length}/5).</p>
+
+      <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
+        Your path certificate unlocks after the {required.length} module{required.length === 1 ? '' : 's'} in this path are completed ({completedRequired.length}/{required.length}).
+      </p>
     </main>
   )
 }
