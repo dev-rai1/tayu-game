@@ -18,14 +18,15 @@ describe('playtest persistence wiring', () => {
     expect(moduleSelect).toContain('if (!canPlay(moduleNumber)) return')
   })
 
-  it('stores the selected learning path and exposes a completed-path certificate', () => {
+  it('stores, clears, and completes the selected learning path', () => {
     expect(moduleSelect).toContain('saveActiveLearningPath')
+    expect(moduleSelect).toContain('clearActiveLearningPath')
     expect(moduleSelect).toContain('Path complete — view your certificate')
   })
 
   it('awards credit at real module endpoints instead of the next module', () => {
     expect(completionWatcher).toContain('milestoneBadges')
-    expect(completionWatcher).toContain("btStage")
+    expect(completionWatcher).toContain('btStage')
     expect(completionWatcher).toContain('bkWeek')
   })
 
@@ -34,6 +35,6 @@ describe('playtest persistence wiring', () => {
     expect(gardenGuide).toContain('partTwoStarted: true')
     expect(gardenGuide).toContain("navigate('/modules')")
     expect(gardenGuide).not.toContain('PART_TWO_KEY')
-    expect(gardenGuide).not.toContain("localStorage.setItem")
+    expect(gardenGuide).not.toContain('localStorage.setItem')
   })
 })
