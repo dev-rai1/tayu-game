@@ -98,7 +98,7 @@ function PartyBackdrop() {
   return <canvas ref={ref} className="fixed inset-0 h-full w-full opacity-60 print:hidden" />
 }
 
-const SITE = 'https://tayu-rho.vercel.app'
+const SITE = 'https://tayufinance.app'
 const LOGO = '/assets/tayu-logo.webp'
 const LINKS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -162,7 +162,7 @@ async function buildPdf(name, dateStr) {
   doc.line(W - 180, 466, W - 60, 466)
   doc.setTextColor(90, 98, 120); doc.text('Signed', W - 120, 496, { align: 'center' })
   doc.setFontSize(12); doc.setTextColor(0, 150, 120)
-  doc.text('tayu-rho.vercel.app', CX, 540, { align: 'center' })
+  doc.text('tayufinance.app', CX, 540, { align: 'center' })
   return doc
 }
 
@@ -233,7 +233,7 @@ export default function Guru() {
             </div>
             <div className="mt-3 flex w-full justify-between px-6 text-[10px] text-navy/70 sm:px-10 sm:text-xs">
               <span className="border-t border-navy pt-1">{dateStr}</span>
-              <span className="text-teal">tayu-rho.vercel.app</span>
+              <span className="text-teal">tayufinance.app</span>
               <span className="border-t border-navy pt-1">The TAYU Team</span>
             </div>
           </div>
