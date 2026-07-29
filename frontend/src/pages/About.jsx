@@ -12,6 +12,7 @@ import { MODULE_CATALOG } from '../constants/modules.js'
 
 const LOGO = '/assets/tayu-logo.webp'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
+const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -200,9 +201,9 @@ export default function About() {
             </div>
             {/* R13 11.4: media coverage, embedded inline */}
             <div className="mt-6">
-              <h3 className="font-display text-lg font-extrabold text-navy">As seen on FOX 5 DC &amp; WTOP</h3>
+              <h3 className="font-display text-lg font-extrabold text-navy">As seen on FOX 5 DC, WTOP &amp; Vienna Ledger</h3>
               <div className="mt-2 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-                <div className="overflow-hidden rounded-2xl shadow-md" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                <div className="overflow-hidden rounded-2xl shadow-md lg:row-span-2" style={{ position: 'relative', paddingTop: '56.25%' }}>
                   <iframe
                     src="https://www.youtube.com/embed/HjfuUGCowW4"
                     title="TAYU on FOX 5 DC"
@@ -216,6 +217,12 @@ export default function About() {
                   <h4 className="mt-2 font-display text-lg font-extrabold leading-tight text-navy">Fairfax students teach financial literacy</h4>
                   <p className="mt-2 text-sm leading-relaxed text-navy/65">Read WTOP&rsquo;s feature about our book, classroom outreach, and mission.</p>
                   <span className="mt-4 text-sm font-extrabold text-electric">Read the WTOP article →</span>
+                </a>
+                <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="flex flex-col justify-center rounded-2xl border-2 border-brandpurple/20 bg-brandpurple/5 p-5 transition hover:-translate-y-1 hover:bg-brandpurple/10 hover:shadow-md">
+                  <span className="font-display text-xs font-extrabold uppercase tracking-[0.16em] text-brandpurple">Vienna Ledger</span>
+                  <h4 className="mt-2 font-display text-lg font-extrabold leading-tight text-navy">Book reaches 12 Fairfax County schools and four countries</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read Vienna Ledger&rsquo;s feature about our book distribution, classroom impact, and expansion through TAYU.</p>
+                  <span className="mt-4 text-sm font-extrabold text-brandpurple">Read the Vienna Ledger article →</span>
                 </a>
               </div>
             </div>
