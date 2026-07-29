@@ -1,62 +1,55 @@
-// Jar scenario data. The state machine + timeline are built ONCE (store.js +
-// scenes.js); these three data objects feed the same machine.
-// v6: allowance is $30 - it divides evenly three ways ($10/$10/$10), which
-// keeps the math easy for grades 1–3. Targets sum to 30; tolerance ±2 per jar.
+// Jar scenario data. The state machine + timeline are built once in store.js and
+// scenes.js. Hidden targets keep evaluation consistent, while player-facing
+// feedback gives a principle and a clue instead of revealing the exact split.
 
 export const JAR_SCENARIOS = [
   {
     id: 's1_birthday',
     title: "Theo's Birthday",
     intro: [
-      "Hi! I'm Penny. It's Theo's birthday this week!",
-      'You really want that $8 toy for yourself too...',
-      'AND Mia is collecting for the animal shelter.',
-      "You have $30. Fill your 3 jars: some to SPEND, some to SAVE, some to GIVE!",
+      "It is Theo's birthday, you want an $8 toy, and Mia is collecting for the animal shelter.",
+      'You have $30. Decide how much belongs in SPEND, SAVE, and GIVE.',
     ],
     target: { spend: 10, save: 10, give: 10, tolerance: 2 },
     hints: {
-      spentAll: 'RESET: Your $30 is back in your hand. You put too much in SPEND, so nothing was left for SAVE or GIVE. This time, split the money across all three jars. Try about $10 in each.',
-      savedAll: 'RESET: Your $30 is back in your hand. Saving is important, but Theo still needs a gift and the shelter needs help. This time, put some money in every jar. Try about $10 in each.',
-      gaveAll: 'RESET: Your $30 is back in your hand. Giving is kind, but you also need money for today and later. This time, put some money in every jar. Try about $10 in each.',
-      unbalanced: 'RESET: Your $30 is back in your hand. The split was too uneven. You must use all three jars: SPEND for now, SAVE for later, and GIVE for others. Try about $10 in each.',
+      spentAll: 'Your money reset. Spending everything left nothing for later or for others. Use all three jars and compare their jobs.',
+      savedAll: 'Your money reset. Saving matters, but today and helping others still matter too. Use all three jars.',
+      gaveAll: 'Your money reset. Giving is kind, but you also need money for today and later. Use all three jars.',
+      unbalanced: 'Your money reset. One jar took too much. Try a more even plan so today, later, and others are all included.',
     },
-    recap: (a) => `You spent $${a.spend}, saved $${a.save}, and gave $${a.give} - a real budget!`,
+    recap: (a) => `You spent $${a.spend}, saved $${a.save}, and gave $${a.give}. That is a complete plan.`,
   },
   {
     id: 's2_rainy',
     title: 'A Rainy Day',
     intro: [
-      "It's been raining all week. No going out!",
-      "You could blow it all on treats... but next week the fair comes to town.",
-      'A neighbor is also raising money for new library books.',
-      'You have $30. Spread it across your 3 jars wisely!',
+      'The fair is next week, and a neighbor is raising money for new library books.',
+      'You have $30. Which jar should be largest when a future goal is close?',
     ],
     target: { spend: 8, save: 14, give: 8, tolerance: 2 },
     hints: {
-      spentAll: 'RESET: Your $30 is back. You put too much in SPEND, so there was nothing for the fair or the library. This time, put the MOST in SAVE, then split the rest between SPEND and GIVE. Try about $8, $14, and $8.',
-      savedAll: 'RESET: Your $30 is back. You saved everything, but today and helping others still matter. This time, put the MOST in SAVE and a smaller amount in both SPEND and GIVE. Try about $8, $14, and $8.',
-      gaveAll: 'RESET: Your $30 is back. You gave everything away, so nothing remained for today or the fair. This time, put the MOST in SAVE and a smaller amount in both SPEND and GIVE. Try about $8, $14, and $8.',
-      unbalanced: 'RESET: Your $30 is back. Because the fair is next week, SAVE should be the biggest jar. You still need some SPEND and some GIVE. Try about $8 in SPEND, $14 in SAVE, and $8 in GIVE.',
+      spentAll: 'Your money reset. Spending everything made the fair and library impossible. Make SAVE the largest jar, then include the other two.',
+      savedAll: 'Your money reset. You prepared for the fair, but today and the library disappeared from the plan. Include every jar.',
+      gaveAll: 'Your money reset. The library received everything, but nothing remained for today or the fair. Make SAVE the largest jar.',
+      unbalanced: 'Your money reset. The fair is the biggest goal in this story, so SAVE should be largest without erasing SPEND or GIVE.',
     },
-    recap: (a) => `Spent $${a.spend}, saved $${a.save} for the fair, gave $${a.give} - smart planning!`,
+    recap: (a) => `You kept $${a.save} for the fair, $${a.spend} for now, and $${a.give} for the library.`,
   },
   {
     id: 's3_bigwant',
     title: 'The Big Want',
     intro: [
-      'You saw a $45 skateboard, but you only get $30 a week!',
-      "You can't buy it yet... but you CAN save toward it.",
-      'Theo still hopes for a small birthday treat, and the shelter still needs help.',
-      'You have $30. Save big for the skateboard, but don’t forget the others!',
+      'A skateboard costs $45, more than one $30 allowance. Theo and the shelter still need a small share.',
+      'Build a plan that moves you toward the skateboard without forgetting today or others.',
     ],
     target: { spend: 6, save: 18, give: 6, tolerance: 2 },
     hints: {
-      spentAll: 'RESET: Your $30 is back. Spending everything moved you farther from the skateboard. This time, put the MOST in SAVE and only a little in SPEND and GIVE. Try about $6, $18, and $6.',
-      savedAll: 'RESET: Your $30 is back. Saving most is correct, but Theo and the shelter still need a small share. Try about $6 in SPEND, $18 in SAVE, and $6 in GIVE.',
-      gaveAll: 'RESET: Your $30 is back. Giving everything left nothing for the skateboard or your needs. This time, put the MOST in SAVE and only a little in SPEND and GIVE. Try about $6, $18, and $6.',
-      unbalanced: 'RESET: Your $30 is back. A big future goal means SAVE must be much larger than the other jars. Try about $6 in SPEND, $18 in SAVE, and $6 in GIVE.',
+      spentAll: 'Your money reset. Spending everything moved you away from the skateboard. Make SAVE much larger than the other jars.',
+      savedAll: 'Your money reset. The skateboard is important, but a strong plan still leaves a small amount for today and others.',
+      gaveAll: 'Your money reset. Giving everything left no path toward the skateboard. Make SAVE much larger and keep small shares elsewhere.',
+      unbalanced: 'Your money reset. A large future goal needs a clearly larger SAVE jar, plus smaller SPEND and GIVE amounts.',
     },
-    recap: (a) => `Saved $${a.save} toward the skateboard, spent $${a.spend}, gave $${a.give} - goals take patience!`,
+    recap: (a) => `You saved $${a.save} toward the skateboard while keeping $${a.spend} for now and $${a.give} for others.`,
   },
 ]
 
