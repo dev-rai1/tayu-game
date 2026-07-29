@@ -21,6 +21,7 @@ const Guru = lazy(() => import('./pages/Guru.jsx'))
 const Auth = lazy(() => import('./pages/Auth.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
+const TeacherGuide = lazy(() => import('./pages/TeacherGuide.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
 
@@ -93,6 +94,7 @@ export default function App() {
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
+              <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
               <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><><SiteTrafficSummary /><Dashboard /></></Suspense></AdminRoute>} />
               <Route path="/assessment/:phase" element={<Suspense fallback={<LoadingScreen />}><KnowledgeQuiz /></Suspense>} />
               <Route path="*" element={<Navigate to="/" replace />} />
