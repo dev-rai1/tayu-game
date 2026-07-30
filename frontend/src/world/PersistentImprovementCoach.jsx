@@ -7,53 +7,38 @@ import { cartFeedback } from '../scenarios/storeMission.js'
 import { BUNDLES, EVENTS, QUALITY, SIGNS, nextTip } from '../scenarios/lemonade.js'
 import { weekSpec } from '../scenarios/marketScenarios.js'
 import { EMERGENCY_EVENT } from '../scenarios/budgetTown.js'
+import { recordLearningEvent } from '../services/usageAnalytics.js'
 
 const money = (value) => `$${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+const track = (moduleName, type, outcome, detail) => {
+  recordLearningEvent({ moduleName, type, outcome, detail }).catch(() => {})
+}
 
 function bankRetryAction(week) {
   if (week === 4) {
     return {
-      title: 'Pay the credit bill safely',
-      action: 'Choose “Pay in full” so you do not add interest.',
-      goal: 'Finish with $0 added interest.',
+      title: 'Compare the credit choices',
+      action: 'Look at which option creates an extra charge later. Choose the one that clears the balance without adding a new cost.',
+      goal: 'Explain why one payment choice costs less over time.',
     }
   }
   if (week === 6) {
     return {
-      title: 'Stop the scam',
-      action: 'Choose “Refuse.” Never send money or private information when someone pressures you.',
-      goal: 'Protect your money and information.',
+      title: 'Check the warning signs',
+      action: 'Notice the pressure, the unexpected prize, and the request for money or private information. Choose the response that protects both.',
+      goal: 'Use the warning signs to protect your money and information.',
     }
   }
   return {
-    title: 'Try the safer bank choice',
-    action: 'Retry and choose the option that avoids extra cost or risk.',
-    goal: 'Complete the lesson safely.',
+    title: 'Compare the bank outcomes',
+    action: 'Retry after identifying which option adds cost or risk and which one protects the plan.',
+    goal: 'Complete the lesson using the consequence as evidence.',
   }
 }
 
-function activeKeyForState(state) {
-  if (state.week === 1 && state.objective === 'kitchen' && state.scenarioState === 'ALLOCATING') return 'jars'
-  if (state.week === 1 && state.objective === 'store' && state.bramTalked && !state.storeMissionDone) return 'market'
-  if (state.week === 3 && state.bt && (state.bt.stage === 'split' || state.btPanel === 'split')) return 'budget'
-  if (state.week === 4 && state.bk) return 'bank'
-  if (state.week === 5 && state.mg && ['scenario', 'adjust', 'slider'].includes(state.mg.phase)) return 'garden'
-  return null
-}
-
+// This component observes game outcomes and stores one concise retry clue. It does
+// not render a second card; PersistentCoach displays the clue in the shared tray.
 export function PersistentImprovementCoach() {
-  const week = useGame((state) => state.week)
-  const objective = useGame((state) => state.objective)
-  const scenarioState = useGame((state) => state.scenarioState)
-  const bramTalked = useGame((state) => state.bramTalked)
-  const storeMissionDone = useGame((state) => state.storeMissionDone)
-  const bt = useGame((state) => state.bt)
-  const btPanel = useGame((state) => state.btPanel)
-  const bk = useGame((state) => state.bk)
-  const mg = useGame((state) => state.mg)
-  const weekComplete = useGame((state) => state.weekComplete)
-  const feedbackByModule = useFeedbackCoach((state) => state.feedbackByModule)
-
   useEffect(() => {
     const setFeedback = useFeedbackCoach.getState().setFeedback
     const clearFeedback = useFeedbackCoach.getState().clearFeedback
@@ -73,15 +58,16 @@ export function PersistentImprovementCoach() {
         && previous.scenario
       ) {
         const result = checkAllocation(previous.allocations, previous.scenario)
+        track('jars', 'choice_attempt', result.ok ? 'effective' : 'incorrect', previous.scenario.id)
         if (!result.ok) {
-          const target = previous.scenario.target
           setFeedback('jars', {
             sourceKey: `jars-${previous.scenario.id}-${previous.attempt}`,
             title: 'Adjust the jars',
             diagnosis: previous.scenario.recap(previous.allocations),
-            action: `Try about ${money(target.spend)} in SPEND, ${money(target.save)} in SAVE, and ${money(target.give)} in GIVE.`,
-            goal: 'Use all three jars and keep the total balanced.',
+            action: result.hint || 'Compare what each jar is for, then change the jar that does not match the story’s biggest priority.',
+            goal: 'Use all three jars and make the largest jar match the story’s priority.',
           })
+          track('jars', 'retry_prompt', 'directional', result.scene)
         }
       }
       if (state.scenarioState === 'SUCCESS' && previous.scenarioState !== 'SUCCESS') clearFeedback('jars')
@@ -90,11 +76,13 @@ export function PersistentImprovementCoach() {
         const basket = previous.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
         setFeedback('market', {
           sourceKey: `market-${state.storeAttempt}`,
-          title: 'Fix your basket',
+          title: 'Recheck your basket',
           diagnosis: cartFeedback(basket),
-          action: 'Choose one healthy food and one healthy drink. Add a want only if money is left.',
-          goal: 'Turn both Food and Drink checks green.',
+          action: 'Use the red and green basket checks as clues. Change the category that is still missing, then decide whether an optional item still fits.',
+          goal: 'Build a complete basket without spending beyond the limit.',
         })
+        track('market', 'choice_attempt', 'incorrect', `attempt-${state.storeAttempt}`)
+        track('market', 'retry_prompt', 'directional', 'basket-checks')
       }
       if (state.storeMissionDone && !previous.storeMissionDone) clearFeedback('market')
 
@@ -108,35 +96,16 @@ export function PersistentImprovementCoach() {
           sign: result.sign || SIGNS[0],
           wageRate: result.wageRate ?? 1,
         }
-        const analysis = nextTip(
-          result,
-          levers,
-          result.event || EVENTS[0],
-          state.lemFeatures,
-          state.lemTipHistory,
-        )
+        const analysis = nextTip(result, levers, result.event || EVENTS[0], state.lemFeatures, state.lemTipHistory)
         setFeedback('lemonade', {
           sourceKey: `lemonade-${result.round}`,
           title: analysis.title,
           diagnosis: analysis.diagnosis,
           action: analysis.action,
           goal: analysis.goal,
-          recommended: {
-            price: analysis.plan.price,
-            hours: analysis.plan.hours,
-            bundleId: analysis.plan.bundle.id,
-            bundleLabel: analysis.plan.bundle.label,
-            qualityId: analysis.plan.quality.id,
-            qualityLabel: analysis.plan.quality.label,
-            signId: analysis.plan.sign.id,
-            signLabel: analysis.plan.sign.label,
-            wageRate: analysis.plan.wageRate,
-            expectedKeep: analysis.plan.sim.keep,
-            expectedSold: analysis.plan.sim.sold,
-            eventId: analysis.targetEvent?.id,
-            eventLine: analysis.targetEvent?.line,
-          },
         })
+        track('lemonade', 'choice_attempt', analysis.currentPerfect ? 'effective' : 'revise', `round-${result.round}`)
+        if (!analysis.currentPerfect) track('lemonade', 'retry_prompt', 'directional', analysis.lever)
       }
 
       const previousLogs = previous.mg?.weekLog?.length || 0
@@ -144,16 +113,18 @@ export function PersistentImprovementCoach() {
       if (currentLogs > previousLogs) {
         const log = state.mg.weekLog.at(-1)
         const spec = weekSpec(log.week)
+        track('garden', 'choice_attempt', log.judged ? 'effective' : 'incorrect', `decision-${log.week}`)
         if (log.judged) {
           clearFeedback('garden')
         } else {
           setFeedback('garden', {
             sourceKey: `garden-${log.week}`,
-            title: `Adjust Week ${log.week}`,
+            title: `Reconsider Decision ${log.week}`,
             diagnosis: `Your garden ended at ${money(log.total)}.`,
             action: spec.nudge || spec.intro,
-            goal: 'Make the next choice match the week’s lesson.',
+            goal: 'Use the week’s evidence to change one part of the plan.',
           })
+          track('garden', 'retry_prompt', 'directional', `decision-${log.week}`)
         }
       }
 
@@ -165,11 +136,13 @@ export function PersistentImprovementCoach() {
         const pocket = previous.bt?.split?.pocket ?? previous.split?.pocket ?? 0
         setFeedback('budget', {
           sourceKey: `budget-emergency-${Date.now()}`,
-          title: 'Add more to Pocket',
-          diagnosis: `Pocket had ${money(pocket)}, but the surprise cost ${money(EMERGENCY_EVENT.cost)}.`,
-          action: `Put at least ${money(EMERGENCY_EVENT.cost)} in Pocket, then split the rest between Bank and Money Garden.`,
-          goal: 'Keep enough ready for the surprise cost.',
+          title: 'Protect ready cash',
+          diagnosis: `Pocket had ${money(pocket)}, and the surprise could not be covered.`,
+          action: 'Make Pocket large enough for the surprise before dividing what remains between Bank and Money Garden.',
+          goal: 'Keep enough money ready for an unexpected cost.',
         })
+        track('budget', 'choice_attempt', 'incorrect', 'emergency-cash')
+        track('budget', 'retry_prompt', 'directional', 'protect-ready-cash')
       }
       if (state.bt?.stage === 'handoff' && previous.bt?.stage !== 'handoff') clearFeedback('budget')
 
@@ -177,6 +150,7 @@ export function PersistentImprovementCoach() {
       const previousCard = previous.cards.at(-1)
       if (currentCard && currentCard !== previousCard && currentCard.id === 'bkfb') {
         const mustRetry = currentCard.buttons?.some((button) => button.act === 'bk.retry')
+        track('bank', 'choice_attempt', mustRetry ? 'incorrect' : 'effective', `week-${state.bk?.week || 0}`)
         if (mustRetry) {
           const correction = bankRetryAction(state.bk?.week)
           setFeedback('bank', {
@@ -186,6 +160,7 @@ export function PersistentImprovementCoach() {
             action: correction.action,
             goal: correction.goal,
           })
+          track('bank', 'retry_prompt', 'directional', `week-${state.bk?.week || 0}`)
         } else {
           clearFeedback('bank')
         }
@@ -195,22 +170,5 @@ export function PersistentImprovementCoach() {
     return unsubscribe
   }, [])
 
-  const currentState = { week, objective, scenarioState, bramTalked, storeMissionDone, bt, btPanel, bk, mg }
-  const activeKey = activeKeyForState(currentState)
-  const feedback = activeKey ? feedbackByModule[activeKey] : null
-
-  if (!feedback || weekComplete) return null
-
-  return (
-    <aside
-      aria-live="polite"
-      className="pointer-events-none fixed left-3 top-[92px] z-[485] w-[min(92vw,24rem)] rounded-3xl border-2 border-sun bg-navy/95 p-3 text-white shadow-2xl"
-    >
-      <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">Quick tip</div>
-      <h2 className="mt-1 font-display text-lg font-extrabold text-white">{feedback.title}</h2>
-      <div className="mt-2 rounded-2xl bg-sun p-3 text-navy">
-        <p className="text-sm font-extrabold leading-snug">{feedback.action}</p>
-      </div>
-    </aside>
-  )
+  return null
 }

@@ -55,6 +55,16 @@ export const useFeedbackCoach = create((set) => ({
   },
 }))
 
+export function activeFeedbackKey(state = {}) {
+  if (state.week === 1 && state.objective === 'kitchen' && state.scenarioState === 'ALLOCATING') return 'jars'
+  if (state.week === 1 && state.objective === 'store' && state.bramTalked && !state.storeMissionDone) return 'market'
+  if (state.week === 2 && state.objective === 'lemonade') return 'lemonade'
+  if (state.week === 3 && state.bt && (state.bt.stage === 'split' || state.btPanel === 'split')) return 'budget'
+  if (state.week === 4 && state.bk) return 'bank'
+  if (state.week === 5 && state.mg && ['scenario', 'adjust', 'slider'].includes(state.mg.phase)) return 'garden'
+  return null
+}
+
 export function feedbackKeyForWeek(week) {
   if (week === 1) return null
   if (week === 2) return 'lemonade'

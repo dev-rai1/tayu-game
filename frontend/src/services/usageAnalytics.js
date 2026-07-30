@@ -6,6 +6,7 @@ const AUTH_SESSION_KEY = 'tayu-session-v1'
 const USAGE_SESSION_KEY = 'tayu-usage-session-v1'
 const GUEST_ID_KEY = 'tayu-anonymous-guest-id-v1'
 const HEARTBEAT_CAP_SECONDS = 45
+const LEARNING_EVENT_LIMIT = 120
 
 function authUser() {
   try { return JSON.parse(sessionStorage.getItem(AUTH_SESSION_KEY) || 'null') } catch { return null }
@@ -50,6 +51,7 @@ function guestProgressSnapshot() {
     currentWeek: Number(wallet.week || 1),
     objective: wallet.objective || '',
     gameComplete: Boolean(wallet.gameComplete),
+    activeLearningPath: profile.activeLearningPath || null,
     updatedAt: new Date().toISOString(),
   }
 }
@@ -69,7 +71,10 @@ function newSession(user, path = '') {
     durationSeconds: 0,
     path,
     currentModule: '',
+    lastModule: '',
     moduleSeconds: {},
+    eventCounts: {},
+    learningEvents: [],
     device: /iPad|Tablet/i.test(navigator.userAgent || '') ? 'Tablet' : /Mobi|Android|iPhone/i.test(navigator.userAgent || '') ? 'Mobile' : 'Desktop',
   }
 }
@@ -81,15 +86,44 @@ function advance(existing, path, moduleName) {
   const activeModule = existing.currentModule || ''
   const moduleSeconds = { ...(existing.moduleSeconds || {}) }
   if (activeModule && elapsed > 0) moduleSeconds[activeModule] = Number(moduleSeconds[activeModule] || 0) + elapsed
+  const nextModule = moduleName === undefined ? activeModule : moduleName
   return {
     ...existing,
     lastSeenAt: now.toISOString(),
     lastTickAt: now.toISOString(),
     durationSeconds: Math.max(0, Math.round((now - new Date(existing.startedAt)) / 1000)),
     path: path ?? existing.path ?? '',
-    currentModule: moduleName === undefined ? activeModule : moduleName,
+    currentModule: nextModule,
+    lastModule: nextModule || activeModule || existing.lastModule || '',
     moduleSeconds,
+    eventCounts: existing.eventCounts || {},
+    learningEvents: existing.learningEvents || [],
   }
+}
+
+export function learningEventKey(moduleName, type) {
+  return `${String(moduleName || 'unknown')}:${String(type || 'event')}`
+}
+
+export function appendLearningEvent(session, event, occurredAt = new Date().toISOString()) {
+  const moduleName = String(event?.moduleName || session?.currentModule || session?.lastModule || 'unknown')
+  const type = String(event?.type || 'event')
+  const key = learningEventKey(moduleName, type)
+  const eventCounts = {
+    ...(session?.eventCounts || {}),
+    [key]: Number(session?.eventCounts?.[key] || 0) + 1,
+  }
+  const learningEvents = [
+    ...(session?.learningEvents || []),
+    {
+      moduleName,
+      type,
+      outcome: String(event?.outcome || '').slice(0, 40),
+      detail: String(event?.detail || '').slice(0, 160),
+      occurredAt,
+    },
+  ].slice(-LEARNING_EVENT_LIMIT)
+  return { ...session, eventCounts, learningEvents, lastModule: moduleName === 'unknown' ? session?.lastModule || '' : moduleName }
 }
 
 async function persist(session) {
@@ -107,7 +141,10 @@ async function persist(session) {
     durationSeconds: Number(session.durationSeconds || 0),
     path: session.path || '',
     currentModule: session.currentModule || '',
+    lastModule: session.lastModule || '',
     moduleSeconds: session.moduleSeconds || {},
+    eventCounts: session.eventCounts || {},
+    learningEvents: session.learningEvents || [],
     device: session.device || 'Unknown',
   }
   if (session.guest) payload.guestProgress = guestProgressSnapshot()
@@ -128,6 +165,18 @@ export async function touchUsage({ path, moduleName } = {}) {
 
 export async function setUsageModule(moduleName) {
   return touchUsage({ path: window.location.pathname, moduleName })
+}
+
+export async function recordLearningEvent({ moduleName, type, outcome = '', detail = '' } = {}) {
+  const user = analyticsUser()
+  if (!user || !type) return null
+  let session = readUsage()
+  if (!session || session.uid !== user.id || session.endedAt) session = newSession(user, window.location.pathname)
+  session = advance(session, window.location.pathname, moduleName === undefined ? session.currentModule : moduleName)
+  session = appendLearningEvent(session, { moduleName, type, outcome, detail })
+  writeUsage(session)
+  await persist(session).catch(() => {})
+  return session
 }
 
 export async function closeUsageSession() {
