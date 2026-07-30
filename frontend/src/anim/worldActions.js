@@ -5,6 +5,7 @@
 import { stage } from './stage.js'
 import { useGame } from '../world/store.js'
 import { playerPos } from '../world/store.js'
+import { captionDwellMs } from '../services/readingPreferences.js'
 
 const g = () => useGame.getState()
 
@@ -37,7 +38,7 @@ export function npcPose(id, pose) { const a = stage.actors[id]; if (a) { a.pose 
 // Send acting NPC lines to the fixed HUD caption. Keeping text in screen space
 // makes it readable without covering the character or the object they act on.
 export function npcSay(id, text, dur = 3.4) {
-  g().sayActor(id, text, dur * 1000)
+  g().sayActor(id, text, captionDwellMs(text, dur * 1000))
 }
 export function npcFace(id, target) { const a = stage.actors[id]; if (a) a.rotY = Math.atan2(target[0] - a.x, target[1] - a.z) }
 export function npcHome(id) { const a = stage.actors[id]; if (a) { a.tx = a.homeX; a.tz = a.homeZ; a.moving = true; a.pose = 'idle'; a.onArrive = () => { a.moving = false } } }
@@ -65,7 +66,7 @@ export function playerPose(pose) { g().setPlayerPose(pose) }
 // ---- HUD / world FX (DOM overlays in Hud.jsx) ----
 export function walletPoof(to = 0) { g().setWallet(to); g().hudShake() }
 export function jarChime(jar) { g().pulseJar(jar) }
-export function guideSay(line, ms = 2800) { g().sayGuide(line, ms) }
+export function guideSay(line, ms = 2800) { g().sayGuide(line, captionDwellMs(line, ms)) }
 export function banner(text, ms = 2600) { g().setBanner(text, ms) }
 export function tintWorld(color, ms = 1500) { g().setTint(color, ms) }
 export function sunArc(ms = 1500) { g().triggerSun(ms) }
