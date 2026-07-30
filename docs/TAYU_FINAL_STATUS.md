@@ -2,23 +2,25 @@
 
 Updated: July 30, 2026
 
-This file records the final state after the four-PR playtest revision stack.
+This file records the current state of the playtest revisions and the follow-up partner feedback.
 
-## Implemented in this stack
+## Consolidated implementation
 
-1. **PR #121 — Interactive onboarding and navigation**
+The prior stacked PRs contained the following completed work:
+
+1. **Interactive onboarding and navigation**
    - two-step learn-by-doing movement/action tutorial
    - returning-player tutorial flag
    - persistent replayable current mission
    - screen-edge objective pointer with distance scaling and recovery pulse
 
-2. **PR #122 — Walkthrough and complete audit**
+2. **Walkthrough and complete audit**
    - replacement v7 walkthrough
    - complete product checklist
    - corrected stationary Budget Town description
    - corrected ten-decision, two-part Money Garden description
 
-3. **PR #123 — Reading accessibility**
+3. **Reading accessibility**
    - Younger / Older reading preference
    - default from grade or selected grade path
    - 2600 ms caption base
@@ -26,7 +28,7 @@ This file records the final state after the four-PR playtest revision stack.
    - 260 ms per word for Older readers
    - real player settings route
 
-4. **PR #124 — Retention, checks, and recaps**
+4. **Retention, checks, and recaps**
    - exactly two supportive questions after every module
    - immediate correct/close feedback
    - actual-value personalized recap for all five modules
@@ -34,17 +36,36 @@ This file records the final state after the four-PR playtest revision stack.
    - module collectible reveal connected to the existing finale shelf
    - correct check-before-certificate flow for shorter paths
 
+Because the earlier PRs were stacked on intermediate branches, their merged state did not place every change on `main`. The current consolidation branch brings the complete implementation together in one PR targeting `main`.
+
+## Latest partner playtest
+
+Observed timing:
+
+- Modules 1-4: approximately **3-5 minutes each**
+- Investing / Money Garden: approximately **8-9 minutes**
+
+Positive findings:
+
+- The reviewer considered the module content strong.
+- The game was viewed as a possible recommendation in presentations for students to use outside of class.
+- The short module structure supports optional, self-paced engagement.
+
+UI issues reported and addressed:
+
+- **Budget Town chats appeared to skip automatically.** The six core instructional takeaways are now held in a player-controlled dialog with Read aloud and Continue.
+- **Investing hints were covered by the weekly objective.** The mission chip now hides during the Investing adjustment and initial seed-allocation phases, allowing the pinned lesson hint to remain unobstructed.
+
+The complete feedback record and presentation language are in `docs/playtests/PARTNER_PLAYTEST_FEEDBACK_2026-07-30.md`.
+
 ## Official documentation synchronized
 
-The top stacked branch now keeps all three implementation documents consistent through PR #124:
-
 - `WALKTHROUGH.md` describes the combined final player, teacher, QA, and retest flow.
-- `docs/TAYU_COMPLETE_UPDATE_CHECKLIST.md` labels each requirement as Main, PR, Protected, Polish, or Human.
-- this file records the final stack and merge order.
+- `docs/TAYU_COMPLETE_UPDATE_CHECKLIST.md` labels each requirement by implementation or human-validation status.
+- this file records the consolidated implementation and latest partner feedback.
+- `docs/playtests/PARTNER_PLAYTEST_FEEDBACK_2026-07-30.md` preserves the new timing, bugs, fixes, and presentation recommendation.
 
-No final document still labels the PR #123 reading work or PR #124 module-check work as an unimplemented gap.
-
-## Already implemented before this stack
+## Already implemented before the consolidation
 
 - required account and organization fields
 - guest mode and guest analytics
@@ -63,24 +84,26 @@ No final document still labels the PR #123 reading work or PR #124 module-check 
 
 ## Automated validation
 
-- PR #121 passed the repository frontend and backend workflow.
-- The cumulative top branch was compared with `main` to run the complete workflow.
-- Frontend dependency installation, production build, and all frontend tests passed.
-- Backend dependency installation and all backend tests passed.
-- The branch was restored to the proper stacked base after validation.
+The consolidated PR must pass:
+
+- frontend dependency installation
+- production build
+- all frontend tests, including Budget takeaway protection and Investing overlay visibility
+- backend dependency installation
+- all backend tests
 
 ## Human validation still required
 
 Code cannot replace real student observation. The deployed build still needs:
 
-- one original-tester retest and written feedback
-- one or two new student sessions with parent permission
+- a follow-up session confirming that Budget Town takeaways no longer skip
+- a follow-up Investing session confirming that the pinned hint remains unobstructed
+- one or two additional student sessions with parent permission
 - physical-phone testing
 - compressed Google Meet testing
 - grade-specific elementary, middle, and high-school sessions
-- a Money Garden Part 2 focus session
 - analytics review after those sessions
 
-## Merge order
+## Production merge
 
-Merge the pull requests in numeric order: **#121 → #122 → #123 → #124**.
+Merge the new consolidated PR into **`main`**. It supersedes the stranded intermediate-branch state of PRs #122-#124 and includes the latest partner-feedback fixes.
