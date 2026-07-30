@@ -6,7 +6,9 @@ import { usesTouchControls } from './controlMode.js'
 import { coachVisibility } from './overlayVisibility.js'
 
 export function shouldHideObjectiveChip(state) {
-  return state.week === 5 && ['adjust', 'slider'].includes(state.mg?.phase)
+  if (!state.near) return true
+  if (state.week === 5 && ['adjust', 'slider'].includes(state.mg?.phase)) return true
+  return false
 }
 
 export function ObjectiveChip() {
@@ -16,21 +18,18 @@ export function ObjectiveChip() {
 
   if (!guidance || !visibility.showGuidance || state.weekComplete || state.gameComplete || shouldHideObjectiveChip(state)) return null
 
-  const spoken = [guidance.title, guidance.instruction, guidance.action].filter(Boolean).join('. ')
-  const replay = () => {
-    say(spoken)
-    window.dispatchEvent(new Event('tayu-refocus-objective'))
-  }
+  const spoken = [guidance.title, guidance.action].filter(Boolean).join('. ')
+  const replay = () => say(spoken)
 
   return (
     <button
       type="button"
       onClick={replay}
-      aria-label={`Current objective: ${spoken}. Tap to hear it again.`}
-      className="pointer-events-auto fixed left-1/2 top-3 z-[485] w-[min(88vw,27rem)] -translate-x-1/2 rounded-2xl border-2 border-teal bg-navy/95 px-4 py-2 text-left text-white shadow-xl transition hover:-translate-y-0.5 active:scale-[0.99]"
+      aria-label={`Next action: ${spoken}. Tap to hear it.`}
+      className="pointer-events-auto fixed bottom-24 left-1/2 z-[485] w-[min(82vw,22rem)] -translate-x-1/2 rounded-2xl border-2 border-teal bg-navy/95 px-4 py-2 text-center text-white shadow-xl transition active:scale-[0.99]"
     >
-      <span className="block text-[10px] font-extrabold uppercase tracking-[0.18em] text-teal">Current mission · tap to replay</span>
-      <span className="mt-0.5 block truncate text-sm font-extrabold">{guidance.title}</span>
+      <span className="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">Next action</span>
+      <span className="mt-0.5 block text-sm font-extrabold">{guidance.action || guidance.title}</span>
     </button>
   )
 }

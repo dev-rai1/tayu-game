@@ -14,12 +14,13 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain('tayu-interactive-controls-v1')
     expect(tutorialSource).toContain('MOVEMENT_DISTANCE')
     expect(tutorialSource).toContain("window.addEventListener('tayu-interact'")
+    expect(tutorialSource).toContain("if (step === 1 && !near) return null")
     expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D} />')
-    expect(pageSource).not.toContain('Your map mission')
   })
 
-  it('keeps the current mission visible and replayable', () => {
-    expect(chipSource).toContain('Current mission · tap to replay')
+  it('shows guidance only when an interaction is relevant', () => {
+    expect(chipSource).toContain('if (!state.near) return true')
+    expect(chipSource).toContain('Next action')
     expect(chipSource).toContain('say(spoken)')
     expect(pageSource).toContain('<ObjectiveChip />')
   })

@@ -11,6 +11,11 @@ function completeTutorial(setStep) {
 }
 
 export function FirstTimeMovementTutorial({ enabled = true }) {
+  const near = useGame((state) => state.near)
+  const blocking = useGame((state) => Boolean(
+    state.helpOpen || state.dialog || state.cards?.length || state.lessons?.length ||
+    state.panelJar || state.panelItem || state.btPanel || state.bkPanel || state.panelPortfolio
+  ))
   const [step, setStep] = useState(() => {
     if (!enabled || typeof window === 'undefined') return -1
     return localStorage.getItem(TUTORIAL_KEY) ? -1 : 0
@@ -19,7 +24,6 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
 
   useEffect(() => {
     if (!enabled || step < 0) return undefined
-
     if (!start.current) start.current = { x: playerPos.x, z: playerPos.z }
 
     const movementTimer = window.setInterval(() => {
@@ -29,11 +33,8 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
     }, 120)
 
     const finishOnRealInteraction = () => {
-      if (step !== 1) return
-      const near = useGame.getState().near
-      if (near) completeTutorial(setStep)
+      if (step === 1 && useGame.getState().near) completeTutorial(setStep)
     }
-
     const finishOnKeyboardInteraction = (event) => {
       if (event.code === 'KeyE') finishOnRealInteraction()
     }
@@ -47,31 +48,22 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
     }
   }, [enabled, step])
 
-  if (!enabled || step < 0) return null
-
+  if (!enabled || step < 0 || blocking) return null
   const mobile = usesTouchControls
+
+  if (step === 1 && !near) return null
+
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[5.25rem] z-[515] flex justify-center px-4" aria-live="polite">
-      <section className="w-[min(92vw,28rem)] rounded-3xl border-2 border-teal bg-navy/95 px-5 py-4 text-center text-white shadow-2xl">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-teal">
-          Controls practice · {step + 1} of 2
-        </div>
+    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[515] flex justify-center px-4" aria-live="polite">
+      <section className="w-[min(88vw,24rem)] rounded-2xl border-2 border-teal bg-navy/95 px-4 py-3 text-center text-white shadow-xl">
         {step === 0 ? (
-          <>
-            <div className="mt-2 text-3xl" aria-hidden>🕹️</div>
-            <h2 className="mt-1 font-display text-xl font-extrabold">
-              {mobile ? 'Hold and drag the MOVE pad.' : 'Use WASD to walk.'}
-            </h2>
-            <p className="mt-1 text-sm font-bold text-white/80">Move a few steps to finish this practice.</p>
-          </>
+          <p className="text-sm font-extrabold">
+            {mobile ? 'Use the MOVE pad to walk toward the arrow.' : 'Use WASD to walk toward the arrow.'}
+          </p>
         ) : (
-          <>
-            <div className="mt-2 text-3xl" aria-hidden>✨</div>
-            <h2 className="mt-1 font-display text-xl font-extrabold">Great. Now use the action control.</h2>
-            <p className="mt-1 text-sm font-bold text-white/80">
-              Follow the arrow to a glowing person or place, then {mobile ? 'tap the blue DO button' : 'press E'}.
-            </p>
-          </>
+          <p className="text-sm font-extrabold">
+            You made it. {mobile ? 'Tap the blue action button.' : 'Press E or click the action button.'}
+          </p>
         )}
       </section>
     </div>

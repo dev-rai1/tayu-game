@@ -6,7 +6,6 @@ import { ensureAdminAccess } from '../services/adminAccess.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
-import GuestModeButton from '../components/GuestModeButton.jsx'
 
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
 const SELECT = 'mt-1 w-full rounded-xl border border-white/20 bg-white px-4 py-3 font-bold text-navy outline-none focus:border-teal'
@@ -86,7 +85,6 @@ export default function Auth() {
       <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
         <h1 className="font-display text-2xl font-extrabold">{mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</h1>
         <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'All questions are required. Teachers create a classroom, and students join with their teacher’s code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
-        <GuestModeButton />
         <div className="mt-4 flex gap-1.5" role="tablist">{[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => <button key={tabMode} type="button" onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
 
         <label className={LABEL}>Email {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} /></label>
