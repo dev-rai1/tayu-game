@@ -1,243 +1,602 @@
-# TAYU — Full Walkthrough of Every Text Box (Round 9 build)
+# TAYU Current Walkthrough and Demo Script v7
 
-This is the complete, in-order script of the game: every pop-up, card, speech
-bubble, toast, and hint the child sees, with its exact copy, who says it, what
-triggers it, and what buttons it offers. `$X`-style values are filled with the
-child's real numbers at runtime.
+Updated: July 30, 2026
 
-Legend for the box types:
+This walkthrough replaces the older Round 9 document and the attached v6 review script. It describes the current product after the merged playtest revisions plus the interactive onboarding and navigation work in PR #121.
 
-| Type | What it looks like |
-|---|---|
-| **HELP POPUP** | The full-screen '?' menu (Controls / Phases / Library tabs) |
-| **POINTER** | Tap-to-dismiss dark card with the TAYU logo |
-| **CARD** | White bottom card, one speaker, 1–3 buttons (only ever ONE at a time) |
-| **DIALOG** | Speech panel with the speaker's name (Next / Got it) |
-| **BUBBLE** | Small speech bubble floating over an NPC's head in the 3D world |
-| **TOAST** | White strip at the bottom, disappears by itself |
-| **PANEL** | Interactive pop-up (sliders, basket, pie chart...) |
-| **BANNER** | Big celebration strip at the top with confetti |
+The game contains five financial-literacy modules. Money Garden is still Module 5, but it now contains **Part 1 and the additional Part 2**. Grade and classroom paths may end after an earlier module and issue an accurate path certificate.
 
----
+Dynamic values such as `$[amount]`, `[name]`, percentages, sales, and portfolio results come from the player’s actual choices. Some consequence lines therefore vary.
 
-## 0. Entering the world (every entry, both platforms)
+## Quick route map
 
-1. **HELP POPUP** (auto-opens on EVERY world entry, Controls tab first):
-   - Desktop copy: *"WASD or the UP/DOWN/LEFT/RIGHT ARROW KEYS - walk. To LOOK AROUND: hold the RIGHT MOUSE BUTTON, or press the LEFT/RIGHT ARROW KEYS. Walk up to a glowing person or button and press E (or click it) to interact. Follow the arrows - they show you where to go next!"*
-   - Phone copy: *"Use the on-screen pad to walk. Drag with TWO FINGERS to look around. Tap a glowing person or button to interact. Follow the arrows - they show you where to go next!"*
-   - Tabs: **CONTROLS** (biggest, default), **PHASES** (journey list with DONE / YOU ARE HERE / LOCKED), **LIBRARY** (all Learn More resources by module). Button: **Got it!**
-2. **POINTER** — *"Confused about the controls? Tap the question mark (?) any time to see them again."* (first play on this device only)
-3. **POINTER** — *"Up top in that menu you'll also find PHASES (where you are in the journey) and the LIBRARY (extra things to learn)."*
-4. **POINTER** — *"Whenever you want to learn more about something, look for a LEARN MORE button. There is lots more waiting if you are curious!"*
-5. Welcome overlay — *"Welcome to your neighborhood, {name}!"* / *"Follow the arrows - they'll show you where to go next!"*
-
-Interaction prompts everywhere: desktop shows **"Click or press E - {action}"**, phone shows **"Tap - {action}"**.
+1. Landing and authentication
+2. Pre-game money check-in
+3. Grade or teacher-assigned learning path
+4. Avatar creation
+5. First-session controls practice
+6. Module 1: Market & Three Jars
+7. Module 2: Lemonade Stand
+8. Module 3: Budget Town, stationary household scene
+9. Module 4: Bank of TAYU
+10. Module 5 Part 1: Investing Foundations
+11. Module 5 Part 2: Markets, Risk, and Patience
+12. Finale or shorter-path certificate
 
 ---
 
-## Module 1 — The Tayu Market (allowance, jars, needs vs wants)
+## 0. Landing, account, path, and avatar
 
-1. Hint chip (top right): *"Go to the ALLOWANCE BANK"* → arrow leads along the ring.
-2. At the Allowance Bank, prompt: *"Collect Allowance"* → **TOAST** *"You got your weekly allowance! +$30"*
-3. **DIALOG — Penny** (one of three scenarios per run; scenario 1 shown):
-   - *"Hi! I'm Penny. It's Theo's birthday this week!"*
-   - *"You really want that $8 toy for yourself too..."*
-   - *"AND Mia is collecting for the animal shelter."*
-   - *"You have $30. Fill your 3 jars: some to SPEND, some to SAVE, some to GIVE!"*
-   - (Scenario 2 "A Rainy Day" and scenario 3 "The Big Want" have their own four lines and targets.)
-4. **PANEL** — jar panel at each jar (SPEND / SAVE / GIVE, +/- amounts).
-5. First deposit into each jar → **POINTER** teaching line for that jar.
-6. When the wallet hits $0, the NPCs ACT OUT the result. Wrong splits get a hint and the coins fly back:
-   - Spent nearly all: *"You spent it ALL on yourself. Fun toy... but nothing saved and nothing for the shelter. Try again!"*
-   - Saved nearly all: *"Great saving! But Theo got no gift and the shelter left empty-handed. Balance it out!"*
-   - Gave nearly all: *"So generous! But now you have nothing to spend or save. Keep a little for you too!"*
-   - Close but off: *"Close! Think: SOME to spend, SOME to save, SOME to give. Spread it across all three jars."*
-   - Balanced: Penny's recap — *"You spent $X, saved $Y, and gave $Z - a real budget!"*
-7. Hint chip: *"Talk to Mr. Bram first"* → **DIALOG — Mr. Bram**:
-   - *"Welcome to the MARKET! I'm Mr. Bram."*
-   - *"Prioritize your needs first. It is okay to enjoy a want too!"*
-   - *"Explore the store and choose what feels right, then head to checkout."*
-   - (Re-talk: *"Needs first, then a want if you can afford it. The checkout mat is waiting!"*)
-8. Shelf items each show a NAME + $PRICE card; buying pops a small product panel (name, need/want, price, **Buy**).
-9. Checkout mat prompt: *"Checkout (N in basket)"* → the day plays out (good basket = sunny day scene; junk-only, no-drink, or no-food baskets each get their own acted-out consequence and a retry with the basket refunded): e.g. *"Let's try that again! Pick ONE healthy drink and ONE healthy food with your $10 Spend jar."*
-10. Leftover SPEND rolls into SAVE → **POINTER** *"Nice! The $X you did not spend went into your Savings! Money you keep becomes savings."*
-11. **Week 1 Complete** card → button **Start Week 2**.
+### Landing page
 
----
+The player arrives at `tayufinance.app`. The page shows the TAYU brand, media coverage, music/language controls, a main play entry, and About information.
 
-## Module 2 — The Lemonade Stand (earning)
+Primary actions:
 
-1. **POINTER** — *"You saved money for things like this stand. Nice! Money you do not spend becomes your savings, just like we learned."* Toast: *"Follow your arrow to the LEMONADE STAND."*
-2. **DIALOG — Penny** at the stand:
-   - *"Welcome to your Lemonade Stand! You have $X to start. You'll buy supplies, set your price, and sell cups. Your goal: earn $30 profit. Penny will help you!"*
-   - *"Tax is a small part of your PROFIT that goes to the town. Profit is what is left after you pay for your supplies and pay yourself for your work."*
-   - *"Each week: buy supplies from Mr. Bham, set your plan at the stand, and sell. I will tell you exactly what to fix each week!"*
-3. **PANEL** — supplies at Mr. Bham (Small $4 / Medium $6 / Large $9 / Mega $12).
-4. **CARD ×2** — the price formula (before the first price decision, re-openable any week):
-   - *"How do you set your price? Add your costs. Supplies: $6 (cups, lemons, sugar, water, table). Your work: $4 (you can change what your time is worth). Total cost: $6 + $4 = $10."*
-   - *"These supplies make 10 cups, so each cup costs $10 / 10 = $1. Now add a little profit - say 10%: $0.10. Price: $1 + $0.10 = $1.10 a cup. You decide your price - then see how your customers respond!"*
-5. **PANEL** — the stand template: price stepper, hours, your pay, (later: quality, sign, town news).
-6. End of each week, four cards in a row:
-   - *"Week N is done!"* — *"Nice work, {name}! X kids bought your lemonade at $Y a cup."* (or *"A quiet day. Nobody bought at $Y. Every seller has days like this."*)
-   - *"Your results"* — the ledger, always in this order: Revenue → Supplies → Your pay → Profit → Tax (10% of profit) → **You keep**.
-   - *"Your goal"* — *"Goal: $30. You have $X, $Y to go!"*
-   - *"What to change next week"* — ONE direct tip with real numbers, e.g. *"Your price is too high this week. Try around $1.05-$1.30 next week."* / *"You sold out and 5 kids were turned away. Buy Large supplies next week."* / on a perfect week: *"PERFECT combination! Supplies match your sales, your price works, your hours pay off. Nothing to fix!"*
-7. After the first perfect week, one unlock card per week:
-   - Quality: *"Something new this week! Upgrade time: EXTRA LEMONY costs more to make, but kids may pay more for it. Or go LESS SUGAR - healthier AND cheaper to make! Your call."*
-   - Sign: *"Something new this week! A marketing SIGN brings more kids to your stand. Signs cost money - is it worth it? Your call."*
-   - News: *"Something new this week! TOWN NEWS is live: each week, something happens in town. Check the news before you decide anything!"*
-8. The pool-party choice (once): work → *"You kept the stand open while Theo swam. Everything you choose costs the thing you did not choose."* / swim → *"What a swim! But the stand earned nothing today. Everything you choose costs the thing you did not choose."*
-9. If the money ever runs out: **CARD** *"Uh oh - bankruptcy! Your money ran out. That happens to real businesses too. Let's go back and make a better decision this time!"* (the week rewinds, money restored).
-10. At $30: **BANNER** *"LEMONADE TYCOON!"* → *"All your leftover money went into your savings. Saving what you earn is how the next big thing gets funded!"* → **CARD** *"You did it! Time to CASH OUT - collect your $X from the stand. Now... where should all that money LIVE? Follow the arrow to BUDGET TOWN!"*
+- **Play** opens the login/sign-up experience.
+- **About Us** opens the team, project, track-record, partnership, and contact information.
+- **Play in Guest Mode** creates an anonymous playable session without requiring an email account.
+
+### Login and sign-up
+
+Account users sign in with Firebase authentication. Sign-up asks for the required account information, role, grade information, and referral source. Organization/classroom users provide their school or organization context, and students may join a teacher using a class code.
+
+Forgot-password email remains available through Firebase.
+
+### Pre-game money check-in
+
+Non-teacher players complete the short pre-game assessment before entering the game. The same questions return after the full journey so administrators can compare pre/post results. This assessment is not a grade.
+
+### Grade-aware path selection
+
+Independent players choose a grade band:
+
+- **Grades K–2:** Modules 1–2
+- **Grades 3–5:** Modules 1–3
+- **Grades 6–8:** Modules 1–5
+- **Grades 9–12:** Modules 1–5, with optional advanced teacher prompts
+
+A teacher-assigned classroom path overrides this recommendation. The module page shows **START**, **RESUME**, **DONE**, **PLAY AGAIN**, or **LOCKED** based on the saved path and progress.
+
+### Avatar creation
+
+The child names and customizes the avatar, then enters the world. Avatar choices and game progress are saved for returning account users. Guest progress is stored under an anonymous guest session.
 
 ---
 
-## Module 3 — Budget Town (a day in the life + the split)
+## 1. Entering the world: controls, mission, and navigation
 
-**TOAST on arrival:** *"BUDGET TOWN is open! Follow your arrow to the Budget Keeper."*
+### First session only: two-step controls practice
 
-### The day (walk to each building; the Keeper only nudges — never re-starts dialogue)
+The old repeated text-only opening is replaced by a short learn-by-doing gate.
 
-1. **CARD — The Budget Keeper**: *"You arrive with $X - nicely earned! Before money can grow, it pays for LIFE. Let's live one day in Budget Town. Follow your arrow!"* → **Live one day!**
-2. TOAST: *"First stop: the HOUSE. Follow your arrow!"*
-3. **The House** — prompt *"Pay the rent"* → **CARD**: *"A roof over your head comes first. Rent: $6."* → **Pay the rent ($6)** → coins fly to the house, the windows LIGHT UP, the family waves at the door. TOAST: *"The lights come on - the family waves!"* then *"Shelter is a NEED - usually the biggest slice."*
-4. TOAST: *"Next: the GROCERY - the basket is waiting."*
-5. **The Grocery** — prompt *"Fill your basket"* → **PANEL** basket mini-game: Milk $1, Bread $1, Eggs $2, Apples $1, Veggies $2 (foods) + Ice pop $1, Chips $1, Comic $2 (treats), budget $6. Gate line until 3 foods: *"Tummies first! Grab at least 3 real foods, then treats if there is room."* When ready: *"N foods and M treats - a smart basket!"* → **Check out ($X)** → bags line up outside. TOASTS: *"Basket packed! The bags line up out front."* / *"Food is a NEED - a treat or two is okay!"*
-6. TOAST: *"Next: the BUS STOP - school days!"*
-7. **The Bus Stop** — prompt *"Catch the school bus"* → **CARD**: *"The school bus is coming. A week of rides: $2."* → **Hop on ($2)** → the yellow bus drives in, pauses, drives off with kids waving. TOASTS: *"Here comes the school bus..."* / *"All aboard! The kids wave as it rolls away."* / *"Getting to school is a NEED."*
-8. TOAST: *"Next: the CLINIC - the health jar."*
-9. **The Clinic** — prompt *"Fund the health jar"* → **CARD**: *"The health jar keeps checkups covered. Drop in $2."* → **Fill the health jar ($2)** → coin drops in the jar, the red cross glows, the doctor gives a thumbs-up. TOASTS: *"The doctor gives a thumbs-up!"* / *"Health care is a NEED you plan for."*
-10. TOAST: *"Last stop: the FUN PARK... if you want to."*
-11. **The Fun Park** — prompt *"Visit the Fun Park"* → **CARD**: *"Every NEED is covered - so now you get to choose. The mini-wheel costs $2."*
-    - **Ride the wheel ($2)** → the ferris wheel spins up, riders cheer. TOASTS: *"Wheee! The wheel spins and everyone cheers!"* / *"Wants come AFTER needs - and yours were covered. Enjoy the ride!"*
-    - **Save it instead** → TOAST: *"Skipping a want you did not need - that is real budget power!"*
+**Step 1 of 2**
 
-### The split (the climax) and the coin walk
+- Desktop heading: **Use WASD to walk.**
+- Mobile heading: **Hold and drag the MOVE pad.**
+- Support line: **Move a few steps to finish this practice.**
 
-12. **CARD — The Budget Keeper**: *"What a day! Needs cost $X and fun cost $Y - you have $Z left. Grown-ups give leftover money three homes. Tap each one to see what it does!"* → **Show me the three homes!**
-13. **PANEL** — three tappable cards, each with a 2-second line animation:
-    - POCKET — *"Cash you keep close. Safe, ready anytime - but it never grows."* (flat line)
-    - BANK — *"Money you store at the bank. It grows a little, slow and steady."* (gentle slope)
-    - MONEY GARDEN — *"Money you plant to grow the most - but it can wiggle up AND down. There is a risk."* (wiggle)
-14. **PANEL** — the sliders + LIVE PIE on the leftover. Tapping a slice speaks the advisor's exact line with the child's real percentage:
-    - Pocket: *"You have N% in safe cash, which will stay steady. It will not grow, but it's safe."*
-    - Bank: *"You have kept N% of your money in the bank. It will grow over time - smaller amounts, slow and steady."*
-    - Garden: *"You have decided to put N% of your money here. Just keep in mind: this money has a risk. It may grow, or it may be lost."*
-    - Nudges (never blocks): all-pocket → *"If it all naps in your pocket, none of it grows - try putting a little to work!"* · all-garden → *"Brave! But smart gardeners keep some safe in case of surprises."* · nothing growing → *"All pocket cash so far - the bank and garden are where money grows."* · zero pocket → *"A little pocket cash is handy for surprises - grown-ups call it emergency money."*
-    - Button: **This is my plan!**
-15. **CARD** with the plan pie: *"Here's your plan! Pocket $A | Bank $B | Garden $C."* + nudge line: *"Now walk your money home! Take the BANK coins to the BANK KIOSK, and the GARDEN coins to the GARDEN GATE."* → **Walk the coins!**
-16. **Bank Kiosk** (glowing) — prompt *"Drop off the BANK coins"* → coins arc in. TOAST: *"$B tucked at the bank kiosk - Banker Bea will collect it."* (Going to the gate first: *"Bank coins first - the kiosk is glowing!"*)
-17. **Garden Gate** — prompt *"Drop off the GARDEN coins"* → coins arc in, a sprout pops up. TOAST: *"$C waits at the garden gate, ready to grow."*
-18. **CARD**: *"One more thing - a gardener's secret: always keep a little in your pocket for SURPRISES. A flat bike tire, a rainy day. That's called emergency money."* → **Uh oh, what is that?**
-19. The flat tire plays out (Theo rolls up with a wrench): TOASTS *"Flat bike tire! It costs $2."* / *"Tire fixed! Paid from your pocket cash."* → **CARD**: *"See? Because you kept a little in your pocket, the surprise was no problem."*
-    - If pocket had less than $2: **POINTER** *"Uh oh - no pocket cash for the surprise! Let's set your split again and keep a little close."* → the sliders reopen.
-20. **CARD — hand-off**: *"Your plan is set! The $B you're saving - let's go to the Bank and open a real account. And the $C you're growing? That comes later, at the Money Garden. Follow the path to the Bank - Banker Bea is waiting!"* → **To the Bank!**
+The game detects real movement before advancing.
 
----
+**Step 2 of 2**
 
-## Module 4 — The Bank of TAYU (learn by doing; one continuous sequence)
+- Heading: **Great. Now use the action control.**
+- The player follows the arrow to a nearby glowing person or place.
+- Desktop completes the step with **E**.
+- Mobile completes the step with the large blue **DO** button.
 
-**TOAST on arrival:** *"THE BANK OF TAYU is open! Follow your arrow to Banker Bea."*
-**POINTER:** *"You decided to keep $B in the bank. Let's go open your account so it's safe and earns a little."*
+The tutorial completion flag is stored on the device, so returning players enter directly.
 
-Talk to Bea ONCE. From here every lesson auto-flows into the next — the
-learning happens with BUBBLES over the acting NPCs; each lesson ends with a
-one-line summary card whose button starts the next lesson.
+### Persistent help
 
-### Lesson 1 — Open the account (the vault)
-- **BUBBLE (Bea):** *"Hand me your coins - the vault keeps them SAFE."*
-- **CARD:** *"Banker Bea waves you to the counter."* → **Give Bea my $B**
-- Teller Tom carries the coins from the counter to the vault; the great door spins and THUNKS; **BUBBLE (Tom):** *"THUNK! Safe in the vault."*
-- **CARD summary:** *"Your money sleeps behind a giant steel door - and you can take it out any time."* → **Next lesson**
+The question-mark button remains available throughout the world. It opens:
 
-### Lesson 2 — The three teller windows (account types)
-- **BUBBLE (Bea):** *"Three windows: CHECKING, SAVINGS, CD. The longer money stays, the more the bank pays!"*
-- Tom walks window to window: **BUBBLES:** *"Checking: grab it anytime... earns $0."* → *"Savings: DING! +50 cents."* → *"CD: locked up... DING DING! +$1!"* (a gold padlock snaps onto the CD window)
-- **CARD:** *"Where should YOUR money live?"* → **Some in a CD too** / **Mostly SAVINGS** / **All CHECKING**
-- Result lines: smart → *"The locked CD earns the most. Patience pays!"* · safe → *"Slow and steady - and you can still reach it."* · cash → *"Easy to grab - but it earns nothing. Next time, let a little grow."* (nudge, never a block) → **Next lesson**
+- **Controls**
+- **Your Modules**
+- **Learning Resources**
 
-### Lesson 3 — The debit card
-- **BUBBLE (Bea):** *"This DEBIT card is a key to YOUR checking. Water bottle time!"*
-- The child's avatar walks to the snack stall and taps the card; the CHECKING gauge on the wall visibly drops. **BUBBLE (Clerk Cleo):** *"Beep! $3 from YOUR checking."* **BUBBLE (Bea):** *"See the CHECKING gauge drop? Your own money."*
-- **CARD summary:** *"A debit card spends your own money - it is a key, not extra cash."* → **Next lesson**
+The controls tab includes a read-aloud button.
 
-### Lesson 4 — The credit card and the bill
-- **BUBBLE (Bea):** *"A CREDIT card borrows the BANK's money. Watch what follows it home..."*
-- Swipe at the stall (**BUBBLE Cleo:** *"Beep! $5 on CREDIT."*), then Postal Pat marches up with an envelope: **BUBBLE:** *"Bill! $5, please."*
-- **CARD:** *"The bill is here. What do you do?"* → **Pay it ALL ($5)** / **Pay a little ($1)**
-  - Pay all → **BUBBLE (Pat):** *"Paid in FULL - zero extra!"* → summary *"Whole bill, on time - zero extra. That is the credit-card superpower."*
-  - Pay a little → **BUBBLE (Pat):** *"Only $1? See you next week..."* → the envelope PUFFS BIGGER → **BUBBLE:** *"The bill GREW - interest works against you!"* → **BUBBLE (Bea):** *"All cleared - $1 went to interest."* → summary *"Bea helped you clear the grown bill. The little-pay cost $1 extra."* with **Let's try that again!** offered.
-- Summary card button → **Next lesson**
+### Current mission chip
 
-### Lesson 5 — Debt, late fees, and help
-- **BUBBLE (Bea):** *"Six cards means six bills - and every late one GROWS by itself."*
-- Six little red debt blobs sprout on the plaza and GROW; TOAST: *"The little debts grow taller with every late fee..."*
-- Helper Hana walks in and herds them together — they MERGE into one calm blue blob. **BUBBLE (Hana):** *"One plan. One payment. Lower rate."*
-- **CARD summary** (with **Learn More: Nonprofit credit counseling (NFCC)**): *"Debt can grow - but help exists, and asking is the smart, brave move."* → **Next lesson**
+A Deep Navy chip stays at the top center while the player has an active objective.
 
-### Lesson 6 — Scams and safety
-- Sneaky Sam creeps up to the child. **BUBBLE (Sam):** *"You WON a prize! Just send $5 first!"*
-- **CARD:** *"A stranger wants $5 to 'deliver your prize.'"* → **Shoo them away!** / **Send the $5**
-  - Shoo → Sam bolts; Bea rushes over and a golden SHIELD floats over the child. **BUBBLE (Bea):** *"A real bank NEVER asks you to send money."*
-  - Send → the coins fly out, Bea intercepts and returns them. **BUBBLE (Bea):** *"So close! Bea caught it - never send money to strangers."* (retry offered)
-- **CARD summary:** *"Never send money to someone you do not know."* → **Show me my Trust!**
+- Label: **Current mission · tap to replay**
+- It shows the short objective title, such as **COLLECT YOUR ALLOWANCE** or **TALK TO MR. BRAM**.
+- Tapping it reads the mission aloud and refocuses navigation.
 
-### The wrap
-- **BANNER:** *"TRUST METER: FULL!"*
-- **CARD:** *"This is your TRUST - grown-ups call it a credit score. Paying on time and staying safe builds it, and big trust unlocks big things later."* → **Next**
-- **CARD:** *"Your bank money is safe and growing. Now - that $C you set aside for the Money Garden? Time to grow it. Follow the path!"* → **To the Money Garden!**
+### Arrow and screen-edge pointer
+
+When the target is visible, the normal world arrow points to it. When the camera faces away, the objective becomes a screen-edge pointer that rotates toward the target. The pointer changes with distance and gives a restrained recovery pulse if the player keeps moving away.
+
+### Saved progress
+
+Returning players may continue the active world rather than restarting. Money Garden Part 2 also resumes from its saved checkpoint.
 
 ---
 
-## Module 5 — The Money Garden (investing, last)
+## 2. Module 1: Market & Three Jars
 
-**TOAST:** *"THE MONEY GARDEN is open! Follow your arrow to Mr. Sprout."*
+### Goal
 
-1. **CARD ×3 — Mr. Sprout's opening** (the split is already decided):
-   - *"There you are! You earned it at the stand, you budgeted it in town, you banked the safe part... and you brought the GROW part right here. Welcome to the Money Garden!"*
-   - *"Remember your plan: pocket cash for surprises, bank money growing slow and steady. THIS money is the brave part - the garden can grow it the most, but it wiggles. Some days it even droops."*
-   - *"Here we plant money in COMPANIES. But smart gardeners never plant at random - let me show you how to choose your seeds."* → **Plant my seeds!**
-2. **Week 1 CARD:** *"Time to plant! Three companies, three garden beds. Before you choose, be a detective: who is busy? What does the news say? Who is steady, who is wiggly? Then split your seeds the way YOU think is smart."* → **Plant my seeds**
-3. **PANEL — the SEED PIE** (dollars across the three companies, live pie, per-company stories on tap):
-   - Toy Town: *"Peek in the windows - PACKED with customers every day. A busy store is a healthy company. A steady grower."*
-   - Snack Shack: *"The town news says kids love their new juice pops. Good news can mean growth - but always check the store, not just the headlines."*
-   - Game Land: *"Exciting, but its price jumps around - a wiggly grower. It can grow fast AND droop fast. Plant here only what can ride the wiggles."*
-   - Teach line: *"That is how gardeners choose: look for BUSY stores, listen for REAL news, and know your steady growers from your wiggly ones. Never plant at random - and never all in one bed!"* + **Learn More: What stocks are (Investor.gov)** → **Plant my seeds!**
-4. **Weeks 2–10** — each week: a pinned LESSON chip + intro card + the world acts (customers stream into busy stores, prices droop and recover, a rocket inflates and pops, the quiet shop wins) + ONE feedback card (praise or coach, with the week's real numbers and a Learn More link). All ten lessons, verbatim in the game:
-   - W2 *"never keep all your money in one company"*, W3 *"prices wiggle - do not panic when they dip"*, W4 *"watch the store - a busy store is a healthy company"*, W5 *"price and health are different"*, W6 *"money seeds take time - patience pays"* (the ONE surprise bill), W7 *"companies can fail - watch for warning signs"*, W8 *"do not chase - what shot up fast can fall fast"*, W9 *"steady and boring can beat flashy"*, W10 *"check your garden - trim the big, water the small"*.
-5. **Harvest summary panel:** plants for every company owned, *"You started with $X → You finished with $Y"*, *"N weeks in the garden. You followed M of N lessons - every one was a DECISION, not luck."* → **Finish**
-6. **CARD:** *"$GOAL! You planted, you watched, you waited - and when things drooped, you didn't panic. One last secret, gardener: real money gardens grow slower than ours did. But the earlier in life you plant, the taller they grow. Now go tell someone what a busy store means!"*
-7. **CARD — the bridge:** *"You EARNED it. You BUDGETED it. You BANKED it. And now you GREW it. That is the whole money journey! Follow the path east - the FINALE AREA is open, and the party is for YOU."* → **To the Finale!**
+Give an allowance three jobs, then shop for needs and wants without exceeding the plan.
+
+### A. Collect the allowance
+
+Mission: **COLLECT YOUR ALLOWANCE**
+
+The player follows the arrow to the Allowance Bank and interacts. Coins animate to the player.
+
+Toast: **You got your weekly allowance! +$30**
+
+### B. Divide the allowance
+
+Penny introduces one of the jar scenarios. The player receives a real situation with competing goals and allocates all $30 among:
+
+- **SPEND:** money for needs and things enjoyed now
+- **SAVE:** money kept for later goals
+- **GIVE:** money used to help others
+
+A persistent allocation board shows the amount left and each jar’s current value. The player chooses a jar, adds money, and sees an NPC react.
+
+The first contribution to each jar opens one short, tap-to-dismiss explanation with **Read aloud**.
+
+### C. Retry ineffective plans
+
+When all $30 has been assigned, the scenario evaluates the actual split.
+
+- An ineffective split triggers one directional clue.
+- The clue does not reveal exact target amounts.
+- Coins reset so the child can revise.
+- The current mission stays visible during the retry.
+
+A successful plan shows the actual Spend, Save, and Give values.
+
+### D. Talk to Mr. Bram
+
+Mission: **TALK TO MR. BRAM**
+
+Mr. Bram explains that needs come first and a want may fit afterward. The shopping mission remains locked until this conversation is complete.
+
+### E. Shop the market
+
+Mission: **BUY FOOD AND A DRINK**
+
+The player walks near an item, uses E/DO, reviews the price and need/want type, and chooses whether to buy it. The top mission bar shows:
+
+- money remaining in the Spend jar
+- basket item count
+- whether food is present
+- whether a drink is present
+
+After one healthy food and one healthy drink are selected, the mission changes to **GO TO CHECKOUT**.
+
+### F. Consequence and retry
+
+Checkout uses the actual basket. The world acts out the result. A basket missing a key need receives a short consequence and one next-step clue, then the player retries. A suitable basket completes the shopping mission.
+
+Any unused Spend money rolls into Save, and the game explains that money not spent can become savings.
+
+### G. Completion
+
+The completion card includes the player’s name and actual Spend/Save/Give values. The next action begins the Lemonade Stand unless the active K–2/classroom path ends here.
+
+For a shorter path, the module page unlocks the accurate path certificate.
 
 ---
 
-## The Finale
+## 3. Module 2: Lemonade Stand
 
-1. **BANNER:** *"THE FINALE AREA IS OPEN!"* + **POINTER:** *"You finished the whole journey. Follow your arrow to the FINALE AREA - the party is for you!"*
-2. Approaching the Finale Area: the WHOLE TOWN rushes over (snappy), circles the child and dances. **BANNER:** *"EVERYONE CAME TO CELEBRATE YOU!"* **BUBBLES:** *"You did it!"* · *"MONEY GURU!"* · *"Hip hip HOORAY!"* · *"The whole journey!"* · *"So proud of you!"* · *"Party time!"*
-3. Door prompt: *"Enter the FINALE!"* → the certificate page: *"CONGRATULATIONS, {NAME}! You saved, you shopped smart, you gave, you ran a business, you invested, you budgeted, and you banked. That makes you a true MONEY GURU."* + the downloadable certificate (*"Mastered saving, smart spending, giving, running a business, investing, budgeting, and banking."*) with disco lights, dancers, and party music.
+### Goal
+
+Run a small business, pay costs and the player’s own labor, and accumulate $30 in after-tax profit kept.
+
+### A. Meet Penny
+
+Mission: **GO TO THE LEMONADE STAND**
+
+Penny introduces the starting cash, the business goal, and the tax rule. Tax is applied to profit, not revenue.
+
+### B. Buy supplies
+
+Mission: **BUY THIS WEEK’S SUPPLIES**
+
+The child returns to the market and chooses a supply bundle that the current cash can afford. No button applies an automatically correct bundle.
+
+### C. Build the weekly plan
+
+Mission: **BUILD THIS WEEK’S PLAN**
+
+The planning panel asks the child to set:
+
+- open hours
+- the player’s wage/pay
+- price per cup
+- later unlocks such as recipe quality and a sign
+- town-news context when that feature unlocks
+
+The panel always shows:
+
+- supplies cost
+- player labor cost
+- total cost
+- cost per cup
+- town tax as 10% of profit
+
+### D. Re-openable pricing explanation
+
+**How do I pick?** opens a two-card explanation of cost per cup and adding a possible profit margin. It teaches the calculation but does not choose the final plan.
+
+### E. Watch the business day
+
+Customers approach the stand and react to the actual plan. Coins, missed customers, leftovers, and the tax action make the consequence visible before the ledger appears.
+
+### F. End-of-week cards
+
+The cards appear one at a time:
+
+1. **Week [N] is done!** — personalized sales recap
+2. **Your results** — Revenue → Supplies → Your pay → Profit → Tax → You keep
+3. **Your goal** — cumulative progress toward $30
+4. **What to change next week** — one main lever to reconsider
+
+The feedback uses demand, leftovers, missed customers, cost, and profit. It does not reveal an exact final answer or apply the change automatically.
+
+### G. Opportunity-cost choice
+
+After the relevant unlock, Theo invites the player to a pool activity during selling time. The child chooses work or the pool and sees the tradeoff.
+
+### H. Bankruptcy rewind
+
+When the player cannot afford the next business step, the current week rewinds to its checkpoint. Earlier modules and progress remain intact.
+
+### I. Completion
+
+At $30 cumulative kept profit:
+
+- banner: **LEMONADE TYCOON!**
+- the game connects earnings to the next budgeting decision
+- the player moves to Budget Town unless this is the end of the active K–2/classroom path
+
+The module card becomes replayable after completion.
 
 ---
 
-## Everyone you can talk to (Part 7)
+## 4. Module 3: Budget Town, stationary household scene
 
-Every townsperson answers with a short line over their head; many point to the
-next stop (the {next stop} fills in live — e.g. "BUDGET TOWN"):
+### Important correction from the attached v6 walkthrough
 
-- **Milo** (walks the loop): *"I walk this ring road every single day. Best loop in the world."* · *"Keep going around - {next stop} is just ahead!"* · *"Two-way street, friend. You can walk it both ways!"*
-- **Nea** (walks it backwards): *"I walk the loop backwards. It is the same circle!"* · *"Need a hint? {next stop} - follow your arrow."*
-- **Theo:** *"Hey friend! My bike and I are ready for anything."* · *"Follow the arrow - {next stop} is waiting for you!"*
-- **Mia:** *"The shelter says hi! Giving feels amazing."* · *"Lost? The arrow points to {next stop}!"*
-- **Scoop:** *"EXTRA EXTRA! Kid learns money, town amazed!"* · *"My ball rolls to {next stop} every time. Follow it!"*
-- **Teller Tom:** *"The vault door weighs more than a hippo!"* — **Clerk Cleo:** *"Cards are keys to your own money, you know."* — **Postal Pat:** *"Pay the whole bill on time - trust me, I deliver the grown ones."* — **Helper Hana:** *"One payment beats six fees - that is my motto."* — **Sneaky Sam:** *"...no prizes today. Fine. FINE. I am leaving."*
-- **Park folk by the lake:** Dana & Rio (dancing), Lulu & Finn (on the bench), Pip (picnic), Momo: e.g. *"The disco at the Finale Area is going to be LEGENDARY."* · *"Resting by the water is free. Best deal in town."*
-- **Hosts out of turn:** each future host gives a friendly not-yet line (e.g. Mr. Sprout: *"Not right now - finish the Bank of TAYU first, then come grow your money with me!"*); finished hosts greet warmly (e.g. *"Your budget still looks great, Budget Boss!"*).
+The player does **not** walk from building to building inside Budget Town. The prior walk-through-town design was removed. The current module is one stationary household scene. Decisions happen through cards and panels while rooms, people, and objects react in place.
+
+### Goal
+
+Cover needs, decide whether a want fits, divide the leftover money among three jobs, and test the plan against a surprise.
+
+### A. Introduction
+
+Budget Keeper line:
+
+**You earned $[amount]. Cover today’s needs, decide whether a want fits, and keep something ready for a surprise.**
+
+### B. Five household decisions
+
+The sequence advances automatically. The player never needs to navigate to another Budget Town building.
+
+1. **The House**
+   - Rent: $6
+   - Button: **Pay rent ($6)**
+   - Result: the family has a safe place to live.
+
+2. **The Grocery**
+   - Food budget: $6
+   - Button: **Build my basket**
+   - Gate: choose at least three foods without exceeding the budget; a treat may be added only if it fits.
+
+3. **The Bus Stop**
+   - School rides: $2
+   - Button: **Pay for rides ($2)**
+   - Result: transportation prevents a school-day problem.
+
+4. **The Clinic**
+   - Checkup: $2
+   - Button: **Pay for care ($2)**
+   - Result: health care is covered before optional spending.
+
+5. **The Fun Park**
+   - Want: $2
+   - Buttons: **Ride now ($2)** or **Keep the money**
+   - The result compares enjoyment now with flexibility later.
+
+A live readout shows what has been spent and what remains.
+
+### C. Compare the three money homes
+
+The player opens each option:
+
+- **POCKET:** ready for surprises; steady; no growth
+- **BANK:** slower, lower-risk growth; remains available later
+- **MONEY GARDEN:** more growth potential; more risk
+
+### D. Build the split
+
+Prompt:
+
+**Divide the money among Pocket, Bank, and Money Garden. Use the live feedback, then test whether the plan survives a surprise.**
+
+The child adjusts three values and watches the live pie chart. Tapping a category explains the actual percentage.
+
+Extreme plans receive evidence-based nudges. The game does not require one mathematically perfect allocation.
+
+### E. Surprise test
+
+A $2 flat-bike-tire expense appears.
+
+- Enough Pocket money: ready cash pays the surprise and the growing money remains untouched.
+- Insufficient Pocket money: the plan returns to the sliders with a clue to revise ready cash.
+
+### F. Handoff
+
+The saved split carries forward:
+
+- Pocket remains ready cash.
+- Bank amount becomes the starting bank deposit.
+- Garden amount becomes the investing amount in Module 5.
+
+The player continues to Bank of TAYU unless the active 3–5/classroom path ends after Module 3.
 
 ---
 
-## Always-available UI
+## 5. Module 4: Bank of TAYU
 
-- **'?' button** (top right, always): reopens the Controls / Phases / Library popup.
-- **Your Money pill** (top center): the one number, always visible, every module.
-- **Trust Meter** (bank module), **Week/goal chip** (garden), **jar chips** (week 1).
-- **Admin** (bottom right, password): ◀ Module / Module ▶, ◀ Week / Week ▶, Add money — on a solid gray panel.
+### Goal
+
+Compare bank accounts and payment tools, observe borrowing costs, identify trustworthy help, and recognize a scam.
+
+The Bank is a stationary, continuous six-lesson sequence. The player sees one decision, one consequence, and one short takeaway at a time. A six-segment Trust Meter fills as lessons finish.
+
+### Lesson 1: Protect the deposit
+
+- The player deposits the actual Bank amount.
+- Vault animation: **THUNK! The deposit is protected.**
+- Takeaway: the bank stores money securely while it remains the player’s money.
+
+### Lesson 2: Compare account types
+
+The game contrasts:
+
+- **Checking:** easiest access; earns $0 in the demonstration
+- **Savings:** still reachable; earns 50 cents
+- **CD:** locked longer; earns $1
+
+Choices:
+
+- **Savings plus a CD**
+- **Mostly SAVINGS**
+- **All CHECKING**
+
+The result explains access now versus growth later without blocking one acceptable plan.
+
+### Lesson 3: Debit
+
+A $3 water-bottle purchase comes directly from checking. The visible balance drops.
+
+Takeaway: debit uses money already owned.
+
+### Lesson 4: Credit and interest
+
+A $5 credit purchase creates a later bill.
+
+Choices:
+
+- **Pay all ($5)**
+- **Pay only $1**
+
+Paying all ends the debt. Paying part leaves a balance and adds interest. The consequence is shown before the short explanation.
+
+### Lesson 5: Debt help
+
+The game shows several debts becoming difficult to manage, then introduces a trusted nonprofit counselor and one organized payment plan. A learning resource explains debt-help options.
+
+### Lesson 6: Scam safety
+
+A stranger promises a prize but requests $5 first.
+
+Choices:
+
+- **Do not send money**
+- **Send the $5**
+
+A send attempt is stopped safely and replayed with a warning-sign clue. The game never lets the simulated scam permanently remove the player’s money.
+
+### Trust handoff
+
+The filled Trust Meter connects paying on time and borrowing carefully with credit trust. The Bank amount remains protected, and the saved Garden amount becomes the next module’s portfolio.
+
+---
+
+## 6. Module 5: Money Garden, Part 1 and Part 2
+
+### Important correction from the attached v6 walkthrough
+
+Money Garden is not a six-week ending anymore. It contains **ten decision weeks divided into two five-decision parts**, plus overtime only when needed to reach the final growth condition.
+
+### Opening
+
+Mr. Sprout establishes the three-part plan:
+
+- Pocket remains ready.
+- Bank grows more steadily.
+- Money Garden accepts more market risk.
+
+The player uses company evidence, changes the portfolio, and tests what happens.
+
+### Initial company comparison
+
+The player compares:
+
+- **Toy Town:** steady customer activity
+- **Snack Shack:** positive product news that still needs store evidence
+- **Game Land:** faster and sharper price movement in both directions
+
+The initial seed pie divides the actual Garden money among the companies. The game encourages evidence and diversification, not one exact allocation.
+
+### Part 1: Investing Foundations, Decisions 1–5
+
+1. **Use business clues before investing**
+   - Compare the companies and make the first portfolio decision.
+
+2. **Diversification limits one-company risk**
+   - One company may fall; other holdings can reduce the damage.
+
+3. **A price dip needs context**
+   - Decide whether the business changed or only the price moved.
+
+4. **Customers provide business evidence**
+   - Compare a busy store with an empty store before changing the portfolio.
+
+5. **Low price and healthy business are different clues**
+   - Two companies become cheaper, but only one remains healthy.
+
+### Part 1 intermission
+
+After Decision 5, the module pauses.
+
+Actions:
+
+- **Start Part 2** continues immediately.
+- **Save and exit** returns to the learning path.
+
+Returning later resumes at Part 2. The checkpoint is saved inside the player’s Money Garden state, so it is not shared incorrectly across different players or games.
+
+### Part 2: Markets, Risk, and Patience, Decisions 6–10
+
+6. **Ready cash protects long-term investments**
+   - A surprise bill tests whether short-term needs can be paid without forcing an early sale.
+
+7. **Business warnings can justify a change**
+   - Empty aisles, damaged signs, and falling activity provide real evidence.
+
+8. **Hype is not business evidence**
+   - A fast price jump creates excitement; the player looks for support beyond the jump.
+
+9. **Steady performance can matter more than one flashy move**
+   - The player compares several weeks rather than one dramatic change.
+
+10. **Rebalancing restores the intended risk**
+   - The player checks whether one holding has become too large and tests a revised balance.
+
+Each decision uses the same loop:
+
+1. Read one short clue.
+2. Open the portfolio.
+3. Buy, sell, or keep cash based on evidence.
+4. Tap **Test This Choice** or the equivalent current action.
+5. Watch the world and prices react.
+6. Receive one consequence and one next clue.
+
+### Harvest
+
+The final summary uses the player’s actual:
+
+- starting Garden value
+- ending value
+- company holdings
+- number of weeks
+- number of lessons followed
+
+Completion line:
+
+**$[goal]. You researched, diversified, kept ready cash, responded to evidence, and rebalanced. Real investing moves more slowly and still involves risk.**
+
+Bridge:
+
+**You earned, budgeted, banked, and invested the same money. Follow the path to the finale.**
+
+---
+
+## 7. Finale and certificates
+
+### Full five-module journey
+
+When the complete path is finished:
+
+- the Finale area opens
+- NPCs celebrate around the avatar
+- party music and effects begin
+- the certificate recognizes the completed money journey
+- the displayed and downloaded certificate use `tayufinance.app`
+
+The player may download, print, or share the certificate and give feedback.
+
+### Shorter grade/classroom path
+
+A player whose required path ends after Module 2 or Module 3 receives a path certificate that lists only the modules actually completed. The game does not falsely state that later banking or investing modules were completed.
+
+### Replay
+
+On the module page, any completed module shows **Play again →**. The player can replay a favorite module without erasing the completed path.
+
+---
+
+## 8. Teacher walkthrough
+
+Teachers receive a classroom dashboard with:
+
+- unique class code
+- module enable/disable controls
+- skip settings
+- exact student-session preview
+- linked-student analytics
+- completion, attempts, retries, drop-off, time, and assessment information
+- detailed CSV export
+
+The in-app Teacher Guide includes for every module:
+
+- suggested grades
+- expected time
+- learning goals
+- student decisions
+- discussion prompts
+- observable evidence
+- short-session stopping point
+- optional high-school extension
+- five-minute debrief
+
+The guide explains that TAYU is designed for reasoning, consequence, and revision rather than revealing exact answers.
+
+---
+
+## 9. Demo and QA checklist
+
+Before presenting TAYU, verify:
+
+1. `tayufinance.app` loads and music/language controls respond.
+2. Guest Mode enters a playable independent path.
+3. First-time controls practice appears only on a device that has not completed it.
+4. The mission chip reads the current goal aloud when tapped.
+5. Turning the camera away produces an edge pointer.
+6. Mobile MOVE and DO controls do not block lesson buttons.
+7. Market checkout requires food and a drink.
+8. Lemonade results use Revenue → Supplies → Pay → Profit → Tax → Keep.
+9. Budget Town remains stationary and never asks the player to walk between buildings.
+10. Budget emergency failure returns only to the split.
+11. Bank lessons advance one at a time and the Trust Meter reaches six.
+12. Money Garden pauses after Decision 5 and resumes at Part 2 after Save and exit.
+13. Completed modules show Play again.
+14. The final certificate uses `tayufinance.app`.
+15. The deployment marker matches the expected Git commit.
+
+---
+
+## 10. Confirmed remaining work
+
+The following requested items are not described as complete in this walkthrough because they still need their own code PR or human validation:
+
+- Younger/Older reading-band preference and grade default
+- word-count timing constants for auto-clearing chatter
+- two supportive knowledge-check questions after every module
+- consistent personalized one-line endings for Budget and Bank
+- end-to-end verification that every earned badge visibly changes the avatar or finale presentation
+- physical-phone, compressed-window, and new-student retesting
+
+The exhaustive status table is in `docs/TAYU_COMPLETE_UPDATE_CHECKLIST.md`.
