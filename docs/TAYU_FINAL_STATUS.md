@@ -34,6 +34,16 @@ This file records the final state after the four-PR playtest revision stack.
    - module collectible reveal connected to the existing finale shelf
    - correct check-before-certificate flow for shorter paths
 
+## Official documentation synchronized
+
+The top stacked branch now keeps all three implementation documents consistent through PR #124:
+
+- `WALKTHROUGH.md` describes the combined final player, teacher, QA, and retest flow.
+- `docs/TAYU_COMPLETE_UPDATE_CHECKLIST.md` labels each requirement as Main, PR, Protected, Polish, or Human.
+- this file records the final stack and merge order.
+
+No final document still labels the PR #123 reading work or PR #124 module-check work as an unimplemented gap.
+
 ## Already implemented before this stack
 
 - required account and organization fields
@@ -51,15 +61,24 @@ This file records the final state after the four-PR playtest revision stack.
 - teacher guide, classroom dashboard, analytics, and CSV exports
 - verified Firebase deployment marker and route smoke tests
 
+## Automated validation
+
+- PR #121 passed the repository frontend and backend workflow.
+- The cumulative top branch was compared with `main` to run the complete workflow.
+- Frontend dependency installation, production build, and all frontend tests passed.
+- Backend dependency installation and all backend tests passed.
+- The branch was restored to the proper stacked base after validation.
+
 ## Human validation still required
 
 Code cannot replace real student observation. The deployed build still needs:
 
-- one original-tester retest
+- one original-tester retest and written feedback
 - one or two new student sessions with parent permission
 - physical-phone testing
 - compressed Google Meet testing
 - grade-specific elementary, middle, and high-school sessions
+- a Money Garden Part 2 focus session
 - analytics review after those sessions
 
 ## Merge order
