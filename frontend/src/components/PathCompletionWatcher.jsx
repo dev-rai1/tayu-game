@@ -48,6 +48,17 @@ export default function PathCompletionWatcher() {
       }
 
       if (location.pathname !== '/world') return
+
+      // Run the two-question check at the milestone, before the player enters the
+      // next module or a shorter-path certificate. Pick the newest inferred badge
+      // so an older missing check never interrupts the module just completed.
+      const completedChecks = profile.moduleChecks || {}
+      const pendingBadge = [...inferred].reverse().find((badge) => !completedChecks[badge])
+      if (pendingBadge) {
+        navigate(`/module-check/${pendingBadge}`)
+        return
+      }
+
       const path = loadActiveLearningPath()
       if (!path || path.modules.length >= 5 || !isLearningPathComplete(path.modules, badges)) return
 
