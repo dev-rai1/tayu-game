@@ -26,6 +26,7 @@ const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
 const TeacherGuide = lazy(() => import('./pages/TeacherGuide.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
+const ModuleCheck = lazy(() => import('./pages/ModuleCheck.jsx'))
 const Settings = lazy(() => import('./pages/Settings.jsx'))
 
 function PreQuizGate({ children }) {
@@ -97,6 +98,7 @@ export default function App() {
               <Route path="/path-complete" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your path certificate..." />}><PathComplete /></Suspense></PreQuizGate>} />
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
+              <Route path="/module-check/:badge" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your quick check..." />}><ModuleCheck /></Suspense></PreQuizGate>} />
               <Route path="/settings" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening player settings..." />}><Settings /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
               <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
