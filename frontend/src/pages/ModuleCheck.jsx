@@ -24,10 +24,21 @@ function personalizedRecap(badge, profile, wallet) {
   return `${name}, your Money Garden journey finished near $${fmt(lastTotal || garden.startTotal)} after you researched, diversified, handled risk, and rebalanced.`
 }
 
-function returnDestination(badge, profile) {
+function prepareReturnDestination(badge, profile) {
   const path = loadActiveLearningPath()
   const badges = profile?.badges || []
-  if (badge !== 'garden' && path && path.modules.length < 5 && isLearningPathComplete(path.modules, badges)) return '/path-complete'
+  if (badge !== 'garden' && path && path.modules.length < 5 && isLearningPathComplete(path.modules, badges)) {
+    saveProfile({
+      pathCompletion: {
+        pathId: path.id,
+        label: path.label,
+        title: path.title,
+        modules: path.modules,
+        completedAt: new Date().toISOString(),
+      },
+    })
+    return '/path-complete'
+  }
   return '/world'
 }
 
@@ -87,7 +98,7 @@ export default function ModuleCheck() {
 
   const leave = () => {
     const latest = loadProfile() || profile
-    navigate(returnDestination(badge, latest), { replace: true })
+    navigate(prepareReturnDestination(badge, latest), { replace: true })
   }
 
   if (finished) {
