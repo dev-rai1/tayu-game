@@ -84,7 +84,6 @@ export default function App() {
   }, [])
   return (
     <div className="min-h-screen bg-navy text-white font-body">
-      <a href="#app-content" className="skip-link">Skip to the game</a>
       <div id="app-content" tabIndex="-1">
         <Boundary name="routes" hard>
           <Suspense fallback={<LoadingScreen />}>
