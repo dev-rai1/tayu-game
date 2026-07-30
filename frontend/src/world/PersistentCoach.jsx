@@ -3,6 +3,7 @@ import { useGame } from './store.js'
 import { getGuidance } from './guidance.js'
 import { usesTouchControls } from './controlMode.js'
 import { coachVisibility } from './overlayVisibility.js'
+import { activeFeedbackKey, useFeedbackCoach } from './feedbackCoach.js'
 
 const ACTOR_NAMES = {
   player: 'You', penny: 'Penny', theo: 'Theo', mia: 'Mia', bea: 'Banker Bea',
@@ -29,6 +30,7 @@ export function PersistentCoach() {
   const objective = useGame((s) => s.objective)
   const scenarioLocked = useGame((s) => s.scenarioLocked)
   const scenario = useGame((s) => s.scenario)
+  const scenarioState = useGame((s) => s.scenarioState)
   const gameComplete = useGame((s) => s.gameComplete)
   const lemPhase = useGame((s) => s.lemPhase)
   const bramTalked = useGame((s) => s.bramTalked)
@@ -51,6 +53,7 @@ export function PersistentCoach() {
   const guide = useGame((s) => s.guide)
   const actorCaption = useGame((s) => s.actorCaption)
   const banner = useGame((s) => s.banner)
+  const feedbackByModule = useFeedbackCoach((s) => s.feedbackByModule)
 
   const [savedMessage, setSavedMessage] = useState(null)
 
@@ -62,27 +65,30 @@ export function PersistentCoach() {
   }, [actorCaption, guide, toast, banner])
 
   const stateForGuidance = {
-    week, objective, scenarioLocked, scenario, gameComplete, lemPhase, bramTalked,
+    week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
     storeMissionDone, bought, mg, bt, bk, weekComplete, cards, lessons, dialog,
     panelJar, panelItem, btPanel, bkPanel, panelPortfolio, helpOpen,
   }
 
   const guidance = useMemo(() => getGuidance(stateForGuidance, usesTouchControls), [
-    week, objective, scenarioLocked, scenario, gameComplete, lemPhase, bramTalked,
+    week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
     storeMissionDone, bought, mg, bt, bk, weekComplete, cards, lessons, dialog,
     panelJar, panelItem, btPanel, bkPanel, panelPortfolio, helpOpen,
   ])
 
   const visibility = coachVisibility(stateForGuidance)
+  const feedbackKey = activeFeedbackKey(stateForGuidance)
+  const improvement = feedbackKey ? feedbackByModule[feedbackKey] : null
   const showMessage = Boolean(savedMessage && visibility.showSavedMessage)
-  const showGuidance = Boolean(guidance && visibility.showGuidance)
+  const showImprovement = Boolean(improvement && visibility.showGuidance)
+  const showGuidance = Boolean(guidance && visibility.showGuidance && !showImprovement)
 
-  if (!showMessage && !showGuidance) return null
+  if (!showMessage && !showImprovement && !showGuidance) return null
 
   return (
     <aside
       aria-live="polite"
-      className="pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-3 z-[490] max-h-[42vh] w-[min(92vw,25rem)] overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl"
+      className="pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[490] max-h-[42vh] w-[min(92vw,28rem)] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl sm:left-3 sm:translate-x-0"
     >
       {showMessage && (
         <div>
@@ -102,7 +108,16 @@ export function PersistentCoach() {
         </div>
       )}
 
-      {showMessage && showGuidance && <div className="my-3 border-t border-navy/10" />}
+      {showMessage && (showImprovement || showGuidance) && <div className="my-3 border-t border-navy/10" />}
+
+      {showImprovement && (
+        <div>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">Try one change</div>
+          <div className="mt-1 text-sm font-extrabold leading-snug">{improvement.title}</div>
+          <div className="mt-1 text-xs font-semibold leading-snug text-navy/70">{improvement.action}</div>
+          <div className="mt-1 text-xs font-extrabold text-electric">{improvement.goal}</div>
+        </div>
+      )}
 
       {showGuidance && (
         <div>
