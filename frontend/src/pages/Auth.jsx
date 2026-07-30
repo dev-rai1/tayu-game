@@ -5,6 +5,7 @@ import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { ensureAdminAccess } from '../services/adminAccess.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
+import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 import GuestModeButton from '../components/GuestModeButton.jsx'
 
 const FIELD = 'mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal'
@@ -59,6 +60,7 @@ export default function Auth() {
         if (f.affiliation === 'organization' && !['teacher', 'student'].includes(f.role)) throw new Error('Choose Teacher or Student.')
         if (f.role === 'student' && !f.studentCode.trim()) throw new Error('Students joining an organization need their teacher’s class code.')
         const user = await signUp(f)
+        setDefaultReadingBandForGrade(f.gradeLevels)
         if (user.role === 'teacher') { await createOrLoadTeacherClass(); nav('/teacher'); return }
         if (user.role === 'student') await joinStudentToClass(f.studentCode)
         nav('/about?welcome=1')

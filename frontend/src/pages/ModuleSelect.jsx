@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
+import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import {
   clearActiveLearningPath,
@@ -40,6 +41,10 @@ export default function ModuleSelect() {
       .catch(() => setContext(DEFAULT_CONTEXT))
   }, [])
 
+  useEffect(() => {
+    if (gradePathId) setDefaultReadingBandForGrade(gradePathId)
+  }, [gradePathId])
+
   const teacherEnabled = context?.settings?.enabledModules || DEFAULT_CONTEXT.settings.enabledModules
   const required = useMemo(() => requiredModules({
     pathId: gradePathId,
@@ -65,8 +70,10 @@ export default function ModuleSelect() {
 
   const chooseGradePath = (id) => {
     const path = getGradePath(id)
-    if (path) saveActiveLearningPath(path)
-    else clearActiveLearningPath()
+    if (path) {
+      saveActiveLearningPath(path)
+      setDefaultReadingBandForGrade(path.id)
+    } else clearActiveLearningPath()
     setGradePathId(path?.id || '')
   }
 
@@ -94,7 +101,7 @@ export default function ModuleSelect() {
           <img src="/assets/tayu-logo.webp" alt="TAYU" className="mx-auto h-16 w-16 rounded-2xl" />
           <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Choose your learning path</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">What grade are you in?</h1>
-          <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">This keeps the game challenging without opening sections that may feel overwhelming. You can change it later.</p>
+          <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">This keeps the game challenging without opening sections that may feel overwhelming. It also sets a starting reading pace. You can change either setting later.</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {GRADE_PATHS.map((path) => (
               <button key={path.id} type="button" onClick={() => chooseGradePath(path.id)} className="rounded-2xl border-2 border-white/15 bg-black/20 p-5 text-left transition hover:border-teal hover:bg-white/10 active:scale-[0.98]">
@@ -122,6 +129,7 @@ export default function ModuleSelect() {
         </div>
         <div className="flex flex-wrap gap-2">
           {teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}
+          {!teacherPreview && <Link to="/settings" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Reading settings</Link>}
           {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}
           <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link>
         </div>

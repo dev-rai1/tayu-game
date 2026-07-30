@@ -15,6 +15,7 @@ import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { ObjectiveChip } from '../world/ObjectiveChip.jsx'
+import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
@@ -76,6 +77,7 @@ export default function World() {
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       <ObjectiveChip />
+      <BudgetTakeawayGuard />
       <PersistentCoach />
       <PersistentImprovementCoach />
       <GuidedCommerceOverlay />
