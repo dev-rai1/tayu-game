@@ -14,6 +14,7 @@ import { PartyHouse } from './PartyHouse.jsx'
 import { BudgetTown } from './BudgetTown.jsx'
 import { BankDistrict } from './BankDistrict.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
+import { ObjectiveEdgePointer } from './ObjectiveEdgePointer.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
 import { CoinLayer } from './CoinLayer.jsx'
 import { Boundary } from '../components/Boundary.jsx'
@@ -60,6 +61,7 @@ export function GameWorld({ avatar }) {
         <BudgetTown />
         <BankDistrict />
         <GuidanceArrow />
+        <ObjectiveEdgePointer />
         <CompassBeam />
         <CoinLayer />
         <Player avatar={avatar} />
