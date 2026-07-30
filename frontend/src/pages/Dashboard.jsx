@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { currentUser, signOutUser } from '../services/auth.js'
 import { adminAnalyticsData } from '../services/adminAnalytics.js'
 import { KNOWLEDGE_QUESTIONS, scoreKnowledgeQuiz } from '../constants/knowledgeQuiz.js'
+import PlaytestBehaviorSummary, { summarizeLearningSessions } from '../components/PlaytestBehaviorSummary.jsx'
 
 const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'garden']
 const MODULE_LABEL = {
@@ -125,18 +126,22 @@ export default function Dashboard() {
     const headers = [
       'email', 'role', 'organization', 'gradeLevels', 'createdAt', 'loginCount', 'lastLoginAt',
       'sessionCount', 'totalSessionSeconds', ...MODULES.map((moduleName) => `${moduleName}Seconds`),
+      'choiceAttempts', 'incorrectOutcomes', 'retryPrompts', 'moduleCompletions', 'lastStoppedModule',
       'preScoreVerified', 'postScoreVerified', 'scoreChange',
       ...KNOWLEDGE_QUESTIONS.flatMap((_, index) => [`preQ${index + 1}`, `postQ${index + 1}`]),
     ]
     const lines = accounts.map((row) => {
       const assessment = row.progress?.profile?.assessment || {}
       const totals = moduleTotals(row.sessions)
+      const behavior = summarizeLearningSessions(row.sessions)
       const pre = verifiedScore(assessment.pre)
       const post = verifiedScore(assessment.post)
+      const lastStoppedModule = row.sessions.find((session) => session.endedAt && session.lastModule)?.lastModule || ''
       const values = [
         row.email, row.role, row.organizationName, row.gradeLevels, row.createdAt, row.loginCount,
         row.lastLoginAt, row.sessions.length, totalSessionSeconds(row.sessions),
         ...MODULES.map((moduleName) => totals[moduleName] || 0),
+        behavior.attempts, behavior.incorrect, behavior.retries, behavior.completions, lastStoppedModule,
         pre ?? '', post ?? '', pre !== null && post !== null ? post - pre : '',
         ...KNOWLEDGE_QUESTIONS.flatMap((question) => [answerText(assessment.pre, question), answerText(assessment.post, question)]),
       ]
@@ -163,7 +168,7 @@ export default function Dashboard() {
             <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-11 w-11 rounded-xl" />
             <h1 className="font-display text-3xl font-extrabold">TAYU Admin Analytics</h1>
           </div>
-          <p className="mt-2 max-w-3xl text-sm font-semibold text-white/60">Survey results below are recalculated from each account’s saved answers. Session and module time come from real activity heartbeats; no random or estimated survey data is generated.</p>
+          <p className="mt-2 max-w-3xl text-sm font-semibold text-white/60">Survey results below are recalculated from each account’s saved answers. Session, module time, choices, retry clues, completions, and stop points come from real activity records; no random or estimated data is generated.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={load} disabled={refreshing} className="min-h-[44px] rounded-xl bg-teal px-4 font-extrabold text-navy disabled:opacity-50">{refreshing ? 'Refreshing…' : 'Refresh'}</button>
@@ -196,10 +201,12 @@ export default function Dashboard() {
         </div>
       </section>
 
+      <PlaytestBehaviorSummary sessions={sessions} />
+
       <section className="mt-6 overflow-x-auto rounded-2xl border border-white/10 bg-white/5 p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold">Accounts</h2>
-          <span className="text-xs font-bold text-white/45">Select an account for exact sessions, module time, and survey answers</span>
+          <span className="text-xs font-bold text-white/45">Select an account for exact sessions, module time, attempts, and survey answers</span>
         </div>
         <table className="mt-4 w-full min-w-[1100px] text-left text-sm">
           <thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Email</th><th className="pr-3">Role</th><th className="pr-3">Organization</th><th className="pr-3">Created</th><th className="pr-3">Logins</th><th className="pr-3">Last login</th><th className="pr-3">Sessions</th><th className="pr-3">Active time</th><th>Verified pre → post</th></tr></thead>
@@ -244,14 +251,19 @@ function AccountDetails({ account }) {
   const preScore = verifiedScore(assessment.pre)
   const postScore = verifiedScore(assessment.post)
   const totals = moduleTotals(account.sessions)
+  const behavior = summarizeLearningSessions(account.sessions)
   return (
     <section className="mt-6 rounded-2xl border-2 border-teal/40 bg-white/5 p-5">
-      <h2 className="font-display text-2xl font-extrabold text-teal">{account.email}</h2>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <h2 className="font-display text-2xl font-extrabold text-teal">{account.email || account.displayName || 'Guest player'}</h2>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Stat label="Successful logins" value={account.loginCount} />
         <Stat label="Recorded sessions" value={account.sessions.length} />
         <Stat label="Total active time" value={duration(totalSessionSeconds(account.sessions))} />
         <Stat label="Last activity" value={timestamp(account.lastActiveAt || account.sessions[0]?.lastSeenAt)} />
+        <Stat label="Choices" value={behavior.attempts} />
+        <Stat label="Incorrect" value={behavior.incorrect} />
+        <Stat label="Retry clues" value={behavior.retries} />
+        <Stat label="Completions" value={behavior.completions} />
       </div>
 
       <h3 className="mt-6 text-lg font-extrabold">Exact time by module</h3>
@@ -259,7 +271,7 @@ function AccountDetails({ account }) {
 
       <h3 className="mt-6 text-lg font-extrabold">Each login session</h3>
       {account.sessions.length === 0 ? <p className="mt-2 text-sm text-white/55">No detailed sessions were recorded before this analytics update. New sessions will appear accurately after deployment.</p> : (
-        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Started</th><th className="pr-3">Ended / last seen</th><th className="pr-3">Duration</th><th className="pr-3">Device</th><th className="pr-3">Last page</th><th>Module breakdown</th></tr></thead><tbody>{account.sessions.map((session) => <tr key={session.id} className="border-t border-white/10"><td className="py-2 pr-3">{timestamp(session.startedAt)}</td><td className="pr-3">{timestamp(session.endedAt || session.lastSeenAt)}</td><td className="pr-3 font-extrabold">{duration(session.durationSeconds)}</td><td className="pr-3">{session.device || 'Unknown'}</td><td className="pr-3">{session.path || '—'}</td><td>{MODULES.filter((moduleName) => session.moduleSeconds?.[moduleName]).map((moduleName) => `${MODULE_LABEL[moduleName]} ${duration(session.moduleSeconds[moduleName])}`).join(' · ') || 'No game module time'}</td></tr>)}</tbody></table></div>
+        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[1000px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Started</th><th className="pr-3">Ended / last seen</th><th className="pr-3">Duration</th><th className="pr-3">Device</th><th className="pr-3">Last page</th><th className="pr-3">Stopped in</th><th>Module breakdown</th></tr></thead><tbody>{account.sessions.map((session) => <tr key={session.id} className="border-t border-white/10"><td className="py-2 pr-3">{timestamp(session.startedAt)}</td><td className="pr-3">{timestamp(session.endedAt || session.lastSeenAt)}</td><td className="pr-3 font-extrabold">{duration(session.durationSeconds)}</td><td className="pr-3">{session.device || 'Unknown'}</td><td className="pr-3">{session.path || '—'}</td><td className="pr-3">{session.lastModule ? MODULE_LABEL[session.lastModule] || session.lastModule : '—'}</td><td>{MODULES.filter((moduleName) => session.moduleSeconds?.[moduleName]).map((moduleName) => `${MODULE_LABEL[moduleName]} ${duration(session.moduleSeconds[moduleName])}`).join(' · ') || 'No game module time'}</td></tr>)}</tbody></table></div>
       )}
 
       <h3 className="mt-6 text-lg font-extrabold">Actual saved pre- and post-survey answers</h3>
