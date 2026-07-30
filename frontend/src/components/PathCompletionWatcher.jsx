@@ -2,8 +2,17 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { currentUser } from '../services/auth.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
+import { recordLearningEvent } from '../services/usageAnalytics.js'
 import { useGame } from '../world/store.js'
 import { isLearningPathComplete, loadActiveLearningPath, milestoneBadges } from '../constants/learningPaths.js'
+
+const MODULE_BY_BADGE = {
+  jars: 'jars',
+  lemonade: 'lemonade',
+  budget: 'budget',
+  bank: 'bank',
+  garden: 'garden',
+}
 
 export default function PathCompletionWatcher() {
   const navigate = useNavigate()
@@ -27,9 +36,16 @@ export default function PathCompletionWatcher() {
       const profile = loadProfile() || {}
       const existingBadges = profile.badges || []
       const inferred = milestoneBadges({ week, weekComplete, btStage, bkWeek, mgPhase, gameComplete })
+      const newlyCompleted = inferred.filter((badge) => !existingBadges.includes(badge))
       const badges = [...new Set([...existingBadges, ...inferred])]
 
-      if (badges.length !== existingBadges.length) saveProfile({ badges })
+      if (badges.length !== existingBadges.length) {
+        saveProfile({ badges })
+        newlyCompleted.forEach((badge) => {
+          const moduleName = MODULE_BY_BADGE[badge]
+          if (moduleName) recordLearningEvent({ moduleName, type: 'module_complete', outcome: 'completed', detail: badge }).catch(() => {})
+        })
+      }
 
       if (location.pathname !== '/world') return
       const path = loadActiveLearningPath()
