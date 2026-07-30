@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create deployment marker
+        run: |
+          mkdir -p frontend/public
+          printf '{"commit":"%s","runId":"%s","deployedAt":"%s"}\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            > frontend/public/deployment.json
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,15 +53,47 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
+      # Hosting goes first so a Firestore configuration problem can never leave
+      # a successfully built website unpublished. The workflow still fails if
+      # rules do not deploy, so a partial release is visible and actionable.
       - name: Deploy Firebase Hosting
         run: firebase deploy --only hosting --non-interactive --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
-      # A brand-new Firebase project may not have a Firestore database yet.
-      # Rules deployment must not prevent the already-built website from going live.
       - name: Deploy Firestore rules
-        continue-on-error: true
         run: firebase deploy --only firestore:rules --non-interactive --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Verify exact production commit and SPA routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          verify_host() {
+            local host="$1"
+            local marker=""
+            echo "Verifying ${host}"
+            for attempt in $(seq 1 18); do
+              marker="$(curl --fail --location --silent --show-error \
+                --connect-timeout 15 --max-time 30 \
+                "${host}/deployment.json?sha=${GITHUB_SHA}&attempt=${attempt}" || true)"
+              if printf '%s' "$marker" | grep -Fq "$GITHUB_SHA"; then
+                for route in / /modules /teacher-guide; do
+                  curl --fail --location --silent --show-error \
+                    --connect-timeout 15 --max-time 30 \
+                    "${host}${route}?deployment=${GITHUB_SHA}" \
+                    | grep -Fq '<div id="root"></div>'
+                done
+                echo "Verified ${host} at ${GITHUB_SHA}"
+                return 0
+              fi
+              sleep 10
+            done
+            echo "::error::${host} did not serve deployment ${GITHUB_SHA}. Last marker: ${marker}"
+            return 1
+          }
+
+          verify_host "https://tayu-financial-literacy.web.app"
+          verify_host "https://tayufinance.app"
