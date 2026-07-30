@@ -5,12 +5,16 @@ import { getGuidance } from './guidance.js'
 import { usesTouchControls } from './controlMode.js'
 import { coachVisibility } from './overlayVisibility.js'
 
+export function shouldHideObjectiveChip(state) {
+  return state.week === 5 && ['adjust', 'slider'].includes(state.mg?.phase)
+}
+
 export function ObjectiveChip() {
   const state = useGame((current) => current)
   const guidance = useMemo(() => getGuidance(state, usesTouchControls), [state])
   const visibility = coachVisibility(state)
 
-  if (!guidance || !visibility.showGuidance || state.weekComplete || state.gameComplete) return null
+  if (!guidance || !visibility.showGuidance || state.weekComplete || state.gameComplete || shouldHideObjectiveChip(state)) return null
 
   const spoken = [guidance.title, guidance.instruction, guidance.action].filter(Boolean).join('. ')
   const replay = () => {
