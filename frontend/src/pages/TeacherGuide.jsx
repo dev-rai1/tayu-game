@@ -9,6 +9,7 @@ const GUIDE = {
     discuss: ['What did you give up when you put more money in one jar?', 'Which purchase was a need, and why?'],
     evidence: 'Listen for students naming the purpose of each jar and explaining what they could no longer afford.',
     stop: 'Stop after the Market checkout for a short introductory session.',
+    extension: 'Ask students to defend the allocation as an opportunity-cost decision and explain how a different goal would change the percentages.',
   },
   2: {
     goals: ['Distinguish revenue, costs, profit, and tax', 'Connect price and supply to demand', 'Improve a plan through trial and error'],
@@ -16,6 +17,7 @@ const GUIDE = {
     discuss: ['Which choice changed profit most?', 'Why can selling more still fail to create profit?'],
     evidence: 'Look for students comparing two rounds and using sold-out, leftover, revenue, and cost information as evidence.',
     stop: 'One sales round can stand alone. A full lesson usually needs two or three rounds.',
+    extension: 'Have students estimate break-even sales, distinguish fixed from variable costs, and describe how one changed assumption affects unit economics.',
   },
   3: {
     goals: ['Put needs before optional spending', 'Build a budget that fits an income', 'Keep emergency cash available'],
@@ -23,6 +25,7 @@ const GUIDE = {
     discuss: ['What made the plan able to survive the surprise?', 'When can a want responsibly fit into a budget?'],
     evidence: 'Watch whether students protect needs and can explain why ready cash is different from money intended to grow.',
     stop: 'Pause after the daily budget summary or continue through the emergency test.',
+    extension: 'Ask students to classify fixed, variable, and irregular expenses, then justify an emergency-fund target using risk and income stability.',
   },
   4: {
     goals: ['Compare checking, savings, and CDs', 'Distinguish debit from credit', 'Explain borrowing costs and scam warning signs'],
@@ -30,6 +33,7 @@ const GUIDE = {
     discuss: ['Why might someone choose savings instead of checking?', 'What made the prize message suspicious?'],
     evidence: 'Listen for students connecting account access to interest and recognizing credit as borrowed money.',
     stop: 'Pause after account choices, after debit versus credit, or after the scam scenario.',
+    extension: 'Compare APY, liquidity, interest charges, and credit utilization. Ask which information would be needed before choosing a real account or loan.',
   },
   5: {
     goals: ['Use evidence rather than hype', 'Spread risk across investments', 'Keep emergency cash and rebalance over time'],
@@ -37,6 +41,7 @@ const GUIDE = {
     discuss: ['Which clue described the business rather than only its recent price?', 'How did diversification change the outcome?'],
     evidence: 'Look for students explaining a choice with customers, company health, risk, time horizon, or portfolio balance.',
     stop: 'Use the built-in intermission after Part 1. Each part is designed as its own 6–8 minute session.',
+    extension: 'Ask students to connect volatility, time horizon, concentration, and risk tolerance, then write an investment-policy rule before seeing the next result.',
   },
 }
 
@@ -86,6 +91,10 @@ export default function TeacherGuide() {
                   <div className="rounded-2xl bg-black/20 p-4"><h4 className="font-extrabold text-sun">Decisions students make</h4><ul className="mt-2 space-y-1 text-sm font-semibold text-white/70">{guide.decisions.map((item) => <li key={item}>• {item}</li>)}</ul></div>
                   <div className="rounded-2xl bg-black/20 p-4"><h4 className="font-extrabold text-brandpurple">Discussion prompts</h4><ul className="mt-2 space-y-1 text-sm font-semibold text-white/70">{guide.discuss.map((item) => <li key={item}>• {item}</li>)}</ul></div>
                   <div className="rounded-2xl bg-black/20 p-4"><h4 className="font-extrabold text-electric">Evidence to watch</h4><p className="mt-2 text-sm font-semibold text-white/70">{guide.evidence}</p><p className="mt-3 rounded-xl bg-white/5 px-3 py-2 text-xs font-bold text-white/60"><b>Stopping point:</b> {guide.stop}</p></div>
+                </div>
+                <div className="mt-4 rounded-2xl border border-[#00a77a]/50 bg-[#00a77a]/10 p-4">
+                  <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#59e0b7]">Optional high school extension</div>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">{guide.extension}</p>
                 </div>
               </article>
             )
