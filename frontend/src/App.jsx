@@ -13,6 +13,7 @@ import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
+import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
 
@@ -28,6 +29,8 @@ const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
 const ModuleCheck = lazy(() => import('./pages/ModuleCheck.jsx'))
 const Settings = lazy(() => import('./pages/Settings.jsx'))
+const Privacy = lazy(() => import('./pages/Privacy.jsx'))
+const Cookies = lazy(() => import('./pages/Cookies.jsx'))
 
 function PreQuizGate({ children }) {
   const user = currentUser()
@@ -90,6 +93,8 @@ export default function App() {
             <Routes>
               <Route path="/" element={<><div className="relative z-20 bg-[#eef8ff] px-4 py-2"><MediaCoverage compact /></div><Welcome /></>} />
               <Route path="/about" element={<><div className="relative z-20 bg-[#eef8ff] px-4 py-2"><MediaCoverage compact about /></div><About /></>} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/cookies" element={<Cookies />} />
               <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
               <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
@@ -115,6 +120,7 @@ export default function App() {
       <AccountMusicControl />
       <AdminDashboardButton />
       <AdminPanel showButton />
+      <PrivacyChoices />
     </div>
   )
 }
