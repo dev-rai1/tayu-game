@@ -1,6 +1,7 @@
 import { doc, setDoc } from 'firebase/firestore'
 import { getFirebaseServices } from './firebase.js'
 import { loadProfile, loadWallet } from './walletStore.js'
+import { optionalAnalyticsAllowed } from './privacyPreferences.js'
 
 const AUTH_SESSION_KEY = 'tayu-session-v1'
 const USAGE_SESSION_KEY = 'tayu-usage-session-v1'
@@ -153,6 +154,10 @@ async function persist(session) {
 }
 
 export async function touchUsage({ path, moduleName } = {}) {
+  if (!optionalAnalyticsAllowed()) {
+    writeUsage(null)
+    return null
+  }
   const user = analyticsUser()
   if (!user) return null
   let session = readUsage()
@@ -168,6 +173,10 @@ export async function setUsageModule(moduleName) {
 }
 
 export async function recordLearningEvent({ moduleName, type, outcome = '', detail = '' } = {}) {
+  if (!optionalAnalyticsAllowed()) {
+    writeUsage(null)
+    return null
+  }
   const user = analyticsUser()
   if (!user || !type) return null
   let session = readUsage()
@@ -180,6 +189,10 @@ export async function recordLearningEvent({ moduleName, type, outcome = '', deta
 }
 
 export async function closeUsageSession() {
+  if (!optionalAnalyticsAllowed()) {
+    writeUsage(null)
+    return
+  }
   const session = readUsage()
   if (!session || session.endedAt) return
   const closed = advance(session, window.location.pathname, '')
@@ -201,13 +214,19 @@ export function startUsageHeartbeat(pathname) {
     if (authUser()) touchUsage({ path: window.location.pathname }).catch(() => {})
     else closeUsageSession().catch(() => {})
   }
+  const onAnalyticsChoice = () => {
+    if (optionalAnalyticsAllowed()) touchUsage({ path: window.location.pathname }).catch(() => {})
+    else writeUsage(null)
+  }
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener('pagehide', onPageHide)
   window.addEventListener('tayu-auth-changed', onAuthChange)
+  window.addEventListener('tayu-analytics-choice-changed', onAnalyticsChoice)
   return () => {
     window.clearInterval(timer)
     document.removeEventListener('visibilitychange', onVisibility)
     window.removeEventListener('pagehide', onPageHide)
     window.removeEventListener('tayu-auth-changed', onAuthChange)
+    window.removeEventListener('tayu-analytics-choice-changed', onAnalyticsChoice)
   }
 }
