@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ANALYTICS_CHOICES,
+  analyticsRoleAllowed,
   getAnalyticsChoice,
+  optionalAnalyticsAllowed,
   setAnalyticsChoice,
 } from '../services/privacyPreferences.js'
 
@@ -10,11 +12,12 @@ const storageRows = [
   ['Account session', 'Session storage', 'Keeps a signed-in account active during the current browser session.'],
   ['Game progress and profile', 'Local storage and Firebase when available', 'Restores modules, badges, avatar, settings, and learning-path progress.'],
   ['Accessibility and reading preferences', 'Local storage', 'Remembers reading band, audio choices, tutorials, and interface settings.'],
-  ['Optional site analytics', 'Local or session storage and Firebase', 'Creates visitor and session identifiers and records page, device, time, and learning activity only after optional analytics are allowed.'],
+  ['Optional site analytics', 'Local or session storage and Firebase', 'Creates visitor and session identifiers and records page, device, time, and learning activity only for an authorized educator or administrator who allows it.'],
 ]
 
 export default function Cookies() {
   const [choice, setChoice] = useState(() => getAnalyticsChoice())
+  const canAllowAnalytics = analyticsRoleAllowed()
 
   useEffect(() => {
     const onChange = (event) => setChoice(event.detail || getAnalyticsChoice())
@@ -26,6 +29,14 @@ export default function Cookies() {
     setAnalyticsChoice(next)
     setChoice(next)
   }
+
+  const status = optionalAnalyticsAllowed()
+    ? 'Optional analytics allowed'
+    : choice === ANALYTICS_CHOICES.NECESSARY_ONLY
+      ? 'Necessary storage only'
+      : canAllowAnalytics
+        ? 'Not chosen yet'
+        : 'Optional analytics unavailable for this account'
 
   return (
     <main className="min-h-screen bg-[#eef8ff] px-5 py-10 text-navy sm:px-6">
@@ -61,11 +72,18 @@ export default function Cookies() {
           <section className="mt-6 rounded-2xl bg-navy p-5 text-white">
             <h2 className="font-display text-xl font-extrabold">Your optional analytics choice</h2>
             <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
-              Current choice: <span className="font-extrabold text-teal">{choice === ANALYTICS_CHOICES.ALLOW ? 'Optional analytics allowed' : choice === ANALYTICS_CHOICES.NECESSARY_ONLY ? 'Necessary storage only' : 'Not chosen yet'}</span>
+              Current status: <span className="font-extrabold text-teal">{status}</span>
             </p>
+            {!canAllowAnalytics && (
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-white/70">
+                Student, guest, and unverified individual accounts use necessary storage only while TAYU completes its parent and school authorization workflow.
+              </p>
+            )}
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 font-extrabold">Use necessary storage only</button>
-              <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 font-extrabold text-navy">Allow optional analytics</button>
+              {canAllowAnalytics && (
+                <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 font-extrabold text-navy">Allow optional analytics</button>
+              )}
             </div>
           </section>
 
