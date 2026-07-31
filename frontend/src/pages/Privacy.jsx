@@ -35,12 +35,13 @@ export default function Privacy() {
           </Section>
 
           <Section title="Optional analytics">
-            <p>When a user chooses to allow optional analytics, TAYU may record an anonymous visitor or guest identifier, page path, referring website host, device category, session length, current module, time by module, and limited learning-event details such as attempts or outcomes.</p>
-            <p>Optional analytics are off unless the user selects “Allow optional analytics.” Choosing “Necessary only” keeps account, security, preference, and progress storage working without these optional analytics writes.</p>
+            <p>Student, guest, and unverified individual accounts use necessary storage only while TAYU completes its parent and school authorization workflow.</p>
+            <p>When an authorized educator or administrator allows optional analytics, TAYU may record an account or session identifier, page path, referring website host, device category, session length, current module, time by module, and limited learning-event details such as attempts or outcomes.</p>
+            <p>Choosing “Necessary only” keeps account, security, preference, and progress storage working without these optional analytics writes.</p>
           </Section>
 
           <Section title="Why the information is used">
-            <p>Information is used to authenticate accounts, restore progress, support classrooms, select age-appropriate learning paths, provide assessments and certificates, secure administrative areas, troubleshoot the app, and improve lessons when optional analytics are allowed.</p>
+            <p>Information is used to authenticate accounts, restore progress, support classrooms, select age-appropriate learning paths, provide assessments and certificates, secure administrative areas, troubleshoot the app, and improve lessons when optional analytics are permitted.</p>
           </Section>
 
           <Section title="Service providers and access">
