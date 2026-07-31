@@ -59,8 +59,6 @@ export function PersistentCoach() {
 
   useEffect(() => {
     const next = messageFrom({ actorCaption, guide, toast, banner })
-    // Keep the latest message available, but do not stack it on top of an active
-    // decision panel. It reappears as soon as the play area is clear.
     if (next) setSavedMessage(next)
   }, [actorCaption, guide, toast, banner])
 
@@ -85,12 +83,17 @@ export function PersistentCoach() {
 
   if (!showMessage && !showImprovement && !showGuidance) return null
 
+  const positionClass = usesTouchControls
+    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))] max-h-[34dvh]'
+    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] max-h-[42vh] sm:left-3 sm:translate-x-0'
+
   return (
     <aside
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className="pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[490] max-h-[42vh] w-[min(92vw,28rem)] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl sm:left-3 sm:translate-x-0"
+      data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
+      className={`pointer-events-auto fixed left-1/2 z-[490] w-[min(92vw,28rem)] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl ${positionClass}`}
     >
       {showMessage && (
         <div>
