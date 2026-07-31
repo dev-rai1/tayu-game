@@ -1,5 +1,6 @@
 import { addDoc, collection } from 'firebase/firestore'
 import { getFirebaseServices } from './firebase.js'
+import { optionalAnalyticsAllowed } from './privacyPreferences.js'
 
 const VISITOR_KEY = 'tayu-anonymous-visitor-v1'
 const SESSION_KEY = 'tayu-site-session-v1'
@@ -28,6 +29,7 @@ function sessionId() {
 }
 
 export async function recordPageView(path = window.location.pathname) {
+  if (!optionalAnalyticsAllowed()) return false
   const firebase = getFirebaseServices()
   if (!firebase?.firestore || typeof window === 'undefined') return false
   const now = new Date().toISOString()
