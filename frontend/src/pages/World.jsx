@@ -14,9 +14,10 @@ import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
-import { ObjectiveChip } from '../world/ObjectiveChip.jsx'
 import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
+import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { hasWebGL } from '../utils/webgl.js'
+import '../world/worldDeclutter.css'
 
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
 
@@ -73,14 +74,14 @@ export default function World() {
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-navy">
+    <div className="tayu-world-declutter fixed inset-0 overflow-hidden bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
-      <ObjectiveChip />
       <BudgetTakeawayGuard />
       <PersistentCoach />
       <PersistentImprovementCoach />
       <GuidedCommerceOverlay />
+      <OverlayEscapeControls />
       {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D} />
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
