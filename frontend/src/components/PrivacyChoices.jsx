@@ -11,6 +11,7 @@ export function PrivacyChoices() {
   const { pathname } = useLocation()
   const [choice, setChoice] = useState(() => getAnalyticsChoice())
   const canAllowAnalytics = analyticsRoleAllowed()
+  const effectiveChoice = canAllowAnalytics || choice === ANALYTICS_CHOICES.NECESSARY_ONLY ? choice : null
 
   useEffect(() => {
     const onChange = (event) => setChoice(event.detail || getAnalyticsChoice())
@@ -18,7 +19,7 @@ export function PrivacyChoices() {
     return () => window.removeEventListener('tayu-analytics-choice-changed', onChange)
   }, [])
 
-  if (choice || pathname === '/privacy' || pathname === '/cookies') return null
+  if (effectiveChoice || pathname === '/privacy' || pathname === '/cookies') return null
 
   const choose = (next) => {
     setAnalyticsChoice(next)
