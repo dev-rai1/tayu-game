@@ -13,15 +13,21 @@ describe('playtest persistence wiring', () => {
     expect(moduleSelect).toContain('setContext(DEFAULT_CONTEXT)')
   })
 
-  it('keeps locked modules truly non-interactive', () => {
+  it('keeps classroom-locked modules truly non-interactive', () => {
     expect(moduleSelect).toContain('disabled={!accessible}')
     expect(moduleSelect).toContain('if (!canPlay(moduleNumber)) return')
+  })
+
+  it('lets individual users choose any module while preserving grade recommendations', () => {
+    expect(moduleSelect).toContain('if (context?.plain) return true')
+    expect(moduleSelect).toContain('RECOMMENDED')
+    expect(moduleSelect).toContain('Optional — choose this module →')
   })
 
   it('stores, clears, and completes the selected learning path', () => {
     expect(moduleSelect).toContain('saveActiveLearningPath')
     expect(moduleSelect).toContain('clearActiveLearningPath')
-    expect(moduleSelect).toContain('Path complete — view your certificate')
+    expect(moduleSelect).toContain('Recommended path complete — view your certificate')
   })
 
   it('awards credit at real module endpoints instead of the next module', () => {
