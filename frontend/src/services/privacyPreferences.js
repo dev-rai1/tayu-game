@@ -7,8 +7,18 @@ export function getAnalyticsChoice() {
   return Object.values(ANALYTICS_CHOICES).includes(saved) ? saved : null
 }
 
+export function analyticsRoleAllowed() {
+  if (typeof sessionStorage === 'undefined') return false
+  try {
+    const user = JSON.parse(sessionStorage.getItem('tayu-session-v1') || 'null')
+    return user?.role === 'teacher' || user?.role === 'admin'
+  } catch {
+    return false
+  }
+}
+
 export function optionalAnalyticsAllowed() {
-  return getAnalyticsChoice() === ANALYTICS_CHOICES.ALLOW
+  return analyticsRoleAllowed() && getAnalyticsChoice() === ANALYTICS_CHOICES.ALLOW
 }
 
 export function setAnalyticsChoice(choice) {
