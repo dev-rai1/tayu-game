@@ -81,7 +81,7 @@ export function AccessibleWorld() {
       actions.push([`Finish shopping: Check out with ${bought.length} item${bought.length === 1 ? '' : 's'}`, game.confirmCheckout, true])
     }
   } else if (week === 2) {
-    if (lemPhase === 'toStand') actions.push(['Step 1 of 3: Meet Penny at the Lemonade Stand', game.standIntro])
+    if (lemPhase === 'toStand') actions.push(['Step 1 of 3: Go to the Lemonade Stand and meet Penny', game.standIntro])
     else if (lemPhase === 'toMarket') actions.push(['Step 2 of 3: Open the Shopping List and choose lemons, sweetener, and cups', game.openSupplies])
     else if (lemPhase === 'toStand2') actions.push(['Step 3 of 3: Set my recipe, banner, and price, then open the stand', game.openTemplate])
   } else if (week === 3 && bt) {
