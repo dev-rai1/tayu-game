@@ -14,13 +14,16 @@ import { TAYU } from './config.js'
 // visibly "flows" toward the destination like airport floor lights.
 
 const NECK_H = 1.5
-const DOTS = 14
-const DOT_SPACING = 1.4
+const DOTS = 18
+const DOT_SPACING = 1.1
 
 export function CompassBeam() {
   const grp = useRef()
   const pulse = useRef()
   const dots = useRef([])
+  const beacon = useRef()
+  const beaconArrow = useRef()
+  const beaconRing = useRef()
   const t = useRef(0)
 
   useFrame((_, d) => {
@@ -28,30 +31,45 @@ export function CompassBeam() {
     const st = useGame.getState()
     const target = getObjectiveTarget(st)
     const g = grp.current
+    const b = beacon.current
     if (!g) return
     let dist = 0
     const show = !!target && (dist = Math.hypot(target[0] - playerPos.x, target[1] - playerPos.z)) > arriveRadius(st)
-    g.visible = show // stop on arrival - no arrow keeps pointing after the objective is reached
+    g.visible = show
+    if (b) b.visible = show
+
     // R9 1.3: the guide path follows the RING ROAD around the park; the neck
     // arrow aims at the first waypoint, the breadcrumbs march the whole path.
     let path = null
     if (show) {
       path = guidePath(playerPos.x, playerPos.z, target)
-      // aim at the first waypoint that isn't already underfoot
       let aim = path[path.length - 1]
       for (const p of path) {
         if (Math.hypot(p[0] - playerPos.x, p[1] - playerPos.z) > 1.6) { aim = p; break }
       }
       const ang = Math.atan2(aim[0] - playerPos.x, aim[1] - playerPos.z)
-      g.position.set(playerPos.x, NECK_H, playerPos.z) // neck-anchored, flat
-      g.rotation.set(0, ang, 0) // horizontal only - never angles down
+      g.position.set(playerPos.x, NECK_H, playerPos.z)
+      g.rotation.set(0, ang, 0)
       if (pulse.current) {
-        const p = 1 + 0.08 * Math.sin(t.current * 4)
+        const p = 1 + 0.12 * Math.sin(t.current * 4)
         pulse.current.scale.setScalar(p)
-        pulse.current.position.z = 0.9 + 0.08 * Math.sin(t.current * 4)
+        pulse.current.position.z = 0.95 + 0.12 * Math.sin(t.current * 4)
+      }
+
+      // A tall, always-visible destination beacon answers "where are the arrows?"
+      // even when the route bends behind scenery.
+      if (b) b.position.set(target[0], 0.08, target[1])
+      if (beaconArrow.current) {
+        beaconArrow.current.position.y = 2.35 + 0.22 * Math.sin(t.current * 4)
+        beaconArrow.current.scale.setScalar(1 + 0.1 * Math.sin(t.current * 4))
+      }
+      if (beaconRing.current) {
+        const ringScale = 1 + 0.18 * Math.sin(t.current * 3)
+        beaconRing.current.scale.setScalar(ringScale)
       }
     }
-    // breadcrumbs: marched along the guide path (arc-aware), fresh each frame
+
+    // Breadcrumbs: march along the guide path, fresh each frame.
     let di = 0
     if (show && path) {
       let px = playerPos.x, pz = playerPos.z
@@ -66,9 +84,9 @@ export function CompassBeam() {
           const m = dots.current[di]
           if (m) {
             m.visible = true
-            m.position.set(px, 0.06, pz)
-            m.material.opacity = 0.3 + 0.5 * Math.max(0, Math.sin(t.current * 3 - di * 0.8))
-            m.scale.setScalar(0.16 + 0.05 * Math.sin(t.current * 3 - di * 0.8))
+            m.position.set(px, 0.08, pz)
+            m.material.opacity = 0.45 + 0.5 * Math.max(0, Math.sin(t.current * 3 - di * 0.65))
+            m.scale.setScalar(0.2 + 0.07 * Math.sin(t.current * 3 - di * 0.65))
           }
           di++
           carry = DOT_SPACING
@@ -85,27 +103,43 @@ export function CompassBeam() {
     <>
       <group ref={grp} visible={false}>
         <group ref={pulse}>
-          {/* straight shaft */}
-          <mesh position={[0, 0, 0.55]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.05, 0.05, 0.7, 8]} />
-            <meshStandardMaterial color={TAYU.teal} emissive={TAYU.teal} emissiveIntensity={1} transparent opacity={0.95} />
+          <mesh position={[0, 0, 0.58]} rotation={[Math.PI / 2, 0, 0]} renderOrder={1000}>
+            <cylinderGeometry args={[0.065, 0.065, 0.78, 10]} />
+            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest={false} />
           </mesh>
-          {/* arrow head */}
-          <mesh position={[0, 0, 1.1]} rotation={[Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.16, 0.4, 10]} />
-            <meshStandardMaterial color={TAYU.teal} emissive={TAYU.teal} emissiveIntensity={1} transparent opacity={0.95} />
+          <mesh position={[0, 0, 1.2]} rotation={[Math.PI / 2, 0, 0]} renderOrder={1000}>
+            <coneGeometry args={[0.22, 0.48, 12]} />
+            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest={false} />
           </mesh>
-          {/* soft glow halo so it reads against any background */}
-          <mesh position={[0, 0, 0.8]} rotation={[Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.26, 0.9, 10]} />
-            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.18} toneMapped={false} depthWrite={false} />
+          <mesh position={[0, 0, 0.86]} rotation={[Math.PI / 2, 0, 0]} renderOrder={999}>
+            <coneGeometry args={[0.34, 1.05, 12]} />
+            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.2} toneMapped={false} depthTest={false} depthWrite={false} />
           </mesh>
         </group>
       </group>
+
+      <group ref={beacon} visible={false}>
+        <mesh ref={beaconRing} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1001}>
+          <ringGeometry args={[0.55, 0.82, 36]} />
+          <meshBasicMaterial color={TAYU.gold} transparent opacity={0.9} toneMapped={false} depthTest={false} depthWrite={false} />
+        </mesh>
+        <mesh position={[0, 1.15, 0]} renderOrder={1000}>
+          <cylinderGeometry args={[0.045, 0.11, 2.2, 12]} />
+          <meshBasicMaterial color={TAYU.gold} transparent opacity={0.72} toneMapped={false} depthTest={false} depthWrite={false} />
+        </mesh>
+        <group ref={beaconArrow} position={[0, 2.35, 0]}>
+          <mesh rotation={[0, 0, Math.PI]} renderOrder={1002}>
+            <coneGeometry args={[0.38, 0.75, 16]} />
+            <meshBasicMaterial color={TAYU.gold} transparent opacity={0.98} toneMapped={false} depthTest={false} />
+          </mesh>
+          <pointLight color={TAYU.gold} intensity={1.6} distance={5} />
+        </group>
+      </group>
+
       {Array.from({ length: DOTS }).map((_, i) => (
-        <mesh key={i} ref={(el) => (dots.current[i] = el)} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[1, 16]} />
-          <meshBasicMaterial color={TAYU.teal} transparent opacity={0.5} toneMapped={false} depthWrite={false} />
+        <mesh key={i} ref={(el) => (dots.current[i] = el)} visible={false} rotation={[-Math.PI / 2, 0, 0]} renderOrder={998}>
+          <circleGeometry args={[1, 20]} />
+          <meshBasicMaterial color={TAYU.teal} transparent opacity={0.65} toneMapped={false} depthTest={false} depthWrite={false} />
         </mesh>
       ))}
     </>
