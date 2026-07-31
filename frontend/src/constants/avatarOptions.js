@@ -104,18 +104,32 @@ export const SHIRT_COLORS = [
   { id: 'green', label: 'Green', hex: '#22b07d' },
   { id: 'yellow', label: 'Yellow', hex: '#f5c542' },
   { id: 'orange', label: 'Orange', hex: '#f0822e' },
+  { id: 'purple', label: 'Purple', hex: '#7850f0' },
+  { id: 'pink', label: 'Pink', hex: '#ec4899' },
+  { id: 'teal', label: 'Teal', hex: '#14b8a6' },
+  { id: 'white', label: 'White', hex: '#f8fafc' },
+  { id: 'black', label: 'Black', hex: '#1f2937' },
 ]
 
 export const PANTS_COLORS = [
   { id: 'black', label: 'Black', hex: '#22262e' },
-  { id: 'blue', label: 'Blue', hex: '#2b3a67' },
+  { id: 'blue', label: 'Navy', hex: '#2b3a67' },
+  { id: 'denim', label: 'Denim', hex: '#4169a1' },
   { id: 'gray', label: 'Gray', hex: '#6b7280' },
+  { id: 'tan', label: 'Tan', hex: '#b58b5a' },
+  { id: 'green', label: 'Green', hex: '#3f6f52' },
+  { id: 'purple', label: 'Purple', hex: '#6d4aa2' },
+  { id: 'red', label: 'Red', hex: '#9f3f45' },
 ]
 
 export const SHOE_COLORS = [
   { id: 'black', label: 'Black', hex: '#1a1a1a' },
   { id: 'white', label: 'White', hex: '#f5f5f5' },
   { id: 'red', label: 'Red', hex: '#d83a3a' },
+  { id: 'blue', label: 'Blue', hex: '#2563eb' },
+  { id: 'green', label: 'Green', hex: '#16a34a' },
+  { id: 'yellow', label: 'Yellow', hex: '#eab308' },
+  { id: 'purple', label: 'Purple', hex: '#7c3aed' },
 ]
 
 export const ACCESSORIES = [
