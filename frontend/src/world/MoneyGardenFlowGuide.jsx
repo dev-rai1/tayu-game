@@ -78,26 +78,44 @@ export function MoneyGardenFlowGuide() {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[410]">
-      <section className="pointer-events-none absolute left-1/2 top-20 w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border-2 border-electric/30 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm">
+      <section
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="pointer-events-none absolute left-1/2 top-20 max-h-[42vh] w-[min(92vw,34rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Money Garden · Part {part.part}: {part.title}</div>
           <div className="rounded-full bg-navy/10 px-2 py-1 text-[10px] font-extrabold">Decision {partWeek} of 5</div>
         </div>
         <h2 className="mt-1 font-display text-lg font-extrabold">{guide.title}</h2>
-        <p className="mt-1 text-sm font-bold leading-snug text-navy/80">{guide.instruction}</p>
-        <div className="mt-2 grid gap-1 text-xs font-bold text-navy/65 sm:grid-cols-3">
-          {MONEY_GARDEN_FLOW.map((step) => <span key={step}>{step}</span>)}
+        <div className="mt-2 rounded-xl border border-sun/40 bg-sun/15 px-3 py-2">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-navy/55">Do this now</div>
+          <p className="mt-0.5 text-sm font-extrabold leading-snug text-navy">{guide.instruction}</p>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-1 text-xs font-bold text-navy/65" aria-label={`Money Garden flow: ${MONEY_GARDEN_FLOW.join(', then ')}`}>
+          {MONEY_GARDEN_FLOW.map((step, index) => (
+            <span key={step} className="inline-flex items-center gap-1">
+              <span className="rounded-full bg-navy/8 px-2 py-1">{step}</span>
+              {index < MONEY_GARDEN_FLOW.length - 1 && <span aria-hidden="true" className="text-electric">→</span>}
+            </span>
+          ))}
         </div>
       </section>
 
       {panelPortfolio && (
-        <button
-          type="button"
-          onClick={() => { closePortfolio(); startTheWeek() }}
-          className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[64px] w-[min(90vw,28rem)] -translate-x-1/2 rounded-2xl bg-electric px-6 text-xl font-extrabold text-white shadow-2xl transition hover:bg-teal hover:text-navy active:scale-95"
-        >
-          Test This Choice
-        </button>
+        <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(90vw,28rem)] -translate-x-1/2">
+          <p className="mb-2 rounded-xl bg-navy/90 px-3 py-2 text-center text-sm font-extrabold text-white shadow-lg">
+            Choose or adjust an investment above, then continue.
+          </p>
+          <button
+            type="button"
+            onClick={() => { closePortfolio(); startTheWeek() }}
+            className="min-h-[64px] w-full rounded-2xl bg-electric px-6 text-xl font-extrabold text-white shadow-2xl transition hover:bg-teal hover:text-navy focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sun active:scale-95"
+          >
+            Test This Choice and Continue →
+          </button>
+        </div>
       )}
     </div>
   )
