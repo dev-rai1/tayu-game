@@ -81,6 +81,7 @@ export default function ModuleSelect() {
 
   const canPlay = (moduleNumber) => {
     if (teacherPreview) return teacherEnabled.includes(moduleNumber)
+    if (context?.plain) return true
     if (!required.includes(moduleNumber)) return false
     if (context?.settings?.allowSkip) return true
     return moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)
@@ -101,16 +102,16 @@ export default function ModuleSelect() {
       <main className="mx-auto grid min-h-screen max-w-4xl place-items-center px-6 py-10">
         <section className="w-full rounded-3xl border-2 border-teal/40 bg-white/5 p-6 text-center shadow-2xl">
           <img src="/assets/tayu-logo.webp" alt="TAYU" className="mx-auto h-16 w-16 rounded-2xl" />
-          <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Choose your learning path</p>
+          <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Get a grade-based recommendation</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">What grade are you in?</h1>
-          <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">This keeps the game challenging without opening sections that may feel overwhelming. It also sets a starting reading pace. You can change either setting later.</p>
+          <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">We will recommend a starting path and reading pace for your grade. Every module will still be available, so you can choose what you want to learn.</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {GRADE_PATHS.map((path) => (
               <button key={path.id} type="button" onClick={() => chooseGradePath(path.id)} className="rounded-2xl border-2 border-white/15 bg-black/20 p-5 text-left transition hover:border-teal hover:bg-white/10 active:scale-[0.98]">
                 <div className="text-xs font-extrabold uppercase tracking-wide text-teal">{path.label}</div>
                 <div className="mt-1 font-display text-xl font-extrabold">{path.title}</div>
                 <p className="mt-2 text-sm font-semibold text-white/70">{path.copy}</p>
-                <div className="mt-3 text-sm font-extrabold text-sun">Modules {path.modules.join(', ')}</div>
+                <div className="mt-3 text-sm font-extrabold text-sun">Recommended: Modules {path.modules.join(', ')}</div>
               </button>
             ))}
           </div>
@@ -126,8 +127,8 @@ export default function ModuleSelect() {
           <div className="flex items-center gap-3">
             <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
             <div>
-              <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : 'Your learning path'}</h1>
-              <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected path'} · complete the recommended modules in order.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
+              <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : context.plain ? 'Choose a module' : 'Your classroom path'}</h1>
+              <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected grade'} · Modules ${required.join(', ')} are recommended, but you can choose any module.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -140,7 +141,7 @@ export default function ModuleSelect() {
         </div>
 
         {!teacherPreview && pathComplete && required.length < 5 && (
-          <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Path complete — view your certificate</Link>
+          <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Recommended path complete — view your certificate</Link>
         )}
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
@@ -150,18 +151,24 @@ export default function ModuleSelect() {
           const enabledByTeacher = teacherEnabled.includes(module.n)
           const canResume = Boolean(wallet && module.n === current && !done)
           return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
-            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
+            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : context.plain && inRequiredPath ? 'RECOMMENDED' : 'AVAILABLE' : 'LOCKED'}</span></div>
             <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
             <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
-            <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →' : !inRequiredPath ? 'Not included in this grade path' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
+            <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : context.plain && !teacherPreview ? inRequiredPath ? 'Recommended for your grade →' : 'Optional — choose this module →' : 'Start →' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
           </button>
         })}</div>
 
         <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
-          {pathComplete && required.length < 5 ? `You completed all ${required.length} modules in this path. Your certificate is ready.` : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
+          {context.plain
+            ? pathComplete && required.length < 5
+              ? `You completed all ${required.length} recommended modules for your grade. Your certificate is ready, and you can still play any other module.`
+              : `Complete the ${required.length} recommended module${required.length === 1 ? '' : 's'} for your grade to earn this path certificate (${completedRequired.length}/${required.length}). Other modules are always available.`
+            : pathComplete && required.length < 5
+              ? `You completed all ${required.length} modules in this classroom path. Your certificate is ready.`
+              : `Your classroom path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} assigned by your teacher are completed (${completedRequired.length}/${required.length}).`}
         </p>
       </main>
-      <ModuleGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} modules={required} />
+      <ModuleGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} modules={context.plain && !teacherPreview ? MODULE_CARDS.map((module) => module.n) : required} />
     </>
   )
 }
