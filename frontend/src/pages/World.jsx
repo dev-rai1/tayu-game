@@ -16,6 +16,7 @@ import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { ObjectiveChip } from '../world/ObjectiveChip.jsx'
 import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
+import { WorldMenu } from '../world/WorldMenu.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
@@ -83,6 +84,7 @@ export default function World() {
       <GuidedCommerceOverlay />
       {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D} />
+      <WorldMenu />
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
     </div>
   )
