@@ -6,7 +6,7 @@ const source = (name) => readFileSync(resolve(process.cwd(), 'src/world', name),
 const pageSource = readFileSync(resolve(process.cwd(), 'src/pages/World.jsx'), 'utf8')
 const tutorialSource = source('FirstTimeMovementTutorial.jsx')
 const pointerSource = source('ObjectiveEdgePointer.jsx')
-const chipSource = source('ObjectiveChip.jsx')
+const coachSource = source('PersistentCoach.jsx')
 const worldSource = source('GameWorld.jsx')
 
 describe('kid navigation support', () => {
@@ -15,14 +15,18 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain('MOVEMENT_DISTANCE')
     expect(tutorialSource).toContain("window.addEventListener('tayu-interact'")
     expect(tutorialSource).toContain("if (step === 1 && !near) return null")
+    expect(tutorialSource).toContain('Skip')
     expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D} />')
   })
 
-  it('shows guidance only when an interaction is relevant', () => {
-    expect(chipSource).toContain('if (!state.near) return true')
-    expect(chipSource).toContain('Next action')
-    expect(chipSource).toContain('say(spoken)')
-    expect(pageSource).toContain('<ObjectiveChip />')
+  it('uses one compact, dismissible guidance surface', () => {
+    expect(coachSource).toContain('coachVisibility')
+    expect(coachSource).toContain('showGuidance')
+    expect(coachSource).toContain('Show hint')
+    expect(coachSource).toContain('Read aloud')
+    expect(coachSource).toContain('Dismiss')
+    expect(pageSource).toContain('<PersistentCoach />')
+    expect(pageSource).not.toContain('<ObjectiveChip />')
   })
 
   it('pins off-screen objectives to the display edge', () => {

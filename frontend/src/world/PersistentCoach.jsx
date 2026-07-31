@@ -1,28 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
+import { say } from '../services/speech.js'
 import { useGame } from './store.js'
 import { getGuidance } from './guidance.js'
 import { usesTouchControls } from './controlMode.js'
 import { coachVisibility } from './overlayVisibility.js'
 import { activeFeedbackKey, useFeedbackCoach } from './feedbackCoach.js'
 
-const ACTOR_NAMES = {
-  player: 'You', penny: 'Penny', theo: 'Theo', mia: 'Mia', bea: 'Banker Bea',
-  teller: 'Teller Tom', clerk: 'Clerk Cleo', mailer: 'Postal Pat',
-  scammer: 'Sneaky Sam', helper: 'Helper Hana', bram: 'Mr. Bram',
-  sprout: 'Mr. Sprout', scoop: 'Scoop', wanderer: 'Milo', nea: 'Nea',
-}
-
-function messageFrom({ actorCaption, guide, toast, banner }) {
-  if (actorCaption?.line) {
-    return {
-      label: ACTOR_NAMES[actorCaption.actor] || actorCaption.actor || 'Character',
-      text: actorCaption.line,
-    }
-  }
-  if (guide?.line) return { label: 'Suggestion', text: guide.line }
-  if (toast) return { label: 'Message', text: toast }
-  if (banner) return { label: 'Achievement', text: banner }
-  return null
+function hintKey(type, value, week, objective) {
+  if (!value) return ''
+  if (type === 'improvement') return `${type}:${week}:${objective}:${value.sourceKey || value.title}`
+  return `${type}:${week}:${objective}:${value.title}:${value.action}`
 }
 
 export function PersistentCoach() {
@@ -54,13 +41,8 @@ export function PersistentCoach() {
   const actorCaption = useGame((s) => s.actorCaption)
   const banner = useGame((s) => s.banner)
   const feedbackByModule = useFeedbackCoach((s) => s.feedbackByModule)
-
-  const [savedMessage, setSavedMessage] = useState(null)
-
-  useEffect(() => {
-    const next = messageFrom({ actorCaption, guide, toast, banner })
-    if (next) setSavedMessage(next)
-  }, [actorCaption, guide, toast, banner])
+  const [expanded, setExpanded] = useState(false)
+  const [dismissedKey, setDismissedKey] = useState('')
 
   const stateForGuidance = {
     week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
@@ -77,15 +59,27 @@ export function PersistentCoach() {
   const visibility = coachVisibility(stateForGuidance)
   const feedbackKey = activeFeedbackKey(stateForGuidance)
   const improvement = feedbackKey ? feedbackByModule[feedbackKey] : null
-  const showMessage = Boolean(savedMessage && visibility.showSavedMessage)
-  const showImprovement = Boolean(improvement && visibility.showGuidance)
-  const showGuidance = Boolean(guidance && visibility.showGuidance && !showImprovement)
+  const transientMessageVisible = Boolean(toast || guide || actorCaption || banner)
+  const type = improvement ? 'improvement' : 'guidance'
+  const content = improvement || guidance
+  const key = hintKey(type, content, week, objective)
+  const canShow = Boolean(
+    content && visibility.showGuidance && !transientMessageVisible && dismissedKey !== key,
+  )
 
-  if (!showMessage && !showImprovement && !showGuidance) return null
+  useEffect(() => {
+    setExpanded(false)
+  }, [key])
 
+  if (!canShow) return null
+
+  const label = improvement ? 'Try one change' : 'Show hint'
+  const title = improvement ? improvement.title : guidance.title
+  const action = improvement ? improvement.action : (guidance.action || guidance.instruction)
+  const spoken = [title, action].filter(Boolean).join('. ')
   const positionClass = usesTouchControls
-    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))] max-h-[34dvh]'
-    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] max-h-[42vh] sm:left-3 sm:translate-x-0'
+    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
+    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
 
   return (
     <aside
@@ -93,45 +87,58 @@ export function PersistentCoach() {
       aria-live="polite"
       aria-atomic="true"
       data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
-      className={`pointer-events-auto fixed left-1/2 z-[490] w-[min(92vw,28rem)] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl ${positionClass}`}
+      className={`pointer-events-auto fixed left-1/2 z-[490] w-[min(90vw,23rem)] -translate-x-1/2 rounded-2xl border-2 border-electric bg-white text-navy shadow-2xl ${positionClass}`}
     >
-      {showMessage && (
-        <div>
+      {!expanded ? (
+        <div className="flex items-center gap-2 p-2">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="min-h-[44px] min-w-0 flex-1 rounded-xl bg-electric/10 px-3 text-left active:scale-[0.99]"
+          >
+            <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
+            <span className="block truncate text-sm font-extrabold">{title}</span>
+          </button>
+          <button
+            type="button"
+            aria-label="Hide this hint"
+            onClick={() => setDismissedKey(key)}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy/10 text-lg font-extrabold text-navy active:scale-95"
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <div className="p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">{savedMessage.label}</div>
-              <p className="mt-1 break-words text-base font-bold leading-snug">{savedMessage.text}</p>
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-electric">{label}</div>
+              <div className="mt-1 break-words text-sm font-extrabold leading-snug">{title}</div>
+              <p className="mt-1 break-words text-sm font-semibold leading-snug text-navy/75">{action}</p>
             </div>
             <button
               type="button"
-              onClick={() => setSavedMessage(null)}
+              onClick={() => setExpanded(false)}
               className="min-h-[40px] shrink-0 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95"
             >
-              Got it
+              Hide
             </button>
           </div>
-        </div>
-      )}
-
-      {showMessage && (showImprovement || showGuidance) && <div className="my-3 border-t border-navy/10" />}
-
-      {showImprovement && (
-        <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">Try one change</div>
-          <div className="mt-1 break-words text-sm font-extrabold leading-snug">{improvement.title}</div>
-          <div className="mt-1 break-words text-xs font-semibold leading-snug text-navy/70">{improvement.action}</div>
-          <div className="mt-2 rounded-xl bg-electric/10 px-3 py-2 text-xs font-extrabold leading-snug text-electric">Goal: {improvement.goal}</div>
-        </div>
-      )}
-
-      {showGuidance && (
-        <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">Next step</div>
-          <div className="mt-1 break-words text-sm font-extrabold leading-snug">{guidance.title}</div>
-          <div className="mt-1 break-words text-xs font-semibold leading-snug text-navy/70">{guidance.instruction}</div>
-          <div className="mt-2 rounded-xl border border-electric/20 bg-electric/10 px-3 py-2">
-            <div className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-navy/50">Do this now</div>
-            <div className="mt-0.5 break-words text-xs font-extrabold leading-snug text-electric">{guidance.action}</div>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => say(spoken)}
+              className="min-h-[42px] flex-1 rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95"
+            >
+              Read aloud
+            </button>
+            <button
+              type="button"
+              onClick={() => setDismissedKey(key)}
+              className="min-h-[42px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95"
+            >
+              Dismiss
+            </button>
           </div>
         </div>
       )}

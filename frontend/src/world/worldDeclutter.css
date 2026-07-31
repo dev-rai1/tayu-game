@@ -1,0 +1,46 @@
+.tayu-world-declutter .absolute.right-4.top-4 > div[aria-live="polite"] {
+  display: none;
+}
+
+.tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
+.tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
+  max-width: 28rem;
+  padding: 1rem;
+}
+
+.tayu-world-declutter #tayu-dialog-line,
+.tayu-world-declutter #tayu-lesson-title {
+  max-height: min(34dvh, 15rem);
+  overflow-y: auto;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.tayu-world-declutter [class*="z-[320]"] > .pop-in {
+  max-width: 29rem;
+  padding: 1rem;
+}
+
+.tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
+  max-height: min(30dvh, 13rem);
+  overflow-y: auto;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
+  .tayu-world-declutter [aria-labelledby="tayu-lesson-title"],
+  .tayu-world-declutter [class*="z-[320]"] > .pop-in {
+    width: min(92vw, 28rem);
+    border-radius: 1rem;
+    padding: 0.85rem;
+  }
+
+  .tayu-world-declutter #tayu-dialog-line,
+  .tayu-world-declutter #tayu-lesson-title,
+  .tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+}
