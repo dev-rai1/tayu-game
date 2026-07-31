@@ -73,7 +73,7 @@ export function PersistentCoach() {
 
   if (!canShow) return null
 
-  const label = improvement ? 'Try one change' : 'Need a hint?'
+  const label = improvement ? 'Try one change' : 'Show hint'
   const title = improvement ? improvement.title : guidance.title
   const action = improvement ? improvement.action : (guidance.action || guidance.instruction)
   const spoken = [title, action].filter(Boolean).join('. ')
