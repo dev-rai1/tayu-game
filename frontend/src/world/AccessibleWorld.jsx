@@ -32,8 +32,9 @@ const MODULE_INTROS = {
 function Action({ children, onClick, secondary = false }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`min-h-[60px] w-full rounded-2xl px-5 py-3 text-left text-lg font-extrabold shadow-lg transition active:scale-[0.98] ${
+      className={`min-h-[64px] w-full rounded-2xl px-5 py-3 text-left text-lg font-extrabold leading-snug shadow-lg transition focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-teal active:scale-[0.98] ${
         secondary ? 'border-2 border-white/25 bg-white/10 text-white hover:bg-white/20' : 'bg-electric text-white hover:bg-teal hover:text-navy'
       }`}
     >
@@ -59,36 +60,42 @@ export function AccessibleWorld() {
 
   const actions = []
   if (gameComplete) {
-    actions.push(['Enter the Finale Area and get my certificate', () => useGame.setState({ enterParty: true })])
+    actions.push(['Final step: Enter the celebration area and get my certificate', () => useGame.setState({ enterParty: true })])
   } else if (week === 1 && objective === 'mailbox') {
-    actions.push(['Go to the Allowance Bank and collect $30', game.openMailbox])
+    actions.push(['Step 1: Collect my $30 allowance from the Allowance Bank', game.openMailbox])
   } else if (week === 1 && objective === 'kitchen' && mailboxOpened && scenarioState === 'ALLOCATING') {
-    actions.push(['Open the SPEND jar — money for now', () => game.openPanel('spend')])
-    actions.push(['Open the SAVE jar — money for later', () => game.openPanel('save')])
-    actions.push(['Open the GIVE jar — money to help others', () => game.openPanel('give')])
+    actions.push(['Choose the SPEND jar — money I can use now', () => game.openPanel('spend')])
+    actions.push(['Choose the SAVE jar — money I keep for later', () => game.openPanel('save')])
+    actions.push(['Choose the GIVE jar — money I use to help others', () => game.openPanel('give')])
   } else if (week === 1 && objective === 'store') {
     if (!bramTalked) {
-      actions.push([`Talk to ${SHOPKEEPER.name} before shopping`, () => game.openDialog(
+      actions.push([`Step 1: Talk to ${SHOPKEEPER.name} to unlock the Market`, () => game.openDialog(
         SHOPKEEPER.name,
         SHOP_LINES_INTRO,
         () => game.setBramTalked(),
       )])
     } else {
       STORE_ITEMS.forEach((item) => {
-        if (!bought.includes(item.id)) actions.push([`Look at ${item.name} — $${item.price}`, () => game.openItem(item)])
+        if (!bought.includes(item.id)) actions.push([`Inspect ${item.name}. It costs $${item.price}.`, () => game.openItem(item)])
       })
-      actions.push([`Check out with ${bought.length} item${bought.length === 1 ? '' : 's'}`, game.confirmCheckout, true])
+      actions.push([`Finish shopping: Check out with ${bought.length} item${bought.length === 1 ? '' : 's'}`, game.confirmCheckout, true])
     }
   } else if (week === 2) {
-    if (lemPhase === 'toStand') actions.push(['Go to the Lemonade Stand and meet Penny', game.standIntro])
-    else if (lemPhase === 'toMarket') actions.push(['Go to Mr. Bram and buy supplies', game.openSupplies])
-    else if (lemPhase === 'toStand2') actions.push(['Return to my stand and make a business plan', game.openTemplate])
+    if (lemPhase === 'toStand') actions.push(['Step 1 of 3: Go to the Lemonade Stand and meet Penny', game.standIntro])
+    else if (lemPhase === 'toMarket') actions.push(['Step 2 of 3: Open the Shopping List and choose lemons, sweetener, and cups', game.openSupplies])
+    else if (lemPhase === 'toStand2') actions.push(['Step 3 of 3: Set my recipe, banner, and price, then open the stand', game.openTemplate])
   } else if (week === 3 && bt) {
-    actions.push([bt.stage === 'intro' ? 'Meet the Budget Keeper and start my day' : 'Continue with the Budget Keeper', game.enterBudget])
+    actions.push([bt.stage === 'intro'
+      ? 'Step 1: Meet the Budget Keeper and start my day'
+      : 'Continue: Open the next highlighted Budget Town decision', game.enterBudget])
   } else if (week === 4 && bk) {
-    actions.push([bk.seen?.intro ? 'Continue with Banker Bea' : 'Meet Banker Bea and enter the Bank of TAYU', game.enterBank])
+    actions.push([bk.seen?.intro
+      ? 'Continue: Open the next Bank of TAYU activity'
+      : 'Step 1: Meet Banker Bea and enter the Bank of TAYU', game.enterBank])
   } else if (week === 5 && mgPhase !== 'done') {
-    actions.push([mgPhase === 'toGarden' ? 'Meet Mr. Sprout and enter the Money Garden' : 'Continue with Mr. Sprout', game.enterGarden])
+    actions.push([mgPhase === 'toGarden'
+      ? 'Step 1: Meet Mr. Sprout and enter the Money Garden'
+      : 'Continue: Open my portfolio, make one choice, and test it', game.enterGarden])
   }
 
   const busy = !!(
@@ -115,13 +122,14 @@ export function AccessibleWorld() {
             {MODULE_INTROS[week]}
           </p>
           <p className="mt-2 text-base font-semibold leading-relaxed text-white/85">
-            Walking is replaced with clear destination buttons. Your lessons, choices, money, progress, and rewards work the same way.
+            Walking is replaced with clear destination buttons. Each button now says exactly what it opens and what to do next. Your lessons, choices, money, progress, and rewards work the same way.
           </p>
         </div>
 
         {!busy && actions.length > 0 && (
-          <section aria-labelledby="next-step-title" className="pop-in mt-4 rounded-3xl bg-white/10 p-5">
-            <h2 id="next-step-title" className="font-display text-xl font-extrabold text-teal">Your next step</h2>
+          <section aria-labelledby="next-step-title" aria-live="polite" aria-atomic="true" className="pop-in mt-4 rounded-3xl bg-white/10 p-5">
+            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/60">Do this now</div>
+            <h2 id="next-step-title" className="mt-1 font-display text-xl font-extrabold text-teal">Your next step</h2>
             <div className="mt-3 flex flex-col gap-3">
               {actions.map(([label, action, secondary]) => (
                 <Action key={label} onClick={action} secondary={secondary}>{label}</Action>
@@ -131,8 +139,8 @@ export function AccessibleWorld() {
         )}
 
         {!busy && actions.length === 0 && (
-          <div role="status" className="mt-4 rounded-3xl bg-white/10 p-5 text-center text-lg font-bold">
-            Complete the choice on screen to continue.
+          <div role="status" aria-live="polite" className="mt-4 rounded-3xl bg-white/10 p-5 text-center text-lg font-bold">
+            Complete the choice currently shown on screen. The next step will appear here automatically.
           </div>
         )}
 

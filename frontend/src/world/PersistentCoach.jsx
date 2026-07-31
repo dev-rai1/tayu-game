@@ -87,7 +87,9 @@ export function PersistentCoach() {
 
   return (
     <aside
+      role="status"
       aria-live="polite"
+      aria-atomic="true"
       className="pointer-events-auto fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[490] max-h-[42vh] w-[min(92vw,28rem)] -translate-x-1/2 overflow-y-auto overscroll-contain rounded-2xl border-2 border-electric bg-white px-4 py-3 text-navy shadow-2xl sm:left-3 sm:translate-x-0"
     >
       {showMessage && (
@@ -113,18 +115,21 @@ export function PersistentCoach() {
       {showImprovement && (
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">Try one change</div>
-          <div className="mt-1 text-sm font-extrabold leading-snug">{improvement.title}</div>
-          <div className="mt-1 text-xs font-semibold leading-snug text-navy/70">{improvement.action}</div>
-          <div className="mt-1 text-xs font-extrabold text-electric">{improvement.goal}</div>
+          <div className="mt-1 break-words text-sm font-extrabold leading-snug">{improvement.title}</div>
+          <div className="mt-1 break-words text-xs font-semibold leading-snug text-navy/70">{improvement.action}</div>
+          <div className="mt-2 rounded-xl bg-electric/10 px-3 py-2 text-xs font-extrabold leading-snug text-electric">Goal: {improvement.goal}</div>
         </div>
       )}
 
       {showGuidance && (
         <div>
           <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">Next step</div>
-          <div className="mt-1 text-sm font-extrabold leading-snug">{guidance.title}</div>
-          <div className="mt-1 text-xs font-semibold leading-snug text-navy/70">{guidance.instruction}</div>
-          <div className="mt-1 text-xs font-extrabold text-electric">{guidance.action}</div>
+          <div className="mt-1 break-words text-sm font-extrabold leading-snug">{guidance.title}</div>
+          <div className="mt-1 break-words text-xs font-semibold leading-snug text-navy/70">{guidance.instruction}</div>
+          <div className="mt-2 rounded-xl border border-electric/20 bg-electric/10 px-3 py-2">
+            <div className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-navy/50">Do this now</div>
+            <div className="mt-0.5 break-words text-xs font-extrabold leading-snug text-electric">{guidance.action}</div>
+          </div>
         </div>
       )}
     </aside>
