@@ -10,8 +10,8 @@ import { DEFAULT_AVATAR, randomAvatar } from '../constants/avatarOptions.js'
 import { isValidName } from '../utils/validators.js'
 import { hasWebGL } from '../utils/webgl.js'
 
-// Self-contained 3D character creator: options (left) · live 3D preview (center)
-// · name + actions (right). Fully customizable, works on any device/network.
+// Self-contained 3D character creator. On tablets, keep the live preview above
+// the option list so Safari resizing never pushes the character off-screen.
 export default function AvatarCreate() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
@@ -26,40 +26,41 @@ export default function AvatarCreate() {
     setNameTouched(true)
     if (!isValidName(name)) return
     dispatch({ type: 'SET_AVATAR', payload: avatar })
-    dispatch({ type: 'SET_AVATAR_URL', url: null }) // use the built-in 3D character
+    dispatch({ type: 'SET_AVATAR_URL', url: null })
     dispatch({ type: 'SET_PLAYER', payload: { name: name.trim() } })
-    saveProfile({ name: name.trim(), avatar }) // Continue must remember the player (B2)
+    saveProfile({ name: name.trim(), avatar })
     navigate('/world')
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-navy text-white">
-      {/* B4: the 'excited' animated town behind the builder - NPCs running,
-          jumping, cheering. A soft scrim keeps the 3D preview clearly on top. */}
-      <div className="absolute inset-0">
+    <div className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-navy text-white">
+      <div className="fixed inset-0">
         <TownBackground theme="excited" scrim={0.5} />
       </div>
-      <header className="relative z-10 flex items-center justify-between px-5 py-4">
+
+      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-navy/80 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4">
         <div className="flex items-center gap-2">
-          <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-11 w-11 rounded-2xl shadow-lg" />
+          <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-10 w-10 rounded-2xl shadow-lg sm:h-11 sm:w-11" />
           <MuteButton />
         </div>
-        <span className="rounded-2xl bg-navy/85 px-4 py-1.5 font-display text-lg font-bold text-white">Create Your Character</span>
-        <span className="w-11" />
+        <span className="rounded-2xl bg-navy/90 px-3 py-1.5 text-center font-display text-base font-bold text-white sm:px-4 sm:text-lg">Create Your Character</span>
+        <span className="w-10 sm:w-11" />
       </header>
 
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-4 p-4 lg:grid-cols-[300px_1fr_280px]">
-        {/* Left - options */}
-        <div className="card max-h-[74vh] !p-4" style={{ background: 'rgba(7,23,72,0.92)' }}>
+      <main className="relative z-10 mx-auto grid max-w-6xl gap-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] xl:grid-cols-[300px_minmax(0,1fr)_280px] xl:items-stretch">
+        <section
+          aria-label="Character options"
+          className="card order-2 !p-4 xl:order-1 xl:max-h-[calc(100dvh-7.5rem)] xl:overflow-y-auto"
+          style={{ background: 'rgba(7,23,72,0.92)' }}
+        >
           <AvatarCustomizer avatar={avatar} onChange={patch} />
-        </div>
+        </section>
 
-        {/* Center - 3D preview */}
-        <div className="min-h-[52vh] overflow-hidden rounded-3xl shadow-xl lg:min-h-[74vh]">
+        <section aria-label="Live character preview" className="order-1 min-h-[42dvh] overflow-hidden rounded-3xl shadow-xl sm:min-h-[50dvh] xl:order-2 xl:min-h-[calc(100dvh-8.5rem)]">
           {use3D ? (
             <AvatarPreview avatar={avatar} />
           ) : (
-            <div className="flex h-full min-h-[52vh] flex-col items-center justify-center bg-navy/90 p-6 text-center">
+            <div className="flex h-full min-h-[42dvh] flex-col items-center justify-center bg-navy/90 p-6 text-center sm:min-h-[50dvh]">
               <div className="grid h-32 w-32 place-items-center rounded-full bg-teal/20 text-6xl" aria-hidden="true">●</div>
               <h2 className="mt-5 font-display text-2xl font-extrabold text-teal">Your character is ready</h2>
               <p className="mt-2 max-w-sm font-semibold text-white/80">
@@ -67,10 +68,13 @@ export default function AvatarCreate() {
               </p>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Right - name + actions */}
-        <div className="card flex flex-col gap-4 !p-4" style={{ background: 'rgba(7,23,72,0.92)' }}>
+        <section
+          aria-label="Player name and actions"
+          className="card order-3 flex flex-col gap-4 !p-4 xl:max-h-[calc(100dvh-7.5rem)]"
+          style={{ background: 'rgba(7,23,72,0.92)' }}
+        >
           <div>
             <label htmlFor="name" className="text-sm font-bold text-teal">Your name</label>
             <input
@@ -89,12 +93,12 @@ export default function AvatarCreate() {
               {nameTouched && !isValidName(name) ? 'Please type at least one letter.' : 'Type your name, then press Enter or choose Enter World.'}
             </p>
           </div>
-          <button className="btn-secondary" onClick={() => setAvatar(randomAvatar())}>Randomize</button>
-          <button className="btn-primary disabled:opacity-40" disabled={!isValidName(name)} onClick={confirm}>
+          <button className="btn-secondary min-h-[48px]" onClick={() => setAvatar(randomAvatar())}>Randomize</button>
+          <button className="btn-primary min-h-[52px] disabled:opacity-40" disabled={!isValidName(name)} onClick={confirm}>
             Enter World →
           </button>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   )
 }
