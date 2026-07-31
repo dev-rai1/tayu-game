@@ -5,6 +5,7 @@ import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
+import { ModuleGlossary } from '../components/ModuleGlossary.jsx'
 import {
   clearActiveLearningPath,
   completedRequiredModules,
@@ -23,6 +24,7 @@ export default function ModuleSelect() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const [context, setContext] = useState(null)
+  const [glossaryOpen, setGlossaryOpen] = useState(false)
   const [gradePathId, setGradePathId] = useState(() => {
     const saved = loadActiveLearningPath()
     return getGradePath(saved?.id)?.id || ''
@@ -118,44 +120,48 @@ export default function ModuleSelect() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
-          <div>
-            <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : 'Your learning path'}</h1>
-            <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected path'} · complete the recommended modules in order.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
+    <>
+      <main className="mx-auto max-w-3xl px-6 py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
+            <div>
+              <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : 'Your learning path'}</h1>
+              <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected path'} · complete the recommended modules in order.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setGlossaryOpen(true)} className="rounded-xl bg-sun px-4 py-2 text-sm font-extrabold text-navy">Money word help</button>
+            {teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}
+            {!teacherPreview && <Link to="/settings" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Reading settings</Link>}
+            {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}
+            <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}
-          {!teacherPreview && <Link to="/settings" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Reading settings</Link>}
-          {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}
-          <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link>
-        </div>
-      </div>
 
-      {!teacherPreview && pathComplete && required.length < 5 && (
-        <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Path complete — view your certificate</Link>
-      )}
+        {!teacherPreview && pathComplete && required.length < 5 && (
+          <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Path complete — view your certificate</Link>
+        )}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
-        const done = badges.includes(module.badge)
-        const accessible = canPlay(module.n)
-        const inRequiredPath = required.includes(module.n)
-        const enabledByTeacher = teacherEnabled.includes(module.n)
-        const canResume = Boolean(wallet && module.n === current && !done)
-        return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
-          <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
-          <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
-          <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
-          <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →' : !inRequiredPath ? 'Not included in this grade path' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
-        </button>
-      })}</div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
+          const done = badges.includes(module.badge)
+          const accessible = canPlay(module.n)
+          const inRequiredPath = required.includes(module.n)
+          const enabledByTeacher = teacherEnabled.includes(module.n)
+          const canResume = Boolean(wallet && module.n === current && !done)
+          return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : 'AVAILABLE' : 'LOCKED'}</span></div>
+            <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
+            <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
+            <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : 'Start →' : !inRequiredPath ? 'Not included in this grade path' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
+          </button>
+        })}</div>
 
-      <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
-        {pathComplete && required.length < 5 ? `You completed all ${required.length} modules in this path. Your certificate is ready.` : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
-      </p>
-    </main>
+        <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
+          {pathComplete && required.length < 5 ? `You completed all ${required.length} modules in this path. Your certificate is ready.` : `Your path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} in this path are completed (${completedRequired.length}/${required.length}).`}
+        </p>
+      </main>
+      <ModuleGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} modules={required} />
+    </>
   )
 }
