@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { useGame } from './store.js'
 import { STORE_ITEMS } from './config.js'
 import { estimateDemandSignal } from '../scenarios/lemonade.js'
 
 const fmt = (value) => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })
 const MOBILE_SHEET = 'pointer-events-auto fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[475] max-h-[min(74vh,42rem)] overflow-y-auto overscroll-contain rounded-3xl shadow-2xl'
+const COMPACT_BUTTON = 'pointer-events-auto fixed right-3 top-[5.5rem] z-[475] min-h-[46px] max-w-[min(78vw,18rem)] rounded-2xl border-2 border-white/20 bg-navy/95 px-4 text-left text-sm font-extrabold text-white shadow-xl active:scale-95'
 
 function MarketClickShop() {
   const week = useGame((s) => s.week)
@@ -20,6 +22,11 @@ function MarketClickShop() {
   const storeMissionDone = useGame((s) => s.storeMissionDone)
   const buyItem = useGame((s) => s.buyItem)
   const confirmCheckout = useGame((s) => s.confirmCheckout)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (storeMissionDone || objective !== 'store') setOpen(false)
+  }, [objective, storeMissionDone])
 
   if (
     week !== 1 || objective !== 'store' || !bramTalked || storeMissionDone || panelItem || dialog ||
@@ -31,18 +38,22 @@ function MarketClickShop() {
   const hasDrink = basket.some((item) => item.tags?.includes('drink'))
   const ready = hasFood && hasDrink
 
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className={COMPACT_BUTTON}>
+        Open market choices · ${fmt(spend)} left
+      </button>
+    )
+  }
+
   return (
     <aside className={`${MOBILE_SHEET} border-2 border-teal bg-navy/95 p-4 text-white sm:inset-x-auto sm:right-3 sm:w-[min(94vw,32rem)]`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">TAYU Market — click to buy</div>
-          <h2 className="mt-1 font-display text-xl font-extrabold">Pick a healthy food and drink</h2>
-          <p className="mt-1 text-xs font-semibold leading-snug text-white/75">Click a product once to put it in your basket.</p>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal">TAYU Market</div>
+          <h2 className="mt-1 font-display text-lg font-extrabold">Choose one food and one drink</h2>
         </div>
-        <div className="shrink-0 rounded-2xl bg-white/10 px-3 py-2 text-center">
-          <div className="text-[10px] font-extrabold text-white/60">SPEND LEFT</div>
-          <div className="text-xl font-extrabold text-sun">${fmt(spend)}</div>
-        </div>
+        <button type="button" onClick={() => setOpen(false)} className="min-h-[42px] shrink-0 rounded-xl bg-white/10 px-3 text-xs font-extrabold">Hide</button>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -55,7 +66,7 @@ function MarketClickShop() {
               type="button"
               disabled={inBasket || !affordable}
               onClick={() => buyItem(item)}
-              className={`min-h-[78px] rounded-2xl border-2 px-3 py-2 text-left transition active:scale-95 disabled:cursor-not-allowed ${
+              className={`min-h-[72px] rounded-2xl border-2 px-3 py-2 text-left transition active:scale-95 disabled:cursor-not-allowed ${
                 inBasket ? 'border-teal bg-teal/20' : affordable ? 'border-white/20 bg-white/10 hover:border-sun' : 'border-white/10 bg-white/5 opacity-45'
               }`}
             >
@@ -66,23 +77,23 @@ function MarketClickShop() {
                 </span>
               </div>
               <div className="mt-1 text-sm font-extrabold">{item.name} · ${item.price}</div>
-              <div className="text-[11px] font-bold text-white/65">{inBasket ? 'In basket' : affordable ? 'Click to buy' : 'Not enough money'}</div>
+              <div className="text-[11px] font-bold text-white/65">{inBasket ? 'In basket' : affordable ? 'Choose' : 'Too expensive'}</div>
             </button>
           )
         })}
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs font-extrabold">
-        <div className={`rounded-xl px-3 py-2 ${hasFood ? 'bg-teal text-navy' : 'bg-white/10 text-white/70'}`}>{hasFood ? 'Food ready' : 'Choose 1 food'}</div>
-        <div className={`rounded-xl px-3 py-2 ${hasDrink ? 'bg-teal text-navy' : 'bg-white/10 text-white/70'}`}>{hasDrink ? 'Drink ready' : 'Choose 1 drink'}</div>
+        <div className={`rounded-xl px-3 py-2 ${hasFood ? 'bg-teal text-navy' : 'bg-white/10 text-white/70'}`}>{hasFood ? 'Food ready' : 'Pick food'}</div>
+        <div className={`rounded-xl px-3 py-2 ${hasDrink ? 'bg-teal text-navy' : 'bg-white/10 text-white/70'}`}>{hasDrink ? 'Drink ready' : 'Pick drink'}</div>
       </div>
       <button
         type="button"
         disabled={!ready}
         onClick={confirmCheckout}
-        className="mt-3 min-h-[56px] w-full rounded-2xl bg-sun px-4 text-lg font-extrabold text-navy transition active:scale-95 disabled:bg-white/10 disabled:text-white/40"
+        className="mt-3 min-h-[54px] w-full rounded-2xl bg-sun px-4 text-lg font-extrabold text-navy transition active:scale-95 disabled:bg-white/10 disabled:text-white/40"
       >
-        {ready ? `Click to checkout (${bought.length} items)` : 'Checkout unlocks after food + drink'}
+        {ready ? `Checkout (${bought.length} items)` : 'Choose food + drink'}
       </button>
     </aside>
   )
@@ -104,8 +115,10 @@ function LemonadeSupplyDemandCoach() {
   const weekComplete = useGame((s) => s.weekComplete)
   const openSupplies = useGame((s) => s.openSupplies)
   const openTemplate = useGame((s) => s.openTemplate)
+  const [open, setOpen] = useState(false)
 
   const activePhase = ['toMarket', 'supplies', 'toStand2', 'template'].includes(phase)
+  useEffect(() => setOpen(false), [phase, round])
   if (week !== 2 || objective !== 'lemonade' || !activePhase || weekComplete) return null
 
   const signal = estimateDemandSignal(hours, event, sign)
@@ -115,87 +128,70 @@ function LemonadeSupplyDemandCoach() {
   const costPerCup = bundle ? totalCost / Math.max(1, bundle.cups) : null
 
   const previousHint = !result
-    ? 'Use the demand clue, then make your own plan.'
+    ? 'Make one plan, then test it.'
     : result.keep < 0
-      ? 'Last round lost money. Lower costs or improve sales.'
+      ? 'Last round lost money. Change one cost or sales choice.'
       : result.leftover >= 2
-        ? 'You had leftovers. Try a smaller batch or a slightly lower price.'
+        ? 'You had leftovers. Try a smaller batch or lower price.'
         : result.missed >= 2
-          ? 'You sold out early. Try a larger batch or stay open longer.'
+          ? 'You sold out. Try a larger batch or more hours.'
           : result.keep <= 2
-            ? 'Profit was small. Raise the price a little or lower a cost.'
-            : 'Your last round made a profit. Test one small change at a time.'
+            ? 'Profit was small. Raise price a little or lower one cost.'
+            : 'You made a profit. Test one small change.'
 
   const supplyHint = !bundle
     ? signal.label === 'Low'
       ? 'Demand looks low. Compare the smaller batches.'
       : signal.label === 'High' || signal.label === 'Very high'
-        ? 'Demand looks busy. Compare how many cups each batch can serve.'
-        : 'Demand looks normal. Choose a batch that fits your budget.'
+        ? 'Demand looks busy. Compare how many cups each batch serves.'
+        : 'Demand looks normal. Pick a batch that fits your money.'
     : bundle.cups < signal.potential - 3
-      ? 'Your batch may be too small for this demand.'
+      ? 'The batch may be too small.'
       : bundle.cups > signal.potential + 3
-        ? 'Your batch may leave extras.'
-        : 'Your batch looks close to the demand level.'
+        ? 'The batch may leave extras.'
+        : 'The batch is close to expected demand.'
 
   const priceHint = !bundle
-    ? 'Choose a batch before setting the rest of your plan.'
+    ? 'Choose a batch first.'
     : price === null
-      ? 'Set a price above cost per cup, then test it.'
+      ? 'Set a price above cost per cup.'
       : price <= costPerCup + 0.05
-        ? 'Your price may leave little or no profit.'
+        ? 'The price may leave little profit.'
         : signal.label === 'Low' && price >= 2
-          ? 'Demand is low. Think about how price affects buyers.'
-          : 'Your price is above cost. Sell and learn from the result.'
+          ? 'Demand is low. A high price may reduce buyers.'
+          : 'The price is above cost. Test it.'
+
+  const phaseHint = ['toMarket', 'supplies'].includes(phase) ? supplyHint : priceHint
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className={COMPACT_BUTTON}>
+        Lemonade hint · Round {round}
+      </button>
+    )
+  }
 
   return (
-    <aside className={`${MOBILE_SHEET} border-2 border-sun bg-white p-4 text-navy md:inset-x-auto md:bottom-auto md:right-3 md:top-24 md:max-h-[calc(100vh-7rem)] md:w-[min(94vw,25rem)]`}>
+    <aside className={`${MOBILE_SHEET} border-2 border-sun bg-white p-4 text-navy md:inset-x-auto md:bottom-auto md:right-3 md:top-24 md:max-h-[calc(100vh-7rem)] md:w-[min(94vw,24rem)]`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Lemonade helper · Round {round}</div>
-          <h2 className="mt-1 font-display text-lg font-extrabold">{previousHint}</h2>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-electric">Round {round} · {signal.label} demand</div>
+          <h2 className="mt-1 font-display text-base font-extrabold">{previousHint}</h2>
         </div>
-        <span className="shrink-0 rounded-full bg-sun/30 px-3 py-1 text-xs font-extrabold">{signal.label} demand</span>
+        <button type="button" onClick={() => setOpen(false)} className="min-h-[42px] shrink-0 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy">Hide</button>
       </div>
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-1">
-        <div className="rounded-2xl bg-navy p-3 text-white">
-          <div className="text-[10px] font-extrabold uppercase tracking-wide text-teal">Batch clue</div>
-          <p className="mt-1 text-sm font-bold leading-snug">{supplyHint}</p>
-        </div>
-
-        <div className="rounded-2xl bg-sun p-3 text-navy">
-          <div className="text-[10px] font-extrabold uppercase tracking-wide">Price clue</div>
-          <p className="mt-1 text-sm font-extrabold leading-snug">{priceHint}</p>
-        </div>
-      </div>
-
-      <p className="mt-2 rounded-2xl bg-teal/10 px-3 py-2 text-xs font-bold leading-snug text-[#087a5e]">
-        Change one or two choices, sell, and compare the result.
-      </p>
+      <p className="mt-3 rounded-2xl bg-electric/10 px-3 py-3 text-sm font-extrabold leading-snug text-electric">{phaseHint}</p>
 
       {phase === 'toMarket' && (
-        <button type="button" onClick={openSupplies} className="mt-3 min-h-[54px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95">
-          Open the supply shelf
+        <button type="button" onClick={openSupplies} className="mt-3 min-h-[52px] w-full rounded-2xl bg-electric px-4 font-extrabold text-white active:scale-95">
+          Open supply shelf
         </button>
       )}
-
-      {phase === 'supplies' && !bundle && (
-        <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
-          Choose a batch, then test your plan.
-        </div>
-      )}
-
       {phase === 'toStand2' && (
-        <button type="button" onClick={openTemplate} className="mt-3 min-h-[54px] w-full rounded-2xl bg-electric px-4 text-base font-extrabold text-white active:scale-95">
-          Open the planning board
+        <button type="button" onClick={openTemplate} className="mt-3 min-h-[52px] w-full rounded-2xl bg-electric px-4 font-extrabold text-white active:scale-95">
+          Open planning board
         </button>
-      )}
-
-      {phase === 'template' && bundle && (
-        <div className="mt-3 rounded-2xl border-2 border-electric/25 px-4 py-3 text-center text-sm font-extrabold text-electric">
-          Make your choices, then start selling.
-        </div>
       )}
     </aside>
   )
