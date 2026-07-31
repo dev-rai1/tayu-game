@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   ANALYTICS_CHOICES,
+  analyticsRoleAllowed,
   getAnalyticsChoice,
   setAnalyticsChoice,
 } from '../services/privacyPreferences.js'
@@ -9,6 +10,7 @@ import {
 export function PrivacyChoices() {
   const { pathname } = useLocation()
   const [choice, setChoice] = useState(() => getAnalyticsChoice())
+  const canAllowAnalytics = analyticsRoleAllowed()
 
   useEffect(() => {
     const onChange = (event) => setChoice(event.detail || getAnalyticsChoice())
@@ -32,9 +34,9 @@ export function PrivacyChoices() {
     >
       <div className="grid items-center gap-4 md:grid-cols-[1fr_auto]">
         <div>
-          <div id="privacy-choice-title" className="font-display text-lg font-extrabold">Choose optional analytics</div>
+          <div id="privacy-choice-title" className="font-display text-lg font-extrabold">Privacy and browser storage</div>
           <p className="mt-1 text-sm font-semibold leading-relaxed text-white/75">
-            Necessary storage keeps accounts, settings, and game progress working. Optional analytics record page visits, device type, session time, and learning activity to help improve TAYU.
+            Necessary storage keeps accounts, settings, and game progress working. Optional analytics record page visits, device type, session time, and learning activity. Optional analytics stay off for student and guest accounts while the child-privacy workflow is under legal review.
           </p>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
             <Link to="/privacy" className="text-teal underline underline-offset-4">Privacy notice</Link>
@@ -42,8 +44,10 @@ export function PrivacyChoices() {
           </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
-          <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 text-sm font-extrabold">Necessary only</button>
-          <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Allow optional analytics</button>
+          <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 text-sm font-extrabold">Use necessary storage</button>
+          {canAllowAnalytics && (
+            <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Allow optional analytics</button>
+          )}
         </div>
       </div>
     </aside>
