@@ -5,6 +5,7 @@ import { saveProfile } from '../services/walletStore.js'
 import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import AvatarCustomizer from '../components/AvatarCustomizer.jsx'
+import AvatarRewards from '../components/AvatarRewards.jsx'
 import AvatarPreview from '../components/AvatarPreview.jsx'
 import { DEFAULT_AVATAR, randomAvatar } from '../constants/avatarOptions.js'
 import { isValidName } from '../utils/validators.js'
@@ -63,6 +64,7 @@ export default function AvatarCreate() {
           <h2 className="mb-1 font-display text-xl font-extrabold text-white">Customize more</h2>
           <p className="mb-4 text-sm font-semibold leading-relaxed text-white/70">These choices only change how your character looks. You can skip all of them.</p>
           <AvatarCustomizer avatar={avatar} onChange={patch} />
+          <AvatarRewards onApply={patch} />
         </section>
 
         <section aria-label="Live character preview" className="order-1 min-h-[38dvh] overflow-hidden rounded-3xl shadow-xl sm:min-h-[48dvh] xl:order-2 xl:min-h-[calc(100dvh-8.5rem)]">
