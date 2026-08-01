@@ -8,6 +8,20 @@ import { useGame } from './store.js'
 const WALL = '#ffe0b5'
 const WALL2 = '#f5cf9c'
 
+function openTappedItem(item, event) {
+  event.stopPropagation()
+  const state = useGame.getState()
+  if (!state.bramTalked) {
+    state.setToast('Talk to Mr. Bram first. He will explain the shopping mission.')
+    return
+  }
+  if (state.bought.includes(item.id)) {
+    state.setToast(`${item.name} is already in your basket.`)
+    return
+  }
+  state.openItem(item)
+}
+
 function Item({ item }) {
   const box = useRef()
   const tex = emojiTexture(item.emoji)
@@ -23,18 +37,24 @@ function Item({ item }) {
     }
   })
   const [lx, lz] = item.pos
-  const nameCard = cardTexture(item.name.toUpperCase(), `$${item.price}`)
+  const isWant = item.tags?.includes('junk') || item.tags?.includes('toy')
+  const choiceType = isWant ? 'WANT' : 'NEED'
+  const nameCard = cardTexture(item.name.toUpperCase(), `$${item.price} • ${choiceType}`)
   return (
-    <group position={[lx, 1.05, lz]}>
-      <RoundedBox ref={box} args={[0.52, 0.52, 0.52]} radius={0.08} smoothness={4} castShadow>
+    <group
+      position={[lx, 1.05, lz]}
+      onClick={(event) => openTappedItem(item, event)}
+      userData={{ interaction: `item:${item.id}` }}
+    >
+      <RoundedBox ref={box} args={[0.72, 0.72, 0.72]} radius={0.1} smoothness={4} castShadow>
         <meshPhysicalMaterial color={item.color} clearcoat={0.4} roughness={0.35} emissive={item.color} emissiveIntensity={0.08} transparent opacity={1} />
       </RoundedBox>
-      <Billboard position={[0, 0.55, 0]}>
-        <mesh><planeGeometry args={[0.5, 0.5]} /><meshBasicMaterial map={tex} transparent toneMapped={false} /></mesh>
+      <Billboard position={[0, 0.62, 0]}>
+        <mesh><planeGeometry args={[0.58, 0.58]} /><meshBasicMaterial map={tex} transparent toneMapped={false} /></mesh>
       </Billboard>
-      {/* NAME + $PRICE card in big words (Section 2.2) */}
-      <Billboard position={[0, 1.25, 0]}>
-        <mesh><planeGeometry args={[1.1, 0.55]} /><meshBasicMaterial map={nameCard} transparent toneMapped={false} /></mesh>
+      {/* Name, price, and need/want classification stay attached to the item. */}
+      <Billboard position={[0, 1.36, 0]}>
+        <mesh><planeGeometry args={[1.35, 0.65]} /><meshBasicMaterial map={nameCard} transparent toneMapped={false} /></mesh>
       </Billboard>
     </group>
   )
@@ -50,10 +70,20 @@ function Shelf({ z }) {
   )
 }
 
-// Checkout mat - walk onto it and press E to end the shopping trip.
+function tapCheckout(event) {
+  event.stopPropagation()
+  const state = useGame.getState()
+  if (!state.bramTalked) {
+    state.setToast('Talk to Mr. Bram before checking out.')
+    return
+  }
+  state.confirmCheckout()
+}
+
+// Checkout mat supports walking + E/DO and direct touch/click selection.
 function Checkout() {
   const ring = useRef()
-  const labelTex = labelTexture('↓ CHECKOUT HERE ↓', { bg: '#00DCA0', color: '#071748', accent: '#FFD700' })
+  const labelTex = labelTexture('CHECKOUT • TAP OR PRESS E', { bg: '#00DCA0', color: '#071748', accent: '#FFD700' })
   useFrame(() => {
     const st = useGame.getState()
     const basket = st.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
@@ -64,7 +94,7 @@ function Checkout() {
     }
   })
   return (
-    <group position={[0, 0, 4.2]}>
+    <group position={[0, 0, 4.2]} onClick={tapCheckout} userData={{ interaction: 'checkout' }}>
       <mesh ref={ring} position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[1.05, 1.75, 32]} /><meshBasicMaterial color="#00DCA0" transparent opacity={0.15} toneMapped={false} />
       </mesh>
@@ -76,7 +106,7 @@ function Checkout() {
         <meshBasicMaterial color="#00DCA0" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
       </mesh>
       <Billboard position={[0, 2.45, 0]}>
-        <mesh><planeGeometry args={[3.2, 1]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
+        <mesh><planeGeometry args={[3.8, 1]} /><meshBasicMaterial map={labelTex} transparent toneMapped={false} /></mesh>
       </Billboard>
     </group>
   )

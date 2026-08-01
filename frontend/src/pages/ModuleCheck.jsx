@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { moduleCheckForBadge } from '../constants/moduleChecks.js'
+import { MODULE_CATALOG } from '../constants/modules.js'
 import { isLearningPathComplete, loadActiveLearningPath } from '../constants/learningPaths.js'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
@@ -24,10 +25,12 @@ function personalizedRecap(badge, profile, wallet) {
   return `${name}, your Money Garden journey finished near $${fmt(lastTotal || garden.startTotal)} after you researched, diversified, handled risk, and rebalanced.`
 }
 
-function prepareReturnDestination(badge, profile) {
+function recordPathCompletion(profile) {
   const path = loadActiveLearningPath()
   const badges = profile?.badges || []
-  if (badge !== 'garden' && path && path.modules.length < 5 && isLearningPathComplete(path.modules, badges)) {
+  if (!path || !isLearningPathComplete(path.modules, badges)) return false
+
+  if (profile.pathCompletion?.pathId !== path.id) {
     saveProfile({
       pathCompletion: {
         pathId: path.id,
@@ -37,9 +40,8 @@ function prepareReturnDestination(badge, profile) {
         completedAt: new Date().toISOString(),
       },
     })
-    return '/path-complete'
   }
-  return '/world'
+  return true
 }
 
 export default function ModuleCheck() {
@@ -61,6 +63,13 @@ export default function ModuleCheck() {
 
   const question = check.questions[questionIndex]
   const correct = selected === question?.answer
+  const nextModule = MODULE_CATALOG.find((module) => module.n === check.moduleNumber + 1)
+  const activePath = loadActiveLearningPath()
+  const certificateReady = Boolean(
+    activePath
+    && activePath.modules.length < MODULE_CATALOG.length
+    && isLearningPathComplete(activePath.modules, profile.badges || []),
+  )
 
   const choose = (index) => {
     if (selected !== null) return
@@ -96,9 +105,17 @@ export default function ModuleCheck() {
     setFinished(true)
   }
 
-  const leave = () => {
+  const continueForward = () => {
     const latest = loadProfile() || profile
-    navigate(prepareReturnDestination(badge, latest), { replace: true })
+    recordPathCompletion(latest)
+    if (nextModule) localStorage.setItem('tayu-jump-module', String(nextModule.n))
+    navigate('/world', { replace: true })
+  }
+
+  const viewCertificate = () => {
+    const latest = loadProfile() || profile
+    recordPathCompletion(latest)
+    navigate('/path-complete')
   }
 
   if (finished) {
@@ -122,7 +139,17 @@ export default function ModuleCheck() {
             <p className="mt-2 font-semibold text-white/70">This module collectible now appears on your Money Guru finale shelf.</p>
           </div>
 
-          <button className="btn-primary mt-6 min-h-[58px] w-full text-lg" onClick={leave}>Continue my journey</button>
+          <button className="btn-primary mt-6 min-h-[62px] w-full text-lg" onClick={continueForward}>
+            {nextModule ? `Continue to Module ${nextModule.n}: ${nextModule.title} →` : 'Continue to the Money Guru finale →'}
+          </button>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <button type="button" onClick={() => navigate('/modules')} className="min-h-[50px] rounded-2xl bg-white/10 px-4 font-extrabold text-white active:scale-95">Choose another module</button>
+            {certificateReady ? (
+              <button type="button" onClick={viewCertificate} className="min-h-[50px] rounded-2xl bg-sun/15 px-4 font-extrabold text-sun active:scale-95">View path certificate</button>
+            ) : (
+              <button type="button" onClick={() => navigate('/')} className="min-h-[50px] rounded-2xl bg-white/10 px-4 font-extrabold text-white active:scale-95">Exit to home</button>
+            )}
+          </div>
         </section>
       </main>
     )
