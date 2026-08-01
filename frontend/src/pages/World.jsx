@@ -75,7 +75,7 @@ export default function World() {
   }
 
   return (
-    <div className="tayu-world-declutter fixed inset-0 overflow-hidden bg-navy">
+    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       <BudgetTakeawayGuard />
