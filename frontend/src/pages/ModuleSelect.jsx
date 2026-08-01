@@ -4,6 +4,7 @@ import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
 import { loadCurrentClassContext } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
+import { moduleCheckProgress } from '../services/modulePractice.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { ModuleGlossary } from '../components/ModuleGlossary.jsx'
 import {
@@ -60,6 +61,9 @@ export default function ModuleSelect() {
   const pathComplete = isLearningPathComplete(required, badges)
   const firstIncompleteRequired = required.find((moduleNumber) => !completedNumbers.includes(moduleNumber)) || required[0] || 1
   const pendingCard = MODULE_CARDS.find((module) => module.n === pendingModule)
+  const completedPractice = MODULE_CARDS
+    .filter((module) => badges.includes(module.badge))
+    .map((module) => ({ module, progress: moduleCheckProgress(prof?.moduleChecks?.[module.badge]) }))
 
   useEffect(() => {
     if (!context || teacherPreview || !required.length) return
@@ -169,6 +173,7 @@ export default function ModuleSelect() {
           const enabledByTeacher = teacherEnabled.includes(module.n)
           const canResume = Boolean(wallet && module.n === current && !done)
           const olderOptional = Boolean(context.plain && gradePath && !inRequiredPath)
+          const practice = moduleCheckProgress(prof?.moduleChecks?.[module.badge])
           const status = done
             ? 'DONE'
             : !accessible
@@ -184,10 +189,27 @@ export default function ModuleSelect() {
             <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : olderOptional ? 'bg-sun text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{status}</span></div>
             <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
             <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
+            {done && practice.attempts > 0 && <p className="mt-2 rounded-xl bg-teal/10 px-3 py-2 text-xs font-extrabold text-teal">Best quick check: {practice.bestScore}/{practice.total} · {practice.attempts} attempt{practice.attempts === 1 ? '' : 's'}</p>}
             {olderOptional && <p className="mt-2 rounded-xl bg-sun/10 px-3 py-2 text-xs font-bold leading-relaxed text-sun">This topic is usually taught to older students. You can still try it.</p>}
             <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : olderOptional ? 'Preview this older module →' : context.plain && !teacherPreview ? inRequiredPath ? 'Recommended for your grade →' : 'Optional — choose this module →' : 'Start →' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
           </button>
         })}</div>
+
+        {completedPractice.length > 0 && (
+          <section className="mt-6 rounded-3xl border border-teal/30 bg-teal/5 p-5">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-teal">Practice and improve</p>
+            <h2 className="mt-1 font-display text-2xl font-extrabold">Retake a quick check</h2>
+            <p className="mt-1 text-sm font-semibold text-white/70">Your previous scores stay saved so you can see whether practice helped.</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {completedPractice.map(({ module, progress }) => (
+                <button key={module.badge} type="button" onClick={() => nav(`/module-check/${module.badge}?retake=1`)} className="min-h-[58px] rounded-2xl bg-white/10 px-4 py-3 text-left transition hover:bg-white/15 active:scale-[0.98]">
+                  <span className="block font-extrabold" style={{ color: module.color }}>{module.title}</span>
+                  <span className="block text-xs font-bold text-white/65">{progress.attempts > 0 ? `Best ${progress.bestScore}/${progress.total} · ${progress.attempts} attempt${progress.attempts === 1 ? '' : 's'}` : 'Take your first quick check'}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">
           {context.plain
