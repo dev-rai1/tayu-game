@@ -17,6 +17,7 @@ import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
 import { installViewportSync } from './utils/viewport.js'
+import './styles/viewport.css'
 
 const AvatarCreate = lazy(() => import('./pages/AvatarCreate.jsx'))
 const World = lazy(() => import('./pages/World.jsx'))
