@@ -1,3 +1,34 @@
+.tayu-world-declutter {
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  min-height: 100svh;
+  overscroll-behavior: none;
+}
+
+.tayu-world-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe6f2;
+}
+
+.tayu-world-canvas > *,
+.tayu-world-canvas > * > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.tayu-world-canvas canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
 .tayu-world-declutter .absolute.right-4.top-4 > div[aria-live="polite"] {
   display: none;
 }
