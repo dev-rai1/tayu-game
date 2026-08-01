@@ -15,7 +15,9 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain('MOVEMENT_DISTANCE')
     expect(tutorialSource).toContain("window.addEventListener('tayu-interact'")
     expect(tutorialSource).toContain("if (step === 1 && !near) return null")
-    expect(tutorialSource).toContain('Skip')
+    expect(tutorialSource).toContain('EXPERIENCED_PLAYER_DELAY_MS')
+    expect(tutorialSource).toContain('I know these controls')
+    expect(tutorialSource).not.toContain('>\n          Skip\n')
     expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D} />')
   })
 
