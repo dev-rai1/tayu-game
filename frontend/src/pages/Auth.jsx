@@ -12,6 +12,35 @@ const SELECT = 'mt-1 w-full rounded-xl border border-white/20 bg-white px-4 py-3
 const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
 const REQUIRED = <span className="text-white/55">(required)</span>
 
+const TRUST_POINTS = [
+  'Free to play',
+  'No in-app purchases',
+  'Game money only',
+  'No bank connection',
+]
+
+function AccountTrustNote() {
+  return (
+    <section aria-label="TAYU account and payment information" className="mt-4 rounded-2xl border border-teal/25 bg-teal/10 p-4">
+      <p className="font-display text-base font-extrabold text-white">Safe practice, not real spending</p>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        {TRUST_POINTS.map((point) => (
+          <div key={point} className="rounded-xl bg-navy/55 px-3 py-2 text-center text-xs font-extrabold text-white">
+            <span className="mr-1 text-teal" aria-hidden="true">✓</span>{point}
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs font-semibold leading-relaxed text-white/75">
+        An account saves learning progress. TAYU does not ask students to connect a card or financial account.
+      </p>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold">
+        <Link to="/privacy" className="text-teal underline underline-offset-2">Privacy notice</Link>
+        <Link to="/cookies" className="text-teal underline underline-offset-2">Browser storage</Link>
+      </div>
+    </section>
+  )
+}
+
 export default function Auth() {
   const [params] = useSearchParams()
   const [mode, setMode] = useState(params.get('mode') || 'signin')
@@ -52,7 +81,7 @@ export default function Auth() {
     try {
       if (mode === 'signup') {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
-        if (!f.affiliation) throw new Error('Choose Organization or Individual.')
+        if (!f.affiliation) throw new Error('Choose School or organization, or Playing on my own.')
         if (!f.gradeLevels) throw new Error('Please select a grade level.')
         if (!f.foundVia) throw new Error('Please tell us how you found TAYU.')
         if (f.affiliation === 'organization' && !f.organizationName.trim()) throw new Error('Enter your organization name.')
@@ -84,7 +113,8 @@ export default function Auth() {
       <Link to="/" className="mb-4 flex items-center gap-3"><img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" /><span className="font-display text-2xl font-extrabold text-white">TAYU</span></Link>
       <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
         <h1 className="font-display text-2xl font-extrabold">{mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</h1>
-        <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'All questions are required. Teachers create a classroom, and students join with their teacher’s code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
+        <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'Choose Playing on my own when you are testing independently. School students use their teacher’s class code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
+        {mode !== 'reset' && <AccountTrustNote />}
         <div className="mt-4 flex gap-1.5" role="tablist">{[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => <button key={tabMode} type="button" onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
 
         <label className={LABEL}>Email {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} /></label>
@@ -92,7 +122,7 @@ export default function Auth() {
 
         {mode === 'signup' && <>
           <label className={LABEL}>Confirm password {REQUIRED}<input className={FIELD} required type="password" minLength={6} value={f.confirm} onChange={set('confirm')} /></label>
-          <label className={LABEL}>Account type {REQUIRED}<select className={SELECT} required value={f.affiliation} onChange={setAffiliation}><option value="">Choose one...</option><option value="organization">Organization (teacher/student)</option><option value="individual">Individual</option></select></label>
+          <label className={LABEL}>How are you using TAYU? {REQUIRED}<select className={SELECT} required value={f.affiliation} onChange={setAffiliation}><option value="">Choose one...</option><option value="individual">Playing on my own</option><option value="organization">School or organization</option></select></label>
           {f.affiliation === 'organization' && <>
             <label className={LABEL}>Organization name {REQUIRED}<input className={FIELD} required value={f.organizationName} onChange={set('organizationName')} /></label>
             <label className={LABEL}>Role {REQUIRED}<select className={SELECT} required value={f.role} onChange={setOrganizationRole}><option value="">Choose one...</option><option value="teacher">Teacher</option><option value="student">Student</option></select></label>
