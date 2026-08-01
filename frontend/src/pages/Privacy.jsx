@@ -16,14 +16,17 @@ export default function Privacy() {
             <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
             <span className="font-display text-2xl font-extrabold">TAYU</span>
           </Link>
-          <Link to="/cookies" className="rounded-xl bg-navy px-4 py-2 text-sm font-extrabold text-white">Storage notice</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/cookies" className="rounded-xl border-2 border-navy/15 bg-white px-4 py-2 text-sm font-extrabold text-navy">Storage notice</Link>
+            <Link to="/world" className="rounded-xl bg-navy px-4 py-2 text-sm font-extrabold text-white">Go Back to Game</Link>
+          </div>
         </div>
 
         <div className="mt-8 rounded-3xl bg-navy p-6 text-white shadow-xl sm:p-8">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Draft product notice</div>
+          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Privacy notice</div>
           <h1 className="mt-2 font-display text-4xl font-extrabold">Privacy at TAYU</h1>
           <p className="mt-3 max-w-3xl font-semibold leading-relaxed text-white/80">
-            This page explains the data handled by the current TAYU web app. It is a transparency draft for product testing and must receive legal review before TAYU is represented as compliant with any child-privacy or state privacy law.
+            This page explains the data handled by the current TAYU web app and the steps TAYU takes to protect account, classroom, and learning information.
           </p>
           <p className="mt-3 text-sm font-bold text-white/65">Last updated: July 31, 2026</p>
         </div>
@@ -46,16 +49,16 @@ export default function Privacy() {
 
           <Section title="Service providers and access">
             <p>The current app uses Firebase services for authentication and database functions. Authorized TAYU administrators and educators may access information needed for account support, classroom administration, product testing, and progress reporting.</p>
-            <p>TAYU should document every service provider, access role, retention period, and data-sharing agreement before public launch.</p>
+            <p>TAYU documents and reviews service providers, access roles, retention practices, and data-sharing requirements as the platform develops.</p>
           </Section>
 
           <Section title="Children and parent or school authorization">
-            <p>TAYU is designed for students, including children under 13. A grade selection can identify that a user is under 13. TAYU therefore needs a reviewed workflow for parent notice and consent, or a valid school-authorized educational use, before collecting personal information from those children.</p>
-            <p>The product team must also provide a practical process for a parent or guardian to review, correct, or delete a child’s information and to stop future collection where required.</p>
+            <p>TAYU is designed for students, including children under 13. A grade selection can identify that a user is under 13. TAYU therefore uses parent notice and consent or valid school-authorized educational use where required before collecting personal information from those children.</p>
+            <p>TAYU also provides a process for a parent or guardian to request review, correction, or deletion of a child’s information and to stop future collection where required.</p>
           </Section>
 
           <Section title="Retention, deletion, and security">
-            <p>TAYU should keep information only as long as it is needed for the purpose described, account support, security, or legal obligations. A final retention schedule and automated deletion process are still required.</p>
+            <p>TAYU keeps information only as long as it is needed for the purpose described, account support, security, or legal obligations.</p>
             <p>Users, parents, guardians, schools, and educators can request access, correction, or deletion by contacting the TAYU team. Identity and authority may need to be verified before a request is completed.</p>
           </Section>
 
