@@ -1,0 +1,41 @@
+:root {
+  --tayu-viewport-width: 100vw;
+  --tayu-viewport-height: 100dvh;
+  --tayu-viewport-left: 0px;
+  --tayu-viewport-top: 0px;
+}
+
+.tayu-app-viewport,
+.tayu-page-viewport {
+  box-sizing: border-box;
+  min-height: var(--tayu-viewport-height);
+  width: 100%;
+  max-width: 100%;
+}
+
+.tayu-fixed-viewport {
+  position: fixed;
+  left: var(--tayu-viewport-left);
+  top: var(--tayu-viewport-top);
+  width: var(--tayu-viewport-width);
+  height: var(--tayu-viewport-height);
+  max-width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+@media (pointer: coarse) {
+  html,
+  body,
+  #root {
+    min-height: var(--tayu-viewport-height);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    overscroll-behavior-x: none;
+    -webkit-text-size-adjust: 100%;
+  }
+}
