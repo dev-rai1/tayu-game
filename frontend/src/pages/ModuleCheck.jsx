@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import BonusMathChallenge from '../components/BonusMathChallenge.jsx'
 import { moduleCheckForBadge } from '../constants/moduleChecks.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { isLearningPathComplete, loadActiveLearningPath } from '../constants/learningPaths.js'
@@ -138,6 +139,10 @@ export default function ModuleCheck() {
             <h2 className="mt-1 font-display text-2xl font-extrabold">{check.cosmetic.name}</h2>
             <p className="mt-2 font-semibold text-white/70">This module collectible now appears on your Money Guru finale shelf.</p>
           </div>
+
+          {badge === 'jars' && (
+            <BonusMathChallenge grade={profile.gradeLevels || profile.gradeLevel || profile.grade} />
+          )}
 
           <button className="btn-primary mt-6 min-h-[62px] w-full text-lg" onClick={continueForward}>
             {nextModule ? `Continue to Module ${nextModule.n}: ${nextModule.title} →` : 'Continue to the Money Guru finale →'}
