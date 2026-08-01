@@ -12,35 +12,6 @@ const SELECT = 'mt-1 w-full rounded-xl border border-white/20 bg-white px-4 py-3
 const LABEL = 'mt-4 block text-sm font-extrabold text-teal'
 const REQUIRED = <span className="text-white/55">(required)</span>
 
-const TRUST_POINTS = [
-  'Free to play',
-  'No in-app purchases',
-  'Game money only',
-  'No bank connection',
-]
-
-function AccountTrustNote() {
-  return (
-    <section aria-label="TAYU account and payment information" className="mt-4 rounded-2xl border border-teal/25 bg-teal/10 p-4">
-      <p className="font-display text-base font-extrabold text-white">Safe practice, not real spending</p>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {TRUST_POINTS.map((point) => (
-          <div key={point} className="rounded-xl bg-navy/55 px-3 py-2 text-center text-xs font-extrabold text-white">
-            <span className="mr-1 text-teal" aria-hidden="true">✓</span>{point}
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 text-xs font-semibold leading-relaxed text-white/75">
-        An account saves learning progress. TAYU does not ask students to connect a card or financial account.
-      </p>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold">
-        <Link to="/privacy" className="text-teal underline underline-offset-2">Privacy notice</Link>
-        <Link to="/cookies" className="text-teal underline underline-offset-2">Browser storage</Link>
-      </div>
-    </section>
-  )
-}
-
 export default function Auth() {
   const [params] = useSearchParams()
   const [mode, setMode] = useState(params.get('mode') || 'signin')
@@ -114,7 +85,6 @@ export default function Auth() {
       <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
         <h1 className="font-display text-2xl font-extrabold">{mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</h1>
         <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'Choose Playing on my own when you are testing independently. School students use their teacher’s class code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
-        {mode !== 'reset' && <AccountTrustNote />}
         <div className="mt-4 flex gap-1.5" role="tablist">{[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => <button key={tabMode} type="button" onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
 
         <label className={LABEL}>Email {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="email" autoComplete="email" value={f.email} onChange={set('email')} /></label>
