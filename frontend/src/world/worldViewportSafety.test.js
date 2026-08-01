@@ -1,7 +1,19 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { RING } from './config.js'
+import {
+  BANK_DISTRICT,
+  BUDGET_TOWN,
+  HOME,
+  JARS,
+  LEMONADE,
+  MAILBOX,
+  PARTY_HOUSE,
+  RING,
+  SPAWN,
+  SPROUT,
+  STORE,
+} from './config.js'
 import {
   MAX_CAMERA_DISTANCE,
   PLAYER_SAFE_RADIUS,
@@ -11,6 +23,7 @@ import {
 } from './WorldSafety.jsx'
 
 const source = (name) => readFileSync(resolve(process.cwd(), 'src/world', name), 'utf8')
+const distanceFromCenter = ([x, z]) => Math.hypot(x - RING.c[0], z - RING.c[1])
 
 describe('world edge and viewport safety', () => {
   it('keeps points inside the playable island unchanged', () => {
@@ -20,8 +33,23 @@ describe('world edge and viewport safety', () => {
 
   it('clamps the old rectangular corner positions onto circular ground', () => {
     const [x, z] = clampToPlayableIsland(RING.c[0] + 80, RING.c[1] + 80)
-    const distance = Math.hypot(x - RING.c[0], z - RING.c[1])
-    expect(distance).toBeCloseTo(PLAYER_SAFE_RADIUS, 5)
+    expect(distanceFromCenter([x, z])).toBeCloseTo(PLAYER_SAFE_RADIUS, 5)
+  })
+
+  it('keeps every required module destination inside the safe radius', () => {
+    const destinations = [
+      SPAWN,
+      MAILBOX,
+      HOME,
+      ...Object.values(JARS),
+      STORE,
+      LEMONADE,
+      BUDGET_TOWN,
+      BANK_DISTRICT,
+      SPROUT,
+      PARTY_HOUSE,
+    ]
+    destinations.forEach((point) => expect(distanceFromCenter(point)).toBeLessThanOrEqual(PLAYER_SAFE_RADIUS))
   })
 
   it('reserves enough ground for the farthest camera orbit', () => {
