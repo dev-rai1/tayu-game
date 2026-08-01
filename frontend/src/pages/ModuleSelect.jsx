@@ -25,6 +25,7 @@ export default function ModuleSelect() {
   const [params] = useSearchParams()
   const [context, setContext] = useState(null)
   const [glossaryOpen, setGlossaryOpen] = useState(false)
+  const [pendingModule, setPendingModule] = useState(null)
   const [gradePathId, setGradePathId] = useState(() => {
     const saved = loadActiveLearningPath()
     return getGradePath(saved?.id)?.id || ''
@@ -58,6 +59,7 @@ export default function ModuleSelect() {
   const completedRequired = useMemo(() => completedRequiredModules(required, completedNumbers), [completedNumbers, required])
   const pathComplete = isLearningPathComplete(required, badges)
   const firstIncompleteRequired = required.find((moduleNumber) => !completedNumbers.includes(moduleNumber)) || required[0] || 1
+  const pendingCard = MODULE_CARDS.find((module) => module.n === pendingModule)
 
   useEffect(() => {
     if (!context || teacherPreview || !required.length) return
@@ -76,23 +78,39 @@ export default function ModuleSelect() {
       saveActiveLearningPath(path)
       setDefaultReadingBandForGrade(path.id)
     } else clearActiveLearningPath()
+    setPendingModule(null)
     setGradePathId(path?.id || '')
   }
 
   const canPlay = (moduleNumber) => {
     if (teacherPreview) return teacherEnabled.includes(moduleNumber)
+    // Grade recommendations never lock an individual learner out of a module.
     if (context?.plain) return true
     if (!required.includes(moduleNumber)) return false
     if (context?.settings?.allowSkip) return true
     return moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)
   }
 
-  const play = (moduleNumber) => {
-    if (!canPlay(moduleNumber)) return
+  const launchModule = (moduleNumber) => {
     const targetCard = MODULE_CARDS.find((module) => module.n === moduleNumber)
     const canResume = Boolean(wallet && moduleNumber === current && targetCard && !badges.includes(targetCard.badge))
     if (!canResume) localStorage.setItem('tayu-jump-module', String(moduleNumber))
     nav('/world')
+  }
+
+  const play = (moduleNumber) => {
+    if (!canPlay(moduleNumber)) return
+    const isOlderOptionalModule = Boolean(
+      !teacherPreview
+      && context?.plain
+      && gradePath
+      && !required.includes(moduleNumber),
+    )
+    if (isOlderOptionalModule) {
+      setPendingModule(moduleNumber)
+      return
+    }
+    launchModule(moduleNumber)
   }
 
   if (!context) return <main className="grid min-h-screen place-items-center">Loading your session…</main>
@@ -150,11 +168,24 @@ export default function ModuleSelect() {
           const inRequiredPath = required.includes(module.n)
           const enabledByTeacher = teacherEnabled.includes(module.n)
           const canResume = Boolean(wallet && module.n === current && !done)
-          return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : 'rgba(255,255,255,0.1)' }}>
-            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : accessible ? canResume ? 'RESUME' : context.plain && inRequiredPath ? 'RECOMMENDED' : 'AVAILABLE' : 'LOCKED'}</span></div>
+          const olderOptional = Boolean(context.plain && gradePath && !inRequiredPath)
+          const status = done
+            ? 'DONE'
+            : !accessible
+              ? 'LOCKED'
+              : canResume
+                ? 'RESUME'
+                : olderOptional
+                  ? 'OLDER TOPIC'
+                  : context.plain && inRequiredPath
+                    ? 'RECOMMENDED'
+                    : 'AVAILABLE'
+          return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : olderOptional ? '#FFD700' : 'rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : olderOptional ? 'bg-sun text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{status}</span></div>
             <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
             <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
-            <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : context.plain && !teacherPreview ? inRequiredPath ? 'Recommended for your grade →' : 'Optional — choose this module →' : 'Start →' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
+            {olderOptional && <p className="mt-2 rounded-xl bg-sun/10 px-3 py-2 text-xs font-bold leading-relaxed text-sun">This topic is usually taught to older students. You can still try it.</p>}
+            <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : canResume ? 'Continue where I stopped →' : olderOptional ? 'Preview this older module →' : context.plain && !teacherPreview ? inRequiredPath ? 'Recommended for your grade →' : 'Optional — choose this module →' : 'Start →' : !enabledByTeacher ? 'Locked by teacher' : `Complete Module ${firstIncompleteRequired} first`}</div>
           </button>
         })}</div>
 
@@ -162,12 +193,29 @@ export default function ModuleSelect() {
           {context.plain
             ? pathComplete && required.length < 5
               ? `You completed all ${required.length} recommended modules for your grade. Your certificate is ready, and you can still play any other module.`
-              : `Complete the ${required.length} recommended module${required.length === 1 ? '' : 's'} for your grade to earn this path certificate (${completedRequired.length}/${required.length}). Other modules are always available.`
+              : `Complete the ${required.length} recommended module${required.length === 1 ? '' : 's'} for your grade to earn this path certificate (${completedRequired.length}/${required.length}). Older-grade modules stay available with a warning.`
             : pathComplete && required.length < 5
               ? `You completed all ${required.length} modules in this classroom path. Your certificate is ready.`
               : `Your classroom path certificate unlocks after the ${required.length} module${required.length === 1 ? '' : 's'} assigned by your teacher are completed (${completedRequired.length}/${required.length}).`}
         </p>
       </main>
+
+      {pendingCard && (
+        <div className="fixed inset-0 z-[600] grid place-items-center bg-navy/75 p-5 backdrop-blur-sm" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="older-module-title" className="w-full max-w-md rounded-3xl border-4 border-sun bg-white p-6 text-center text-navy shadow-2xl">
+            <div className="text-5xl" aria-hidden>🧠</div>
+            <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.16em] text-electric">Older-grade topic</p>
+            <h2 id="older-module-title" className="mt-1 font-display text-2xl font-extrabold">You can still continue</h2>
+            <p className="mt-3 text-base font-bold leading-relaxed text-navy/80"><span className="font-extrabold">{pendingCard.title}</span> is usually recommended for {pendingCard.grades.toLowerCase()}. It may include harder money words and more advanced choices.</p>
+            <p className="mt-3 rounded-2xl bg-teal/10 px-4 py-3 text-sm font-bold leading-relaxed text-navy/75">Nothing is locked. Try it now, or return to a module recommended for {gradePath?.label || 'your grade'}.</p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={() => setPendingModule(null)} className="min-h-[54px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy active:scale-95">Choose another</button>
+              <button type="button" onClick={() => { const moduleNumber = pendingModule; setPendingModule(null); launchModule(moduleNumber) }} className="min-h-[54px] rounded-2xl bg-electric px-4 font-extrabold text-white active:scale-95">Continue anyway →</button>
+            </div>
+          </section>
+        </div>
+      )}
+
       <ModuleGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} modules={context.plain && !teacherPreview ? MODULE_CARDS.map((module) => module.n) : required} />
     </>
   )
