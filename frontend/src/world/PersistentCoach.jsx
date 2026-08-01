@@ -133,7 +133,7 @@ export function PersistentCoach() {
                   {diagnosis}
                 </div>
               )}
-              {improvement && <div className="mt-3 text-xs font-extrabold uppercase tracking-[0.12em] text-electric">Try this</div>}
+              {improvement && <div className="mt-3 text-xs font-extrabold uppercase tracking-[0.12em] text-electric">Try one change</div>}
               <p className={`break-words font-semibold text-navy/80 ${improvement ? 'mt-1 text-lg leading-relaxed' : 'mt-1 text-sm leading-snug'}`}>{action}</p>
             </div>
             <button
