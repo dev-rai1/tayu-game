@@ -49,9 +49,9 @@ export default function PathCompletionWatcher() {
 
       if (location.pathname !== '/world') return
 
-      // Run the two-question check at the milestone, before the player enters the
-      // next module or a shorter-path certificate. Pick the newest inferred badge
-      // so an older missing check never interrupts the module just completed.
+      // Run the two-question check at the milestone before the player enters the
+      // next module. Pick the newest inferred badge so an older missing check
+      // never interrupts the module that was just completed.
       const completedChecks = profile.moduleChecks || {}
       const pendingBadge = [...inferred].reverse().find((badge) => !completedChecks[badge])
       if (pendingBadge) {
@@ -60,8 +60,11 @@ export default function PathCompletionWatcher() {
       }
 
       const path = loadActiveLearningPath()
-      if (!path || path.modules.length >= 5 || !isLearningPathComplete(path.modules, badges)) return
+      if (!path || !isLearningPathComplete(path.modules, badges)) return
 
+      // Record the certificate milestone without forcing the learner away from
+      // the next module. The certificate remains available from the completion
+      // screen and module map as an optional secondary action.
       if (profile.pathCompletion?.pathId !== path.id) {
         saveProfile({
           pathCompletion: {
@@ -73,7 +76,6 @@ export default function PathCompletionWatcher() {
           },
         })
       }
-      navigate('/path-complete', { replace: true })
     } finally {
       syncing.current = false
     }
