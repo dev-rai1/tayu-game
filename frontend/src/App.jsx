@@ -16,6 +16,8 @@ import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
+import { installViewportSync } from './utils/viewport.js'
+import './styles/viewport.css'
 
 const AvatarCreate = lazy(() => import('./pages/AvatarCreate.jsx'))
 const World = lazy(() => import('./pages/World.jsx'))
@@ -85,8 +87,9 @@ export default function App() {
   useEffect(() => {
     if (!/^\/(world|party|guru|path-complete)/.test(window.location.pathname)) initAutoplay()
   }, [])
+  useEffect(() => installViewportSync(), [])
   return (
-    <div className="min-h-screen bg-navy text-white font-body">
+    <div className="tayu-app-viewport bg-navy text-white font-body">
       <div id="app-content" tabIndex="-1">
         <Boundary name="routes" hard>
           <Suspense fallback={<LoadingScreen />}>
