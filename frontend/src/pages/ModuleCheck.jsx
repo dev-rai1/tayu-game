@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { moduleCheckForBadge } from '../constants/moduleChecks.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { isLearningPathComplete, loadActiveLearningPath } from '../constants/learningPaths.js'
+import { addModuleCheckAttempt, moduleCheckProgress } from '../services/modulePractice.js'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
 
@@ -46,15 +47,17 @@ function recordPathCompletion(profile) {
 
 export default function ModuleCheck() {
   const { badge } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const check = moduleCheckForBadge(badge)
   const profile = loadProfile() || {}
   const wallet = loadWallet() || {}
-  const previous = profile.moduleChecks?.[badge]
+  const [startingRecord] = useState(() => (loadProfile() || {}).moduleChecks?.[badge] || null)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [answers, setAnswers] = useState([])
-  const [finished, setFinished] = useState(Boolean(previous))
+  const [result, setResult] = useState(startingRecord)
+  const [finished, setFinished] = useState(Boolean(startingRecord) && searchParams.get('retake') !== '1')
 
   const recap = useMemo(() => personalizedRecap(badge, profile, wallet), [badge, profile, wallet])
 
@@ -86,23 +89,40 @@ export default function ModuleCheck() {
     }
 
     const score = nextAnswers.filter((answer) => answer.correct).length
+    const latestProfile = loadProfile() || profile
+    const previousRecord = latestProfile.moduleChecks?.[badge] || startingRecord
+    const updatedRecord = addModuleCheckAttempt(previousRecord, {
+      score,
+      total: check.questions.length,
+      completedAt: new Date().toISOString(),
+    })
     const moduleChecks = {
-      ...(profile.moduleChecks || {}),
-      [badge]: {
-        score,
-        total: check.questions.length,
-        completedAt: new Date().toISOString(),
-      },
+      ...(latestProfile.moduleChecks || {}),
+      [badge]: updatedRecord,
     }
     saveProfile({ moduleChecks })
     recordLearningEvent({
       moduleName: badge,
       type: 'module_check',
       outcome: score === check.questions.length ? 'mastered' : 'completed',
-      detail: `${score}/${check.questions.length}`,
+      detail: `${score}/${check.questions.length}; attempt ${updatedRecord.attemptCount}; best ${updatedRecord.bestScore}`,
     }).catch(() => {})
     setAnswers(nextAnswers)
+    setResult(updatedRecord)
     setFinished(true)
+  }
+
+  const beginRetake = () => {
+    setQuestionIndex(0)
+    setSelected(null)
+    setAnswers([])
+    setFinished(false)
+    navigate(`/module-check/${badge}?retake=1`, { replace: true })
+  }
+
+  const practiceModule = () => {
+    localStorage.setItem('tayu-jump-module', String(check.moduleNumber))
+    navigate('/world')
   }
 
   const continueForward = () => {
@@ -119,24 +139,51 @@ export default function ModuleCheck() {
   }
 
   if (finished) {
-    const score = previous?.score ?? answers.filter((answer) => answer.correct).length
+    const progress = moduleCheckProgress(result)
+    const startingProgress = moduleCheckProgress(startingRecord)
+    const score = progress.latestScore
+    const improved = startingProgress.attempts > 0 && score > startingProgress.bestScore
+    const firstAttempt = progress.attempts === 1
     return (
       <main className="mx-auto grid min-h-screen max-w-2xl place-items-center px-5 py-10">
         <section className="w-full rounded-3xl border-2 border-teal/50 bg-white/5 p-6 text-center shadow-2xl">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module {check.moduleNumber} complete</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">You showed what you know!</h1>
-          <p className="mt-3 text-lg font-bold text-white/80">{score} of {check.questions.length} correct. The goal is learning, not a grade.</p>
+          <p className="mt-3 text-lg font-bold text-white/80">Latest check: {score} of {check.questions.length} correct. The goal is learning, not a grade.</p>
 
           <div className="mt-5 rounded-2xl bg-navy/80 p-5 text-left">
             <p className="text-xs font-extrabold uppercase tracking-wide text-sun">Your personalized recap</p>
             <p className="mt-2 text-lg font-bold leading-relaxed">{recap}</p>
           </div>
 
+          <div className="mt-5 rounded-2xl border-2 border-teal/50 bg-teal/10 p-5 text-left">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-teal">Practice progress</p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold">Personal best: {progress.bestScore} of {progress.total}</h2>
+              </div>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-sm font-extrabold">{progress.attempts} check attempt{progress.attempts === 1 ? '' : 's'}</span>
+            </div>
+            <p className="mt-2 font-semibold text-white/75">
+              {improved
+                ? 'New personal best! Your practice paid off.'
+                : firstAttempt
+                  ? 'This is your starting score. Practice and return to try again.'
+                  : score === progress.bestScore
+                    ? 'You matched your personal best.'
+                    : 'Your best score is saved. Review the module and try again when you are ready.'}
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={practiceModule} className="min-h-[54px] rounded-2xl bg-white px-4 font-extrabold text-navy active:scale-95">Practice this module again</button>
+              <button type="button" onClick={beginRetake} className="min-h-[54px] rounded-2xl bg-electric px-4 font-extrabold text-white active:scale-95">Retake the quick check</button>
+            </div>
+          </div>
+
           <div className="mt-5 rounded-2xl border-2 border-sun bg-sun/10 p-5">
             <div className="text-5xl" aria-hidden>{check.cosmetic.icon}</div>
-            <p className="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sun">New look unlocked</p>
+            <p className="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sun">{startingProgress.attempts > 0 ? 'Module reward' : 'New look unlocked'}</p>
             <h2 className="mt-1 font-display text-2xl font-extrabold">{check.cosmetic.name}</h2>
-            <p className="mt-2 font-semibold text-white/70">This module collectible now appears on your Money Guru finale shelf.</p>
+            <p className="mt-2 font-semibold text-white/70">This module collectible appears on your Money Guru finale shelf and can be worn from the character creator.</p>
           </div>
 
           <button className="btn-primary mt-6 min-h-[62px] w-full text-lg" onClick={continueForward}>
