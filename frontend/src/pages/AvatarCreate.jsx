@@ -41,7 +41,7 @@ export default function AvatarCreate() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-navy text-white">
+    <div className="tayu-page-viewport relative overflow-x-hidden overflow-y-auto bg-navy text-white">
       <div className="fixed inset-0">
         <TownBackground theme="excited" scrim={0.5} />
       </div>
@@ -58,7 +58,7 @@ export default function AvatarCreate() {
       <main className="relative z-10 mx-auto grid max-w-6xl gap-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] xl:grid-cols-[300px_minmax(0,1fr)_280px] xl:items-stretch">
         <section
           aria-label="Optional character options"
-          className="card order-3 !p-4 xl:order-1 xl:max-h-[calc(100dvh-7.5rem)] xl:overflow-y-auto"
+          className="card order-3 !p-4 xl:order-1 xl:max-h-[calc(var(--tayu-viewport-height)-7.5rem)] xl:overflow-y-auto"
           style={{ background: 'rgba(7,23,72,0.92)' }}
         >
           <h2 className="mb-1 font-display text-xl font-extrabold text-white">Customize more</h2>
@@ -67,7 +67,7 @@ export default function AvatarCreate() {
           <AvatarRewards onApply={patch} />
         </section>
 
-        <section aria-label="Live character preview" className="order-1 min-h-[38dvh] overflow-hidden rounded-3xl shadow-xl sm:min-h-[48dvh] xl:order-2 xl:min-h-[calc(100dvh-8.5rem)]">
+        <section aria-label="Live character preview" className="order-1 min-h-[38dvh] overflow-hidden rounded-3xl shadow-xl sm:min-h-[48dvh] xl:order-2 xl:min-h-[calc(var(--tayu-viewport-height)-8.5rem)]">
           {use3D ? (
             <AvatarPreview avatar={avatar} />
           ) : (
@@ -83,7 +83,7 @@ export default function AvatarCreate() {
 
         <section
           aria-label="Quick start"
-          className="card order-2 flex flex-col gap-4 !p-4 xl:order-3 xl:max-h-[calc(100dvh-7.5rem)]"
+          className="card order-2 flex flex-col gap-4 !p-4 xl:order-3 xl:max-h-[calc(var(--tayu-viewport-height)-7.5rem)]"
           style={{ background: 'rgba(7,23,72,0.92)' }}
         >
           <div className="rounded-2xl bg-teal/10 px-3 py-3 text-sm font-bold leading-relaxed text-white/90">
