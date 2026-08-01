@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BUNDLES } from '../scenarios/lemonade.js'
-import { JAR_SCENARIOS } from '../scenarios/jarScenario.js'
+import { JAR_SCENARIOS, checkAllocation } from '../scenarios/jarScenario.js'
 import { DAY_LESSON } from '../scenarios/storeMission.js'
 import { JARS } from './config.js'
 
@@ -25,6 +25,24 @@ describe('tester feedback regressions', () => {
         expect(hint.length).toBeLessThan(180)
       }
     }
+  })
+
+  it('accepts more than one complete birthday plan', () => {
+    const scenario = JAR_SCENARIOS[0]
+    expect(checkAllocation({ spend: 10, save: 10, give: 10 }, scenario).ok).toBe(true)
+    expect(checkAllocation({ spend: 8, save: 14, give: 8 }, scenario).ok).toBe(true)
+    expect(checkAllocation({ spend: 12, save: 12, give: 6 }, scenario).ok).toBe(true)
+    expect(checkAllocation({ spend: 30, save: 0, give: 0 }, scenario).ok).toBe(false)
+  })
+
+  it('judges later jar stories by their financial goal', () => {
+    const rainyDay = JAR_SCENARIOS[1]
+    const bigWant = JAR_SCENARIOS[2]
+
+    expect(checkAllocation({ spend: 7, save: 16, give: 7 }, rainyDay).ok).toBe(true)
+    expect(checkAllocation({ spend: 12, save: 10, give: 8 }, rainyDay).ok).toBe(false)
+    expect(checkAllocation({ spend: 5, save: 20, give: 5 }, bigWant).ok).toBe(true)
+    expect(checkAllocation({ spend: 10, save: 10, give: 10 }, bigWant).ok).toBe(false)
   })
 
   it('keeps market consequence cards concise', () => {
