@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { say } from '../services/speech.js'
 import { useGame } from './store.js'
 import { getGuidance } from './guidance.js'
@@ -43,6 +43,14 @@ export function PersistentCoach() {
   const feedbackByModule = useFeedbackCoach((s) => s.feedbackByModule)
   const [expanded, setExpanded] = useState(false)
   const [dismissedKey, setDismissedKey] = useState('')
+
+  const activeLesson = lessons[0]
+  useLayoutEffect(() => {
+    // Adding $5 to a jar should feel continuous, not open a blocking lesson
+    // after every choice. Keep the result feedback that appears after the
+    // complete allocation is evaluated.
+    if (activeLesson?.learn === 'jars') useGame.getState().dismissLesson()
+  }, [activeLesson?.id, activeLesson?.learn])
 
   const stateForGuidance = {
     week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
