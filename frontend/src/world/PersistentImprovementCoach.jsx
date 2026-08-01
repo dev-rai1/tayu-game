@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useGame } from './store.js'
 import { useFeedbackCoach } from './feedbackCoach.js'
+import { lemonadePrimaryCorrection } from './lemonadeCorrection.js'
 import { STORE_ITEMS } from './config.js'
 import { checkAllocation } from '../scenarios/jarScenario.js'
 import { cartFeedback } from '../scenarios/storeMission.js'
@@ -97,15 +98,16 @@ export function PersistentImprovementCoach() {
           wageRate: result.wageRate ?? 1,
         }
         const analysis = nextTip(result, levers, result.event || EVENTS[0], state.lemFeatures, state.lemTipHistory)
+        const correction = lemonadePrimaryCorrection(result, levers, analysis)
         setFeedback('lemonade', {
           sourceKey: `lemonade-${result.round}`,
           title: analysis.title,
           diagnosis: analysis.diagnosis,
-          action: analysis.action,
+          action: correction.action,
           goal: analysis.goal,
         })
         track('lemonade', 'choice_attempt', analysis.currentPerfect ? 'effective' : 'revise', `round-${result.round}`)
-        if (!analysis.currentPerfect) track('lemonade', 'retry_prompt', 'directional', analysis.lever)
+        if (!analysis.currentPerfect) track('lemonade', 'retry_prompt', 'directional', correction.lever)
       }
 
       const previousLogs = previous.mg?.weekLog?.length || 0
