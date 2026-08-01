@@ -46,7 +46,10 @@ export default function Cookies() {
             <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
             <span className="font-display text-2xl font-extrabold">TAYU</span>
           </Link>
-          <Link to="/privacy" className="rounded-xl bg-navy px-4 py-2 text-sm font-extrabold text-white">Privacy notice</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/privacy" className="rounded-xl border-2 border-navy/15 bg-white px-4 py-2 text-sm font-extrabold text-navy">Privacy notice</Link>
+            <Link to="/world" className="rounded-xl bg-navy px-4 py-2 text-sm font-extrabold text-white">Go Back to Game</Link>
+          </div>
         </div>
 
         <section className="mt-8 rounded-3xl bg-white p-6 shadow-xl sm:p-8">

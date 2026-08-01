@@ -91,7 +91,7 @@ export default function Auth() {
         setDefaultReadingBandForGrade(f.gradeLevels)
         if (user.role === 'teacher') { await createOrLoadTeacherClass(); nav('/teacher'); return }
         if (user.role === 'student') await joinStudentToClass(f.studentCode)
-        nav('/about?welcome=1')
+        nav('/')
       } else if (mode === 'signin') {
         const user = await signIn(f.email, f.password)
         const admin = await ensureAdminAccess(user)
