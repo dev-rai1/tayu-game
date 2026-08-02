@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { GameStateProvider } from './hooks/useGameState.jsx'
 import './styles/index.css'
 import { logTayuError } from './components/Boundary.jsx'
+import { ButtonFeedbackEnhancer } from './components/ButtonFeedbackEnhancer.jsx'
 import { armFirstGesture } from './services/audio.js'
 import './world/replayGuidanceListener.js'
 import { MoneyGardenFlowGuide } from './world/MoneyGardenFlowGuide.jsx'
@@ -20,6 +21,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <GameStateProvider>
         <App />
         <MoneyGardenFlowGuide />
+        <ButtonFeedbackEnhancer />
       </GameStateProvider>
     </BrowserRouter>
   </React.StrictMode>
