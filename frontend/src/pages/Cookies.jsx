@@ -33,7 +33,7 @@ export default function Cookies() {
   const status = optionalAnalyticsAllowed()
     ? 'Optional analytics allowed'
     : choice === ANALYTICS_CHOICES.NECESSARY_ONLY
-      ? 'Necessary cookies and storage only'
+      ? 'Necessary browser storage only'
       : canAllowAnalytics
         ? 'Not chosen yet'
         : 'Optional analytics unavailable for this account'
@@ -53,10 +53,10 @@ export default function Cookies() {
         </div>
 
         <section className="mt-8 rounded-3xl bg-white p-6 shadow-xl sm:p-8">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Cookie consent notice</div>
+          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Cookie and browser-storage notice</div>
           <h1 className="mt-2 font-display text-4xl font-extrabold">Cookies and browser storage</h1>
           <p className="mt-3 max-w-3xl font-semibold leading-relaxed text-navy/70">
-            TAYU uses necessary cookies and browser storage to keep the app working. The current code primarily uses local storage and session storage. Firebase services may also use technical cookies or browser storage needed for authentication and security.
+            TAYU mainly uses local storage and session storage to keep the app working. Firebase services may also use technical cookies or browser storage needed for authentication and security.
           </p>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-navy/10">
@@ -73,17 +73,17 @@ export default function Cookies() {
           </div>
 
           <section className="mt-6 rounded-2xl bg-navy p-5 text-white">
-            <h2 className="font-display text-xl font-extrabold">Your cookie consent choice</h2>
+            <h2 className="font-display text-xl font-extrabold">Your analytics choice</h2>
             <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
               Current status: <span className="font-extrabold text-teal">{status}</span>
             </p>
             {!canAllowAnalytics && (
               <p className="mt-2 text-sm font-semibold leading-relaxed text-white/70">
-                Student, guest, and unverified individual accounts use necessary cookies and storage only while TAYU completes its parent and school authorization workflow.
+                Student, guest, and unverified individual accounts use necessary browser storage only while TAYU completes its parent and school authorization workflow.
               </p>
             )}
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 font-extrabold">Use necessary cookies only</button>
+              <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 font-extrabold">Use necessary storage only</button>
               {canAllowAnalytics && (
                 <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 font-extrabold text-navy">Allow optional analytics</button>
               )}
@@ -91,7 +91,7 @@ export default function Cookies() {
           </section>
 
           <p className="mt-6 text-sm font-semibold leading-relaxed text-navy/65">
-            Blocking necessary cookies or browser storage may prevent login, saved progress, accessibility settings, and classroom features from working correctly. Last updated August 2, 2026.
+            Blocking necessary browser storage may prevent login, saved progress, accessibility settings, and classroom features from working correctly. Last updated August 2, 2026.
           </p>
         </section>
       </div>
