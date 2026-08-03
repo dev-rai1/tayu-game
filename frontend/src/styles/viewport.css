@@ -24,6 +24,25 @@
   overscroll-behavior: none;
 }
 
+canvas {
+  max-width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .tayu-app-viewport,
+  .tayu-page-viewport {
+    min-height: -webkit-fill-available;
+  }
+
+  .tayu-fixed-viewport {
+    height: var(--tayu-viewport-height);
+    min-height: -webkit-fill-available;
+  }
+}
+
 @media (pointer: coarse) {
   html,
   body,
@@ -34,8 +53,14 @@
     overflow-x: hidden;
   }
 
+  html {
+    min-height: -webkit-fill-available;
+  }
+
   body {
+    min-height: -webkit-fill-available;
     overscroll-behavior-x: none;
     -webkit-text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 }
