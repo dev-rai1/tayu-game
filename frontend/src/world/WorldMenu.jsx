@@ -7,6 +7,7 @@ export function WorldMenu() {
   const navigate = useNavigate()
   const week = useGame((s) => s.week)
   const restartModule = useGame((s) => s.adminJumpModule)
+  const setHelpOpen = useGame((s) => s.setHelpOpen)
   const [open, setOpen] = useState(false)
   const [confirmRestart, setConfirmRestart] = useState(false)
   const module = MODULE_CATALOG.find((item) => item.n === week)
@@ -19,6 +20,11 @@ export function WorldMenu() {
   const restart = () => {
     restartModule(week)
     close()
+  }
+
+  const openLearning = () => {
+    close()
+    setHelpOpen(true)
   }
 
   return (
@@ -44,7 +50,7 @@ export function WorldMenu() {
             <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-teal">Module {week}</div>
             <h2 id="world-menu-title" className="mt-1 font-display text-2xl font-extrabold">{module?.title || 'Game menu'}</h2>
             <p id="world-menu-description" className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
-              You can leave whenever you need to. Completed modules stay available on the module map so you can play them again.
+              Pause, review the lesson, restart this activity, or return to the module map at any time.
             </p>
 
             {confirmRestart ? (
@@ -59,6 +65,7 @@ export function WorldMenu() {
             ) : (
               <div className="mt-5 grid gap-2">
                 <button type="button" onClick={close} className="min-h-[52px] rounded-2xl bg-teal px-4 font-extrabold text-navy">Keep playing</button>
+                <button type="button" onClick={openLearning} className="min-h-[52px] rounded-2xl bg-sun px-4 font-extrabold text-navy">Learning & instructions</button>
                 <button type="button" onClick={() => navigate('/modules')} className="min-h-[52px] rounded-2xl bg-white/10 px-4 font-extrabold text-white">Exit to module map</button>
                 <button type="button" onClick={() => setConfirmRestart(true)} className="min-h-[48px] rounded-2xl border border-white/20 px-4 font-extrabold text-white/90">Start this module over</button>
               </div>
