@@ -19,10 +19,11 @@ describe('playtest focus guidance', () => {
     expect(payStep.text).toContain('not a fee')
   })
 
-  it('suppresses temporary coach bubbles during focused decisions and selling', () => {
+  it('suppresses temporary coach bubbles only during focused Lemonade moments', () => {
     expect(shouldSuppressTransientGuide({ week: 2, lemPhase: 'template' })).toBe(true)
     expect(shouldSuppressTransientGuide({ week: 2, lemPhase: 'selling' })).toBe(true)
     expect(shouldSuppressTransientGuide({ week: 2, lemPhase: 'toMarket' })).toBe(false)
+    expect(shouldSuppressTransientGuide({ week: 4, dialog: { lines: ['Bank lesson'] } })).toBe(false)
   })
 
   it('waits until other instruction and animation captions are gone', () => {
