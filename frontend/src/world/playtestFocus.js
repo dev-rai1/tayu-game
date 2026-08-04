@@ -57,12 +57,11 @@ export function focusStepsFor(phase, readingBand = READING_BANDS.OLDER) {
 }
 
 export function shouldSuppressTransientGuide(state = {}) {
+  if (state.week !== 2) return false
   const hasBlockingInstruction = Boolean(
     state.helpOpen || state.dialog || activeList(state.cards) || activeList(state.lessons)
   )
-  const focusedLemonadePhase = Boolean(
-    state.week === 2 && ['supplies', 'template', 'selling'].includes(state.lemPhase)
-  )
+  const focusedLemonadePhase = ['supplies', 'template', 'selling'].includes(state.lemPhase)
   return hasBlockingInstruction || focusedLemonadePhase
 }
 
