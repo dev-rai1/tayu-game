@@ -117,7 +117,10 @@ function LemonadeSupplyDemandCoach() {
   const openTemplate = useGame((s) => s.openTemplate)
   const [open, setOpen] = useState(false)
 
-  const activePhase = ['toMarket', 'supplies', 'toStand2', 'template'].includes(phase)
+  // The coach only helps the player reach the next decision surface. Once the
+  // supply shelf or planning board opens, that surface and the focus guide own
+  // the screen so a second instruction button cannot stack on top.
+  const activePhase = ['toMarket', 'toStand2'].includes(phase)
   useEffect(() => setOpen(false), [phase, round])
   if (week !== 2 || objective !== 'lemonade' || !activePhase || weekComplete) return null
 
@@ -161,7 +164,7 @@ function LemonadeSupplyDemandCoach() {
           ? 'Demand is low. A high price may reduce buyers.'
           : 'The price is above cost. Test it.'
 
-  const phaseHint = ['toMarket', 'supplies'].includes(phase) ? supplyHint : priceHint
+  const phaseHint = phase === 'toMarket' ? supplyHint : priceHint
 
   if (!open) {
     return (

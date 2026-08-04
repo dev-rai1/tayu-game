@@ -8,7 +8,7 @@ export const MODULE_CHECKS = {
         prompt: 'Why can spreading money across Spend, Save, and Give be useful?',
         choices: ['It gives different dollars different jobs', 'It guarantees every purchase is cheap', 'It makes money double immediately'],
         answer: 0,
-        trick: 'The key is giving money different jobs: today, later, and helping others.',
+        trick: 'The key is giving money different jobs: today, later, and helping others. This first money plan becomes the foundation for later business, budgeting, banking, and investing choices.',
       },
       {
         prompt: 'At the market, what should usually come before a want?',
@@ -52,7 +52,7 @@ export const MODULE_CHECKS = {
         prompt: 'Which statement best compares Bank and Money Garden?',
         choices: ['Both always grow at the same speed', 'Bank is steadier; Money Garden has more growth potential and more risk', 'Money Garden can never lose value'],
         answer: 1,
-        trick: 'The tradeoff is steadier, lower-risk growth versus higher potential growth with market risk.',
+        trick: 'Bank money usually changes more slowly and has lower risk. Money Garden can grow more, but it can also lose value.',
       },
     ],
   },

@@ -5,7 +5,7 @@ export const MODULE_CATALOG = [
     title: 'The Market & Jars',
     grades: 'Grades K–12 · foundation',
     minutes: '5–7 min',
-    desc: 'Make allowance, needs-versus-wants, and spend/save/give choices.',
+    desc: 'Build your first money plan by choosing what to spend now, save for later, and give to others.',
     color: '#1464F0',
   },
   {
@@ -14,7 +14,7 @@ export const MODULE_CATALOG = [
     title: 'The Lemonade Stand',
     grades: 'Grades K–12',
     minutes: '10–15 min',
-    desc: 'Test batches, pricing, hours, wages, demand, profit, and tax through trial and error.',
+    desc: 'Run a business by testing batches, price, open hours, the cost of your own work, demand, profit, and tax.',
     color: '#FFD700',
   },
   {
@@ -41,7 +41,7 @@ export const MODULE_CATALOG = [
     title: 'The Money Garden',
     grades: 'Grades 6–12',
     minutes: 'Two 6–8 min parts',
-    desc: 'Part 1 builds investing basics. Part 2 uses market clues, risk, patience, and rebalancing.',
+    desc: 'Part 1 introduces investing and pretend stocks. Part 2 uses market clues, risk, patience, and rebalancing.',
     color: '#00b37f',
   },
 ]

@@ -18,7 +18,7 @@ export function isCommerceOverlayActive(state = {}) {
 
   const lemonadeActive = Boolean(
     state.week === 2 && state.objective === 'lemonade' &&
-    ['toMarket', 'supplies', 'toStand2', 'template'].includes(state.lemPhase) &&
+    ['toMarket', 'supplies', 'toStand2', 'template', 'selling'].includes(state.lemPhase) &&
     !state.weekComplete
   )
 

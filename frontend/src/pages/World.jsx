@@ -13,6 +13,7 @@ import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
+import { LemonadeFocusGuide } from '../world/LemonadeFocusGuide.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
@@ -78,6 +79,7 @@ export default function World() {
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
+      <LemonadeFocusGuide />
       <BudgetTakeawayGuard />
       <PersistentCoach />
       <PersistentImprovementCoach />
