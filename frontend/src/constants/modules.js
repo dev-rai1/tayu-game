@@ -41,7 +41,7 @@ export const MODULE_CATALOG = [
     title: 'The Money Garden',
     grades: 'Grades 6–12',
     minutes: 'Two 6–8 min parts',
-    desc: 'Learn investing and stock-market basics by buying pretend stocks, reading market clues, managing risk, waiting, and rebalancing.',
+    desc: 'Part 1 introduces investing and pretend stocks. Part 2 uses market clues, risk, patience, and rebalancing.',
     color: '#00b37f',
   },
 ]
