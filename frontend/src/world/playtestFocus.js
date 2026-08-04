@@ -1,0 +1,74 @@
+import { READING_BANDS } from '../services/readingPreferences.js'
+
+const activeList = (value) => Array.isArray(value) && value.length > 0
+
+export const LEMONADE_FOCUS_KEYS = Object.freeze({
+  supplies: 'tayu-lemonade-supplies-focus-v1',
+  template: 'tayu-lemonade-template-focus-v1',
+})
+
+const SUPPLY_STEPS = [
+  {
+    title: 'First: read the demand clue',
+    text: 'Town News tells you whether many or few customers may come. Read it before spending money.',
+  },
+  {
+    title: 'Next: choose one batch',
+    text: 'A bigger batch makes more cups, but it costs more. Pick the batch that matches the expected crowd.',
+  },
+]
+
+const PLAN_STEPS_YOUNGER = [
+  {
+    title: '1. Choose open hours',
+    text: 'Open hours means how long your stand sells lemonade. More hours may bring more customers, but you also count more work time.',
+  },
+  {
+    title: '2. Choose “My pay”',
+    text: 'My pay is the pretend cost of your own work. For example, 50 cents per hour means the plan counts 50 cents for every hour you work. It is not a fee paid to someone else.',
+  },
+  {
+    title: '3. Set the cup price',
+    text: 'Look at cost per cup. Pick a price above that cost, but keep it low enough that customers still want to buy.',
+  },
+]
+
+const PLAN_STEPS_OLDER = [
+  {
+    title: '1. Choose open hours',
+    text: 'Open hours controls selling time. More hours can reach more customers, but they also increase the cost of your labor.',
+  },
+  {
+    title: '2. Value your work',
+    text: '“My pay” is the amount the business counts for your own labor. A rate of $0.50 per hour means 50 cents of cost is added for each hour you work; it is not an outside fee.',
+  },
+  {
+    title: '3. Set the cup price',
+    text: 'Use cost per cup as your starting point. Charge enough to cover costs, without pricing so high that demand falls.',
+  },
+]
+
+export function focusStepsFor(phase, readingBand = READING_BANDS.OLDER) {
+  if (phase === 'supplies') return SUPPLY_STEPS
+  if (phase === 'template') {
+    return readingBand === READING_BANDS.YOUNGER ? PLAN_STEPS_YOUNGER : PLAN_STEPS_OLDER
+  }
+  return []
+}
+
+export function shouldSuppressTransientGuide(state = {}) {
+  const hasBlockingInstruction = Boolean(
+    state.helpOpen || state.dialog || activeList(state.cards) || activeList(state.lessons)
+  )
+  const focusedLemonadePhase = Boolean(
+    state.week === 2 && ['supplies', 'template', 'selling'].includes(state.lemPhase)
+  )
+  return hasBlockingInstruction || focusedLemonadePhase
+}
+
+export function canShowFocusGuide(state = {}) {
+  if (state.week !== 2 || !['supplies', 'template'].includes(state.lemPhase)) return false
+  return !Boolean(
+    state.helpOpen || state.dialog || activeList(state.cards) || activeList(state.lessons) || state.actorCaption
+  )
+}
