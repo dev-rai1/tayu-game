@@ -14,7 +14,7 @@ describe('overlay visibility', () => {
     expect(isBlockingGameOverlay({ cards: [], lessons: [] })).toBe(false)
   })
 
-  it('detects the market and lemonade helper sheets', () => {
+  it('detects the market and Lemonade focus phases', () => {
     expect(isCommerceOverlayActive({
       week: 1,
       objective: 'store',
@@ -29,6 +29,12 @@ describe('overlay visibility', () => {
       objective: 'lemonade',
       lemPhase: 'template',
     })).toBe(true)
+
+    expect(isCommerceOverlayActive({
+      week: 2,
+      objective: 'lemonade',
+      lemPhase: 'selling',
+    })).toBe(true)
   })
 
   it('reserves Money Garden decisions for the specialized coach', () => {
@@ -42,5 +48,6 @@ describe('overlay visibility', () => {
     expect(coachVisibility({ week: 3, objective: 'house' }).showGuidance).toBe(true)
     expect(coachVisibility({ dialog: { name: 'Penny' } }).showGuidance).toBe(false)
     expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(false)
+    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(false)
   })
 })
