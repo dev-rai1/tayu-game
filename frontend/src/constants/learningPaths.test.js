@@ -14,41 +14,34 @@ describe('grade-aware learning paths', () => {
     expect(moduleNumbersForPath('early-elementary')).toEqual([1, 2])
   })
 
-  it('keeps the full foundation sequence for middle and high school', () => {
-    expect(moduleNumbersForPath('middle-school')).toEqual([1, 2, 3, 4, 5])
-    expect(moduleNumbersForPath('high-school')).toEqual([1, 2, 3, 4, 5])
+  it('keeps the full six-module sequence for middle and high school', () => {
+    expect(moduleNumbersForPath('middle-school')).toEqual([1, 2, 3, 4, 5, 6])
+    expect(moduleNumbersForPath('high-school')).toEqual([1, 2, 3, 4, 5, 6])
   })
 
   it('lets a teacher-assigned path override the general recommendation', () => {
-    expect(requiredModules({
-      pathId: 'early-elementary',
-      classroomModules: [2, 4],
-      plain: false,
-    })).toEqual([2, 4])
+    expect(requiredModules({ pathId: 'early-elementary', classroomModules: [2, 5], plain: false })).toEqual([2, 5])
   })
 
   it('normalizes repeated or invalid custom modules', () => {
-    expect(normalizeLearningPath({ id: 'class-a', modules: [4, 2, 4, 9, 0] })).toMatchObject({
-      id: 'class-a',
-      modules: [2, 4],
-    })
+    expect(normalizeLearningPath({ id: 'class-a', modules: [6, 2, 6, 9, 0] })).toMatchObject({ id: 'class-a', modules: [2, 6] })
   })
 
   it('counts only completed modules that belong to the required path', () => {
-    expect(completedRequiredModules([1, 2, 3], [1, 3, 5])).toEqual([1, 3])
+    expect(completedRequiredModules([1, 2, 3], [1, 3, 6])).toEqual([1, 3])
   })
 
   it('maps required modules to the badges used by the game', () => {
-    expect(badgesForModules([1, 2, 4])).toEqual(['jars', 'lemonade', 'bank'])
+    expect(badgesForModules([1, 2, 4, 5, 6])).toEqual(['jars', 'lemonade', 'bank', 'tax', 'garden'])
   })
 
-  it('unlocks a short-path certificate only when every required badge exists', () => {
+  it('unlocks a path certificate only when every required badge exists', () => {
     expect(isLearningPathComplete([1, 2], ['jars'])).toBe(false)
     expect(isLearningPathComplete([1, 2], ['jars', 'lemonade'])).toBe(true)
-    expect(isLearningPathComplete([2, 4], ['lemonade', 'bank', 'garden'])).toBe(true)
+    expect(isLearningPathComplete([5, 6], ['tax', 'garden'])).toBe(true)
   })
 
-  it('recognizes the true end of modules before the next module opens', () => {
+  it('recognizes existing world-module milestones', () => {
     expect(milestoneBadges({ week: 2, weekComplete: true })).toContain('lemonade')
     expect(milestoneBadges({ btStage: 'handoff' })).toContain('budget')
     expect(milestoneBadges({ bkWeek: 7 })).toContain('bank')
