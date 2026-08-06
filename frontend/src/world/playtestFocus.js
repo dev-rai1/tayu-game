@@ -25,7 +25,7 @@ const PLAN_STEPS_YOUNGER = [
   },
   {
     title: '2. Choose “My pay”',
-    text: 'My pay is a business cost for your own work. For example, 50 cents per hour means the business counts 50 cents for every hour you work.',
+    text: 'My pay is a business cost for your own work, not a fee paid to someone else. For example, 50 cents per hour means the business counts 50 cents for every hour you work.',
   },
   {
     title: '3. Make your business sign',
@@ -44,7 +44,7 @@ const PLAN_STEPS_OLDER = [
   },
   {
     title: '2. Value your work',
-    text: '“My pay” is a business cost for your labor. A rate of $0.50 per hour adds 50 cents of labor cost for each hour you work. Teachers may describe this as fixed or variable depending on the lesson setup.',
+    text: '“My pay” is a business cost for your labor, not an outside fee. A rate of $0.50 per hour adds 50 cents of labor cost for each hour you work. Teachers may describe this as fixed or variable depending on the lesson setup.',
   },
   {
     title: '3. Make your business sign',
