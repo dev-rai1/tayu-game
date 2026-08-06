@@ -9,14 +9,21 @@ import {
 describe('playtest focus guidance', () => {
   it('breaks Lemonade setup into one short step at a time', () => {
     expect(focusStepsFor('supplies')).toHaveLength(2)
-    expect(focusStepsFor('template', READING_BANDS.YOUNGER)).toHaveLength(3)
-    expect(focusStepsFor('template', READING_BANDS.OLDER)).toHaveLength(3)
+    expect(focusStepsFor('template', READING_BANDS.YOUNGER)).toHaveLength(4)
+    expect(focusStepsFor('template', READING_BANDS.OLDER)).toHaveLength(4)
   })
 
   it('plainly defines the hourly work cost for younger players', () => {
     const payStep = focusStepsFor('template', READING_BANDS.YOUNGER)[1]
     expect(payStep.text).toContain('50 cents for every hour')
     expect(payStep.text).toContain('not a fee')
+  })
+
+  it('includes the missing business-sign setup step', () => {
+    const younger = focusStepsFor('template', READING_BANDS.YOUNGER)
+    const older = focusStepsFor('template', READING_BANDS.OLDER)
+    expect(younger.some((step) => step.title.includes('business sign'))).toBe(true)
+    expect(older.some((step) => step.title.includes('business sign'))).toBe(true)
   })
 
   it('suppresses temporary coach bubbles only during focused Lemonade moments', () => {
