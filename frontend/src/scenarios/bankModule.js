@@ -72,7 +72,7 @@ export const BK = {
 
 export const DEBT_HELP = 'Trusted nonprofit counselors can explain payment options, help organize debts, and talk with lenders.'
 
-export const TRUST_NAMED = 'This TRUST score represents credit trust. Paying on time and borrowing carefully can improve it.'
+export const TRUST_NAMED = 'This practice meter shows habits connected to credit, such as paying on time and borrowing carefully. It is not a real credit score.'
 
 export const BK_HANDOFF = (garden) =>
   `The bank money is protected and growing. The $${garden} set aside for the Money Garden is ready for the next decisions.`
