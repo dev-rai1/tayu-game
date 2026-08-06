@@ -1,7 +1,3 @@
-// BUDGET TOWN v3 PANELS (Round 8, Part 2). Two decision panels only:
-// Beat 1 - the three-options intro (tap each card, watch its 2s animation).
-// Beat 2 - the three +/- sliders and the LIVE PIE with per-slice feedback.
-// Beats 3 and 4 play as cards + OFF-SCREEN world animation - no panel.
 import { useState } from 'react'
 import { useGame } from './store.js'
 import { OPTION_CARDS, sliceLine, splitNudge, GROCERY_ITEMS, FOOD_BUDGET, MIN_FOODS, GROCERY_GATE } from '../scenarios/budgetTown.js'
@@ -10,7 +6,6 @@ const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximum
 const COLORS = { pocket: '#9aa6b8', bank: '#1464F0', garden: '#00b37f' }
 const NAMES = { pocket: 'Pocket', bank: 'Bank', garden: 'Money Garden' }
 
-// a tiny 2-second line animation: flat / slope / wiggle
 function Spark({ kind, playing }) {
   const paths = {
     flat: 'M4 22 L96 22',
@@ -26,7 +21,6 @@ function Spark({ kind, playing }) {
   )
 }
 
-// Beat 1: the three homes for money
 function OptionsPanel() {
   const bt = useGame((s) => s.bt)
   const btTryOption = useGame((s) => s.btTryOption)
@@ -36,8 +30,8 @@ function OptionsPanel() {
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
       <div role="dialog" aria-modal="true" aria-labelledby="budget-options-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
-        <h2 id="budget-options-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Three homes for money</h2>
-        <div className="mt-1 text-sm font-bold text-navy/70">Tap each one to see what it does. ({OPTION_CARDS.filter((c) => bt.tried[c.id]).length}/3 tried)</div>
+        <h2 id="budget-options-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Three financial accounts</h2>
+        <div className="mt-1 text-sm font-bold text-navy/70">Tap each account to see what it does. ({OPTION_CARDS.filter((c) => bt.tried[c.id]).length}/3 tried)</div>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {OPTION_CARDS.map((c) => (
             <button key={c.id} aria-pressed={!!bt.tried[c.id]}
@@ -50,8 +44,7 @@ function OptionsPanel() {
             </button>
           ))}
         </div>
-        <button disabled={!allTried} onClick={btOptionsDone}
-          className="btn-primary mt-4 min-h-[52px] w-full px-5 disabled:opacity-40">
+        <button disabled={!allTried} onClick={btOptionsDone} className="btn-primary mt-4 min-h-[52px] w-full px-5 disabled:opacity-40">
           {allTried ? "Got it - let's split my money!" : 'Tap all three first'}
         </button>
       </div>
@@ -59,7 +52,6 @@ function OptionsPanel() {
   )
 }
 
-// Beat 2: the LIVE PIE - the heart of Budget Town
 function SplitPie({ split, total, onPick, picked }) {
   const ids = ['pocket', 'bank', 'garden']
   let acc = 0
@@ -103,8 +95,11 @@ function SplitPanel() {
               <div key={id} className="flex items-center justify-between rounded-2xl bg-navy/5 px-3 py-2">
                 <div className="text-sm font-extrabold" style={{ color: COLORS[id] }}>{NAMES[id]}</div>
                 <div className="flex items-center gap-1.5">
-                  <button aria-label={`Put one dollar less in ${NAMES[id]}`} onClick={() => { btSetSplit(id, bt.split[id] - 1); setPicked(id) }}
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-navy/10 font-display text-lg font-extrabold text-navy active:scale-90">-</button>
+                  <button aria-label={`Put one dollar less in ${NAMES[id]}`} title={`Put one dollar less in ${NAMES[id]}`}
+                    onClick={() => { btSetSplit(id, bt.split[id] - 1); setPicked(id) }}
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-navy/10 font-display text-lg font-extrabold text-navy active:scale-90">
+                    <span aria-hidden="true">←</span>
+                  </button>
                   <div className="w-12 text-center font-display text-base font-extrabold text-navy">${fmt(bt.split[id])}</div>
                   <button aria-label={`Put one dollar more in ${NAMES[id]}`} onClick={() => { btSetSplit(id, bt.split[id] + 1); setPicked(id) }}
                     className="grid h-9 w-9 place-items-center rounded-xl bg-navy/10 font-display text-lg font-extrabold text-navy active:scale-90">+</button>
@@ -114,11 +109,8 @@ function SplitPanel() {
           </div>
           <SplitPie split={bt.split} total={total} onPick={setPicked} picked={picked} />
         </div>
-        {/* the advisor's exact per-slice feedback, live with real percentages */}
         <div aria-live="polite" className="mt-3 min-h-[44px] rounded-2xl bg-navy/5 px-3 py-2 text-sm font-bold leading-snug text-navy/80">
-          {picked
-            ? sliceLine(picked, Math.round(((bt.split[picked] || 0) / Math.max(1, total)) * 100))
-            : 'Tap a slice to hear what your plan means.'}
+          {picked ? sliceLine(picked, Math.round(((bt.split[picked] || 0) / Math.max(1, total)) * 100)) : 'Tap a slice to hear what your plan means.'}
         </div>
         {nudge && <div className="mt-2 rounded-2xl bg-sun/20 px-3 py-2 text-sm font-bold text-navy/80">{nudge}</div>}
         <button onClick={btConfirmSplit} className="btn-primary mt-3 min-h-[52px] w-full px-5">This is my plan!</button>
@@ -127,8 +119,6 @@ function SplitPanel() {
   )
 }
 
-// R9 5.1: the GROCERY BASKET mini-game - grab foods (needs) and a treat or
-// two (wants) within the food budget. Tummies first: at least 3 real foods.
 function GroceryPanel() {
   const btGroceryDone = useGame((s) => s.btGroceryDone)
   const [picked, setPicked] = useState([])
@@ -163,9 +153,7 @@ function GroceryPanel() {
         <div aria-live="polite" className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold leading-snug ${ready ? 'bg-teal/15 text-navy' : 'bg-sun/20 text-navy/80'}`}>
           {ready ? `${foods} foods and ${picked.length - foods} treat${picked.length - foods === 1 ? '' : 's'} - a smart basket!` : GROCERY_GATE}
         </div>
-        <button disabled={!ready} onClick={() => btGroceryDone(picked)} className="btn-primary mt-3 min-h-[52px] w-full px-5 disabled:opacity-40">
-          Check out (${cost})
-        </button>
+        <button disabled={!ready} onClick={() => btGroceryDone(picked)} className="btn-primary mt-3 min-h-[52px] w-full px-5 disabled:opacity-40">Check out (${cost})</button>
       </div>
     </div>
   )
