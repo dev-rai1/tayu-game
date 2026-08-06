@@ -8,14 +8,14 @@ export const KNOWLEDGE_QUESTIONS = [
   {
     id: 'saving_growth',
     prompt: 'What is the best reason to save some money?',
-    choices: ['To be ready for a goal or surprise expense', 'So money can never be used', 'To spend it all the next day'],
-    correct: 0,
+    choices: ['So money can never be used', 'To be ready for a goal or surprise expense', 'To spend it all the next day'],
+    correct: 1,
   },
   {
     id: 'profit',
     prompt: 'A lemonade stand earns $10 and spends $6 on supplies. What is its profit?',
-    choices: ['$4', '$6', '$16'],
-    correct: 0,
+    choices: ['$6', '$16', '$4'],
+    correct: 2,
   },
 ]
 
