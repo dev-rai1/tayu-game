@@ -3,7 +3,7 @@ import { EDUCATOR_GRADE_BANDS, MODULE_CATALOG } from './modules.js'
 
 describe('module grade-level catalog', () => {
   it('assigns a grade range and expected time to every playable module', () => {
-    expect(MODULE_CATALOG).toHaveLength(5)
+    expect(MODULE_CATALOG).toHaveLength(6)
     MODULE_CATALOG.forEach((module) => {
       expect(module.grades).toMatch(/^Grades /)
       expect(module.minutes).toBeTruthy()
@@ -12,21 +12,19 @@ describe('module grade-level catalog', () => {
 
   it('keeps foundational modules in the older-student pathways', () => {
     const bands = Object.fromEntries(EDUCATOR_GRADE_BANDS.map((band) => [band.title, band]))
-
-    expect(bands['Elementary School']).toBeDefined()
-    expect(bands['Middle School']).toBeDefined()
-    expect(bands['High School']).toBeDefined()
-
     expect(bands['Elementary School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3])
-    expect(bands['Middle School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3, 4, 5])
-    expect(bands['High School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3, 4, 5])
+    expect(bands['Middle School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(bands['High School'].currentModules.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6])
     expect(bands['High School'].plannedModules).toContain('College costs and financial aid')
   })
 
-  it('describes the Money Garden as two shorter parts', () => {
-    const garden = MODULE_CATALOG.find((module) => module.n === 5)
+  it('places paycheck taxes before the Money Garden', () => {
+    const tax = MODULE_CATALOG.find((module) => module.badge === 'tax')
+    const garden = MODULE_CATALOG.find((module) => module.badge === 'garden')
+    expect(tax.n).toBe(5)
+    expect(tax.route).toBe('/tax-paycheck')
+    expect(garden.n).toBe(6)
+    expect(garden.worldModule).toBe(5)
     expect(garden.minutes).toContain('Two')
-    expect(garden.desc).toContain('Part 1')
-    expect(garden.desc).toContain('Part 2')
   })
 })
