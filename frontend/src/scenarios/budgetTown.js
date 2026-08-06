@@ -9,7 +9,7 @@ export const FUN_COST = 2
 export const MIN_FOODS = 3
 
 export const DAY_INTRO = (amount) =>
-  `You earned $${amount}. Cover today's needs, decide whether a want fits, and keep something ready for a surprise.`
+  `You earned $${amount}. Cover today's needs, decide whether to spend on a want, and keep something ready for a surprise.`
 
 export const STOPS = {
   house: {
@@ -21,7 +21,7 @@ export const STOPS = {
   },
   grocery: {
     title: 'The Grocery',
-    line: `You have $${FOOD_BUDGET}. Feed the family first, then decide whether a treat fits.`,
+    line: `You have $${FOOD_BUDGET}. Feed the family first, then decide whether a treat fits into your budget today.`,
     button: 'Build my basket',
     takeaway: 'The basket changes both the family’s day and the money left.',
     tag: 'NEED',
@@ -45,7 +45,7 @@ export const STOPS = {
     line: `The mini-wheel costs $${FUN_COST}. Buy the want now or keep more money for later.`,
     ride: `Ride now ($${FUN_COST})`,
     save: 'Keep the money',
-    takeawayRide: 'The want fit after the needs, but it reduced the money left for later.',
+    takeawayRide: 'The want fit into today’s budget after the needs, but it reduced the money left for later.',
     takeawaySave: 'Skipping the want kept more flexibility for saving and surprises.',
     tag: 'WANT',
   },
@@ -69,7 +69,7 @@ export const GROCERY_ITEMS = [
   { id: 'chips', name: 'Chips', cost: 1, need: false },
   { id: 'comic', name: 'Comic', cost: 2, need: false },
 ]
-export const GROCERY_GATE = `Choose at least ${MIN_FOODS} foods without going over $${FOOD_BUDGET}. Add a treat only if it still fits.`
+export const GROCERY_GATE = `Choose at least ${MIN_FOODS} foods without going over $${FOOD_BUDGET}. Add a treat only if it still fits into your budget today.`
 
 export const DAY_SUMMARY = (needs, fun, left) =>
   `Needs cost $${needs}${fun > 0 ? ` and the want cost $${fun}` : '; you skipped the want'}. You have $${left} left. Build a plan that can handle a surprise.`
@@ -87,30 +87,30 @@ export function sliceLine(id, pct) {
 }
 
 export function splitNudge(split, total) {
-  if (split.pocket >= total) return 'Everything is ready now, but nothing is growing. Compare the other two choices.'
+  if (split.pocket >= total) return 'Everything is ready now, but nothing is growing. Compare the other two financial accounts.'
   if (split.garden >= total) return 'Everything is taking market risk. What would pay for a surprise today?'
-  if (split.bank >= total) return 'Everything is in one safer place. Compare access now with growth and risk.'
-  if (split.bank === 0 && split.garden === 0) return 'Nothing is growing yet. Compare Bank and Money Garden.'
+  if (split.bank >= total) return 'Everything is in one safer financial account. Compare access now with growth and risk.'
+  if (split.bank === 0 && split.garden === 0) return 'Nothing is growing yet. Compare the Bank and Money Garden accounts.'
   if (split.pocket === 0) return 'No money is ready for a surprise. Revise the plan before testing it.'
   if (split.pocket < Math.min(2, total)) return 'The ready-cash cushion may not cover the surprise. Check the amount again.'
   if (split.garden > Math.round(total * 0.7)) return 'Most of the plan depends on the market. Is that risk balanced?'
   return 'This plan includes ready cash, safer growth, and higher-risk growth.'
 }
 
-export const SPLIT_PROMPT = 'Divide the money among Pocket, Bank, and Money Garden. Use the live feedback, then test whether the plan survives a surprise.'
+export const SPLIT_PROMPT = 'Divide the money among three financial accounts: Pocket, Bank, and Money Garden. Use the live feedback, then test whether the plan survives a surprise.'
 export const SPLIT_CONFIRM = 'Check the tradeoffs in your plan, then test it.'
 
-export const CARRY_PROMPT = 'Send each part of the plan to its destination.'
-export const CARRY_BANK_DONE = (amount) => `$${amount} moved to slower, steadier growth.`
-export const CARRY_GARDEN_DONE = (amount) => `$${amount} moved to higher potential growth and higher risk.`
+export const CARRY_PROMPT = 'Send each part of the plan to its financial account.'
+export const CARRY_BANK_DONE = (amount) => `$${amount} moved to the Bank account for slower, steadier growth.`
+export const CARRY_GARDEN_DONE = (amount) => `$${amount} moved to the Money Garden account for higher potential growth and higher risk.`
 
 export const EMERGENCY_INTRO = 'A surprise expense appears. The test will show whether enough money was kept ready.'
 export const EMERGENCY_EVENT = { label: 'Flat bike tire!', cost: 2 }
 export const EMERGENCY_PRAISE = 'Ready cash covered the surprise, so the growing money stayed untouched.'
-export const EMERGENCY_REPLAY = 'The plan did not cover the $2 surprise. Return to the sliders and revise the ready-cash amount.'
+export const EMERGENCY_REPLAY = 'The plan did not cover the $2 surprise. Return to the controls and revise the ready-cash amount.'
 
 export const HANDOFF = (bank, garden) =>
-  `Your revised plan kept emergency cash ready, placed $${bank} in the bank, and placed $${garden} in the Money Garden.`
+  `Your revised plan kept emergency cash ready, placed $${bank} in the Bank account, and placed $${garden} in the Money Garden account.`
 
 export function defaultSplit(total) {
   const pocket = Math.max(2, Math.round(total * 0.2))
