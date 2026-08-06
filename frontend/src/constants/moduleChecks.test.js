@@ -20,6 +20,15 @@ describe('post-module checks', () => {
     })
   })
 
+  it('balances correct-answer positions instead of putting every answer first', () => {
+    const answers = BADGE_ORDER.flatMap((badge) =>
+      MODULE_CHECKS[badge].questions.map((question) => question.answer)
+    )
+
+    expect(new Set(answers)).toEqual(new Set([0, 1, 2]))
+    expect(answers.filter((answer) => answer === 0).length).toBeLessThan(answers.length / 2)
+  })
+
   it('does not expose a check for an unknown badge', () => {
     expect(moduleCheckForBadge('unknown')).toBeNull()
   })
