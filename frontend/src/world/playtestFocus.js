@@ -3,8 +3,8 @@ import { READING_BANDS } from '../services/readingPreferences.js'
 const activeList = (value) => Array.isArray(value) && value.length > 0
 
 export const LEMONADE_FOCUS_KEYS = Object.freeze({
-  supplies: 'tayu-lemonade-supplies-focus-v1',
-  template: 'tayu-lemonade-template-focus-v1',
+  supplies: 'tayu-lemonade-supplies-focus-v2',
+  template: 'tayu-lemonade-template-focus-v2',
 })
 
 const SUPPLY_STEPS = [
@@ -25,10 +25,14 @@ const PLAN_STEPS_YOUNGER = [
   },
   {
     title: '2. Choose “My pay”',
-    text: 'My pay is the pretend cost of your own work. For example, 50 cents per hour means the plan counts 50 cents for every hour you work. It is not a fee paid to someone else.',
+    text: 'My pay is a business cost for your own work. For example, 50 cents per hour means the business counts 50 cents for every hour you work.',
   },
   {
-    title: '3. Set the cup price',
+    title: '3. Make your business sign',
+    text: 'Choose the sign style customers will see at your lemonade stand. The sign is part of setting up the business.',
+  },
+  {
+    title: '4. Set the cup price',
     text: 'Look at cost per cup. Pick a price above that cost, but keep it low enough that customers still want to buy.',
   },
 ]
@@ -40,10 +44,14 @@ const PLAN_STEPS_OLDER = [
   },
   {
     title: '2. Value your work',
-    text: '“My pay” is the amount the business counts for your own labor. A rate of $0.50 per hour means 50 cents of cost is added for each hour you work; it is not an outside fee.',
+    text: '“My pay” is a business cost for your labor. A rate of $0.50 per hour adds 50 cents of labor cost for each hour you work. Teachers may describe this as fixed or variable depending on the lesson setup.',
   },
   {
-    title: '3. Set the cup price',
+    title: '3. Make your business sign',
+    text: 'Choose the sign style shown to customers. This completes the setup step mentioned in the instructions.',
+  },
+  {
+    title: '4. Set the cup price',
     text: 'Use cost per cup as your starting point. Charge enough to cover costs, without pricing so high that demand falls.',
   },
 ]
