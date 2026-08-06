@@ -17,7 +17,6 @@ import { LemonadeFocusGuide } from '../world/LemonadeFocusGuide.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
-import { WorldMenu } from '../world/WorldMenu.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 
@@ -87,7 +86,6 @@ export default function World() {
       <OverlayEscapeControls />
       {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D} />
-      <WorldMenu />
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
     </div>
   )
