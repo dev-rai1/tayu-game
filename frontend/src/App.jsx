@@ -28,6 +28,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
 const TeacherGuide = lazy(() => import('./pages/TeacherGuide.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
+const TaxPaycheck = lazy(() => import('./pages/TaxPaycheck.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
 const ModuleCheck = lazy(() => import('./pages/ModuleCheck.jsx'))
 const Settings = lazy(() => import('./pages/Settings.jsx'))
@@ -100,6 +101,7 @@ export default function App() {
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
               <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
+              <Route path="/tax-paycheck" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Printing your practice paycheck..." />}><TaxPaycheck /></Suspense></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
               <Route path="/guru" element={<Suspense fallback={<LoadingScreen label="Rolling out the red carpet..." />}><Guru /></Suspense>} />
               <Route path="/path-complete" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your path certificate..." />}><PathComplete /></Suspense></PreQuizGate>} />

@@ -37,12 +37,23 @@ export const MODULE_CATALOG = [
   },
   {
     n: 5,
+    badge: 'tax',
+    title: 'Paycheck Planet',
+    grades: 'Grades 6–12',
+    minutes: '8–12 min',
+    desc: 'Choose a job, calculate simple paycheck taxes, plan take-home pay, and respond to a future expense.',
+    color: '#FF8A3D',
+    route: '/tax-paycheck',
+  },
+  {
+    n: 6,
     badge: 'garden',
     title: 'The Money Garden',
     grades: 'Grades 6–12',
     minutes: 'Two 6–8 min parts',
     desc: 'Part 1 introduces investing and pretend stocks. Part 2 uses market clues, risk, patience, and rebalancing.',
     color: '#00b37f',
+    worldModule: 5,
   },
 ]
 
@@ -55,14 +66,14 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All five modules remain available as a building-block sequence, with the Money Garden divided into two shorter parts.',
+    copy: 'All six modules remain available as a building-block sequence, including paycheck taxes before investing.',
     currentModules: MODULE_CATALOG,
-    plannedModules: ['Credit scores and debt', 'Taxes and paychecks', 'Insurance and risk', 'Careers, earnings, and benefits'],
+    plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All five modules establish a shared baseline, followed by advanced teacher discussion prompts in banking and investing.',
+    copy: 'All six modules establish a shared baseline, with deeper teacher prompts for withholding, gig-work reserves, banking, and investing.',
     currentModules: MODULE_CATALOG,
-    plannedModules: ['College costs and financial aid', 'Tax filing', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
+    plannedModules: ['Tax filing', 'College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
 ]
