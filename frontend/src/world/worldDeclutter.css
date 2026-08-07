@@ -71,6 +71,44 @@
   display: none;
 }
 
+/* ONE MESSAGE LANE: legacy transient bubbles still feed state so the shared
+   coach can queue them, but their old center-screen renderers are hidden. */
+.tayu-world-declutter [class~="z-[150]"][class~="bottom-4"][class~="inset-x-0"],
+.tayu-world-declutter [class~="z-[220]"][class~="bottom-24"][class~="inset-x-0"],
+.tayu-world-declutter [class~="z-[150]"][class~="top-32"][class~="inset-x-0"],
+.tayu-world-declutter [class~="z-[200]"][class~="top-24"][class~="inset-x-0"] {
+  display: none !important;
+}
+
+/* Story dialogue, decision cards and lesson cards are already sequential. Move
+   those blocking reads into the exact same right-side lane rather than covering
+   the module. Their buttons still advance one item at a time. */
+.tayu-world-declutter div:has(> [aria-labelledby="tayu-dialog-speaker"]),
+.tayu-world-declutter div:has(> [aria-labelledby="tayu-lesson-title"]),
+.tayu-world-declutter [class~="z-[320]"]:has(> .pop-in) {
+  position: fixed !important;
+  inset: 5.5rem max(0.75rem, env(safe-area-inset-right, 0px)) auto auto !important;
+  z-index: 540 !important;
+  display: block !important;
+  width: min(32vw, 27rem) !important;
+  max-width: calc(100vw - 1.5rem) !important;
+  max-height: calc(100dvh - 7rem) !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+.tayu-world-declutter div:has(> [aria-labelledby="tayu-dialog-speaker"]) > [aria-labelledby="tayu-dialog-speaker"],
+.tayu-world-declutter div:has(> [aria-labelledby="tayu-lesson-title"]) > [aria-labelledby="tayu-lesson-title"],
+.tayu-world-declutter [class~="z-[320]"]:has(> .pop-in) > .pop-in {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border-radius: 1.5rem !important;
+  padding: 1rem !important;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;
@@ -85,12 +123,12 @@
   line-height: 1.45;
 }
 
-.tayu-world-declutter [class*="z-[320]"] > .pop-in {
+.tayu-world-declutter [class~="z-[320]"] > .pop-in {
   max-width: 29rem;
   padding: 1rem;
 }
 
-.tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
+.tayu-world-declutter [class~="z-[320]"] p[class*="text-xl"] {
   max-height: min(30dvh, 13rem);
   overflow-y: auto;
   font-size: 1.05rem;
@@ -128,18 +166,24 @@
     width: min(12rem, calc(100% - 1.5rem));
   }
 
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-dialog-speaker"]),
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-lesson-title"]),
+  .tayu-world-declutter [class~="z-[320]"]:has(> .pop-in) {
+    width: min(92vw, 27rem) !important;
+  }
+
   .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
   .tayu-world-declutter [aria-labelledby="tayu-lesson-title"],
-  .tayu-world-declutter [class*="z-[320]"] > .pop-in {
-    width: min(92vw, 28rem);
-    max-width: calc(100% - 1.5rem);
+  .tayu-world-declutter [class~="z-[320]"] > .pop-in {
+    width: 100%;
+    max-width: none;
     border-radius: 1rem;
     padding: 0.85rem;
   }
 
   .tayu-world-declutter #tayu-dialog-line,
   .tayu-world-declutter #tayu-lesson-title,
-  .tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
+  .tayu-world-declutter [class~="z-[320]"] p[class*="text-xl"] {
     font-size: 1rem;
     line-height: 1.4;
   }
