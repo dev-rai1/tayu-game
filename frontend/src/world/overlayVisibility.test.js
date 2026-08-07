@@ -14,7 +14,7 @@ describe('overlay visibility', () => {
     expect(isBlockingGameOverlay({ cards: [], lessons: [] })).toBe(false)
   })
 
-  it('detects the market and Lemonade focus phases', () => {
+  it('reserves only the focused Lemonade walkthroughs for their sequential guide', () => {
     expect(isCommerceOverlayActive({
       week: 1,
       objective: 'store',
@@ -22,7 +22,7 @@ describe('overlay visibility', () => {
       storeMissionDone: false,
       cards: [],
       lessons: [],
-    })).toBe(true)
+    })).toBe(false)
 
     expect(isCommerceOverlayActive({
       week: 2,
@@ -34,7 +34,7 @@ describe('overlay visibility', () => {
       week: 2,
       objective: 'lemonade',
       lemPhase: 'selling',
-    })).toBe(true)
+    })).toBe(false)
   })
 
   it('reserves Money Garden decisions for the specialized coach', () => {
@@ -44,10 +44,10 @@ describe('overlay visibility', () => {
     expect(coachVisibility(state).showSavedMessage).toBe(false)
   })
 
-  it('shows the persistent coach only when the play area is clear', () => {
+  it('shows the persistent coach unless another sequential reading surface owns the rail', () => {
     expect(coachVisibility({ week: 3, objective: 'house' }).showGuidance).toBe(true)
     expect(coachVisibility({ dialog: { name: 'Penny' } }).showGuidance).toBe(false)
     expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(false)
-    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(false)
+    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(true)
   })
 })
