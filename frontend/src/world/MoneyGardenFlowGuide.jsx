@@ -72,6 +72,11 @@ export function MoneyGardenFlowGuide() {
     )
   }
 
+  // Dialogue/cards own the screen while they are active. Hiding the specialized
+  // decision guide here prevents a second floating surface from sitting behind
+  // or on top of those overlays.
+  if (cards.length > 0 || dialog) return null
+
   const guide = moneyGardenDecision(decisionWeek)
   const part = moneyGardenPart(decisionWeek)
   const partWeek = part.part === 1 ? decisionWeek : decisionWeek - 5
@@ -82,7 +87,7 @@ export function MoneyGardenFlowGuide() {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none absolute left-1/2 top-20 max-h-[42vh] w-[min(92vw,34rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm"
+        className="pointer-events-none absolute left-1/2 top-[calc(7.25rem+env(safe-area-inset-top,0px))] max-h-[42vh] w-[min(92vw,34rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Money Garden · Part {part.part}: {part.title}</div>
