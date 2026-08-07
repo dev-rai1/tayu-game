@@ -8,6 +8,10 @@ a[data-tayu-enhanced='true'] {
   overflow: hidden;
   overflow-wrap: anywhere;
   white-space: normal;
+  font-weight: 800;
+  line-height: 1.25;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   box-shadow: 0 6px 16px rgba(7, 23, 72, 0.22);
 }
 
@@ -47,10 +51,17 @@ a[data-tayu-action='practice'] {
   background-color: #f28c28 !important;
   color: #071748 !important;
 }
+
+/*
+ * Back / cancel / close controls appear on both dark game HUDs and white modal
+ * cards. The old translucent-white + white-text treatment disappeared on white
+ * cards (for example the Market item dialog), so use an opaque high-contrast
+ * neutral treatment that stays readable everywhere.
+ */
 button[data-tayu-action='back'],
 a[data-tayu-action='back'] {
-  background-color: rgba(255, 255, 255, 0.16) !important;
-  color: #fff !important;
+  background-color: #eef3ff !important;
+  color: #071748 !important;
 }
 button[data-tayu-action='reward'],
 a[data-tayu-action='reward'] {
