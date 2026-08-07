@@ -21,7 +21,7 @@ describe('kid navigation support', () => {
     expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D && !taxMode} />')
   })
 
-  it('puts normal-world important guidance in front and ordinary hints to the side', () => {
+  it('puts normal-world important guidance in front and ordinary hints to the side while Tax Lab keeps map navigation', () => {
     expect(coachSource).toContain('coachVisibility')
     expect(coachSource).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coachSource).toContain('coachMessageFromTransient')
@@ -31,7 +31,8 @@ describe('kid navigation support', () => {
     expect(coachSource).toContain('pointer-events-none fixed')
     expect(coachSource).toContain('data-important-message-scrim="true"')
     expect(pageSource).toContain('{!taxMode && <PersistentCoach key="world-coach" />}')
-    expect(pageSource).toContain('{!taxMode && <Hud')
+    expect(pageSource).toContain('<Hud playerName={state.player.name')
+    expect(pageSource).toContain('{use3D && usesTouchControls && <MobileControls />}')
     expect(pageSource).not.toContain('TaxSideHint')
     expect(pageSource).not.toContain('<LemonadeFocusGuide />')
     expect(pageSource).not.toContain('<BudgetTakeawayGuard />')

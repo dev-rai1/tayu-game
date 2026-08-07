@@ -68,10 +68,18 @@
   100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 
+@keyframes taxShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+
 .tax-workbench-enter { animation: taxWorkbenchEnter 260ms ease-out both; }
 .tax-paper-float { animation: taxPaperFloat 3s ease-in-out infinite; }
 .tax-scan-line { animation: taxScanLine 2.1s ease-in-out infinite; }
 .tax-pop { animation: taxPop 320ms ease-out both; }
+.tax-shake { animation: taxShake 260ms ease-out both; }
 .tax-stamp-button:active { animation: taxStamp 240ms ease-out; }
 .tax-coin-flow { animation: taxCoinFlow 1.15s ease-in-out infinite; letter-spacing: 0.15rem; }
 .tax-credit-slide { animation: taxCreditSlide 420ms cubic-bezier(.2,.8,.2,1) both; }
@@ -82,29 +90,33 @@
 .tax-envelope-fly { animation: taxEnvelopeFly 900ms ease-out infinite alternate; }
 .tax-complete-pulse { animation: taxCompletePulse 520ms cubic-bezier(.2,.9,.3,1.15) both; }
 
-.tax-folder { position: relative; overflow: hidden; }
-.tax-folder::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.7) 48%, transparent 72%);
-  transform: translateX(-130%);
-  transition: transform 500ms ease;
-  pointer-events: none;
-}
-.tax-folder:hover::before { transform: translateX(130%); }
-
-[data-tax-workbench='true'] {
+[data-tax-field-ui='true'] {
   width: 100vw;
-  min-width: 100vw;
   max-width: 100vw;
-  min-height: 100dvh;
+  height: 100dvh;
   box-sizing: border-box;
 }
 
+[data-tax-station-panel='true'] input {
+  outline: none;
+}
+
+[data-tax-station-panel='true'] input:focus {
+  border-color: #1464f0;
+  box-shadow: 0 0 0 3px rgba(20, 100, 240, 0.12);
+}
+
+[data-tax-station-panel='true'] [draggable='true'] {
+  cursor: grab;
+}
+
+[data-tax-station-panel='true'] [draggable='true']:active {
+  cursor: grabbing;
+}
+
 @media (max-width: 640px) {
-  [data-tax-workbench='true'] { padding: 0.5rem; }
-  [data-tax-workbench='true'] section[role='dialog'] { border-radius: 1.25rem; }
+  [data-tax-field-ui='true'] > div:last-child { padding: 0.5rem; }
+  [data-tax-station-panel='true'] { max-height: 78dvh; border-radius: 1.2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -112,6 +124,7 @@
   .tax-paper-float,
   .tax-scan-line,
   .tax-pop,
+  .tax-shake,
   .tax-coin-flow,
   .tax-credit-slide,
   .tax-balance-left,

@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import { GameWorld } from '../world/GameWorld.jsx'
-import { TaxLabWorld } from '../world/TaxLabWorld.jsx'
 import { TaxWorkbenchOverlay } from '../world/TaxWorkbenchOverlay.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
-import { TAX_DISTRICT } from '../world/config.js'
 import { useGame } from '../world/store.js'
 import {
   PAYCHECK_MODE_EVENT,
@@ -33,9 +31,8 @@ import '../world/moduleEntryFixes.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
 // (Paycheck Planet · Tax Filing Lab) runs between internal Bank (4) and Money
-// Garden (5), but now gets its own isolated scene while the activity is active.
+// Garden (5). The Tax Lab is a real district inside the same persistent town.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
-const PAYCHECK_START = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.3]
 
 function clearWorldMessages() {
   try {
@@ -58,11 +55,10 @@ function enterPaycheckPlanet({ restart = false } = {}) {
   try {
     clearWorldMessages()
     if (restart) {
-      // "Explore this module" always means start the activity from step 1.
+      // "Explore this module" restarts the learning state, but deliberately does
+      // NOT move the player. They remain in the real town and walk to Tax Lab.
       saveProfile({ taxLabProgress: null, taxLab: null })
     }
-    const game = useGame.getState()
-    game.adminTeleport(PAYCHECK_START)
     activatePaycheckWorld()
   } catch (error) {
     console.error(error)
@@ -137,7 +133,7 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Next is the Tax Filing Lab: scan a W-2, work through the tax math, and file a practice return.',
+            text: 'Your bank plan is ready. Next, walk through town to Paycheck Planet. Maya will help you begin the Tax Filing Lab.',
             buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5' })),
           }
         : card),
@@ -206,20 +202,15 @@ export default function World() {
 
   return (
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'}>
-      {use3D
-        ? taxMode
-          ? <TaxLabWorld />
-          : <GameWorld avatar={state.avatar} />
-        : <AccessibleWorld />}
+      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
 
-      {/* The workbench is a normal DOM sibling of the canvas. It therefore owns
-          the full browser viewport and cannot inherit a Three.js/canvas width. */}
+      {/* Tax Lab stays inside GameWorld. This DOM layer only shows the focused
+          station task after the player walks to and interacts with a station. */}
       {taxMode && <TaxWorkbenchOverlay />}
 
-      {/* Module 5 is a focused minigame. Nothing from the normal world UI is
-          allowed to render over it: no HUD/map, generic coach, admin panel,
-          movement controls, completion cards, or side-hint rail. */}
-      {!taxMode && <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />}
+      {/* The map/HUD and movement remain available in Module 5 because travel
+          between the physical tax stations is part of the gameplay. */}
+      <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       {!taxMode && <LemonadeCompletionCheck onContinue={onContinue} />}
       {!taxMode && <PersistentCoach key="world-coach" />}
       {!taxMode && <PersistentImprovementCoach />}
@@ -234,7 +225,7 @@ export default function World() {
         </div>
       )}
 
-      {use3D && usesTouchControls && !taxMode && <MobileControls />}
+      {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D && !taxMode} />
       {!taxMode && <WorldModuleLearningRecap />}
       {!taxMode && <AdminPanel />}

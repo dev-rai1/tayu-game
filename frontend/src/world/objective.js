@@ -8,6 +8,8 @@
 import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
 import { stage } from '../anim/stage.js'
 import { isPaycheckWorldActive } from './paycheckMode.js'
+import { useTaxLab } from './taxLabStore.js'
+import { TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
 const MARKET_SHELVES = [STORE[0], STORE[1] - 1]
@@ -19,10 +21,19 @@ export function getObjectiveTarget(st) {
   // When the next action is already on screen, remove the world arrow so it
   // never competes with the card or panel the player must use.
   if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
-  // Module 5 now teleports directly into Paycheck Planet. Its glowing animated
-  // decision pads are the guidance, so the shared giant arrow/breadcrumb route
-  // must stay off while the module is active.
-  if (isPaycheckWorldActive()) return null
+
+  // Module 5 remains in the persistent town. Guidance now walks the player to
+  // Maya, then the taxpayer cluster, then the exact physical station for each
+  // filing step. While a station panel is open, the arrow gets out of the way.
+  if (isPaycheckWorldActive()) {
+    const tax = useTaxLab.getState()
+    if (tax.panel) return null
+    if (tax.phase === 'intro') return TAX_POINTS.guide
+    if (tax.phase === 'case') return TAX_POINTS.caseCenter
+    if (tax.phase === 'steps') return taxStationForStep(tax.stepNumber).point
+    return TAX_POINTS.guide
+  }
+
   // Part J: everything is done - the arrow leads to the party house door
   if (st.gameComplete) return [PARTY_HOUSE[0], PARTY_HOUSE[1] - 3]
   // Round 8 order: 3 = Budget Town, 4 = the Bank, 5 = the Money Garden
@@ -61,7 +72,7 @@ export function getObjectiveTarget(st) {
 // How close counts as "arrived" - both the neck arrow and the overhead marker
 // hide inside this radius (comment 14: stop on arrival).
 export function arriveRadius(st) {
-  if (isPaycheckWorldActive()) return 3.6
+  if (isPaycheckWorldActive()) return 2.8
   if (st.week === 5) return 3.2
   if (st.week === 1 && st.objective === 'store') return 3
   return 2.5
