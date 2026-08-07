@@ -18,14 +18,19 @@ describe('world HUD layout', () => {
     expect(cssSource).toContain('env(safe-area-inset-right')
   })
 
-  it('uses one compact question-mark Help button instead of a Menu label', () => {
+  it('keeps Help obvious, high-contrast, and fully inside the viewport', () => {
     expect(hudSource).toContain('aria-label="Help"')
-    expect(hudSource).toContain('>\n      ?\n    </button>')
-    expect(cssSource).not.toContain('content: "Help"')
-    expect(cssSource).toContain('Keep Help as one compact, familiar question-mark button')
+    expect(cssSource).toContain('background: #ffd24a')
+    expect(cssSource).toContain('min-width: 5rem')
+    expect(cssSource).toContain('max-width: calc(100vw - 1.5rem)')
   })
 
   it('moves mission cards below the top controls on small screens', () => {
     expect(cssSource).toContain('top: calc(7.25rem + env(safe-area-inset-top, 0px))')
+  })
+
+  it('wraps long controls instead of letting them push off-screen', () => {
+    expect(cssSource).toContain('overflow-wrap: anywhere')
+    expect(cssSource).toContain('max-width: calc(100% - 1.5rem)')
   })
 })
