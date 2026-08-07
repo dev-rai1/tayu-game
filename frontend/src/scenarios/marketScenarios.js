@@ -11,9 +11,9 @@ export const SURPRISE_BILL = 4
 export const BANK_DRIP_MIN = 5
 
 export const OPENING = [
-  'You start the Money Garden with zero company shares. Your first job is to build a small diversified mix.',
-  'READY TO INVEST cash buys shares. Pocket stays ready for surprises, while Bank Sprout grows more steadily.',
-  'Buy at least one share in two different companies, then start the week and watch what diversification does.',
+  'You start the Money Garden with zero company shares. Build a small diversified mix instead of relying on one company.',
+  'Mr. Sprout added a $100 investing gift. READY TO INVEST cash buys shares.',
+  'Pocket stays ready for surprises; Bank Sprout grows more steadily. Buy shares in at least two companies first.',
 ]
 
 export const COMPANY_CHOICE = {

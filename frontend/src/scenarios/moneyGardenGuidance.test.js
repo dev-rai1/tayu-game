@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyStarterInvestingGift,
   MONEY_GARDEN_DECISIONS,
   MONEY_GARDEN_FLOW,
   MONEY_GARDEN_PARTS,
+  MONEY_GARDEN_STARTER_GIFT,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
 } from './moneyGardenGuidance.js'
@@ -24,13 +26,20 @@ describe('Money Garden playtest redesign', () => {
     expect(shouldPauseBetweenGardenParts(7, false)).toBe(false)
   })
 
+  it('gives enough starter money to experiment without double-gifting', () => {
+    const original = { cash: 8, startTotal: 8, goal: 20 }
+    const gifted = applyStarterInvestingGift(original)
+    expect(MONEY_GARDEN_STARTER_GIFT).toBe(100)
+    expect(gifted.cash).toBe(108)
+    expect(gifted.startTotal).toBe(108)
+    expect(gifted.goal).toBe(120)
+    expect(gifted.starterGiftApplied).toBe(true)
+    expect(applyStarterInvestingGift(gifted)).toBe(gifted)
+    expect(OPENING.join(' ')).toContain('$100 investing gift')
+  })
+
   it('separates WHY from the exact action on every decision', () => {
-    expect(MONEY_GARDEN_FLOW).toEqual([
-      '1. Learn why.',
-      '2. Do the action.',
-      '3. Check your mix.',
-      '4. Start the week.',
-    ])
+    expect(MONEY_GARDEN_FLOW).toEqual(['1. Learn why.', '2. Do the action.', '3. Check your mix.', '4. Start the week.'])
     const exactTrade = /(buy|sell)\s+(Toy Town|Snack Shack|Game Land)/i
     for (const decision of Object.values(MONEY_GARDEN_DECISIONS)) {
       expect(decision.why.length).toBeGreaterThan(20)
@@ -45,21 +54,8 @@ describe('Money Garden playtest redesign', () => {
     expect(MONEY_GARDEN_DECISIONS[1].why).toMatch(/zero company shares/i)
     expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/READY TO INVEST/)
     expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/2 different companies/i)
-
-    const oneCompany = {
-      companies: {
-        toy: { owned: 1 },
-        snack: { owned: 0 },
-        game: { owned: 0 },
-      },
-    }
-    const twoCompanies = {
-      companies: {
-        toy: { owned: 1 },
-        snack: { owned: 1 },
-        game: { owned: 0 },
-      },
-    }
+    const oneCompany = { companies: { toy: { owned: 1 }, snack: { owned: 0 }, game: { owned: 0 } } }
+    const twoCompanies = { companies: { toy: { owned: 1 }, snack: { owned: 1 }, game: { owned: 0 } } }
     expect(WEEKS[0].judge(oneCompany)).toBe(false)
     expect(WEEKS[0].judge(twoCompanies)).toBe(true)
   })
