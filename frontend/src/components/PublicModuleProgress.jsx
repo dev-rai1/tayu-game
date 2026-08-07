@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useGame } from '../world/store.js'
 import { isPaycheckWorldActive, PAYCHECK_MODE_EVENT } from '../world/paycheckMode.js'
 
@@ -10,6 +11,7 @@ const TITLES = {
 }
 
 export function PublicModuleProgress() {
+  const { pathname } = useLocation()
   const week = useGame((state) => state.week)
   const [paycheckActive, setPaycheckActive] = useState(() => isPaycheckWorldActive())
 
@@ -20,7 +22,7 @@ export function PublicModuleProgress() {
   }, [])
 
   // World.jsx already owns the richer Module 5 and Module 6A/6B banners.
-  if (paycheckActive || Number(week) >= 5 || !TITLES[week]) return null
+  if (pathname !== '/world' || paycheckActive || Number(week) >= 5 || !TITLES[week]) return null
 
   return (
     <div className="pointer-events-none fixed left-1/2 top-3 z-[215] w-[min(82vw,30rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center text-white shadow-xl backdrop-blur-sm">
