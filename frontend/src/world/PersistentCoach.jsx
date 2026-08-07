@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { say } from '../services/speech.js'
 import { getReadingBand } from '../services/readingPreferences.js'
+import { LEARN } from '../scenarios/learnLinks.js'
 import { moneyGardenDecision } from '../scenarios/moneyGardenGuidance.js'
 import { useGame } from './store.js'
 import { getGuidance } from './guidance.js'
@@ -52,6 +53,7 @@ export function PersistentCoach({ paycheckMode = false }) {
   const weekComplete = useGame((s) => s.weekComplete)
   const cards = useGame((s) => s.cards)
   const lessons = useGame((s) => s.lessons)
+  const dismissLesson = useGame((s) => s.dismissLesson)
   const dialog = useGame((s) => s.dialog)
   const advanceDialog = useGame((s) => s.advanceDialog)
   const panelJar = useGame((s) => s.panelJar)
@@ -84,8 +86,8 @@ export function PersistentCoach({ paycheckMode = false }) {
   ])
 
   // Route short-lived message fields into this one tray before Hud can paint
-  // separate toast/banner/NPC/lesson bubbles. Each item stays until the learner
-  // advances it, so fast animations cannot make important feedback disappear.
+  // separate toast/banner/NPC bubbles. Lessons and dialogue stay in the store
+  // until the learner presses Next/Got it here, preserving progression logic.
   useLayoutEffect(() => {
     const incoming = []
     const add = (kind, value) => {
@@ -95,7 +97,6 @@ export function PersistentCoach({ paycheckMode = false }) {
       incoming.push({ ...message, id: `${kind}-${messageCounter.current}` })
     }
 
-    if (activeLesson) add('lesson', activeLesson)
     if (actorCaption) add('actor', actorCaption)
     if (toast) add('toast', toast)
     if (banner) add('banner', banner)
@@ -120,10 +121,7 @@ export function PersistentCoach({ paycheckMode = false }) {
     if (banner) clear.banner = null
     if (guide) clear.guide = null
     if (Object.keys(clear).length) useGame.setState(clear)
-    if (activeLesson) {
-      try { useGame.getState().dismissLesson() } catch { /* Keep the world usable. */ }
-    }
-  }, [activeLesson, actorCaption, banner, guide, toast])
+  }, [actorCaption, banner, guide, toast])
 
   // The old Lemonade focus modal taught useful material, but it covered the
   // activity. Preserve its sequence here as small coach messages instead.
@@ -161,6 +159,7 @@ export function PersistentCoach({ paycheckMode = false }) {
     ? moneyGardenDecision(mg.week)
     : null
   const queuedMessage = queue[0]
+  const lessonMessage = activeLesson ? coachMessageFromTransient('lesson', activeLesson) : null
   const dialogLine = dialog?.lines?.[dialog.index]
   const dialogMessage = dialogLine
     ? {
@@ -174,36 +173,49 @@ export function PersistentCoach({ paycheckMode = false }) {
     ? { title: gardenGuide.title, action: gardenGuide.instruction }
     : guidance
 
-  const type = queuedMessage ? 'queued' : dialogMessage ? 'dialog' : improvement ? 'improvement' : 'guidance'
-  const content = queuedMessage || dialogMessage || improvement || (!paycheckMode ? generatedGuidance : null)
-  const key = queuedMessage?.id || hintKey(type, content, week, objective)
+  // Required story dialogue and lessons stay first. Short transient updates queue
+  // behind them, then persistent corrective feedback and the normal next step.
+  const type = dialogMessage
+    ? 'dialog'
+    : lessonMessage
+      ? 'lesson'
+      : queuedMessage
+        ? 'queued'
+        : improvement
+          ? 'improvement'
+          : 'guidance'
+  const content = dialogMessage || lessonMessage || queuedMessage || improvement || (!paycheckMode ? generatedGuidance : null)
+  const key = queuedMessage?.id || activeLesson?.id || hintKey(type, content, week, objective)
   const canShow = Boolean(
-    content && (type === 'queued' || type === 'dialog' || type === 'improvement' || visibility.showGuidance) &&
-    (type === 'queued' || type === 'dialog' || dismissedKey !== key)
+    content && (['queued', 'dialog', 'lesson', 'improvement'].includes(type) || visibility.showGuidance) &&
+    (['queued', 'dialog', 'lesson'].includes(type) || dismissedKey !== key)
   )
 
   useEffect(() => {
-    if (type === 'queued' || type === 'dialog') setDismissedKey('')
+    if (['queued', 'dialog', 'lesson'].includes(type)) setDismissedKey('')
   }, [key, type])
 
   if (!canShow) return null
 
-  const label = queuedMessage?.label || dialogMessage?.label || (improvement ? "Benny's feedback" : 'Next step')
-  const title = queuedMessage?.title || dialogMessage?.title || improvement?.title || generatedGuidance?.title
+  const label = dialogMessage?.label || lessonMessage?.label || queuedMessage?.label || (improvement ? "Benny's feedback" : 'Next step')
+  const title = dialogMessage?.title || lessonMessage?.title || queuedMessage?.title || improvement?.title || generatedGuidance?.title
   const diagnosis = improvement?.diagnosis
-  const action = queuedMessage?.action || dialogMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
+  const action = dialogMessage?.action || lessonMessage?.action || queuedMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
   const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
   const queueProgress = dialogMessage
     ? `${dialog.index + 1} of ${dialog.lines.length}`
-    : queuedMessage?.total
-      ? `${queuedMessage.step} of ${queuedMessage.total}`
-      : queue.length > 1
-        ? `1 of ${queue.length}`
-        : ''
+    : lessonMessage && lessons.length > 1
+      ? `1 of ${lessons.length}`
+      : queuedMessage?.total
+        ? `${queuedMessage.step} of ${queuedMessage.total}`
+        : queue.length > 1
+          ? `1 of ${queue.length}`
+          : ''
   const positionClass = usesTouchControls
     ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
     : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const emphasized = type === 'queued' || type === 'dialog' || type === 'improvement'
+  const emphasized = ['queued', 'dialog', 'lesson', 'improvement'].includes(type)
+  const learnResource = type === 'lesson' && activeLesson?.learn ? LEARN[activeLesson.learn] : null
 
   return (
     <aside
@@ -217,16 +229,26 @@ export function PersistentCoach({ paycheckMode = false }) {
       <div className="p-3 sm:p-4">
         <div className="flex items-start gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 text-sm font-black text-electric shadow-sm" aria-hidden="true">
-            {helperFace(queuedMessage?.kind || (type === 'dialog' ? 'actor' : type))}
+            {helperFace(dialogMessage ? 'actor' : lessonMessage ? 'lesson' : queuedMessage?.kind || type)}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
-              {queueProgress && <span className="rounded-full bg-navy/8 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{queueProgress}</span>}
+              {queueProgress && <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{queueProgress}</span>}
             </div>
             <div className="mt-0.5 break-words text-base font-extrabold leading-snug text-navy">{title}</div>
             {diagnosis && <div className="mt-2 rounded-xl bg-navy/5 px-3 py-2 text-sm font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
             <p className="mt-1.5 break-words text-sm font-semibold leading-relaxed text-navy/80">{action}</p>
+            {learnResource && (
+              <a
+                href={learnResource.url}
+                target="_blank"
+                rel="noreferrer"
+                className="pointer-events-auto mt-2 block rounded-xl bg-electric/10 px-3 py-2 text-center text-xs font-extrabold text-electric active:scale-95"
+              >
+                Learn more: {learnResource.label}
+              </a>
+            )}
           </div>
         </div>
 
@@ -234,13 +256,17 @@ export function PersistentCoach({ paycheckMode = false }) {
           <button type="button" onClick={() => say(spoken)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95">
             Read aloud
           </button>
-          {queuedMessage ? (
-            <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-              {queue.length > 1 ? 'Next' : 'Got it'}
-            </button>
-          ) : dialogMessage ? (
+          {dialogMessage ? (
             <button type="button" onClick={advanceDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
               {dialog.index + 1 >= dialog.lines.length ? 'Got it' : 'Next'}
+            </button>
+          ) : lessonMessage ? (
+            <button type="button" onClick={dismissLesson} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+              {lessons.length > 1 ? 'Next' : 'Got it'}
+            </button>
+          ) : queuedMessage ? (
+            <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+              {queue.length > 1 ? 'Next' : 'Got it'}
             </button>
           ) : (
             <button type="button" onClick={() => setDismissedKey(key)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95">
