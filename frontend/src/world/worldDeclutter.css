@@ -73,6 +73,23 @@
   display: none;
 }
 
+/* Keep public module numbering correct in the Help list while the engine still
+   uses legacy internal week numbers for Money Garden and the finale. */
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child,
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child {
+  font-size: 0;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child::after {
+  content: 'Module 6: Money Garden';
+  font-size: 0.875rem;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child::after {
+  content: 'Module 7: Finale Area';
+  font-size: 0.875rem;
+}
+
 /* NPC dialogue and informational lesson copy are rendered by PersistentCoach.
    Hide the legacy popup wrappers so there is only one place to read/advance
    guidance. Interactive cards and module workspaces remain untouched. */
