@@ -6,6 +6,7 @@ import { BANK_DISTRICT, PARTY_HOUSE, SPROUT, STOP_ANGLES, TAX_DISTRICT } from '.
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const landmarks = fs.readFileSync(path.join(here, 'ModuleLandmarks.jsx'), 'utf8')
+const paycheck = fs.readFileSync(path.join(here, 'PaycheckPlanetWorld.jsx'), 'utf8')
 const gameWorld = fs.readFileSync(path.join(here, 'GameWorld.jsx'), 'utf8')
 const bank = fs.readFileSync(path.join(here, 'BankDistrict.jsx'), 'utf8')
 const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8')
@@ -13,11 +14,13 @@ const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8'
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
 describe('physical module districts', () => {
-  it('renders a separate playable Paycheck Planet building in the 3D town', () => {
+  it('renders Paycheck Planet as a playable animated district without leaving the world', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
-    expect(landmarks).toContain("labelTexture('PAYCHECK PLANET'")
-    expect(landmarks).toContain("window.location.assign('/tax-paycheck')")
-    expect(landmarks).toContain('PRESS E OR CLICK TO PLAY')
+    expect(landmarks).toContain('<PaycheckPlanetWorld />')
+    expect(paycheck).toContain("labelTexture('PAYCHECK PLANET'")
+    expect(paycheck).toContain('PRESS E / TAP')
+    expect(paycheck).toContain('InteractiveStation')
+    expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 
   it('keeps physical signs clean while the catalog identifies Money Garden as module 6', () => {
