@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { currentUser } from '../services/auth.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
@@ -16,8 +15,6 @@ const MODULE_BY_BADGE = {
 }
 
 export default function PathCompletionWatcher() {
-  const navigate = useNavigate()
-  const location = useLocation()
   const syncing = useRef(false)
 
   const week = useGame((state) => state.week)
@@ -48,15 +45,8 @@ export default function PathCompletionWatcher() {
         })
       }
 
-      if (location.pathname !== '/world') return
-
-      const completedChecks = profile.moduleChecks || {}
-      const pendingBadge = [...inferred].reverse().find((badge) => !completedChecks[badge])
-      if (pendingBadge) {
-        navigate(`/module-check/${pendingBadge}`)
-        return
-      }
-
+      // Module completion stays inside the game. Do not interrupt gameplay by
+      // navigating to the old per-module quiz/check pages.
       const path = loadActiveLearningPath()
       if (!path || !isLearningPathComplete(path.modules, badges)) return
 
@@ -74,7 +64,7 @@ export default function PathCompletionWatcher() {
     } finally {
       syncing.current = false
     }
-  }, [bkWeek, btStage, gameComplete, location.pathname, mgPhase, navigate, week, weekComplete])
+  }, [bkWeek, btStage, gameComplete, mgPhase, week, weekComplete])
 
   useEffect(() => {
     syncAndCheck()
