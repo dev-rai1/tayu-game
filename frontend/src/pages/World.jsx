@@ -5,7 +5,7 @@ import { GameWorld } from '../world/GameWorld.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
-import { useGame } from '../world/store.js'
+import { playerPos, useGame } from '../world/store.js'
 import { TAX_ENTRY } from '../world/ModuleLandmarks.jsx'
 import {
   PAYCHECK_MODE_EVENT,
@@ -32,13 +32,18 @@ import '../world/worldDeclutter.css'
 // (Paycheck Planet) runs physically inside the same world between internal
 // Bank (4) and Money Garden (5), instead of navigating to a separate page.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
+const PAYCHECK_ARRIVAL_RADIUS = 4.2
 
+// Explicit module jumps can still place a presenter/returning learner directly
+// at Paycheck Planet. The normal Bank story handoff deliberately does not call
+// this helper: it keeps the learner at the Bank and lets the world arrow lead.
 function moveToPaycheckPlanet() {
   setTimeout(() => {
     try {
       const game = useGame.getState()
       game.adminClearUi()
       game.adminTeleport(TAX_ENTRY)
+      useGame.setState({ objective: 'tax-active' })
     } catch (error) {
       console.error(error)
     }
@@ -54,6 +59,7 @@ export default function World() {
   const enterParty = useGame((s) => s.enterParty)
   const week = useGame((s) => s.week)
   const cards = useGame((s) => s.cards)
+  const objective = useGame((s) => s.objective)
   const [use3D] = useState(hasWebGL)
 
   useEffect(() => {
@@ -87,7 +93,7 @@ export default function World() {
   }, [state.player.name, navigate, dispatch])
 
   // The Bank engine predates Paycheck Planet. Keep its final story beat, but
-  // send the learner to the physical Paycheck Planet district in this world.
+  // clearly name the real next stop instead of exposing the legacy garden label.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -103,8 +109,10 @@ export default function World() {
     })
   }, [cards])
 
-  // Finishing Bank still initializes the legacy internal Money Garden chapter.
-  // Intercept that handoff once and physically move the learner to Module 5.
+  // The legacy Bank action initializes internal week 5 (Money Garden) first.
+  // Intercept that state only to activate public Module 5. Crucially, DO NOT
+  // teleport: keep the learner at the Bank and let the arrow guide the walk to
+  // Paycheck Planet, which is the next physical district around the ring road.
   useEffect(() => {
     if (week !== 5 || paycheckMode) return
     const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
@@ -115,10 +123,23 @@ export default function World() {
     const profile = loadProfile() || {}
     const badges = profile.badges || []
     if (badges.includes('bank') && !badges.includes('tax')) {
+      useGame.setState({ objective: 'tax' })
       activatePaycheckWorld()
-      moveToPaycheckPlanet()
     }
   }, [paycheckMode, week])
+
+  // Once the learner actually reaches Paycheck Planet, retire the travel arrow
+  // so it cannot keep pointing backward while they work through the stations.
+  useEffect(() => {
+    if (!paycheckMode || objective !== 'tax') return undefined
+    const markArrival = () => {
+      const distance = Math.hypot(playerPos.x - TAX_ENTRY[0], playerPos.z - TAX_ENTRY[1])
+      if (distance <= PAYCHECK_ARRIVAL_RADIUS) useGame.setState({ objective: 'tax-active' })
+    }
+    markArrival()
+    const timer = window.setInterval(markArrival, 150)
+    return () => window.clearInterval(timer)
+  }, [objective, paycheckMode])
 
   useEffect(() => {
     initWorld()
@@ -164,7 +185,9 @@ export default function World() {
       {paycheckMode && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-[#FF8A3D]/60 bg-navy/90 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module 5 · Paycheck Planet</div>
-          <div className="text-sm font-extrabold text-white">Stay in the world and walk to the glowing stations.</div>
+          <div className="text-sm font-extrabold text-white">
+            {objective === 'tax' ? 'Follow the arrow from the Bank to Paycheck Planet.' : 'You made it! Now use the glowing stations one at a time.'}
+          </div>
         </div>
       )}
       {use3D && usesTouchControls && <MobileControls />}
