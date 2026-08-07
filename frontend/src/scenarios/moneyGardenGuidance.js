@@ -1,6 +1,25 @@
 // Decision prompts for the Money Garden. These prompts identify the question to
 // investigate without revealing the exact company or trade the player should make.
 
+export const MONEY_GARDEN_STARTER_GIFT = 100
+
+const roundMoney = (value) => Math.round(Number(value || 0) * 100) / 100
+
+export function applyStarterInvestingGift(garden) {
+  if (!garden || garden.starterGiftApplied) return garden
+  const gift = MONEY_GARDEN_STARTER_GIFT
+  return {
+    ...garden,
+    cash: roundMoney((garden.cash || 0) + gift),
+    startTotal: roundMoney((garden.startTotal ?? garden.cash ?? 0) + gift),
+    // Keep the original required growth the same instead of making the bonus
+    // itself create a much harder target.
+    goal: roundMoney((garden.goal || 0) + gift),
+    starterGift: gift,
+    starterGiftApplied: true,
+  }
+}
+
 export const MONEY_GARDEN_PARTS = [
   {
     part: 1,
