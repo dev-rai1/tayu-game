@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, RoundedBox } from '@react-three/drei'
-import { BANK_DISTRICT, SPROUT } from './config.js'
+import { SPROUT, TAX_DISTRICT } from './config.js'
 import { playerPos } from './store.js'
 import { labelTexture } from './textures.js'
 
-const TAX_DISTRICT = [
-  (BANK_DISTRICT[0] + SPROUT[0]) / 2,
-  (BANK_DISTRICT[1] + SPROUT[1]) / 2,
-]
 const TAX_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]
 const ENTRY_RADIUS = 4.2
 
@@ -72,7 +68,7 @@ function PaycheckPlanetDistrict() {
       <Billboard position={[0, 6.45, 0]}>
         <mesh>
           <planeGeometry args={[6.8, 2.12]} />
-          <meshBasicMaterial map={labelTexture('MODULE 5 · PAYCHECK PLANET', { bg: '#071748', color: '#ffffff', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
+          <meshBasicMaterial map={labelTexture('PAYCHECK PLANET', { bg: '#071748', color: '#ffffff', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
       <Billboard position={[0, 5.15, 0.2]}>
@@ -101,12 +97,12 @@ function PaycheckPlanetDistrict() {
   )
 }
 
-function MoneyGardenModuleSixMarker() {
+function MoneyGardenMarker() {
   return (
     <Billboard position={[SPROUT[0], 8.4, SPROUT[1] + 1.2]}>
       <mesh>
         <planeGeometry args={[6.4, 2]} />
-        <meshBasicMaterial map={labelTexture('MODULE 6 · THE MONEY GARDEN', { bg: '#071748', color: '#ffffff', accent: '#00b37f' })} transparent toneMapped={false} depthTest={false} />
+        <meshBasicMaterial map={labelTexture('THE MONEY GARDEN', { bg: '#071748', color: '#ffffff', accent: '#00b37f' })} transparent toneMapped={false} depthTest={false} />
       </mesh>
     </Billboard>
   )
@@ -116,9 +112,9 @@ export function ModuleLandmarks() {
   return (
     <>
       <PaycheckPlanetDistrict />
-      <MoneyGardenModuleSixMarker />
+      <MoneyGardenMarker />
     </>
   )
 }
 
-export { TAX_DISTRICT, TAX_ENTRY }
+export { TAX_ENTRY }
