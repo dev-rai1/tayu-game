@@ -9,14 +9,18 @@ const overlay = read('src/world/TaxWorkbenchOverlay.jsx')
 const paycheck = read('src/world/PaycheckPlanetWorld.jsx')
 const objective = read('src/world/objective.js')
 const taxCss = read('src/world/taxWorkbench.css')
+const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 
 describe('module entry clarity', () => {
-  it('starts Explore launches from the beginning without teleporting the player', () => {
+  it('starts Explore from the beginning without teleporting the player', () => {
     expect(world).toContain("if (jump === '5')")
-    expect(world).toContain('enterPaycheckPlanet({ restart: true })')
+    expect(world).toContain("enterPaycheckPlanet({ restart: true, origin: 'module-select' })")
     expect(world).toContain('saveProfile({ taxLabProgress: null, taxLab: null })')
+    expect(world).toContain("const preservedTaxPosition = jump === '5'")
+    expect(world).toContain('playerPos.x = preservedTaxPosition.x')
+    expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
-    expect(world).not.toContain("import { TaxLabWorld }")
+    expect(world).not.toContain('TaxLabWorld')
   })
 
   it('keeps the actual town canvas and movement active during Module 5', () => {
@@ -24,6 +28,9 @@ describe('module entry clarity', () => {
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).toContain('<Hud playerName={state.player.name')
     expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
+    expect(world).toContain('prepareWorldForTaxWalking()')
+    expect(world).toContain('playerSpeedMult: 1')
+    expect(world).toContain('scenarioLocked: false')
     expect(world).not.toContain('? <TaxLabWorld />')
     expect(world).not.toContain('{!taxMode && <Hud')
   })
@@ -46,11 +53,13 @@ describe('module entry clarity', () => {
     expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('makes Maya, taxpayers, and moving workers part of the start experience', () => {
+  it('makes Maya, taxpayers, moving workers, and E/action interactions part of the start experience', () => {
     expect(paycheck).toContain('Maya · Tax Guide')
     expect(paycheck).toContain('TAX_CLIENTS.map')
     expect(paycheck).toContain('RovingTaxWorker')
     expect(paycheck).toContain('DeskWorker')
     expect(paycheck).toContain('closeEnough(point)')
+    expect(bridge).toContain("event.code !== 'KeyE'")
+    expect(bridge).toContain("window.addEventListener('tayu-interact'")
   })
 })
