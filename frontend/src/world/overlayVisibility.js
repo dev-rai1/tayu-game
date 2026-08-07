@@ -9,20 +9,14 @@ export function isBlockingGameOverlay(state = {}) {
 }
 
 export function isCommerceOverlayActive(state = {}) {
-  const marketActive = Boolean(
-    state.week === 1 && state.objective === 'store' && state.bramTalked &&
-    !state.storeMissionDone && !state.panelItem && !state.dialog &&
-    !activeList(state.lessons) && !activeList(state.cards) &&
-    !state.scenarioLocked && !state.weekComplete
-  )
-
-  const lemonadeActive = Boolean(
+  // Only the two intentionally sequential Lemonade focus walkthroughs own the
+  // guidance rail. Market shopping and the other Lemonade phases are gameplay
+  // surfaces, so the shared coach remains available beside them.
+  return Boolean(
     state.week === 2 && state.objective === 'lemonade' &&
-    ['toMarket', 'supplies', 'toStand2', 'template', 'selling'].includes(state.lemPhase) &&
+    ['supplies', 'template'].includes(state.lemPhase) &&
     !state.weekComplete
   )
-
-  return marketActive || lemonadeActive
 }
 
 export function isSpecializedCoachActive(state = {}) {
