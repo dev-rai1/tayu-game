@@ -75,6 +75,13 @@ describe('Paycheck Planet full integration', () => {
     expect(admin).toContain('MODULE {moduleStep} of 7')
   })
 
+  it('keeps the same coach lane active inside Paycheck Planet', () => {
+    expect(world).toContain('<PersistentCoach paycheckMode={paycheckMode} />')
+    expect(world).not.toContain('!paycheckMode && <PersistentCoach')
+    expect(coach).toContain('paycheckMode = false')
+    expect(coach).toContain("type === 'lesson'")
+  })
+
   it('lets non-button coach space pass clicks through to the game', () => {
     expect(coach).toContain('pointer-events-none fixed')
     expect(coach).toContain('pointer-events-auto')
