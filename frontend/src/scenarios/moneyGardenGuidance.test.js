@@ -4,6 +4,7 @@ import {
   MONEY_GARDEN_DECISIONS,
   MONEY_GARDEN_PARTS,
   MONEY_GARDEN_STARTER_GIFT,
+  moneyGardenClues,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
 } from './moneyGardenGuidance.js'
@@ -42,6 +43,32 @@ describe('Money Garden playtest redesign', () => {
     for (const decision of Object.values(MONEY_GARDEN_DECISIONS)) {
       expect(decision.instruction).not.toMatch(forbidden)
       expect(decision.instruction.length).toBeLessThan(190)
+    }
+  })
+
+  it('turns busy and empty storefront evidence into separate readable clues', () => {
+    const clues = moneyGardenClues(4, { fx: { busy: 'game', dusty: 'snack' } })
+    expect(clues).toEqual([
+      'Game Land is PACKED — lots of customers are showing up.',
+      'Snack Shack is EMPTY — very few customers are showing up.',
+    ])
+  })
+
+  it('keeps each evidence clue short enough to show one at a time', () => {
+    const sample = {
+      pocket: 6,
+      fx: { rain: 'toy', dip: 'game', busy: 'game', dusty: 'snack', sale: 'toy', sale2: 'snack', shabby: 'snack', balloon: 'game', star: 'toy' },
+      companies: {
+        toy: { owned: 2, price: 6 },
+        snack: { owned: 1, price: 5 },
+        game: { owned: 1, price: 4 },
+      },
+    }
+
+    for (let week = 1; week <= 10; week += 1) {
+      const clues = moneyGardenClues(week, sample)
+      expect(clues.length).toBeGreaterThan(0)
+      for (const clue of clues) expect(clue.length).toBeLessThan(140)
     }
   })
 
