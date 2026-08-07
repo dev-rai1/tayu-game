@@ -56,8 +56,7 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckScenario).toContain('Refund or amount due?')
     expect(paycheckScenario).toContain('Review and file')
     expect(paycheckWorld).toContain('six_step_tax_filing_practice')
-    expect(paycheckWorld).toContain("type: 'tax_step_correct'")
-    expect(paycheckWorld).toContain("type: 'tax_step_retry'")
+    expect(paycheckWorld).toContain("type: correct ? 'tax_step_correct' : 'tax_step_retry'")
     expect(paycheckWorld).toContain('taxLabProgress')
   })
 
