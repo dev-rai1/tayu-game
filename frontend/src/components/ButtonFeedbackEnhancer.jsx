@@ -2,24 +2,44 @@ import { useEffect } from 'react'
 
 const ACTION_RULES = [
   { action: 'success', icon: '✓', pattern: /continue|start|play|resume|submit|finish|complete|confirm|save|deposit|cash out|buy|choose this/i },
+  // Put close/hide actions before help so labels like "Hide this hint" do not
+  // get mistaken for help buttons and rendered as a duplicate "? ×" control.
+  { action: 'back', icon: '←', pattern: /back|cancel|close|hide|dismiss|choose another|not now|return/i },
   { action: 'help', icon: '?', pattern: /help|glossary|word|hint|learn|guide|explain/i },
   { action: 'settings', icon: '⚙', pattern: /setting|preference|change grade|customize|edit/i },
   { action: 'practice', icon: '↻', pattern: /practice|retake|try again|play again|restart|replay/i },
-  { action: 'back', icon: '←', pattern: /back|cancel|close|choose another|not now|return/i },
   { action: 'reward', icon: '★', pattern: /certificate|reward|achievement|badge|score/i },
 ]
+
+function hasOwnVisualIcon(button, visibleLabel) {
+  // Do not layer a generated icon on controls that already render one. This
+  // covers the TAYU logo, music button, and compact controls such as ? and ×.
+  if (button.querySelector('svg, img')) return true
+  return /^[?×✕✖←→↻✓★⚙…]+$/u.test(visibleLabel)
+}
 
 function classifyButton(button) {
   if (!(button instanceof HTMLElement) || button.dataset.tayuEnhanced === 'true') return
   if (button.getAttribute('role') === 'switch' || button.closest('[role="menu"]')) return
 
-  const label = (button.getAttribute('aria-label') || button.textContent || '').trim()
+  const visibleLabel = (button.textContent || '').trim()
+  const label = (button.getAttribute('aria-label') || visibleLabel).trim()
   if (!label) return
 
   const match = ACTION_RULES.find((rule) => rule.pattern.test(label))
   button.dataset.tayuEnhanced = 'true'
   button.dataset.tayuAction = match?.action || 'primary'
-  button.style.setProperty('--tayu-action-icon', `"${match?.icon || '→'}"`)
+
+  // Only add a semantic icon when a rule actually matched and the control does
+  // not already have its own icon. Unmatched controls should never get a random
+  // default arrow.
+  if (match && !hasOwnVisualIcon(button, visibleLabel)) {
+    button.dataset.tayuActionIcon = 'true'
+    button.style.setProperty('--tayu-action-icon', `"${match.icon}"`)
+  } else {
+    delete button.dataset.tayuActionIcon
+    button.style.removeProperty('--tayu-action-icon')
+  }
 }
 
 function enhanceButtons(root = document) {
