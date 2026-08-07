@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { ModuleLearningRecap, MODULE_RECAPS } from '../components/ModuleLearningRecap.jsx'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent, setUsageModule } from '../services/usageAnalytics.js'
 
@@ -35,6 +36,7 @@ export default function TaxPaycheck() {
   const [event, setEvent] = useState(EVENTS[0])
   const [eventChoice, setEventChoice] = useState('')
   const [finished, setFinished] = useState(false)
+  const [showRecap, setShowRecap] = useState(false)
 
   const tax = useMemo(() => Math.round(job.gross * job.taxRate / 100), [job])
   const takeHome = job.gross - tax
@@ -95,6 +97,7 @@ export default function TaxPaycheck() {
     saveProfile({ badges, taxLab: { job: job.id, gross: job.gross, tax, takeHome, plan, event: event.id, completedAt: new Date().toISOString() } })
     recordLearningEvent({ moduleName: 'tax', type: 'module_complete', outcome: 'completed', detail: `${job.id}:${event.id}` }).catch(() => {})
     setFinished(true)
+    setShowRecap(true)
   }
 
   const continueToGarden = () => {
@@ -105,7 +108,7 @@ export default function TaxPaycheck() {
 
   if (finished) {
     return (
-      <main className="grid min-h-screen place-items-center bg-navy px-5 py-10 text-white">
+      <main className="relative grid min-h-screen place-items-center bg-navy px-5 py-10 text-white">
         <section className="w-full max-w-xl rounded-3xl border-4 border-teal bg-white p-7 text-center text-navy shadow-2xl" role="status" aria-live="polite">
           <div className="text-6xl" aria-hidden>🧾✨</div>
           <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Module 5 complete</p>
@@ -116,12 +119,25 @@ export default function TaxPaycheck() {
             <div className="rounded-2xl bg-sun/30 p-3">Taxes<br />{money(tax)}</div>
             <div className="rounded-2xl bg-teal/20 p-3">Take-home<br />{money(takeHome)}</div>
           </div>
+          <div className="mt-5 rounded-2xl bg-navy/5 p-4 text-left">
+            <div className="text-xs font-extrabold uppercase tracking-wide text-electric">What you learned</div>
+            <div className="mt-2 grid gap-2">
+              {MODULE_RECAPS[5].items.map((item, index) => (
+                <div key={item} className="flex gap-2 rounded-xl bg-white p-2.5">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-electric text-xs font-extrabold text-white" aria-hidden>{index + 1}</span>
+                  <p className="text-sm font-bold leading-snug text-navy">{item}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 rounded-xl bg-sun/25 px-3 py-2 text-center text-sm font-extrabold">Remember: {MODULE_RECAPS[5].memory}</p>
+          </div>
           <button type="button" onClick={continueToGarden} className="mt-6 min-h-[58px] w-full rounded-2xl bg-teal px-5 text-lg font-extrabold text-navy">Continue to Module 6: Money Garden →</button>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             <button type="button" onClick={() => nav('/modules')} className="min-h-[52px] rounded-2xl bg-electric/10 px-4 font-extrabold text-electric">Back to module map</button>
-            <button type="button" onClick={() => { setFinished(false); setStep(0); setTaxAnswer(''); setTaxResult(null); setPlan({ now: 0, later: 0, give: 0, taxReserve: 0 }); setEventChoice('') }} className="min-h-[52px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Try another job</button>
+            <button type="button" onClick={() => { setFinished(false); setShowRecap(false); setStep(0); setTaxAnswer(''); setTaxResult(null); setPlan({ now: 0, later: 0, give: 0, taxReserve: 0 }); setEventChoice('') }} className="min-h-[52px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Try another job</button>
           </div>
         </section>
+        {showRecap && <ModuleLearningRecap module={5} onClose={() => setShowRecap(false)} />}
       </main>
     )
   }
