@@ -3,8 +3,12 @@ export function visibleViewport(windowLike = window) {
   return {
     width: Math.max(1, Math.round(viewport?.width || windowLike.innerWidth || 1)),
     height: Math.max(1, Math.round(viewport?.height || windowLike.innerHeight || 1)),
-    left: Math.max(0, Math.round(viewport?.offsetLeft || 0)),
-    top: Math.max(0, Math.round(viewport?.offsetTop || 0)),
+    // Keep the app anchored to the layout viewport. Safari/Chrome can report
+    // visualViewport offsets while toolbars, zoom, or touch scrolling settle;
+    // applying those offsets to a fixed full-screen root makes the entire game
+    // visibly slide or expose half of the page.
+    left: 0,
+    top: 0,
   }
 }
 
@@ -13,8 +17,8 @@ export function syncViewportVariables(windowLike = window, documentLike = docume
   const style = documentLike.documentElement.style
   style.setProperty('--tayu-viewport-width', `${size.width}px`)
   style.setProperty('--tayu-viewport-height', `${size.height}px`)
-  style.setProperty('--tayu-viewport-left', `${size.left}px`)
-  style.setProperty('--tayu-viewport-top', `${size.top}px`)
+  style.setProperty('--tayu-viewport-left', '0px')
+  style.setProperty('--tayu-viewport-top', '0px')
   return size
 }
 
@@ -36,7 +40,6 @@ export function installViewportSync(windowLike = window, documentLike = document
   windowLike.addEventListener?.('orientationchange', update)
   windowLike.addEventListener?.('pageshow', update)
   viewport?.addEventListener?.('resize', update)
-  viewport?.addEventListener?.('scroll', update)
 
   return () => {
     if (frame !== null && typeof windowLike.cancelAnimationFrame === 'function') windowLike.cancelAnimationFrame(frame)
@@ -44,6 +47,5 @@ export function installViewportSync(windowLike = window, documentLike = document
     windowLike.removeEventListener?.('orientationchange', update)
     windowLike.removeEventListener?.('pageshow', update)
     viewport?.removeEventListener?.('resize', update)
-    viewport?.removeEventListener?.('scroll', update)
   }
 }
