@@ -14,8 +14,10 @@ describe('elementary transcript usability regressions', () => {
     expect(storeSource).toContain('CHECKOUT • TAP OR PRESS E')
   })
 
-  it('labels market choices as needs or wants', () => {
-    expect(storeSource).toContain("const choiceType = isWant ? 'WANT' : 'NEED'")
+  it('keeps market need/want categories hidden until the player decides', () => {
+    expect(storeSource).not.toContain("const choiceType = isWant ? 'WANT' : 'NEED'")
+    expect(storeSource).toContain('Keep the category hidden so the player has to decide whether the item is a need or a want.')
+    expect(storeSource).toContain('cardTexture(item.name.toUpperCase(), `$${item.price}`)')
   })
 
   it('keeps quick-start actions above optional customization on small screens', () => {

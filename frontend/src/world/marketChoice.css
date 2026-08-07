@@ -1,0 +1,15 @@
+/*
+ * Market needs-vs-wants is a decision, not a label-reading exercise.
+ * The classification remains in game data for evaluation and after-choice
+ * feedback, but it is intentionally hidden from every pre-purchase surface.
+ */
+
+/* Quick market chooser badge in GuidedCommerceOverlay. */
+aside[class*="border-teal"][class*="text-white"] span[class*="text-[9px]"][class*="rounded-full"] {
+  display: none;
+}
+
+/* NEED/WANT badge in the centered ProductPanel purchase modal. */
+div[class*="max-w-sm"][class*="bg-white"][class*="p-6"][class*="text-center"] > span[class*="mt-1"][class*="inline-block"][class*="rounded-full"] {
+  display: none;
+}
