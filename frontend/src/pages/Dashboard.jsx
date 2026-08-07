@@ -5,13 +5,14 @@ import { adminAnalyticsData } from '../services/adminAnalytics.js'
 import { KNOWLEDGE_QUESTIONS, scoreKnowledgeQuiz } from '../constants/knowledgeQuiz.js'
 import PlaytestBehaviorSummary, { summarizeLearningSessions } from '../components/PlaytestBehaviorSummary.jsx'
 
-const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'garden']
+const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'tax', 'garden']
 const MODULE_LABEL = {
   jars: 'Module 1: Market & Jars',
   lemonade: 'Module 2: Lemonade Stand',
   budget: 'Module 3: Budget Town',
   bank: 'Module 4: Bank',
-  garden: 'Module 5: Money Garden',
+  tax: 'Module 5: Paycheck Planet',
+  garden: 'Module 6: Money Garden',
 }
 const EVENT_LABEL = { sign_up: 'Signed up', sign_in: 'Logged in', sign_out: 'Logged out' }
 
@@ -74,13 +75,9 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     setRefreshing(true)
     setError('')
-    try {
-      setData(await adminAnalyticsData())
-    } catch (err) {
-      setError(err?.message || 'Could not load analytics.')
-    } finally {
-      setRefreshing(false)
-    }
+    try { setData(await adminAnalyticsData()) }
+    catch (err) { setError(err?.message || 'Could not load analytics.') }
+    finally { setRefreshing(false) }
   }, [])
 
   useEffect(() => {
@@ -155,9 +152,7 @@ export default function Dashboard() {
     URL.revokeObjectURL(anchor.href)
   }
 
-  if (error) {
-    return <main className="grid min-h-screen place-items-center px-6 text-center"><div><p className="font-bold text-red-300">{error}</p><button onClick={load} className="btn-primary mt-4">Try again</button></div></main>
-  }
+  if (error) return <main className="grid min-h-screen place-items-center px-6 text-center"><div><p className="font-bold text-red-300">{error}</p><button onClick={load} className="btn-primary mt-4">Try again</button></div></main>
   if (!data) return <main className="grid min-h-screen place-items-center text-white/60">Loading accurate analytics…</main>
 
   return (
@@ -191,7 +186,7 @@ export default function Dashboard() {
 
       <section className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
         <h2 className="font-display text-xl font-extrabold">Time spent by module</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {MODULES.map((moduleName) => (
             <div key={moduleName} className="rounded-xl bg-black/20 p-4">
               <div className="text-sm font-extrabold text-teal">{MODULE_LABEL[moduleName]}</div>
@@ -217,15 +212,7 @@ export default function Dashboard() {
               const post = verifiedScore(assessment.post)
               return (
                 <tr key={row.uid} onClick={() => setSelectedUid(selectedUid === row.uid ? '' : row.uid)} className="cursor-pointer border-t border-white/10 hover:bg-white/5">
-                  <td className="py-3 pr-3 font-extrabold">{row.email || 'No email'}</td>
-                  <td className="pr-3">{row.role}</td>
-                  <td className="pr-3">{row.organizationName || '—'}</td>
-                  <td className="pr-3">{timestamp(row.createdAt)}</td>
-                  <td className="pr-3 font-extrabold">{row.loginCount}</td>
-                  <td className="pr-3">{timestamp(row.lastLoginAt, 'Not yet')}</td>
-                  <td className="pr-3">{row.sessions.length}</td>
-                  <td className="pr-3">{duration(totalSessionSeconds(row.sessions))}</td>
-                  <td className="font-extrabold">{pre === null ? 'Not taken' : `${pre}/${KNOWLEDGE_QUESTIONS.length} → ${post === null ? 'pending' : `${post}/${KNOWLEDGE_QUESTIONS.length} (${post - pre >= 0 ? '+' : ''}${post - pre})`}`}</td>
+                  <td className="py-3 pr-3 font-extrabold">{row.email || 'No email'}</td><td className="pr-3">{row.role}</td><td className="pr-3">{row.organizationName || '—'}</td><td className="pr-3">{timestamp(row.createdAt)}</td><td className="pr-3 font-extrabold">{row.loginCount}</td><td className="pr-3">{timestamp(row.lastLoginAt, 'Not yet')}</td><td className="pr-3">{row.sessions.length}</td><td className="pr-3">{duration(totalSessionSeconds(row.sessions))}</td><td className="font-extrabold">{pre === null ? 'Not taken' : `${pre}/${KNOWLEDGE_QUESTIONS.length} → ${post === null ? 'pending' : `${post}/${KNOWLEDGE_QUESTIONS.length} (${post - pre >= 0 ? '+' : ''}${post - pre})`}`}</td>
                 </tr>
               )
             })}
@@ -256,18 +243,11 @@ function AccountDetails({ account }) {
     <section className="mt-6 rounded-2xl border-2 border-teal/40 bg-white/5 p-5">
       <h2 className="font-display text-2xl font-extrabold text-teal">{account.email || account.displayName || 'Guest player'}</h2>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
-        <Stat label="Successful logins" value={account.loginCount} />
-        <Stat label="Recorded sessions" value={account.sessions.length} />
-        <Stat label="Total active time" value={duration(totalSessionSeconds(account.sessions))} />
-        <Stat label="Last activity" value={timestamp(account.lastActiveAt || account.sessions[0]?.lastSeenAt)} />
-        <Stat label="Choices" value={behavior.attempts} />
-        <Stat label="Incorrect" value={behavior.incorrect} />
-        <Stat label="Retry clues" value={behavior.retries} />
-        <Stat label="Completions" value={behavior.completions} />
+        <Stat label="Successful logins" value={account.loginCount} /><Stat label="Recorded sessions" value={account.sessions.length} /><Stat label="Total active time" value={duration(totalSessionSeconds(account.sessions))} /><Stat label="Last activity" value={timestamp(account.lastActiveAt || account.sessions[0]?.lastSeenAt)} /><Stat label="Choices" value={behavior.attempts} /><Stat label="Incorrect" value={behavior.incorrect} /><Stat label="Retry clues" value={behavior.retries} /><Stat label="Completions" value={behavior.completions} />
       </div>
 
       <h3 className="mt-6 text-lg font-extrabold">Exact time by module</h3>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{MODULES.map((moduleName) => <div key={moduleName} className="rounded-xl bg-black/20 p-3"><div className="text-xs font-extrabold text-teal">{MODULE_LABEL[moduleName]}</div><div className="mt-1 text-lg font-extrabold">{duration(totals[moduleName] || 0)}</div></div>)}</div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">{MODULES.map((moduleName) => <div key={moduleName} className="rounded-xl bg-black/20 p-3"><div className="text-xs font-extrabold text-teal">{MODULE_LABEL[moduleName]}</div><div className="mt-1 text-lg font-extrabold">{duration(totals[moduleName] || 0)}</div></div>)}</div>
 
       <h3 className="mt-6 text-lg font-extrabold">Each login session</h3>
       {account.sessions.length === 0 ? <p className="mt-2 text-sm text-white/55">No detailed sessions were recorded before this analytics update. New sessions will appear accurately after deployment.</p> : (
@@ -278,12 +258,7 @@ function AccountDetails({ account }) {
       <p className="mt-1 text-sm text-white/55">Verified scores are recalculated directly from the saved answer choices: {preScore === null ? 'pre not taken' : `pre ${preScore}/${KNOWLEDGE_QUESTIONS.length}`} · {postScore === null ? 'post not taken' : `post ${postScore}/${KNOWLEDGE_QUESTIONS.length}`}.</p>
       <div className="mt-3 grid gap-3 lg:grid-cols-3">
         {KNOWLEDGE_QUESTIONS.map((question, index) => (
-          <div key={question.id} className="rounded-xl bg-black/20 p-4">
-            <div className="text-xs font-extrabold text-teal">Question {index + 1}</div>
-            <div className="mt-1 font-bold">{question.prompt}</div>
-            <div className="mt-3 text-sm"><span className="font-extrabold text-white/55">Before:</span> {answerText(assessment.pre, question)}</div>
-            <div className="mt-1 text-sm"><span className="font-extrabold text-white/55">After:</span> {answerText(assessment.post, question)}</div>
-          </div>
+          <div key={question.id} className="rounded-xl bg-black/20 p-4"><div className="text-xs font-extrabold text-teal">Question {index + 1}</div><div className="mt-1 font-bold">{question.prompt}</div><div className="mt-3 text-sm"><span className="font-extrabold text-white/55">Before:</span> {answerText(assessment.pre, question)}</div><div className="mt-1 text-sm"><span className="font-extrabold text-white/55">After:</span> {answerText(assessment.post, question)}</div></div>
         ))}
       </div>
     </section>

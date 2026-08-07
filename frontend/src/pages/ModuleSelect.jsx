@@ -95,7 +95,9 @@ export default function ModuleSelect() {
     }
     const internalWorldModule = target.worldModule || target.n
     const canResume = Boolean(wallet && internalWorldModule === Number(wallet.week || 1) && !badges.includes(target.badge))
-    if (!canResume) localStorage.setItem('tayu-jump-module', String(internalWorldModule))
+    // World.jsx interprets this as PUBLIC module numbering. That prevents public
+    // Module 6 (Money Garden) from being confused with the old internal week 5.
+    if (!canResume) localStorage.setItem('tayu-jump-module', String(target.n))
     nav('/world')
   }
 

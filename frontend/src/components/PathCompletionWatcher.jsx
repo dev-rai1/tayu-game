@@ -11,6 +11,7 @@ const MODULE_BY_BADGE = {
   lemonade: 'lemonade',
   budget: 'budget',
   bank: 'bank',
+  tax: 'tax',
   garden: 'garden',
 }
 
@@ -49,9 +50,6 @@ export default function PathCompletionWatcher() {
 
       if (location.pathname !== '/world') return
 
-      // Run the two-question check at the milestone before the player enters the
-      // next module. Pick the newest inferred badge so an older missing check
-      // never interrupts the module that was just completed.
       const completedChecks = profile.moduleChecks || {}
       const pendingBadge = [...inferred].reverse().find((badge) => !completedChecks[badge])
       if (pendingBadge) {
@@ -62,9 +60,6 @@ export default function PathCompletionWatcher() {
       const path = loadActiveLearningPath()
       if (!path || !isLearningPathComplete(path.modules, badges)) return
 
-      // Record the certificate milestone without forcing the learner away from
-      // the next module. The certificate remains available from the completion
-      // screen and module map as an optional secondary action.
       if (profile.pathCompletion?.pathId !== path.id) {
         saveProfile({
           pathCompletion: {
