@@ -17,8 +17,12 @@ export default function AdminDashboardButton() {
   return (
     <Link
       to="/dashboard"
-      className="fixed right-3 z-[1000] grid min-h-[44px] place-items-center rounded-xl bg-teal px-4 text-sm font-extrabold text-navy shadow-xl"
-      style={{ bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))' }}
+      aria-label="Open admin dashboard"
+      className="fixed z-[1000] grid min-h-[46px] max-w-[calc(100vw-1.5rem)] place-items-center whitespace-normal rounded-xl border-2 border-white/80 bg-teal px-4 py-2 text-center text-sm font-extrabold leading-tight text-navy shadow-2xl"
+      style={{
+        right: 'max(12px, env(safe-area-inset-right, 0px))',
+        bottom: 'calc(66px + env(safe-area-inset-bottom, 0px))',
+      }}
     >
       Admin Dashboard
     </Link>
