@@ -75,6 +75,31 @@ export const MODULE_CHECKS = {
       },
     ],
   },
+  tax: {
+    moduleNumber: 5,
+    title: 'Paycheck Planet',
+    cosmetic: { icon: '🪐', name: 'Paycheck Planner Patch' },
+    questions: [
+      {
+        prompt: 'Which amount should you use to build a realistic weekly budget?',
+        choices: ['Gross pay before anything comes out', 'Take-home pay after withholding', 'The highest salary you might earn someday'],
+        answer: 1,
+        trick: 'Take-home pay is the money that actually reaches you after withholding. A usable budget should start from that amount, not the larger gross number.',
+      },
+      {
+        prompt: 'Why can emergency savings matter when a surprise bill appears?',
+        choices: ['It can help cover the bill without automatically creating new debt', 'It guarantees every future expense will be free', 'It makes taxes disappear'],
+        answer: 0,
+        trick: 'A savings cushion gives you another way to handle an unexpected cost. Without enough cash or savings, borrowing can create a future repayment obligation.',
+      },
+      {
+        prompt: 'A job pays more but leaves much less free time. What should you compare?',
+        choices: ['Only the job title', 'Only the biggest paycheck', 'Income and the time or lifestyle tradeoff together'],
+        answer: 2,
+        trick: 'Pay matters, but jobs can also change time, energy, and daily life. Paycheck Planet asks you to compare both money and lifestyle tradeoffs.',
+      },
+    ],
+  },
   garden: {
     moduleNumber: 6,
     title: 'Money Garden',
@@ -114,7 +139,7 @@ export const MODULE_CHECKS = {
   },
 }
 
-export const BADGE_ORDER = ['jars', 'lemonade', 'budget', 'bank', 'garden']
+export const BADGE_ORDER = ['jars', 'lemonade', 'budget', 'bank', 'tax', 'garden']
 
 export function moduleCheckForBadge(badge) {
   return MODULE_CHECKS[badge] || null
