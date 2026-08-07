@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import { GameWorld } from '../world/GameWorld.jsx'
 import { TaxLabWorld } from '../world/TaxLabWorld.jsx'
+import { TaxWorkbenchOverlay } from '../world/TaxWorkbenchOverlay.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
@@ -210,6 +211,10 @@ export default function World() {
           ? <TaxLabWorld />
           : <GameWorld avatar={state.avatar} />
         : <AccessibleWorld />}
+
+      {/* The workbench is a normal DOM sibling of the canvas. It therefore owns
+          the full browser viewport and cannot inherit a Three.js/canvas width. */}
+      {taxMode && <TaxWorkbenchOverlay />}
 
       {/* Module 5 is a focused minigame. Nothing from the normal world UI is
           allowed to render over it: no HUD/map, generic coach, admin panel,
