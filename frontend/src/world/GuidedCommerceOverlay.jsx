@@ -2,10 +2,20 @@ import { useEffect, useState } from 'react'
 import { useGame } from './store.js'
 import { STORE_ITEMS } from './config.js'
 import { estimateDemandSignal } from '../scenarios/lemonade.js'
+import { usesTouchControls } from './controlMode.js'
 
 const fmt = (value) => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })
 const MOBILE_SHEET = 'pointer-events-auto fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-[475] max-h-[min(74vh,42rem)] overflow-y-auto overscroll-contain rounded-3xl shadow-2xl'
-const COMPACT_BUTTON = 'pointer-events-auto fixed right-3 top-[5.5rem] z-[475] min-h-[46px] max-w-[min(78vw,18rem)] rounded-2xl border-2 border-white/20 bg-navy/95 px-4 text-left text-sm font-extrabold text-white shadow-xl active:scale-95'
+const COMPACT_BUTTON = 'pointer-events-auto fixed z-[475] min-h-[46px] max-w-[min(78vw,18rem)] rounded-2xl border-2 border-white/20 bg-navy/95 px-4 text-left text-sm font-extrabold text-white shadow-xl active:scale-95'
+const COMPACT_BUTTON_STYLE = usesTouchControls
+  ? {
+      left: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+      bottom: 'calc(10.75rem + env(safe-area-inset-bottom, 0px))',
+    }
+  : {
+      left: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+      bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+    }
 
 function MarketClickShop() {
   const week = useGame((s) => s.week)
@@ -40,7 +50,13 @@ function MarketClickShop() {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={COMPACT_BUTTON}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        data-tayu-overlay-slot="guided-action"
+        className={COMPACT_BUTTON}
+        style={COMPACT_BUTTON_STYLE}
+      >
         Open market choices · ${fmt(spend)} left
       </button>
     )
@@ -168,7 +184,13 @@ function LemonadeSupplyDemandCoach() {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={COMPACT_BUTTON}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        data-tayu-overlay-slot="guided-action"
+        className={COMPACT_BUTTON}
+        style={COMPACT_BUTTON_STYLE}
+      >
         Lemonade hint · Round {round}
       </button>
     )
