@@ -126,6 +126,10 @@
  * workspaces that use the same semantic dialog structure.
  */
 @media (min-width: 900px) {
+  .tayu-world-declutter:has([data-bank-watching="true"]) {
+    --tayu-guidance-rail-width: clamp(24rem, 31vw, 32rem);
+  }
+
   .tayu-world-declutter [data-guidance-lane="primary"] {
     left: auto !important;
     right: max(1rem, env(safe-area-inset-right, 0px)) !important;
@@ -134,6 +138,11 @@
     width: var(--tayu-guidance-rail-width) !important;
     max-height: calc(100dvh - 7rem - env(safe-area-inset-bottom, 0px)) !important;
     transform: none !important;
+  }
+
+  .tayu-world-declutter [data-bank-watching="true"] {
+    top: calc(5rem + env(safe-area-inset-top, 0px)) !important;
+    max-height: calc(100dvh - 6.25rem - env(safe-area-inset-bottom, 0px)) !important;
   }
 
   @supports selector(.tayu-world-declutter:has([data-guidance-lane="primary"])) {
@@ -164,6 +173,11 @@
     width: min(94vw, 34rem) !important;
     max-height: min(24dvh, 11rem) !important;
     transform: translateX(-50%) !important;
+  }
+
+  .tayu-world-declutter [data-bank-watching="true"] {
+    width: min(96vw, 36rem) !important;
+    max-height: min(40dvh, 18rem) !important;
   }
 
   @supports selector(.tayu-world-declutter:has([data-guidance-lane="primary"])) {
