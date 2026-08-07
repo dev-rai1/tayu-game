@@ -46,10 +46,10 @@ function CheckingGauge() {
   })
   if (!bk) return null
   return (
-    <group position={[-4.9, 0, 2]}>
+    <group position={[-4.9, 0, 2]} scale={1.22}>
       <mesh position={[0, 1.1, 0]} castShadow><boxGeometry args={[0.5, 1.6, 0.24]} /><meshStandardMaterial color="#071748" roughness={0.6} /></mesh>
       <mesh ref={bar} position={[0, 1.1, 0.14]} scale={[1, 0.5, 1]}>
-        <boxGeometry args={[0.3, 1.1, 0.06]} /><meshStandardMaterial color="#00DCA0" emissive="#00DCA0" emissiveIntensity={0.35} />
+        <boxGeometry args={[0.3, 1.1, 0.06]} /><meshStandardMaterial color="#00DCA0" emissive="#00DCA0" emissiveIntensity={0.55} /></mesh>
       </mesh>
       <Billboard position={[0, 2.35, 0]}>
         <mesh><planeGeometry args={[1.8, 0.62]} /><meshBasicMaterial map={cardTexture('CHECKING', null, { accent: '#1464F0' })} transparent depthTest={false} /></mesh>
@@ -65,8 +65,13 @@ function SnackStall() {
   useFrame(() => { if (useGame.getState().week !== 4) return;
     if (!card.current) return
     const t = Math.min(since(fx?.swipeAt), since(fx?.swipe2At))
-    card.current.visible = t < 1.6
-    if (t < 1.6) { card.current.position.y = 1.15 + Math.sin(t * 4) * 0.1; card.current.rotation.z = -0.4 + t * 0.5 }
+    card.current.visible = t < 2.6
+    if (t < 2.6) {
+      const pulse = 1 + Math.sin(Math.min(1, t / 2.6) * Math.PI) * 0.28
+      card.current.position.y = 1.28 + Math.sin(t * 4) * 0.16
+      card.current.rotation.z = -0.55 + t * 0.42
+      card.current.scale.setScalar(pulse)
+    }
   })
   return (
     <group position={[-6.5, 0, 4.8]}>
@@ -82,10 +87,10 @@ function SnackStall() {
         <mesh key={px} position={[px, 1, 0.5]} castShadow><cylinderGeometry args={[0.04, 0.05, 1.4, 6]} /><meshStandardMaterial color="#8a5a36" /></mesh>
       ))}
       <mesh position={[0.5, 1.22, 0.1]}><sphereGeometry args={[0.14, 10, 10]} /><meshStandardMaterial color="#7fd0ff" roughness={0.4} /></mesh>
-      {/* the tap terminal + the card that appears during a swipe */}
-      <mesh position={[-0.6, 1.2, 0.3]} castShadow><boxGeometry args={[0.24, 0.3, 0.1]} /><meshStandardMaterial color="#071748" /></mesh>
-      <mesh ref={card} visible={false} position={[-0.6, 1.15, 0.42]}>
-        <boxGeometry args={[0.34, 0.22, 0.02]} /><meshStandardMaterial color="#1464F0" metalness={0.3} roughness={0.3} />
+      {/* Make the tap terminal and moving card oversized enough to read as the focus. */}
+      <mesh position={[-0.6, 1.25, 0.3]} castShadow><boxGeometry args={[0.4, 0.5, 0.16]} /><meshStandardMaterial color="#071748" emissive="#1464F0" emissiveIntensity={0.18} /></mesh>
+      <mesh ref={card} visible={false} position={[-0.6, 1.28, 0.48]} castShadow>
+        <boxGeometry args={[0.72, 0.46, 0.04]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.5} metalness={0.3} roughness={0.25} /></mesh>
       </mesh>
       <Billboard position={[0, 2.5, 0]}>
         <mesh><planeGeometry args={[2, 0.69]} /><meshBasicMaterial map={cardTexture('Snacks', null, { accent: '#e05252' })} transparent depthTest={false} /></mesh>
@@ -113,7 +118,7 @@ function DebtBlobs() {
       m.visible = alive
       if (!alive) return
       const grow = Math.min(1, tGrow / 4)
-      const s = 0.3 + grow * 0.5 + Math.sin(Date.now() * 0.006 + i * 1.7) * 0.05
+      const s = 0.42 + grow * 0.72 + Math.sin(Date.now() * 0.006 + i * 1.7) * 0.07
       if (merging) {
         const f = Math.min(1, tMerge / 1.2)
         m.position.x = sx + (CENTER[0] - sx) * f
@@ -128,8 +133,8 @@ function DebtBlobs() {
     if (calm.current) {
       calm.current.visible = merged
       if (merged) {
-        calm.current.position.set(CENTER[0], 0.7 + Math.sin(Date.now() * 0.003) * 0.05, CENTER[1])
-        calm.current.scale.setScalar(0.75)
+        calm.current.position.set(CENTER[0], 0.95 + Math.sin(Date.now() * 0.003) * 0.08, CENTER[1])
+        calm.current.scale.setScalar(1.05)
       }
     }
   })
@@ -137,11 +142,10 @@ function DebtBlobs() {
     <group>
       {SPOTS.map((_, i) => (
         <mesh key={i} ref={(el) => (refs.current[i] = el)} visible={false} castShadow>
-          <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#d84b4b" roughness={0.6} flatShading />
-        </mesh>
+          <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#d84b4b" emissive="#d84b4b" emissiveIntensity={0.12} roughness={0.6} flatShading /></mesh>
       ))}
       <mesh ref={calm} visible={false} castShadow>
-        <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#1464F0" roughness={0.5} flatShading />
+        <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.22} roughness={0.5} flatShading /></mesh>
       </mesh>
     </group>
   )
@@ -157,13 +161,14 @@ function Shield() {
     const t = since(fx?.shieldAt)
     g.visible = t < 4.5
     if (t < 4.5) {
-      g.position.set(playerPos.x, 2.5 + Math.sin(t * 3) * 0.1, playerPos.z)
-      g.rotation.y += 0.03
+      g.position.set(playerPos.x, 2.8 + Math.sin(t * 3) * 0.14, playerPos.z)
+      g.rotation.y += 0.04
+      g.scale.setScalar(1.35 + Math.sin(t * 5) * 0.08)
     }
   })
   return (
     <group ref={ref} visible={false}>
-      <mesh><cylinderGeometry args={[0.34, 0.26, 0.08, 6]} /><meshStandardMaterial color="#FFD700" metalness={0.65} roughness={0.25} /></mesh>
+      <mesh><cylinderGeometry args={[0.34, 0.26, 0.08, 6]} /><meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.25} metalness={0.65} roughness={0.25} /></mesh>
       <mesh position={[0, 0.06, 0]}><boxGeometry args={[0.3, 0.05, 0.08]} /><meshStandardMaterial color="#1464F0" /></mesh>
     </group>
   )
@@ -176,9 +181,9 @@ export function BankDistrict() {
   const vaultPulse = useRef()
   useFrame(() => { if (useGame.getState().week !== 4) return;
     const spun = since(bk?.fx?.vaultAt)
-    if (wheel.current) wheel.current.rotation.z += spun < 2 ? 0.25 : Math.sin(Date.now() * 0.0006) * 0.002
+    if (wheel.current) wheel.current.rotation.z += spun < 2.4 ? 0.32 : Math.sin(Date.now() * 0.0006) * 0.002
     if (vaultPulse.current) {
-      const p = spun < 1.2 ? 1 + Math.sin(Math.min(1, spun / 1.2) * Math.PI) * 0.18 : 1
+      const p = spun < 1.8 ? 1 + Math.sin(Math.min(1, spun / 1.8) * Math.PI) * 0.3 : 1
       vaultPulse.current.scale.setScalar(p)
     }
   })
@@ -213,12 +218,12 @@ export function BankDistrict() {
           </mesh>
           <mesh ref={wheel} position={[0, 0, 0.26]} rotation={[Math.PI / 2, 0, 0]}>
             <torusGeometry args={[0.55, 0.09, 10, 22]} />
-            <meshStandardMaterial color="#FFD700" metalness={0.7} roughness={0.25} />
+            <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.22} metalness={0.7} roughness={0.25} />
           </mesh>
           {[0, Math.PI / 2].map((r) => (
             <mesh key={r} position={[0, 0, 0.26]} rotation={[Math.PI / 2, r, 0]}>
               <cylinderGeometry args={[0.05, 0.05, 1.05, 8]} />
-              <meshStandardMaterial color="#FFD700" metalness={0.7} roughness={0.25} />
+              <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.2} metalness={0.7} roughness={0.25} />
             </mesh>
           ))}
         </group>
