@@ -12,7 +12,6 @@
   --tayu-muted-on-dark: #e8efff;
   --tayu-text-on-light: #071748;
   --tayu-muted-on-light: #24365f;
-  --tayu-world-panel: rgba(7, 23, 72, 0.92);
   --tayu-world-panel-strong: rgba(7, 23, 72, 0.96);
 }
 
@@ -21,6 +20,7 @@
  * On translucent cards that pushed some text below a comfortable reading level.
  * Preserve hierarchy with a lighter/darker solid tone instead of transparency.
  */
+.text-white\/30,
 .text-white\/40,
 .text-white\/50,
 .text-white\/55,
@@ -32,6 +32,7 @@
   color: var(--tayu-muted-on-dark) !important;
 }
 
+.text-navy\/30,
 .text-navy\/40,
 .text-navy\/50,
 .text-navy\/55,
@@ -59,6 +60,7 @@
 
 .tayu-world-declutter :where(
   .text-white,
+  .text-white\/30,
   .text-white\/40,
   .text-white\/50,
   .text-white\/55,
@@ -67,6 +69,8 @@
   .text-white\/70,
   .text-white\/75,
   .text-white\/80,
+  .text-white\/90,
+  .text-white\/95,
   .text-teal,
   .text-electric,
   .text-brandpurple
@@ -83,13 +87,6 @@
 
 .tayu-world-declutter .text-brandpurple {
   color: #ad96ff !important;
-}
-
-/* Form placeholders are instructions too. Keep them visibly secondary without
-   making them faint enough to look disabled. */
-::placeholder {
-  color: #526487;
-  opacity: 1;
 }
 
 /* Make selected text obvious on both light and dark screens. */
@@ -113,6 +110,7 @@
     border-color: #ffffff;
   }
 
+  .text-white\/30,
   .text-white\/40,
   .text-white\/50,
   .text-white\/55,
@@ -124,6 +122,7 @@
     color: #ffffff !important;
   }
 
+  .text-navy\/30,
   .text-navy\/40,
   .text-navy\/50,
   .text-navy\/55,
