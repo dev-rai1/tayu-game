@@ -1,10 +1,12 @@
 const activeList = (value) => Array.isArray(value) && value.length > 0
 
 export function isBlockingGameOverlay(state = {}) {
+  // Actual choice/story overlays can still own the screen. Module workspaces
+  // (jars, shop panels, budget controls, bank controls, portfolio) do not hide
+  // the coach anymore: the whole point of the shared lane is to explain those
+  // controls without adding another popup on top of them.
   return Boolean(
-    state.helpOpen || state.dialog || activeList(state.cards) || activeList(state.lessons) ||
-    state.panelJar || state.panelItem || state.btPanel || state.bkPanel ||
-    state.panelPortfolio || state.weekComplete
+    state.helpOpen || state.dialog || activeList(state.cards) || state.weekComplete
   )
 }
 
@@ -26,8 +28,6 @@ export function isCommerceOverlayActive(state = {}) {
 }
 
 export function isSpecializedCoachActive(state = {}) {
-  // MoneyGardenFlowGuide owns the decision prompt and Part 1/Part 2 intermission.
-  // The generic coach must stay hidden or the two guidance systems can collide.
   return Boolean(state.week === 5 && state.mg?.phase === 'adjust')
 }
 
@@ -35,7 +35,7 @@ export function coachVisibility(state = {}) {
   const blocking = isBlockingGameOverlay(state)
   const commerce = isCommerceOverlayActive(state)
   const specialized = isSpecializedCoachActive(state)
-  const clear = !blocking && !commerce && !specialized
+  const clear = !blocking
 
   return {
     blocking,
