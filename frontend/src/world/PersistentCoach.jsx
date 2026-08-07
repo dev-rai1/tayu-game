@@ -80,6 +80,13 @@ export function PersistentCoach({ paycheckMode = false }) {
     setQueue((current) => current.some((item) => item.id === entry.id) ? current : [...current, entry])
   }
 
+  // Clear anything left from the previous module/mode before this render's new
+  // feedback effects enqueue their first message.
+  useEffect(() => {
+    setQueue([])
+    setDismissedKey('')
+  }, [week, paycheckMode])
+
   // Short-lived messages used to disappear before younger players could read
   // them. Capture every one here and keep it until the player explicitly moves
   // to the next message. The old visual bubbles are hidden by worldDeclutter.css.
@@ -98,11 +105,6 @@ export function PersistentCoach({ paycheckMode = false }) {
   useEffect(() => {
     enqueue(queuedMessage('character', `${actorName(actorCaption?.actor)} says`, actorCaption?.line))
   }, [actorCaption])
-
-  useEffect(() => {
-    setQueue([])
-    setDismissedKey('')
-  }, [week])
 
   const stateForGuidance = {
     week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
