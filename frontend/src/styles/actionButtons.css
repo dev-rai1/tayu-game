@@ -2,8 +2,13 @@
 button[data-tayu-enhanced='true'],
 a[data-tayu-enhanced='true'] {
   position: relative;
-  overflow: hidden;
   isolation: isolate;
+  min-height: 44px;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  box-shadow: 0 6px 16px rgba(7, 23, 72, 0.22);
 }
 
 button[data-tayu-enhanced='true']::before,
@@ -53,16 +58,22 @@ a[data-tayu-action='reward'] {
   color: #071748 !important;
 }
 
+button[data-tayu-enhanced='true']:focus-visible,
+a[data-tayu-enhanced='true']:focus-visible {
+  outline: 3px solid #ffd24a;
+  outline-offset: 3px;
+}
+
 button[data-tayu-enhanced='true']:hover,
 a[data-tayu-enhanced='true']:hover {
   filter: brightness(1.1);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 button[data-tayu-enhanced='true']:active,
 a[data-tayu-enhanced='true']:active,
 .tayu-action-confirm {
-  transform: translateY(0) scale(0.96) !important;
+  transform: translateY(0) scale(0.98) !important;
 }
 
 .tayu-action-burst {
@@ -87,6 +98,13 @@ a[data-tayu-enhanced='true']:active,
   100% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
 }
 .tayu-action-confirm { animation: tayu-action-confirm 0.5s ease-out; }
+
+@media (max-width: 420px) {
+  button[data-tayu-enhanced='true'],
+  a[data-tayu-enhanced='true'] {
+    min-width: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   button[data-tayu-enhanced='true'],
