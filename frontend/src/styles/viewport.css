@@ -5,23 +5,32 @@
   --tayu-viewport-top: 0px;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 .tayu-app-viewport,
 .tayu-page-viewport {
   box-sizing: border-box;
   min-height: var(--tayu-viewport-height);
   width: 100%;
   max-width: 100%;
+  overflow-x: clip;
 }
 
 .tayu-fixed-viewport {
   position: fixed;
-  left: var(--tayu-viewport-left);
-  top: var(--tayu-viewport-top);
-  width: var(--tayu-viewport-width);
+  inset: 0;
+  width: min(100%, var(--tayu-viewport-width));
   height: var(--tayu-viewport-height);
   max-width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+  contain: layout paint;
 }
 
 canvas {
@@ -50,7 +59,7 @@ canvas {
     min-height: var(--tayu-viewport-height);
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   html {
@@ -59,7 +68,7 @@ canvas {
 
   body {
     min-height: -webkit-fill-available;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
     -webkit-text-size-adjust: 100%;
     -webkit-overflow-scrolling: touch;
   }
