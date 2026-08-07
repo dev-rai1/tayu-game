@@ -71,6 +71,22 @@
   display: none;
 }
 
+/* Keep visible public numbering consistent: internal week 5 is public Module 6. */
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child,
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child {
+  font-size: 0;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child::after {
+  content: 'Module 6: Money Garden';
+  font-size: 0.875rem;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child::after {
+  content: 'Module 7: Finale Area';
+  font-size: 0.875rem;
+}
+
 /* ONE MESSAGE LANE: legacy transient bubbles still feed state so the shared
    coach can queue them, but their old center-screen renderers are hidden. */
 .tayu-world-declutter [class~="z-[150]"][class~="bottom-4"][class~="inset-x-0"],
@@ -152,7 +168,6 @@
     flex: 0 0 auto;
   }
 
-  /* Center mission and money cards below the two top control groups. */
   .tayu-world-declutter .absolute.left-1\/2.top-\[72px\],
   .tayu-world-declutter .absolute.left-1\/2.top-16 {
     top: calc(7.25rem + env(safe-area-inset-top, 0px));
