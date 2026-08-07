@@ -99,24 +99,32 @@ const MODULE_RECAPS = {
     ],
   }),
   5: makeRecap({
-    title: 'Paycheck Planet',
-    memory: 'Plan with the money that actually reaches you, not just the number you earned.',
+    title: 'Paycheck Planet · Tax Filing Lab',
+    memory: 'A tax return reconciles what your records show, what you calculate, and what was already withheld.',
     steps: [
       {
-        activity: 'Choose a job',
-        lesson: 'Gross pay is the full amount you earn before taxes and other deductions are removed.',
+        activity: 'Read the W-2',
+        lesson: 'A W-2 reports wages and tax already withheld. Those records are starting numbers for the practice return.',
       },
       {
-        activity: 'Watch taxes come out',
-        lesson: 'Gross pay minus the tax withheld equals your take-home pay.',
+        activity: 'Find taxable income',
+        lesson: 'The practice deduction reduces the wages used in the tax calculation, so taxable income can be lower than total wages.',
       },
       {
-        activity: 'Plan your take-home pay',
-        lesson: 'A realistic spending and saving plan should use the money you actually receive, not the larger gross number.',
+        activity: 'Use the tax brackets',
+        lesson: 'Different parts of taxable income can use different rates. You calculated each part and added the tax together.',
       },
       {
-        activity: 'Face the bike repair',
-        lesson: 'Setting money aside for future expenses gives you a cushion when an unexpected cost appears.',
+        activity: 'Apply a tax credit',
+        lesson: 'A tax credit reduces calculated tax directly after the bracket math.',
+      },
+      {
+        activity: 'Compare withholding and final tax',
+        lesson: 'If withholding is greater than final tax, the difference can be a refund. If final tax is greater, the difference can be an amount due.',
+      },
+      {
+        activity: 'Review and file',
+        lesson: 'Before filing, check that the income, taxable income, tax, credits, withholding, and refund or amount due agree with the return.',
       },
     ],
   }),
@@ -224,8 +232,8 @@ export function WorldModuleLearningRecap() {
     previousTrigger.current = triggerModule
   }, [triggerModule])
 
-  // Module 5 now completes inside the 3D world. saveProfile() emits this event
-  // when Paycheck Planet stores its fresh completion timestamp and tax badge.
+  // Module 5 completes inside the 3D world. saveProfile() emits this event when
+  // the Tax Filing Lab stores its fresh completion timestamp and tax badge.
   useEffect(() => {
     const handleProgressSaved = () => {
       const profile = loadProfile() || {}
