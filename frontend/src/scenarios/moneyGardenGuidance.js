@@ -23,15 +23,21 @@ export function applyStarterInvestingGift(garden) {
 export const MONEY_GARDEN_PARTS = [
   {
     part: 1,
+    letter: 'A',
+    moduleLabel: 'Module 6A',
     title: 'Investing Foundations',
     weeks: [1, 2, 3, 4, 5],
     goal: 'Research businesses, spread risk, and separate evidence from price alone.',
+    color: '#00b37f',
   },
   {
     part: 2,
-    title: 'Markets, Risk, and Patience',
+    letter: 'B',
+    moduleLabel: 'Module 6B',
+    title: 'Markets, Risk & Patience',
     weeks: [6, 7, 8, 9, 10],
     goal: 'Protect emergency money, respond to new evidence, resist hype, and rebalance.',
+    color: '#7850F0',
   },
 ]
 
