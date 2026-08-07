@@ -83,6 +83,24 @@
   display: none;
 }
 
+/* The old Help list special-cased item 6 as the finale, which made the real
+   Money Garden row lose its module number. Keep the visible public numbering
+   consistent until the legacy internal week numbering is fully retired. */
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child,
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child {
+  font-size: 0;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child::after {
+  content: 'Module 6: Money Garden';
+  font-size: 0.875rem;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child::after {
+  content: 'Module 7: Finale Area';
+  font-size: 0.875rem;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;

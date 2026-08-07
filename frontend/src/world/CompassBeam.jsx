@@ -2,7 +2,8 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGame, playerPos } from './store.js'
 import { getObjectiveTarget, arriveRadius, guidePath } from './objective.js'
-import { TAYU } from './config.js'
+import { TAX_DISTRICT, TAYU } from './config.js'
+import { isPaycheckWorldActive } from './paycheckMode.js'
 
 // THE guidance arrow (Master Adjustment C2 - comments 11/14/17).
 //  • Emits from the avatar's NECK height - never from the ground.
@@ -29,12 +30,19 @@ export function CompassBeam() {
   useFrame((_, d) => {
     t.current += d
     const st = useGame.getState()
-    const target = getObjectiveTarget(st)
+    const paycheck = isPaycheckWorldActive()
+    // Paycheck Planet is public Module 5 but intentionally does not consume a
+    // legacy world-week number. Give it its own guidance destination so an
+    // admin/module jump never leaves the arrows pointing at the old chapter.
+    const target = paycheck
+      ? [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.2]
+      : getObjectiveTarget(st)
+    const radius = paycheck ? 0.45 : arriveRadius(st)
     const g = grp.current
     const b = beacon.current
     if (!g) return
     let dist = 0
-    const show = !!target && (dist = Math.hypot(target[0] - playerPos.x, target[1] - playerPos.z)) > arriveRadius(st)
+    const show = !!target && (dist = Math.hypot(target[0] - playerPos.x, target[1] - playerPos.z)) > radius
     g.visible = show
     if (b) b.visible = show
 
