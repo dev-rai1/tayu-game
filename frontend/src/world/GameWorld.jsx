@@ -13,6 +13,7 @@ import { ConsequenceStage } from './ConsequenceStage.jsx'
 import { PartyHouse } from './PartyHouse.jsx'
 import { BudgetTown } from './BudgetTown.jsx'
 import { BankDistrict } from './BankDistrict.jsx'
+import { ModuleLandmarks } from './ModuleLandmarks.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { ObjectiveEdgePointer } from './ObjectiveEdgePointer.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
@@ -28,7 +29,7 @@ export function GameWorld({ avatar }) {
       <Boundary name="canvas" hard>
         <Canvas
           camera={{ position: [0, 7, 11], fov: 52 }}
-          dpr={1} // Keep the world at CSS-pixel resolution; high-DPI canvases were a major source of lag.
+          dpr={1}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
           gl={{
             antialias: false,
@@ -39,32 +40,25 @@ export function GameWorld({ avatar }) {
         >
           <CanvasViewportGuard />
           <Suspense fallback={null}>
-            {/* atmosphere */}
             <color attach="background" args={['#cfe6f2']} />
             <fog attach="fog" args={['#d6e9f0', 26, 74]} />
-            {/* lighting */}
             <hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} />
             <ambientLight intensity={0.28} />
-            <directionalLight
-              position={[16, 22, 10]}
-              intensity={2.0}
-              color="#fff2dc"
-            />
+            <directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" />
             <directionalLight position={[-8, 6, -6]} intensity={0.4} color="#bcd4ff" />
 
             <Environment3D />
-            {/* Decorative wildlife is intentionally omitted: it added six
-                permanent frame loops without affecting any game objective. */}
             <Ambient />
             <Bank />
             <KitchenTable />
             <Store />
             <LemonadeStand />
+            <BudgetTown />
+            <BankDistrict />
+            <ModuleLandmarks />
             <MoneyGarden />
             <ConsequenceStage />
             <PartyHouse />
-            <BudgetTown />
-            <BankDistrict />
             <GuidanceArrow />
             <ObjectiveEdgePointer />
             <CompassBeam />
