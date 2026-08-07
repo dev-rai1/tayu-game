@@ -19,7 +19,7 @@ export const MONEY_GARDEN_PARTS = [
 export const MONEY_GARDEN_FLOW = [
   '1. Read the clue.',
   '2. Make one evidence-based change.',
-  '3. Start the week and compare the result.',
+  '3. Test your choice and continue.',
 ]
 
 export const MONEY_GARDEN_DECISIONS = {
