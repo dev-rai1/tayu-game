@@ -10,7 +10,6 @@ const avatar = source('pages/AvatarCreate.jsx')
 const moduleSelect = source('pages/ModuleSelect.jsx')
 const pathWatcher = source('components/PathCompletionWatcher.jsx')
 const gardenGuide = source('world/MoneyGardenFlowGuide.jsx')
-const coach = source('world/PersistentCoach.jsx')
 const hud = source('world/Hud.jsx')
 
 describe('multi-transcript follow-up regressions', () => {
@@ -31,13 +30,21 @@ describe('multi-transcript follow-up regressions', () => {
     expect(moduleSelect).not.toContain('Retake a quick check')
   })
 
-  it('keeps the two-part Money Garden flow while moving instructions into the shared coach', () => {
-    expect(gardenGuide).toContain('Part 1 complete')
-    expect(gardenGuide).toContain('Start Part 2')
-    expect(gardenGuide).toContain('Save and exit')
-    expect(gardenGuide).toContain('partTwoStarted: true')
-    expect(coach).toContain('moneyGardenDecision')
-    expect(coach).toContain("mg?.phase === 'adjust'")
+  it('keeps the Money Garden split unmistakably labeled as modules 6A and 6B', () => {
+    expect(gardenGuide).toContain('Module 6A complete')
+    expect(gardenGuide).toContain('Start Module 6B')
+    expect(gardenGuide).toContain('Save &amp; return to modules')
+    expect(gardenGuide).toContain('{part.moduleLabel} · {part.title}')
+    expect(gardenGuide).toContain('Decision {partWeek} of 5')
+  })
+
+  it('shows one Money Garden clue surface before the portfolio and one lesson afterward', () => {
+    expect(gardenGuide).toContain('data-money-garden-clue')
+    expect(gardenGuide).toContain('Next Clue →')
+    expect(gardenGuide).toContain('Make My Choice →')
+    expect(gardenGuide).toContain("speaker: 'Lesson learned'")
+    expect(gardenGuide).toContain('data-money-garden-flow')
+    expect(gardenGuide).toContain('[data-guidance-lane="primary"]')
   })
 
   it('keeps unmistakable Lemonade price controls', () => {
