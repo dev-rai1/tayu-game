@@ -4,6 +4,7 @@ import { RoundedBox, Billboard } from '@react-three/drei'
 import { STORE, STORE_ITEMS } from './config.js'
 import { emojiTexture, labelTexture, cardTexture } from './textures.js'
 import { useGame } from './store.js'
+import './marketChoice.css'
 
 const WALL = '#ffe0b5'
 const WALL2 = '#f5cf9c'
