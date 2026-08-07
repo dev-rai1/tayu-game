@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { moduleCheckForBadge } from '../constants/moduleChecks.js'
 import { shouldShowLemonadeCompletionCheck } from './LemonadeCompletionCheck.jsx'
+
+const source = (path) => readFileSync(resolve(process.cwd(), 'src', path), 'utf8')
 
 describe('Lemonade completion Check 2', () => {
   it('appears only after Module 2 is actually complete', () => {
@@ -20,8 +23,8 @@ describe('Lemonade completion Check 2', () => {
   })
 
   it('is wired into the world and does not stack the generic Module 2 recap', () => {
-    const world = readFileSync(new URL('../pages/World.jsx', import.meta.url), 'utf8')
-    const recap = readFileSync(new URL('./ModuleLearningRecap.jsx', import.meta.url), 'utf8')
+    const world = source('pages/World.jsx')
+    const recap = source('components/ModuleLearningRecap.jsx')
 
     expect(world).toContain('<LemonadeCompletionCheck onContinue={onContinue} />')
     expect(recap).not.toContain("if (week === 2 && weekComplete) return 2")
