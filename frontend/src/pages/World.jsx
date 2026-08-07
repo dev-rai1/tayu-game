@@ -6,7 +6,6 @@ import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
 import { useGame } from '../world/store.js'
-import { TAX_ENTRY } from '../world/ModuleLandmarks.jsx'
 import {
   PAYCHECK_MODE_EVENT,
   activatePaycheckWorld,
@@ -33,16 +32,17 @@ import '../world/worldDeclutter.css'
 // Bank (4) and Money Garden (5), instead of navigating to a separate page.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
 
-function moveToPaycheckPlanet() {
+function guideToPaycheckPlanet(message = 'Module 5 is next. Stay in the world and follow the glowing guidance arrow to Paycheck Planet.') {
   setTimeout(() => {
     try {
       const game = useGame.getState()
       game.adminClearUi()
-      game.adminTeleport(TAX_ENTRY)
+      game.setToast(message)
+      game.showLesson('No teleport: walk to Paycheck Planet yourself. Follow the glowing arrow, then complete the six weekly paycheck, budget, and life-choice rounds.', 'walk-to-paycheck-planet', true, 'tax')
     } catch (error) {
       console.error(error)
     }
-  }, 350)
+  }, 250)
 }
 
 export default function World() {
@@ -87,7 +87,7 @@ export default function World() {
   }, [state.player.name, navigate, dispatch])
 
   // The Bank engine predates Paycheck Planet. Keep its final story beat, but
-  // send the learner to the physical Paycheck Planet district in this world.
+  // make the next step explicit without moving the player automatically.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -96,15 +96,16 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Next, visit Paycheck Planet to see how taxes change a paycheck and how take-home pay should be planned before you invest.',
-            buttons: (card.buttons || []).map((button) => ({ ...button, label: 'To Paycheck Planet!' })),
+            text: 'Your bank plan is ready. Next, walk to Paycheck Planet for a six-week life simulation about jobs, taxes, take-home pay, budgeting, savings, and real-life tradeoffs.',
+            buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5' })),
           }
         : card),
     })
   }, [cards])
 
   // Finishing Bank still initializes the legacy internal Money Garden chapter.
-  // Intercept that handoff once and physically move the learner to Module 5.
+  // Intercept that handoff once, activate public Module 5, and let the learner
+  // WALK there. Do not teleport the player between modules.
   useEffect(() => {
     if (week !== 5 || paycheckMode) return
     const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
@@ -116,7 +117,7 @@ export default function World() {
     const badges = profile.badges || []
     if (badges.includes('bank') && !badges.includes('tax')) {
       activatePaycheckWorld()
-      moveToPaycheckPlanet()
+      guideToPaycheckPlanet()
     }
   }, [paycheckMode, week])
 
@@ -128,7 +129,7 @@ export default function World() {
       // Public numbering: 5 = in-world Paycheck Planet, 6 = internal Money Garden.
       if (jump === '5') {
         activatePaycheckWorld()
-        moveToPaycheckPlanet()
+        guideToPaycheckPlanet('Module 5 selected. Follow the glowing arrow to Paycheck Planet — you will not be teleported.')
       } else {
         // Leaving/replaying another module must also leave Paycheck mode so its
         // stations and prompts cannot leak into the other world chapters.
@@ -164,10 +165,10 @@ export default function World() {
       {!paycheckMode && <GuidedCommerceOverlay />}
       <OverlayEscapeControls />
       {(paycheckMode || week === 5) && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
+        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,38rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} of 6</div>
           <div className="text-base font-extrabold text-white">{publicModuleTitle}</div>
-          {paycheckMode && <div className="text-xs font-bold text-white/80">Follow the glowing arrow and complete each paycheck station.</div>}
+          {paycheckMode && <div className="text-xs font-bold text-white/80">6 weeks: follow the glowing arrow, then make each paycheck, budget, and life choice in order.</div>}
         </div>
       )}
       {use3D && usesTouchControls && <MobileControls />}
