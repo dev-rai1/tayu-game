@@ -198,8 +198,8 @@ export default function World() {
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       <LemonadeCompletionCheck onContinue={onContinue} />
-      <PersistentCoach paycheckMode={paycheckMode} />
-      <PersistentImprovementCoach />
+      <PersistentCoach key={paycheckMode ? 'paycheck-coach' : 'world-coach'} paycheckMode={paycheckMode} />
+      {!paycheckMode && <PersistentImprovementCoach />}
       {!paycheckMode && <GuidedCommerceOverlay />}
       <OverlayEscapeControls />
       {(paycheckMode || week === 5) && (
