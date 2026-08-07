@@ -99,18 +99,18 @@ export function PaycheckCompletionCheck() {
     return (
       <div className="pointer-events-auto fixed inset-0 z-[820] grid place-items-center bg-navy/80 p-4 backdrop-blur-sm">
         <section role="dialog" aria-modal="true" aria-labelledby="paycheck-check-recap-title" className="w-full max-w-lg rounded-3xl bg-white p-6 text-center text-navy shadow-2xl sm:p-7">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 5 complete · knowledge check done</div>
-          <h2 id="paycheck-check-recap-title" className="mt-1 font-display text-3xl font-extrabold">Paycheck Planet check complete</h2>
+          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 5 · tax filing check complete</div>
+          <h2 id="paycheck-check-recap-title" className="mt-1 font-display text-3xl font-extrabold">Tax Filing Lab check complete</h2>
           <div className="mx-auto mt-5 max-w-xs rounded-2xl border-2 border-[#FF8A3D]/30 bg-[#FF8A3D]/10 p-4">
             <div className="text-xs font-extrabold uppercase tracking-wide text-[#C45B16]">Your score</div>
             <div className="mt-1 text-3xl font-extrabold">{progress.latestScore} / {CHECK.questions.length}</div>
           </div>
           <div className="mt-4 rounded-2xl bg-sun/25 p-4 text-left">
             <div className="text-xs font-extrabold uppercase tracking-wide text-navy/60">Remember this</div>
-            <p className="mt-1 text-base font-extrabold leading-snug">Budget from take-home pay, build a cushion for surprises, and compare job income with the time and lifestyle tradeoffs that come with it.</p>
+            <p className="mt-1 text-base font-extrabold leading-snug">Read the W-2, find taxable income, calculate the bracket tax, apply credits, then compare final tax with withholding to find a refund or amount due.</p>
           </div>
           <button type="button" className="btn-primary mt-5 min-h-[58px] w-full text-lg" onClick={() => setVisible(false)}>
-            Continue to What You Learned →
+            Continue to filing recap →
           </button>
         </section>
       </div>
@@ -122,7 +122,7 @@ export function PaycheckCompletionCheck() {
       <section role="dialog" aria-modal="true" aria-labelledby="paycheck-check-title" className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 5 · After Paycheck Planet</div>
+            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 5 · After the Tax Filing Lab</div>
             <h2 id="paycheck-check-title" className="mt-1 font-display text-2xl font-extrabold">Show what you learned</h2>
           </div>
           <div className="rounded-full bg-navy/10 px-3 py-1 text-xs font-extrabold text-navy/65">{questionIndex + 1} of {CHECK.questions.length}</div>
