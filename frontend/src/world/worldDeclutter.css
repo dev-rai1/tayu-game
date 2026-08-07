@@ -1,5 +1,6 @@
 .tayu-world-declutter {
   width: 100%;
+  height: 100dvh;
   height: var(--tayu-viewport-height, 100dvh);
   min-height: 100svh;
   max-width: 100%;
