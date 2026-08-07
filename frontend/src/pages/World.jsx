@@ -6,6 +6,12 @@ import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
 import { useGame } from '../world/store.js'
+import { TAX_ENTRY } from '../world/ModuleLandmarks.jsx'
+import {
+  PAYCHECK_MODE_EVENT,
+  activatePaycheckWorld,
+  isPaycheckWorldActive,
+} from '../world/paycheckMode.js'
 import { loadProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
 import { setUsageModule } from '../services/usageAnalytics.js'
@@ -20,15 +26,28 @@ import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 
-// Internal 3D-world week numbers predate Paycheck Planet. Public Module 5 is
-// the standalone tax/paycheck experience; the internal week 5 is now public
-// Module 6 (Money Garden).
+// The original world still uses five internal chapter numbers. Public Module 5
+// (Paycheck Planet) now runs physically inside the same world between internal
+// Bank (4) and Money Garden (5), instead of navigating to a separate page.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
+
+function moveToPaycheckPlanet() {
+  setTimeout(() => {
+    try {
+      const game = useGame.getState()
+      game.adminClearUi()
+      game.adminTeleport(TAX_ENTRY)
+    } catch (error) {
+      console.error(error)
+    }
+  }, 350)
+}
 
 export default function World() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
   const [faded, setFaded] = useState(false)
+  const [paycheckMode, setPaycheckMode] = useState(() => isPaycheckWorldActive())
   const initWorld = useGame((s) => s.initWorld)
   const enterParty = useGame((s) => s.enterParty)
   const week = useGame((s) => s.week)
@@ -36,9 +55,16 @@ export default function World() {
   const [use3D] = useState(hasWebGL)
 
   useEffect(() => {
-    setUsageModule(MODULE_BY_WEEK[week] || '').catch(() => {})
+    const sync = (event) => setPaycheckMode(event?.detail?.active ?? isPaycheckWorldActive())
+    sync()
+    window.addEventListener(PAYCHECK_MODE_EVENT, sync)
+    return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync)
+  }, [])
+
+  useEffect(() => {
+    setUsageModule(paycheckMode ? 'tax' : (MODULE_BY_WEEK[week] || '')).catch(() => {})
     return () => { setUsageModule('').catch(() => {}) }
-  }, [week])
+  }, [paycheckMode, week])
 
   useEffect(() => {
     if (enterParty) {
@@ -58,9 +84,8 @@ export default function World() {
     }
   }, [state.player.name, navigate, dispatch])
 
-  // Keep the Bank handoff consistent with the new six-module story. The Bank
-  // engine is older than Paycheck Planet, so normalize its final card here
-  // instead of letting it tell learners to skip directly to investing.
+  // The Bank engine predates Paycheck Planet. Keep its final story beat, but
+  // send the learner to the physical Paycheck Planet district in this world.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -76,12 +101,10 @@ export default function World() {
     })
   }, [cards])
 
-  // The legacy Bank action initializes the old internal week 5 (Money Garden).
-  // If the learner arrived there by finishing Bank and has not completed taxes,
-  // immediately continue the story through public Module 5 instead. Direct
-  // module/admin jumps can explicitly bypass this once so modules remain replayable.
+  // Finishing Bank still initializes the legacy internal Money Garden chapter.
+  // Intercept that handoff once and physically move the learner to Module 5.
   useEffect(() => {
-    if (week !== 5) return
+    if (week !== 5 || paycheckMode) return
     const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
     if (bypass) {
       sessionStorage.removeItem('tayu-bypass-tax-story-once')
@@ -90,36 +113,30 @@ export default function World() {
     const profile = loadProfile() || {}
     const badges = profile.badges || []
     if (badges.includes('bank') && !badges.includes('tax')) {
-      navigate('/tax-paycheck?from=story', { replace: true })
+      activatePaycheckWorld()
+      moveToPaycheckPlanet()
     }
-  }, [navigate, week])
+  }, [paycheckMode, week])
 
   useEffect(() => {
     initWorld()
     const jump = localStorage.getItem('tayu-jump-module')
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
-      // Public numbering: 5 = Paycheck Planet, 6 = Money Garden, 7 = Finale.
+      // Public numbering: 5 = in-world Paycheck Planet, 6 = internal Money Garden.
       if (jump === '5') {
-        navigate('/tax-paycheck', { replace: true })
+        activatePaycheckWorld()
+        moveToPaycheckPlanet()
       } else {
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
         setTimeout(() => { try { useGame.getState().adminJumpModule(internal) } catch (e) { console.error(e) } }, 400)
       }
     }
-    if (localStorage.getItem('tayu-return-from-paycheck') === '1') {
-      localStorage.removeItem('tayu-return-from-paycheck')
-      sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
-      setTimeout(() => {
-        const game = useGame.getState()
-        game.showLesson('Paycheck Planet complete! You planned the money that actually reaches you after taxes. Now use that same planning mindset in Module 6: Money Garden.', 'paycheck-to-garden', true)
-      }, 850)
-    }
     crossfadeTo('town')
     const t1 = setTimeout(() => setFaded(true), 60)
     return () => clearTimeout(t1)
-  }, [initWorld, navigate])
+  }, [initWorld])
 
   const onContinue = () => {
     const g = useGame.getState()
@@ -133,12 +150,18 @@ export default function World() {
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
-      <LemonadeFocusGuide />
-      <BudgetTakeawayGuard />
-      <PersistentCoach />
-      <PersistentImprovementCoach />
-      <GuidedCommerceOverlay />
+      {!paycheckMode && <LemonadeFocusGuide />}
+      {!paycheckMode && <BudgetTakeawayGuard />}
+      {!paycheckMode && <PersistentCoach />}
+      {!paycheckMode && <PersistentImprovementCoach />}
+      {!paycheckMode && <GuidedCommerceOverlay />}
       <OverlayEscapeControls />
+      {paycheckMode && (
+        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-[#FF8A3D]/60 bg-navy/90 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module 5 · Paycheck Planet</div>
+          <div className="text-sm font-extrabold text-white">Stay in the world and walk to the glowing stations.</div>
+        </div>
+      )}
       {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D} />
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
