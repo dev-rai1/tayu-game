@@ -12,20 +12,20 @@ function fakeDocument() {
 }
 
 describe('visible viewport synchronization', () => {
-  it('uses VisualViewport dimensions when Safari exposes them', () => {
+  it('uses VisualViewport dimensions without following its transient offsets', () => {
     const win = {
       innerWidth: 1024,
       innerHeight: 768,
       visualViewport: { width: 620.4, height: 710.6, offsetLeft: 3.2, offsetTop: 11.8 },
     }
-    expect(visibleViewport(win)).toEqual({ width: 620, height: 711, left: 3, top: 12 })
+    expect(visibleViewport(win)).toEqual({ width: 620, height: 711, left: 0, top: 0 })
   })
 
   it('falls back to the layout viewport', () => {
     expect(visibleViewport({ innerWidth: 800, innerHeight: 600 })).toEqual({ width: 800, height: 600, left: 0, top: 0 })
   })
 
-  it('writes the CSS variables used by fixed and full-page layouts', () => {
+  it('writes stable CSS variables used by fixed and full-page layouts', () => {
     const doc = fakeDocument()
     syncViewportVariables({ innerWidth: 744, innerHeight: 521 }, doc)
     expect(doc.values.get('--tayu-viewport-width')).toBe('744px')
@@ -34,7 +34,7 @@ describe('visible viewport synchronization', () => {
     expect(doc.values.get('--tayu-viewport-top')).toBe('0px')
   })
 
-  it('listens for browser, orientation, and VisualViewport changes', () => {
+  it('listens for size changes but not VisualViewport scrolling', () => {
     const listeners = []
     const viewportListeners = []
     const win = {
@@ -53,7 +53,7 @@ describe('visible viewport synchronization', () => {
     }
     const cleanup = installViewportSync(win, fakeDocument())
     expect(listeners).toEqual(expect.arrayContaining(['resize', 'orientationchange', 'pageshow']))
-    expect(viewportListeners).toEqual(expect.arrayContaining(['resize', 'scroll']))
+    expect(viewportListeners).toEqual(['resize'])
     cleanup()
   })
 })
