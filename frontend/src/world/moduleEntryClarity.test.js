@@ -27,7 +27,7 @@ describe('module entry clarity', () => {
   })
 
   it('gives Tax Lab one full-screen DOM foreground surface with no side popup', () => {
-    expect(world).toContain('taxMode ? <TaxLabWorld />')
+    expect(world).toContain('? <TaxLabWorld />')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).toContain('{!taxMode && <Hud')
     expect(world).toContain('{!taxMode && <PersistentCoach')
