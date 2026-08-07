@@ -8,6 +8,10 @@ a[data-tayu-enhanced='true'] {
   overflow: hidden;
   overflow-wrap: anywhere;
   white-space: normal;
+  font-weight: 800;
+  line-height: 1.25;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   box-shadow: 0 6px 16px rgba(7, 23, 72, 0.22);
 }
 
@@ -50,10 +54,18 @@ a[data-tayu-action='practice'] {
   background-color: #f28c28 !important;
   color: #071748 !important;
 }
+/* Back/cancel/close actions need to remain visible on both light and dark scenes. */
 button[data-tayu-action='back'],
 a[data-tayu-action='back'] {
-  background-color: rgba(255, 255, 255, 0.16) !important;
-  color: #fff !important;
+  background-color: #eef4ff !important;
+  color: #071748 !important;
+  border: 2px solid #1464f0 !important;
+  box-shadow: 0 6px 16px rgba(7, 23, 72, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+button[data-tayu-action='back']::before,
+a[data-tayu-action='back']::before {
+  background: rgba(20, 100, 240, 0.12);
+  color: #071748;
 }
 button[data-tayu-action='reward'],
 a[data-tayu-action='reward'] {

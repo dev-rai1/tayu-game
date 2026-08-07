@@ -6,6 +6,8 @@
   max-width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+  --tayu-guidance-rail-width: clamp(20rem, 27vw, 27rem);
+  --tayu-guidance-rail-gap: 1rem;
 }
 
 .tayu-world-canvas {
@@ -71,6 +73,40 @@
   display: none;
 }
 
+/* Keep public module numbering correct in the Help list while the engine still
+   uses legacy internal week numbers for Money Garden and the finale. */
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child,
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child {
+  font-size: 0;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(6) button[aria-expanded] span:first-child::after {
+  content: 'Module 6: Money Garden';
+  font-size: 0.875rem;
+}
+
+.tayu-world-declutter [aria-label="Game help"] [role="tabpanel"] > div > div:nth-child(7) button[aria-expanded] span:first-child::after {
+  content: 'Module 7: Finale Area';
+  font-size: 0.875rem;
+}
+
+/* NPC dialogue and informational lesson copy are rendered by PersistentCoach.
+   Hide the legacy popup wrappers so there is only one place to read/advance
+   guidance. Interactive cards and module workspaces remain untouched. */
+@supports selector(div:has(> [aria-labelledby="tayu-dialog-speaker"])) {
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-dialog-speaker"]),
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-lesson-title"]) {
+    display: none !important;
+  }
+}
+
+/* Soft lessons and animation captions use their own low-screen wrappers rather
+   than the modal IDs above. They are also routed into the primary coach lane. */
+.tayu-world-declutter .pointer-events-none.absolute.inset-x-0.z-\[240\],
+.tayu-world-declutter .pointer-events-none.absolute.inset-x-0.z-\[220\] {
+  display: none !important;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;
@@ -95,6 +131,91 @@
   overflow-y: auto;
   font-size: 1.05rem;
   line-height: 1.45;
+}
+
+/*
+ * GLOBAL GAME LAYOUT CONTRACT
+ * ---------------------------
+ * PersistentCoach owns one dedicated guidance region. When it is visible, a
+ * module workspace must use the remaining region instead of centering beneath
+ * the coach. This applies to Budget Town, jars, market/product dialogs, Bank,
+ * portfolio/investing panels, Paycheck Planet overlays, and future modal module
+ * workspaces that use the same semantic dialog structure.
+ */
+@media (min-width: 900px) {
+  .tayu-world-declutter:has([data-bank-watching="true"]) {
+    --tayu-guidance-rail-width: clamp(24rem, 31vw, 32rem);
+  }
+
+  .tayu-world-declutter [data-guidance-lane="primary"] {
+    left: auto !important;
+    right: max(1rem, env(safe-area-inset-right, 0px)) !important;
+    top: calc(5.5rem + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    width: var(--tayu-guidance-rail-width) !important;
+    max-height: calc(100dvh - 7rem - env(safe-area-inset-bottom, 0px)) !important;
+    transform: none !important;
+  }
+
+  .tayu-world-declutter [data-bank-watching="true"] {
+    top: calc(5rem + env(safe-area-inset-top, 0px)) !important;
+    max-height: calc(100dvh - 6.25rem - env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  @supports selector(.tayu-world-declutter:has([data-guidance-lane="primary"])) {
+    .tayu-world-declutter:has([data-guidance-lane="primary"])
+      div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"])) {
+      box-sizing: border-box;
+      padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+      padding-right: calc(var(--tayu-guidance-rail-width) + var(--tayu-guidance-rail-gap) + max(0.75rem, env(safe-area-inset-right, 0px))) !important;
+    }
+
+    .tayu-world-declutter:has([data-guidance-lane="primary"])
+      div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"]))
+      > [role="dialog"] {
+      max-width: min(44rem, calc(100vw - var(--tayu-guidance-rail-width) - 3.5rem)) !important;
+    }
+  }
+}
+
+/* On phones/tablets the same two regions stack vertically. The coach gets a
+   predictable strip below the HUD; any open module dialog starts below that
+   strip and scrolls inside the space that remains. */
+@media (max-width: 899px) {
+  .tayu-world-declutter [data-guidance-lane="primary"] {
+    left: 50% !important;
+    right: auto !important;
+    top: calc(5rem + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    width: min(94vw, 34rem) !important;
+    max-height: min(24dvh, 11rem) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .tayu-world-declutter [data-bank-watching="true"] {
+    width: min(96vw, 36rem) !important;
+    max-height: min(40dvh, 18rem) !important;
+  }
+
+  @supports selector(.tayu-world-declutter:has([data-guidance-lane="primary"])) {
+    .tayu-world-declutter:has([data-guidance-lane="primary"])
+      div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"])) {
+      box-sizing: border-box;
+      align-items: flex-start !important;
+      overflow-y: auto !important;
+      padding-top: calc(16.75rem + env(safe-area-inset-top, 0px)) !important;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    .tayu-world-declutter:has([data-guidance-lane="primary"])
+      div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"]))
+      > [role="dialog"] {
+      width: min(94vw, 38rem) !important;
+      max-width: calc(100vw - 1.5rem) !important;
+      max-height: calc(100dvh - 18rem - env(safe-area-inset-bottom, 0px)) !important;
+      overflow-y: auto !important;
+    }
+  }
 }
 
 /* Long labels must wrap inside the viewport instead of pushing neighboring controls out. */

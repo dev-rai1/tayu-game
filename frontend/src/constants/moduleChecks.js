@@ -76,21 +76,39 @@ export const MODULE_CHECKS = {
     ],
   },
   garden: {
-    moduleNumber: 5,
+    moduleNumber: 6,
     title: 'Money Garden',
     cosmetic: { icon: '🌱', name: 'Sprout Crown' },
     questions: [
       {
+        prompt: 'What does owning a share of stock mean?',
+        choices: ['You own a small piece of the company', 'The company guarantees you profit', 'You lent the company money that must be repaid tomorrow'],
+        answer: 0,
+        trick: 'A stock represents ownership in a company. A share is one unit of that ownership, and its value can rise or fall.',
+      },
+      {
         prompt: 'Why spread investments across more than one company?',
         choices: ['To guarantee every company rises', 'To remove all market risk', 'To reduce the damage if one company struggles'],
         answer: 2,
-        trick: 'Diversification cannot remove all risk, but it can reduce dependence on one company.',
+        trick: 'Diversification cannot remove all risk, but it reduces concentration risk by making the portfolio depend less on one company.',
       },
       {
-        prompt: 'A price drops but the store is still busy and healthy. What should a careful investor do?',
+        prompt: 'A price drops but the business still looks healthy. What should a careful investor do first?',
         choices: ['Always sell immediately', 'Check the business evidence before reacting', 'Ignore every future warning sign'],
         answer: 1,
-        trick: 'A price move needs context. Check customers, company health, news, and the longer trend before deciding.',
+        trick: 'Price movement and business health are not the same thing. Research the company and the reason for the change before reacting.',
+      },
+      {
+        prompt: 'Why does time horizon matter when deciding how much money to invest?',
+        choices: ['Money needed soon may need to stay ready instead of exposed to market swings', 'Longer time always guarantees a profit', 'Time horizon only matters for checking accounts'],
+        answer: 0,
+        trick: 'Time horizon is how long until you need the money. Short-term needs should not depend on being able to sell an investment at a good price that day.',
+      },
+      {
+        prompt: 'What does rebalancing mean?',
+        choices: ['Buying whichever stock rose the most today', 'Adjusting holdings back toward the planned mix and risk level', 'Selling every investment after one bad week'],
+        answer: 1,
+        trick: 'As prices change, one holding can become too large. Rebalancing brings the portfolio closer to its intended mix instead of chasing the latest winner.',
       },
     ],
   },

@@ -22,6 +22,7 @@ function markSeen(key) {
 export function LemonadeFocusGuide() {
   const week = useGame((state) => state.week)
   const lemPhase = useGame((state) => state.lemPhase)
+  const lemFeatures = useGame((state) => state.lemFeatures)
   const helpOpen = useGame((state) => state.helpOpen)
   const dialog = useGame((state) => state.dialog)
   const cards = useGame((state) => state.cards)
@@ -32,7 +33,10 @@ export function LemonadeFocusGuide() {
   const [stepIndex, setStepIndex] = useState(0)
 
   const readingBand = getReadingBand()
-  const steps = useMemo(() => focusStepsFor(activePhase, readingBand), [activePhase, readingBand])
+  const steps = useMemo(
+    () => focusStepsFor(activePhase, readingBand, lemFeatures),
+    [activePhase, readingBand, lemFeatures],
+  )
   const stateSnapshot = { week, lemPhase, helpOpen, dialog, cards, lessons, actorCaption }
   const clearToShow = canShowFocusGuide(stateSnapshot)
 
@@ -80,7 +84,7 @@ export function LemonadeFocusGuide() {
         aria-modal="true"
         aria-labelledby="lemonade-focus-title"
         aria-describedby="lemonade-focus-copy"
-        className="pop-in w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        className="pop-in max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl"
       >
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-electric">

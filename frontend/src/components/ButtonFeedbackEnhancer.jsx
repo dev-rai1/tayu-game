@@ -20,6 +20,21 @@ function hasOwnVisualIcon(button, visibleLabel) {
   return /^[?×✕✖←→↻✓★⚙…]+$/u.test(visibleLabel)
 }
 
+function hideLegacyMoneyGardenCashOut(button, label) {
+  const normalized = label.replace(/\s+/g, ' ').trim().toLowerCase()
+  if (normalized !== 'cash out all') return false
+
+  // Money Garden now progresses by testing the player's current choice.
+  // Keep the old portfolio-wide liquidation control out of the UI so players
+  // are not encouraged to exit every investment between decisions.
+  button.hidden = true
+  button.setAttribute('aria-hidden', 'true')
+  button.tabIndex = -1
+  button.dataset.tayuEnhanced = 'true'
+  button.dataset.tayuLegacyControl = 'hidden'
+  return true
+}
+
 function classifyButton(button) {
   if (!(button instanceof HTMLElement) || button.dataset.tayuEnhanced === 'true') return
   if (button.getAttribute('role') === 'switch' || button.closest('[role="menu"]')) return
@@ -27,8 +42,13 @@ function classifyButton(button) {
   const visibleLabel = (button.textContent || '').trim()
   const label = (button.getAttribute('aria-label') || visibleLabel).trim()
   if (!label) return
+  if (hideLegacyMoneyGardenCashOut(button, label)) return
 
-  const match = ACTION_RULES.find((rule) => rule.pattern.test(label))
+  // Learning-resource links are a single browse list, not different action
+  // types. Keep every resource visually consistent so words such as "save",
+  // "credit", or "certificate" do not accidentally recolor individual rows.
+  const isLearningResource = button.matches('a[href]') && button.closest('#help-panel-resources')
+  const match = isLearningResource ? null : ACTION_RULES.find((rule) => rule.pattern.test(label))
   button.dataset.tayuEnhanced = 'true'
   button.dataset.tayuAction = match?.action || 'primary'
 

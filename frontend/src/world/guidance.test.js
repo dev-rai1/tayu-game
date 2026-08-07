@@ -20,7 +20,7 @@ describe('whole-game next-step guidance', () => {
     [{ week: 2, lemPhase: 'template' }, 'BUILD THIS WEEK’S PLAN', 'start selling'],
     [{ week: 3, bt: { stage: 'intro' } }, 'TALK TO THE BUDGET KEEPER', 'Press E'],
     [{ week: 3, bt: { stage: 'split' } }, 'BUILD THE MONEY PLAN', 'automatically'],
-    [{ week: 4, bk: { week: 3, seen: { intro: true } } }, 'BANK LESSON 3 OF 6', 'Press E'],
+    [{ week: 4, bk: { week: 3, seen: { intro: true } } }, 'BANK LESSON 3 OF 6', 'no repeated E presses'],
     [{ week: 5, mgPhase: 'toGarden', mg: { week: 1, phase: 'opening' } }, 'TALK TO MR. SPROUT', 'Press E'],
     [{ week: 5, mgPhase: 'rounds', mg: { week: 4, phase: 'adjust' } }, 'MONEY GARDEN WEEK 4', 'Start the Week'],
     [{ gameComplete: true }, 'GO TO THE FINALE AREA', 'Press E'],
@@ -39,7 +39,13 @@ describe('whole-game next-step guidance', () => {
     expect(result.title).toBe('MAKE THE CHOICE ON SCREEN')
   })
 
-  it('tells players to watch during consequences', () => {
+  it('tells players not to press E during bank animations', () => {
+    const result = getGuidance({ ...base, week: 4, scenarioLocked: true, bk: { week: 3, seen: { intro: true } } })
+    expect(result.title).toBe('BANK ACTION IN PROGRESS')
+    expect(result.action).toContain('Do not press E')
+  })
+
+  it('tells players to watch during other consequences', () => {
     const result = getGuidance({ ...base, scenarioLocked: true })
     expect(result.title).toBe('WATCH WHAT HAPPENS')
   })
