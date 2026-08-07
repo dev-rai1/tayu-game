@@ -26,6 +26,16 @@ function compactText(value, max = 120) {
   return `${clipped}…`
 }
 
+function minorLessonClue(lesson) {
+  if (!lesson?.soft) return null
+  return {
+    sourceKey: `soft-lesson:${lesson.id}`,
+    title: 'Quick tip',
+    action: lesson.text,
+    lessonId: lesson.id,
+  }
+}
+
 function transientClue({ toast, guide, actorCaption, banner }) {
   if (actorCaption?.line) {
     const name = ACTOR_LABELS[actorCaption.actor] || 'Character'
@@ -33,7 +43,6 @@ function transientClue({ toast, guide, actorCaption, banner }) {
       sourceKey: `actor:${actorCaption.actor}:${actorCaption.line}`,
       title: `${name} says`,
       action: actorCaption.line,
-      transient: true,
     }
   }
   if (guide?.line) {
@@ -41,7 +50,6 @@ function transientClue({ toast, guide, actorCaption, banner }) {
       sourceKey: `guide:${guide.line}`,
       title: "Penny's clue",
       action: guide.line,
-      transient: true,
     }
   }
   if (toast) {
@@ -49,7 +57,6 @@ function transientClue({ toast, guide, actorCaption, banner }) {
       sourceKey: `toast:${toast}`,
       title: 'Quick update',
       action: toast,
-      transient: true,
     }
   }
   if (banner) {
@@ -57,7 +64,6 @@ function transientClue({ toast, guide, actorCaption, banner }) {
       sourceKey: `banner:${banner}`,
       title: 'Quick update',
       action: banner,
-      transient: true,
     }
   }
   return null
@@ -119,26 +125,31 @@ export function PersistentCoach() {
   const visibility = coachVisibility(stateForGuidance)
   const feedbackKey = activeFeedbackKey(stateForGuidance)
   const improvement = feedbackKey ? feedbackByModule[feedbackKey] : null
+  const minorLesson = minorLessonClue(activeLesson)
   const transient = transientClue({ toast, guide, actorCaption, banner })
-  const type = improvement ? 'improvement' : transient ? 'transient' : 'guidance'
-  const content = improvement || transient || guidance
-  const key = hintKey(type, content, week, objective)
 
-  // Feedback and short-lived messages may still use the tray while a specialized
-  // commerce guide is active. Blocking dialogs/panels remain the only reason to
-  // hide the clue so the player never gets two competing text surfaces.
-  const canUseTray = !visibility.blocking && (improvement || transient || visibility.showGuidance)
-  const canShow = Boolean(content && canUseTray && dismissedKey !== key)
+  // Clear hierarchy:
+  // 1. Major lessons/dialogs/decisions stay on their large focused surfaces.
+  // 2. Small queued tips, retry feedback, NPC comments, and status updates share
+  //    this one bottom-left tray instead of popping up around the screen.
+  const type = minorLesson ? 'minor-lesson' : improvement ? 'improvement' : transient ? 'transient' : 'guidance'
+  const content = minorLesson || improvement || transient || guidance
+  const key = hintKey(type, content, week, objective)
+  const canUseTray = !visibility.blocking && (minorLesson || improvement || transient || visibility.showGuidance)
+  const canShow = Boolean(content && canUseTray && (minorLesson || dismissedKey !== key))
   if (!canShow) return null
 
-  const label = improvement ? 'Try this' : transient ? 'Quick update' : 'Guided clue'
-  const rawTitle = improvement ? improvement.title : (content.title || label)
-  const rawAction = improvement
-    ? (improvement.action || improvement.diagnosis || improvement.goal)
-    : (content.action || content.instruction || '')
+  const label = minorLesson ? 'Quick tip' : improvement ? 'Try this' : transient ? 'Quick update' : 'Guided clue'
+  const rawTitle = minorLesson ? minorLesson.title : improvement ? improvement.title : (content.title || label)
+  const rawAction = minorLesson
+    ? minorLesson.action
+    : improvement
+      ? (improvement.action || improvement.diagnosis || improvement.goal)
+      : (content.action || content.instruction || '')
   const title = compactText(rawTitle, 58)
   const action = compactText(rawAction, 118)
   const spoken = [title, action].filter(Boolean).join('. ')
+  const dismissMinorLesson = () => useGame.getState().dismissLesson()
 
   return (
     <aside
@@ -147,6 +158,7 @@ export function PersistentCoach() {
       aria-atomic="true"
       data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
       data-guided-clue-tray="true"
+      data-message-level={minorLesson || improvement || transient ? 'secondary' : 'guidance'}
       style={{
         left: 'max(0.75rem, env(safe-area-inset-left, 0px))',
         bottom: usesTouchControls
@@ -165,22 +177,33 @@ export function PersistentCoach() {
         </div>
         <button
           type="button"
-          aria-label="Hide this clue"
-          onClick={() => setDismissedKey(key)}
+          aria-label={minorLesson ? 'Dismiss this tip' : 'Hide this clue'}
+          onClick={minorLesson ? dismissMinorLesson : () => setDismissedKey(key)}
           className="pointer-events-auto grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-navy/10 text-lg font-extrabold text-navy active:scale-95"
         >
           ×
         </button>
       </div>
-      {spoken && (
-        <button
-          type="button"
-          onClick={() => say(spoken)}
-          className="pointer-events-auto mt-2 min-h-[40px] rounded-xl bg-electric/10 px-3 text-sm font-extrabold text-electric active:scale-95"
-        >
-          Read aloud
-        </button>
-      )}
+      <div className="mt-2 flex gap-2">
+        {spoken && (
+          <button
+            type="button"
+            onClick={() => say(spoken)}
+            className="pointer-events-auto min-h-[40px] flex-1 rounded-xl bg-electric/10 px-3 text-sm font-extrabold text-electric active:scale-95"
+          >
+            Read aloud
+          </button>
+        )}
+        {minorLesson && (
+          <button
+            type="button"
+            onClick={dismissMinorLesson}
+            className="pointer-events-auto min-h-[40px] flex-1 rounded-xl bg-navy/10 px-3 text-sm font-extrabold text-navy active:scale-95"
+          >
+            {lessons.length > 1 ? 'Next tip' : 'Got it'}
+          </button>
+        )}
+      </div>
     </aside>
   )
 }
