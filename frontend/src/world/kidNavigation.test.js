@@ -35,4 +35,13 @@ describe('kid navigation support', () => {
     expect(worldSource).not.toContain('ObjectiveEdgePointer')
     expect(worldSource).not.toContain('<ObjectiveEdgePointer />')
   })
+
+  it('guides the normal Bank handoff to Paycheck Planet instead of teleporting', () => {
+    const handoffStart = pageSource.indexOf('// The legacy Bank action initializes internal week 5')
+    const handoffEnd = pageSource.indexOf('  useEffect(() => {\n    initWorld()', handoffStart)
+    const handoffSource = pageSource.slice(handoffStart, handoffEnd)
+    expect(handoffSource).toContain("useGame.setState({ objective: 'tax' })")
+    expect(handoffSource).toContain("objective: 'tax-active'")
+    expect(handoffSource).not.toContain('moveToPaycheckPlanet()')
+  })
 })
