@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest'
 const source = (name) => readFileSync(resolve(process.cwd(), 'src/world', name), 'utf8')
 const pageSource = readFileSync(resolve(process.cwd(), 'src/pages/World.jsx'), 'utf8')
 const tutorialSource = source('FirstTimeMovementTutorial.jsx')
-const pointerSource = source('ObjectiveEdgePointer.jsx')
 const coachSource = source('PersistentCoach.jsx')
 const worldSource = source('GameWorld.jsx')
 
@@ -17,7 +16,7 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain("if (step === 1 && !near) return null")
     expect(tutorialSource).toContain('EXPERIENCED_PLAYER_DELAY_MS')
     expect(tutorialSource).toContain('I know these controls')
-    expect(tutorialSource).not.toContain('>\n          Skip\n')
+    expect(tutorialSource).toContain('glowing destination')
     expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D} />')
   })
 
@@ -27,14 +26,13 @@ describe('kid navigation support', () => {
     expect(coachSource).toContain('Show hint')
     expect(coachSource).toContain('Read aloud')
     expect(coachSource).toContain('Dismiss')
+    expect(coachSource).toContain('pointer-events-none fixed')
     expect(pageSource).toContain('<PersistentCoach />')
     expect(pageSource).not.toContain('<ObjectiveChip />')
   })
 
-  it('pins off-screen objectives to the display edge', () => {
-    expect(pointerSource).toContain('behindCamera')
-    expect(pointerSource).toContain('maxX')
-    expect(pointerSource).toContain('awayFor.current >= 6')
-    expect(worldSource).toContain('<ObjectiveEdgePointer />')
+  it('does not render the removed off-screen THIS WAY pointer', () => {
+    expect(worldSource).not.toContain('ObjectiveEdgePointer')
+    expect(worldSource).not.toContain('<ObjectiveEdgePointer />')
   })
 })

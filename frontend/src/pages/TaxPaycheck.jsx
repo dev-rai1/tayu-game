@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
+import { recordLearningEvent, setUsageModule } from '../services/usageAnalytics.js'
 
 const STEPS = [
   { id: 'paycheck', label: 'Read the paycheck' },
@@ -24,6 +25,8 @@ const money = (value) => `$${Number(value || 0).toFixed(0)}`
 
 export default function TaxPaycheck() {
   const nav = useNavigate()
+  const [params] = useSearchParams()
+  const fromStory = params.get('from') === 'story'
   const [step, setStep] = useState(0)
   const [job, setJob] = useState(JOBS[0])
   const [taxAnswer, setTaxAnswer] = useState('')
@@ -39,17 +42,30 @@ export default function TaxPaycheck() {
   const remaining = takeHome - allocated
   const eventReady = Number(plan.later) >= event.cost
 
+  useEffect(() => {
+    setUsageModule('tax').catch(() => {})
+    return () => { setUsageModule('').catch(() => {}) }
+  }, [])
+
   const chooseJob = (nextJob) => {
     setJob(nextJob)
     setTaxAnswer('')
     setTaxResult(null)
     setPlan({ now: 0, later: 0, give: 0, taxReserve: 0 })
     setEventChoice('')
+    recordLearningEvent({ moduleName: 'tax', type: 'choice_attempt', outcome: 'job_selected', detail: nextJob.id }).catch(() => {})
   }
 
   const checkTax = () => {
     const correct = Number(taxAnswer) === tax
     setTaxResult(correct ? 'correct' : 'retry')
+    recordLearningEvent({
+      moduleName: 'tax',
+      type: 'choice_attempt',
+      outcome: correct ? 'correct' : 'incorrect',
+      detail: `tax math for ${job.id}`,
+    }).catch(() => {})
+    if (!correct) recordLearningEvent({ moduleName: 'tax', type: 'retry_prompt', outcome: 'shown', detail: 'tax math retry' }).catch(() => {})
     if (correct) window.setTimeout(() => setStep(1), 650)
   }
 
@@ -60,7 +76,15 @@ export default function TaxPaycheck() {
 
   const continuePlan = () => {
     if (remaining !== 0 || Number(plan.later) <= 0) return
+    recordLearningEvent({ moduleName: 'tax', type: 'choice_attempt', outcome: 'balanced', detail: `take-home ${takeHome}; later ${plan.later}; reserve ${plan.taxReserve}` }).catch(() => {})
     setStep(2)
+  }
+
+  const chooseEventAction = (choice) => {
+    setEventChoice(choice)
+    const correct = choice === (eventReady ? 'pay' : 'adjust')
+    recordLearningEvent({ moduleName: 'tax', type: 'choice_attempt', outcome: correct ? 'correct' : 'incorrect', detail: `${event.id}:${choice}` }).catch(() => {})
+    if (!correct) recordLearningEvent({ moduleName: 'tax', type: 'retry_prompt', outcome: 'shown', detail: `future expense ${event.id}` }).catch(() => {})
   }
 
   const complete = () => {
@@ -69,7 +93,14 @@ export default function TaxPaycheck() {
     const profile = loadProfile() || {}
     const badges = [...new Set([...(profile.badges || []), 'tax'])]
     saveProfile({ badges, taxLab: { job: job.id, gross: job.gross, tax, takeHome, plan, event: event.id, completedAt: new Date().toISOString() } })
+    recordLearningEvent({ moduleName: 'tax', type: 'module_complete', outcome: 'completed', detail: `${job.id}:${event.id}` }).catch(() => {})
     setFinished(true)
+  }
+
+  const continueToGarden = () => {
+    localStorage.setItem('tayu-jump-module', '6')
+    localStorage.setItem('tayu-return-from-paycheck', '1')
+    nav('/world')
   }
 
   if (finished) {
@@ -79,15 +110,16 @@ export default function TaxPaycheck() {
           <div className="text-6xl" aria-hidden>🧾✨</div>
           <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Module 5 complete</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">You built a paycheck plan</h1>
-          <p className="mt-3 font-semibold text-navy/75">You calculated taxes, found take-home pay, allocated every dollar, and prepared for a real-life expense.</p>
+          <p className="mt-3 font-semibold text-navy/75">You calculated taxes, found take-home pay, allocated every dollar, and prepared for a real-life expense. Next comes investing with the money you have actually planned.</p>
           <div className="mt-5 grid grid-cols-3 gap-2 text-sm font-extrabold">
             <div className="rounded-2xl bg-electric/10 p-3">Gross<br />{money(job.gross)}</div>
             <div className="rounded-2xl bg-sun/30 p-3">Taxes<br />{money(tax)}</div>
             <div className="rounded-2xl bg-teal/20 p-3">Take-home<br />{money(takeHome)}</div>
           </div>
-          <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            <button type="button" onClick={() => nav('/modules')} className="min-h-[54px] rounded-2xl bg-electric px-4 font-extrabold text-white">Back to module map</button>
-            <button type="button" onClick={() => { setFinished(false); setStep(0); setTaxAnswer(''); setTaxResult(null); setPlan({ now: 0, later: 0, give: 0, taxReserve: 0 }); setEventChoice('') }} className="min-h-[54px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Try another job</button>
+          <button type="button" onClick={continueToGarden} className="mt-6 min-h-[58px] w-full rounded-2xl bg-teal px-5 text-lg font-extrabold text-navy">Continue to Module 6: Money Garden →</button>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <button type="button" onClick={() => nav('/modules')} className="min-h-[52px] rounded-2xl bg-electric/10 px-4 font-extrabold text-electric">Back to module map</button>
+            <button type="button" onClick={() => { setFinished(false); setStep(0); setTaxAnswer(''); setTaxResult(null); setPlan({ now: 0, later: 0, give: 0, taxReserve: 0 }); setEventChoice('') }} className="min-h-[52px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Try another job</button>
           </div>
         </section>
       </main>
@@ -105,6 +137,12 @@ export default function TaxPaycheck() {
           </div>
           <Link to="/modules" className="rounded-xl bg-white/10 px-4 py-2 font-extrabold">Exit module</Link>
         </header>
+
+        {fromStory && (
+          <div className="mt-4 rounded-2xl border border-[#FF8A3D]/60 bg-[#FF8A3D]/10 px-4 py-3 text-sm font-bold text-white/85">
+            Banker Bea sent you here before Money Garden: first learn what reaches your paycheck after taxes, then decide what can be spent, saved, given, or invested.
+          </div>
+        )}
 
         <ol className="mt-5 grid gap-2 sm:grid-cols-3" aria-label="Module progress">
           {STEPS.map((item, index) => <li key={item.id} className={`rounded-2xl border px-4 py-3 text-sm font-extrabold ${index === step ? 'border-teal bg-teal/15 text-teal' : index < step ? 'border-white/20 bg-white/10' : 'border-white/10 bg-black/20 text-white/45'}`}>{index + 1}. {item.label}</li>)}
@@ -150,7 +188,7 @@ export default function TaxPaycheck() {
           <section className="mt-5 rounded-3xl border border-white/15 bg-white/5 p-5">
             <h2 className="font-display text-2xl font-extrabold">A future expense appears</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">{EVENTS.map((option) => <button key={option.id} type="button" onClick={() => { setEvent(option); setEventChoice('') }} className={`rounded-2xl border-2 p-4 text-left ${event.id === option.id ? 'border-teal bg-teal/10' : 'border-white/10 bg-black/20'}`}><span className="text-3xl" aria-hidden>{option.emoji}</span><span className="mt-2 block font-extrabold">{option.title}</span><span className="text-sm font-bold text-sun">Costs {money(option.cost)}</span></button>)}</div>
-            <div className={`mt-5 rounded-3xl border-2 p-5 ${eventReady ? 'border-teal bg-teal/10' : 'border-sun bg-sun/10'}`}><p className="font-extrabold">{event.emoji} {event.copy}</p><p className="mt-2 text-lg font-extrabold">Later fund: {money(plan.later)} · Cost: {money(event.cost)}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" onClick={() => setEventChoice('pay')} className={`min-h-[58px] rounded-2xl border-2 px-4 font-extrabold ${eventChoice === 'pay' ? 'border-white bg-electric' : 'border-white/15 bg-black/20'}`}>Pay from the later fund</button><button type="button" onClick={() => setEventChoice('adjust')} className={`min-h-[58px] rounded-2xl border-2 px-4 font-extrabold ${eventChoice === 'adjust' ? 'border-white bg-electric' : 'border-white/15 bg-black/20'}`}>Adjust the plan first</button></div><p className="mt-3 min-h-6 font-extrabold" aria-live="polite">{eventChoice && eventChoice === (eventReady ? 'pay' : 'adjust') ? eventReady ? 'Good decision. Your earlier allocation covered the expense.' : 'Good decision. The later fund is short, so changing the plan avoids pretending the money is available.' : eventChoice ? 'Think again: compare the later fund with the event cost.' : ''}</p></div>
+            <div className={`mt-5 rounded-3xl border-2 p-5 ${eventReady ? 'border-teal bg-teal/10' : 'border-sun bg-sun/10'}`}><p className="font-extrabold">{event.emoji} {event.copy}</p><p className="mt-2 text-lg font-extrabold">Later fund: {money(plan.later)} · Cost: {money(event.cost)}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" onClick={() => chooseEventAction('pay')} className={`min-h-[58px] rounded-2xl border-2 px-4 font-extrabold ${eventChoice === 'pay' ? 'border-white bg-electric' : 'border-white/15 bg-black/20'}`}>Pay from the later fund</button><button type="button" onClick={() => chooseEventAction('adjust')} className={`min-h-[58px] rounded-2xl border-2 px-4 font-extrabold ${eventChoice === 'adjust' ? 'border-white bg-electric' : 'border-white/15 bg-black/20'}`}>Adjust the plan first</button></div><p className="mt-3 min-h-6 font-extrabold" aria-live="polite">{eventChoice && eventChoice === (eventReady ? 'pay' : 'adjust') ? eventReady ? 'Good decision. Your earlier allocation covered the expense.' : 'Good decision. The later fund is short, so changing the plan avoids pretending the money is available.' : eventChoice ? 'Think again: compare the later fund with the event cost.' : ''}</p></div>
             <button type="button" disabled={!eventChoice || eventChoice !== (eventReady ? 'pay' : 'adjust')} onClick={complete} className="mt-4 min-h-[52px] w-full rounded-2xl bg-teal px-5 font-extrabold text-navy disabled:cursor-not-allowed disabled:opacity-40">Complete Paycheck Planet</button>
           </section>
         )}

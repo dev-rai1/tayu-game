@@ -66,18 +66,11 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
       <section className="pointer-events-auto flex w-[min(90vw,27rem)] items-center gap-3 rounded-2xl border-2 border-teal bg-navy/95 px-3 py-2 text-white shadow-xl">
         <p className="min-w-0 flex-1 text-sm font-extrabold leading-snug">
           {step === 0
-            ? mobile ? 'Use the MOVE pad to walk toward the arrow.' : 'Use WASD to walk toward the arrow.'
+            ? mobile ? 'Use the MOVE pad to walk toward the glowing destination.' : 'Use WASD to walk toward the glowing destination.'
             : mobile ? 'You made it. Tap the blue action button.' : 'You made it. Press E or click the action button.'}
         </p>
         {showExperiencedOption && (
-          <button
-            type="button"
-            onClick={() => completeTutorial(setStep)}
-            aria-label="I already know how to use these controls"
-            className="min-h-[42px] shrink-0 rounded-xl bg-white/10 px-3 text-xs font-extrabold active:scale-95"
-          >
-            I know these controls
-          </button>
+          <button type="button" onClick={() => completeTutorial(setStep)} aria-label="I already know how to use these controls" className="min-h-[42px] shrink-0 rounded-xl bg-white/10 px-3 text-xs font-extrabold active:scale-95">I know these controls</button>
         )}
       </section>
     </div>

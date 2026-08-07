@@ -48,7 +48,7 @@ export const MODULE_CATALOG = [
   {
     n: 6,
     badge: 'garden',
-    title: 'Module 6: Money Garden',
+    title: 'Money Garden',
     grades: 'Grades 6–12',
     minutes: 'Two 6–8 min parts',
     desc: 'Part 1 introduces investing and pretend stocks. Part 2 uses market clues, risk, patience, and rebalancing.',
