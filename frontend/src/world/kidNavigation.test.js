@@ -18,21 +18,22 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain('guide: {')
     expect(tutorialSource).toContain('glowing destination')
     expect(tutorialSource).toContain('return null')
-    expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D} />')
+    expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />')
   })
 
-  it('uses one persistent guidance lane for hints, feedback, lessons, and dialogue', () => {
+  it('puts important guidance in front and ordinary hints to the side', () => {
     expect(coachSource).toContain('coachVisibility')
-    expect(coachSource).toContain('data-guidance-lane="primary"')
+    expect(coachSource).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coachSource).toContain('coachMessageFromTransient')
     expect(coachSource).toContain('advanceDialog')
     expect(coachSource).toContain('Read aloud')
     expect(coachSource).toContain("queue.length > 1 ? 'Next' : 'Got it'")
     expect(coachSource).toContain('pointer-events-none fixed')
-    expect(pageSource).toContain('<PersistentCoach paycheckMode={paycheckMode} />')
+    expect(coachSource).toContain('data-important-message-scrim="true"')
+    expect(pageSource).toContain('<PersistentCoach key={paycheckMode ? \'paycheck-coach\' : \'world-coach\'} paycheckMode={paycheckMode} />')
     expect(pageSource).not.toContain('<LemonadeFocusGuide />')
     expect(pageSource).not.toContain('<BudgetTakeawayGuard />')
-    expect(declutterSource).toContain('tayu-dialog-speaker')
+    expect(declutterSource).toContain('[data-guidance-lane="side-hint"]')
     expect(pageSource).not.toContain('<ObjectiveChip />')
   })
 

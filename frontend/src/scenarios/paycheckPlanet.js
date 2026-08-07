@@ -1,147 +1,245 @@
-export const TOTAL_PAYCHECK_WEEKS = 6
+export const TOTAL_TAX_STEPS = 6
+// Compatibility with existing progress/analytics code that still uses the old name.
+export const TOTAL_PAYCHECK_WEEKS = TOTAL_TAX_STEPS
 
-export const START_JOBS = [
-  { id: 'library', label: 'LIBRARY HELPER', gross: 120, rate: 0.10, freeTime: 7, comfort: 5, x: -2.7, note: 'Lower pay · more free time' },
-  { id: 'camp', label: 'CAMP ASSISTANT', gross: 160, rate: 0.15, freeTime: 5, comfort: 5, x: 0, note: 'Middle pay · middle schedule' },
-  { id: 'design', label: 'DESIGN GIG', gross: 200, rate: 0.20, freeTime: 3, comfort: 4, x: 2.7, note: 'Higher pay · less free time' },
-]
+export const GAME_STANDARD_DEDUCTION = 9000
+export const FIRST_BRACKET_LIMIT = 5000
+export const FIRST_BRACKET_RATE = 0.10
+export const SECOND_BRACKET_RATE = 0.12
 
-export const CAREER_JOBS = [
-  { id: 'library-lead', label: 'LIBRARY LEAD', gross: 165, rate: 0.12, freeTime: 6, comfort: 6, x: -2.7, note: 'Steady hours · moderate raise' },
-  { id: 'camp-lead', label: 'CAMP SHIFT LEAD', gross: 220, rate: 0.17, freeTime: 4, comfort: 5, x: 0, note: 'Bigger raise · busier week' },
-  { id: 'design-contract', label: 'DESIGN CONTRACT', gross: 285, rate: 0.22, freeTime: 2, comfort: 4, x: 2.7, note: 'Highest pay · least free time' },
-]
-
-export const BUDGET_PLANS = [
-  { id: 'save-first', label: 'SAVE FIRST', needs: 0.55, wants: 0.15, save: 0.30, x: -2.7, comfort: 0, time: 0, note: 'Bigger cushion · fewer wants' },
-  { id: 'balanced', label: 'BALANCED', needs: 0.55, wants: 0.25, save: 0.20, x: 0, comfort: 1, time: 0, note: 'Mix today and later' },
-  { id: 'spend-more', label: 'SPEND MORE NOW', needs: 0.55, wants: 0.35, save: 0.10, x: 2.7, comfort: 2, time: 0, note: 'More wants · smaller cushion' },
-]
-
-export const WEEK_SPECS = [
+export const TAX_CASES = [
   {
-    week: 1,
-    title: 'FIRST PAYCHECK',
-    intro: 'Choose your first job. Compare gross pay, the simplified game withholding rate, and free time. Then build a budget from take-home pay.',
-    lifeTitle: 'COMMUTE CHOICE',
-    choices: [
-      { id: 'bike', label: 'BIKE', sublabel: '$8 COST · MORE FREE CASH', cost: 8, comfort: 0, time: 0, x: -2.7, lesson: 'A cheaper commute leaves more money for other goals.' },
-      { id: 'bus', label: 'BUS PASS', sublabel: '$18 COST · STEADY OPTION', cost: 18, comfort: 1, time: 0, x: 0, lesson: 'A predictable transportation cost is easier to plan for.' },
-      { id: 'rides', label: 'RIDE SHARE', sublabel: '$35 COST · MORE CONVENIENT', cost: 35, comfort: 2, time: 1, x: 2.7, lesson: 'Convenience can improve daily life, but it uses more of the paycheck.' },
-    ],
+    id: 'library',
+    label: 'LIBRARY JOB W-2',
+    note: 'Smaller wages · simple return',
+    wages: 12000,
+    withheld: 400,
+    credit: 50,
+    x: -2.6,
   },
   {
-    week: 2,
-    title: 'REAL-LIFE COSTS',
-    intro: 'Another paycheck arrives, but regular expenses return too. Rebuild your budget and decide how much convenience fits your income.',
-    lifeTitle: 'FOOD FOR THE WEEK',
-    choices: [
-      { id: 'meal-prep', label: 'MEAL PREP', sublabel: '$24 COST · TAKES TIME', cost: 24, comfort: 1, time: -1, x: -2.7, lesson: 'Lower-cost choices can protect savings, but they may take more time.' },
-      { id: 'mix-food', label: 'MIX IT UP', sublabel: '$34 COST · BALANCED', cost: 34, comfort: 2, time: 0, x: 0, lesson: 'A middle option can balance convenience and cost.' },
-      { id: 'takeout', label: 'TAKEOUT', sublabel: '$48 COST · MOST CONVENIENT', cost: 48, comfort: 3, time: 1, x: 2.7, lesson: 'Spending more can buy convenience now, but leaves less room later.' },
-    ],
+    id: 'camp',
+    label: 'CAMP JOB W-2',
+    note: 'Middle wages · small refund',
+    wages: 18000,
+    withheld: 900,
+    credit: 150,
+    x: 0,
   },
   {
-    week: 3,
-    title: 'SAVE FOR A GOAL',
-    intro: 'You want something bigger later. Decide whether to move extra cash toward the goal or keep more money available for this week.',
-    lifeTitle: 'GOAL DECISION',
-    choices: [
-      { id: 'goal-40', label: 'SAVE EXTRA $40', sublabel: 'FASTER GOAL · LESS CASH NOW', saveTransfer: 40, comfort: 0, time: 0, x: -2.7, lesson: 'Saving extra now can shorten the wait for a future goal.' },
-      { id: 'goal-20', label: 'SAVE EXTRA $20', sublabel: 'STEADY PROGRESS', saveTransfer: 20, comfort: 1, time: 0, x: 0, lesson: 'Smaller repeated deposits still build a goal over time.' },
-      { id: 'goal-wait', label: 'WAIT THIS WEEK', sublabel: '$0 EXTRA · MORE CASH NOW', cost: 0, comfort: 2, time: 0, x: 2.7, lesson: 'Keeping cash gives flexibility now, but the goal grows more slowly.' },
-    ],
-  },
-  {
-    week: 4,
-    title: 'JOB CHANGE',
-    intro: 'A few new jobs open up. Higher pay can help the budget, but work hours can also change your free time. Choose what fits your priorities.',
-    career: true,
-    lifeTitle: 'AFTER-WORK CHOICE',
-    choices: [
-      { id: 'rest', label: 'REST NIGHT', sublabel: '$0 COST · +2 FREE TIME', cost: 0, comfort: 2, time: 2, x: -2.7, lesson: 'Money is not the only resource. Time and energy matter too.' },
-      { id: 'extra-shift', label: 'EXTRA SHIFT', sublabel: '+$35 CASH · -2 FREE TIME', cashDelta: 35, comfort: -1, time: -2, x: 0, lesson: 'Extra work can raise income, but it trades away time and energy.' },
-      { id: 'skill-class', label: 'SKILL CLASS', sublabel: '$20 COST · FUTURE PAY +$25', cost: 20, grossBonus: 25, comfort: 0, time: -1, x: 2.7, lesson: 'Training can cost money and time now in exchange for higher future earning power.' },
-    ],
-  },
-  {
-    week: 5,
-    title: 'SURPRISE WEEK',
-    intro: 'A $65 repair shows up. Your earlier saving choices now matter. Choose how to handle the surprise without pretending it disappears.',
-    lifeTitle: 'SURPRISE REPAIR · $65',
-    choices: [
-      { id: 'full-repair', label: 'PAY FULL REPAIR', sublabel: '$65 · USE CASH THEN SAVINGS', cost: 65, comfort: 1, time: 0, x: -2.7, lesson: 'A cash cushion or emergency savings can absorb a surprise without new debt.' },
-      { id: 'basic-repair', label: 'BASIC REPAIR', sublabel: '$40 · CHEAPER BUT LESS COMFORT', cost: 40, comfort: -1, time: -1, x: 0, lesson: 'A cheaper solution can protect cash, but tradeoffs may show up elsewhere.' },
-      { id: 'borrow-repair', label: 'BORROW $70', sublabel: 'FIX IT NOW · OWE $70 LATER', debtDelta: 70, cashDelta: 5, comfort: 1, time: 0, x: 2.7, lesson: 'Borrowing solves today’s cash problem by creating a future repayment obligation.' },
-    ],
-  },
-  {
-    week: 6,
-    title: 'SIX WEEKS LATER',
-    intro: 'Make one final paycheck and budget. Then choose how to use your weekend and look back at the life your repeated decisions created.',
-    lifeTitle: 'WEEKEND CHOICE',
-    choices: [
-      { id: 'free-day', label: 'FREE DAY OUT', sublabel: '$0 COST · +2 COMFORT', cost: 0, comfort: 2, time: 2, x: -2.7, lesson: 'Enjoyment does not always require spending more money.' },
-      { id: 'outing', label: 'PAID OUTING', sublabel: '$25 COST · +3 COMFORT', cost: 25, comfort: 3, time: 1, x: 0, lesson: 'A planned want can fit a budget when essentials and future goals are already considered.' },
-      { id: 'shopping', label: 'BIG SHOPPING DAY', sublabel: '$50 COST · +3 COMFORT', cost: 50, comfort: 3, time: 0, x: 2.7, lesson: 'A larger want can feel good now, but it reduces the money available for the next goal or surprise.' },
-    ],
+    id: 'design',
+    label: 'DESIGN GIG W-2',
+    note: 'Higher wages · amount due',
+    wages: 24000,
+    withheld: 1200,
+    credit: 250,
+    x: 2.6,
   },
 ]
 
-export function paycheckMath(job, grossBonus = 0) {
-  if (!job) return { gross: 0, tax: 0, takeHome: 0 }
-  const gross = Math.max(0, Math.round(job.gross + grossBonus))
-  const tax = Math.round(gross * job.rate)
-  return { gross, tax, takeHome: gross - tax }
+export const TAX_INTRO_STEPS = [
+  'Read a sample W-2 and find wages plus federal tax withheld.',
+  'Subtract the game deduction to find taxable income.',
+  'Use two simple tax brackets to calculate tax.',
+  'Subtract a tax credit from the tax you calculated.',
+  'Compare tax withheld with final tax to find a refund or amount due.',
+  'Review the return and file the finished practice return.',
+]
+
+const dollars = (value) => `$${Math.max(0, Math.round(Number(value || 0))).toLocaleString('en-US')}`
+const unique = (values) => [...new Set(values.map((value) => Math.max(0, Math.round(Number(value || 0)))))]
+
+export function taxableIncomeFor(taxCase) {
+  if (!taxCase) return 0
+  return Math.max(0, Math.round(taxCase.wages - GAME_STANDARD_DEDUCTION))
 }
 
-export function budgetAmounts(takeHome, plan) {
-  if (!plan) return { needs: 0, wants: 0, save: 0 }
-  const needs = Math.round(takeHome * plan.needs)
-  const wants = Math.round(takeHome * plan.wants)
-  const save = Math.max(0, takeHome - needs - wants)
-  return { needs, wants, save }
+export function bracketTax(taxableIncome) {
+  const taxable = Math.max(0, Math.round(Number(taxableIncome || 0)))
+  const first = Math.min(FIRST_BRACKET_LIMIT, taxable)
+  const second = Math.max(0, taxable - FIRST_BRACKET_LIMIT)
+  return Math.round(first * FIRST_BRACKET_RATE + second * SECOND_BRACKET_RATE)
 }
 
-const clamp = (value) => Math.max(0, Math.min(10, value))
-
-export function applyLifeChoice(state, choice) {
-  const next = {
-    cash: Math.max(0, Number(state.cash || 0)),
-    savings: Math.max(0, Number(state.savings || 0)),
-    debt: Math.max(0, Number(state.debt || 0)),
-    comfort: clamp(Number(state.comfort ?? 5)),
-    freeTime: clamp(Number(state.freeTime ?? 5)),
-    grossBonus: Math.max(0, Number(state.grossBonus || 0)),
+export function taxReturnMath(taxCase) {
+  if (!taxCase) {
+    return {
+      wages: 0,
+      withheld: 0,
+      deduction: GAME_STANDARD_DEDUCTION,
+      taxableIncome: 0,
+      firstBracketIncome: 0,
+      secondBracketIncome: 0,
+      taxBeforeCredits: 0,
+      credit: 0,
+      finalTax: 0,
+      refund: 0,
+      amountDue: 0,
+    }
   }
 
-  next.cash += Number(choice.cashDelta || 0)
-  next.debt += Number(choice.debtDelta || 0)
-  next.grossBonus += Number(choice.grossBonus || 0)
+  const taxableIncome = taxableIncomeFor(taxCase)
+  const firstBracketIncome = Math.min(FIRST_BRACKET_LIMIT, taxableIncome)
+  const secondBracketIncome = Math.max(0, taxableIncome - FIRST_BRACKET_LIMIT)
+  const taxBeforeCredits = bracketTax(taxableIncome)
+  const credit = Math.max(0, Math.round(Number(taxCase.credit || 0)))
+  const finalTax = Math.max(0, taxBeforeCredits - credit)
+  const difference = Math.round(Number(taxCase.withheld || 0) - finalTax)
 
-  const transfer = Math.min(next.cash, Math.max(0, Number(choice.saveTransfer || 0)))
-  next.cash -= transfer
-  next.savings += transfer
-
-  let cost = Math.max(0, Number(choice.cost || 0))
-  const fromCash = Math.min(next.cash, cost)
-  next.cash -= fromCash
-  cost -= fromCash
-  const fromSavings = Math.min(next.savings, cost)
-  next.savings -= fromSavings
-  cost -= fromSavings
-  if (cost > 0) next.debt += cost
-
-  next.comfort = clamp(next.comfort + Number(choice.comfort || 0))
-  next.freeTime = clamp(next.freeTime + Number(choice.time || 0))
-  return next
+  return {
+    wages: Math.round(taxCase.wages),
+    withheld: Math.round(taxCase.withheld),
+    deduction: GAME_STANDARD_DEDUCTION,
+    taxableIncome,
+    firstBracketIncome,
+    secondBracketIncome,
+    taxBeforeCredits,
+    credit,
+    finalTax,
+    refund: Math.max(0, difference),
+    amountDue: Math.max(0, -difference),
+  }
 }
 
-export function lifeSummary({ savings = 0, debt = 0, comfort = 5, freeTime = 5 }) {
-  if (debt >= 70) return 'DEBT IS PRESSURING FUTURE PAY'
-  if (savings >= 180 && comfort >= 6 && freeTime >= 4) return 'PREPARED AND BALANCED'
-  if (savings >= 180) return 'STRONG CUSHION · TIGHTER LIFESTYLE'
-  if (comfort >= 8 && savings < 80) return 'COMFORTABLE NOW · SMALLER CUSHION'
-  if (freeTime <= 2) return 'MORE INCOME · VERY LITTLE FREE TIME'
-  return 'BUILDING STABILITY WEEK BY WEEK'
+function moneyChoice(id, value, correct = false) {
+  return { id, label: dollars(value), correct }
+}
+
+function resultLabel(math) {
+  if (math.refund > 0) return `${dollars(math.refund)} REFUND`
+  if (math.amountDue > 0) return `${dollars(math.amountDue)} AMOUNT DUE`
+  return '$0 EVEN'
+}
+
+export function filingStepFor(taxCase, stepNumber) {
+  const math = taxReturnMath(taxCase)
+  const step = Math.max(1, Math.min(TOTAL_TAX_STEPS, Number(stepNumber || 1)))
+
+  if (step === 1) {
+    return {
+      step,
+      title: 'Read the W-2',
+      eyebrow: 'Step 1 · income document',
+      prompt: 'Which W-2 numbers belong on this practice return?',
+      explanation: `Box 1 wages are ${dollars(math.wages)}. Box 2 federal income tax withheld is ${dollars(math.withheld)}.`,
+      hint: 'On a W-2, Box 1 is wages and Box 2 is federal income tax withheld.',
+      choices: [
+        { id: 'swap', label: `${dollars(math.withheld)} wages · ${dollars(math.wages)} withheld`, correct: false },
+        { id: 'right', label: `${dollars(math.wages)} wages · ${dollars(math.withheld)} withheld`, correct: true },
+        { id: 'net', label: `${dollars(math.wages - math.withheld)} wages · $0 withheld`, correct: false },
+      ],
+    }
+  }
+
+  if (step === 2) {
+    const wrong = unique([math.wages, math.taxableIncome + math.withheld, Math.max(0, math.taxableIncome - 1000)])
+      .filter((value) => value !== math.taxableIncome)
+    return {
+      step,
+      title: 'Find taxable income',
+      eyebrow: 'Step 2 · subtraction',
+      prompt: `${dollars(math.wages)} wages − ${dollars(math.deduction)} game deduction = ?`,
+      explanation: `Taxable income is ${dollars(math.wages)} − ${dollars(math.deduction)} = ${dollars(math.taxableIncome)}.`,
+      hint: 'Subtract the deduction from wages. Do not subtract withholding here.',
+      choices: [
+        moneyChoice('wrong-a', wrong[0] ?? math.wages),
+        moneyChoice('right', math.taxableIncome, true),
+        moneyChoice('wrong-b', wrong[1] ?? math.taxableIncome + 1000),
+      ],
+    }
+  }
+
+  if (step === 3) {
+    const firstTax = Math.round(math.firstBracketIncome * FIRST_BRACKET_RATE)
+    const secondTax = Math.round(math.secondBracketIncome * SECOND_BRACKET_RATE)
+    return {
+      step,
+      title: 'Use the tax brackets',
+      eyebrow: 'Step 3 · multiplication + addition',
+      prompt: math.secondBracketIncome > 0
+        ? `${dollars(math.firstBracketIncome)} × 10% + ${dollars(math.secondBracketIncome)} × 12% = ?`
+        : `${dollars(math.firstBracketIncome)} × 10% = ?`,
+      explanation: math.secondBracketIncome > 0
+        ? `${dollars(firstTax)} + ${dollars(secondTax)} = ${dollars(math.taxBeforeCredits)} tax before credits.`
+        : `${dollars(math.firstBracketIncome)} × 10% = ${dollars(math.taxBeforeCredits)} tax before credits.`,
+      hint: 'Only the dollars above the first $5,000 use the 12% practice rate.',
+      choices: [
+        moneyChoice('all-ten', Math.round(math.taxableIncome * FIRST_BRACKET_RATE)),
+        moneyChoice('right', math.taxBeforeCredits, true),
+        moneyChoice('all-twelve', Math.round(math.taxableIncome * SECOND_BRACKET_RATE)),
+      ],
+    }
+  }
+
+  if (step === 4) {
+    return {
+      step,
+      title: 'Apply the tax credit',
+      eyebrow: 'Step 4 · subtract a credit',
+      prompt: `${dollars(math.taxBeforeCredits)} tax − ${dollars(math.credit)} practice credit = ?`,
+      explanation: `A credit reduces tax directly: ${dollars(math.taxBeforeCredits)} − ${dollars(math.credit)} = ${dollars(math.finalTax)} final tax.`,
+      hint: 'A credit comes off the tax itself. Subtract it after calculating bracket tax.',
+      choices: [
+        moneyChoice('add-credit', math.taxBeforeCredits + math.credit),
+        moneyChoice('right', math.finalTax, true),
+        moneyChoice('ignore-credit', math.taxBeforeCredits),
+      ],
+    }
+  }
+
+  if (step === 5) {
+    const correct = resultLabel(math)
+    return {
+      step,
+      title: 'Refund or amount due?',
+      eyebrow: 'Step 5 · compare',
+      prompt: `${dollars(math.withheld)} withheld − ${dollars(math.finalTax)} final tax = ?`,
+      explanation: math.refund > 0
+        ? `Withholding is ${dollars(math.refund)} more than final tax, so this practice return gets a ${dollars(math.refund)} refund.`
+        : math.amountDue > 0
+          ? `Final tax is ${dollars(math.amountDue)} more than withholding, so this practice return has ${dollars(math.amountDue)} due.`
+          : 'Withholding exactly matches final tax, so there is no refund and nothing due.',
+      hint: 'If withholding is bigger, the difference is a refund. If final tax is bigger, the difference is due.',
+      choices: [
+        { id: 'flip', label: math.refund > 0 ? `${dollars(math.refund)} AMOUNT DUE` : `${dollars(math.amountDue)} REFUND`, correct: false },
+        { id: 'right', label: correct, correct: true },
+        { id: 'withheld', label: `${dollars(math.withheld)} REFUND`, correct: false },
+      ],
+    }
+  }
+
+  return {
+    step,
+    title: 'Review and file',
+    eyebrow: 'Step 6 · final check',
+    prompt: 'Which summary matches the return you just completed?',
+    explanation: `Wages ${dollars(math.wages)} · taxable income ${dollars(math.taxableIncome)} · final tax ${dollars(math.finalTax)} · ${resultLabel(math).toLowerCase()}.`,
+    hint: 'Check the W-2 numbers, taxable income, final tax, and refund/due before filing.',
+    choices: [
+      {
+        id: 'gross-tax',
+        label: `Tax = all wages (${dollars(math.wages)}) · refund = withholding`,
+        correct: false,
+      },
+      {
+        id: 'right',
+        label: `${dollars(math.taxableIncome)} taxable · ${dollars(math.finalTax)} final tax · ${resultLabel(math)}`,
+        correct: true,
+      },
+      {
+        id: 'skip-credit',
+        label: `${dollars(math.taxableIncome)} taxable · ${dollars(math.taxBeforeCredits)} final tax · no comparison`,
+        correct: false,
+      },
+    ],
+  }
+}
+
+export function taxResultSummary(taxCase) {
+  const math = taxReturnMath(taxCase)
+  return math.refund > 0
+    ? `RETURN FILED · ${dollars(math.refund)} PRACTICE REFUND`
+    : math.amountDue > 0
+      ? `RETURN FILED · ${dollars(math.amountDue)} PRACTICE AMOUNT DUE`
+      : 'RETURN FILED · EVEN'
 }

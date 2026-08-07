@@ -1,21 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Billboard, RoundedBox } from '@react-three/drei'
+import { Billboard, Html, RoundedBox } from '@react-three/drei'
 import { TAX_DISTRICT } from './config.js'
 import { playerPos, useGame } from './store.js'
 import { labelTexture } from './textures.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
 import {
-  BUDGET_PLANS,
-  CAREER_JOBS,
-  START_JOBS,
-  TOTAL_PAYCHECK_WEEKS,
-  WEEK_SPECS,
-  applyLifeChoice,
-  budgetAmounts,
-  lifeSummary,
-  paycheckMath,
+  TAX_CASES,
+  TAX_INTRO_STEPS,
+  TOTAL_TAX_STEPS,
+  filingStepFor,
+  taxResultSummary,
+  taxReturnMath,
 } from '../scenarios/paycheckPlanet.js'
 import {
   PAYCHECK_MODE_EVENT,
@@ -23,29 +20,20 @@ import {
   isPaycheckWorldActive,
 } from './paycheckMode.js'
 
-// Module 5 launches directly here from the module menu. The player starts in
-// the middle of the three choice lanes so every first decision is immediately
-// visible and clickable.
-export const TAX_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.1]
-const STATION_Z = 4.25
-const STATION_RADIUS = 3.25
+// Keep Module 5 in the world, but start close enough that the tax lab is the
+// obvious destination. The choices themselves now happen in a readable popup,
+// so the HUD/map can never cover the right-hand option.
+export const TAX_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.3]
+const STATION_Z = 3.9
+const PATH_START_Z = 1.35
 
-const roundMoney = (value) => Math.max(0, Math.round(Number(value || 0)))
-const allJobs = [...START_JOBS, ...CAREER_JOBS]
-
-function findJob(id) {
-  return allJobs.find((item) => item.id === id) || null
-}
+const money = (value) => `$${Math.max(0, Math.round(Number(value || 0))).toLocaleString('en-US')}`
 
 function worldPoint(x, z, y = 1.1) {
   return { x: TAX_DISTRICT[0] + x, y, z: TAX_DISTRICT[1] + z }
 }
 
-function distanceTo(x, z) {
-  return Math.hypot(playerPos.x - (TAX_DISTRICT[0] + x), playerPos.z - (TAX_DISTRICT[1] + z))
-}
-
-function pushCoins(from, to, count, prefix = 'paycheck') {
+function pushCoins(from, to, count, prefix = 'tax') {
   const batch = {
     id: `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     from,
@@ -55,27 +43,16 @@ function pushCoins(from, to, count, prefix = 'paycheck') {
   useGame.setState((state) => ({ coinBatches: [...state.coinBatches, batch] }))
 }
 
-// Paycheck Planet intentionally keeps ONE coach card at a time. The old flow
-// fired a toast plus a lesson after almost every click, which built a large
-// queue ("1 of 7") while the 3D labels were changing underneath it.
-function showCoach(text, key = null) {
+function sendHint(text) {
+  if (!text) return
   try {
-    const game = useGame.getState()
-    game.adminClearUi()
-    game.showLesson(text, key, true, 'tax')
+    useGame.setState({ guide: { line: text } })
   } catch {
-    // The 3D module remains playable even if the coach layer is unavailable.
+    // The filing activity remains usable even if the world coach is unavailable.
   }
 }
 
-function AnimatedStation({
-  x,
-  label,
-  sublabel,
-  accent = '#00dca0',
-  selected = false,
-  onActivate,
-}) {
+function AnimatedStation({ x, label, sublabel, accent = '#1464f0', onActivate }) {
   const group = useRef()
   const time = useRef(Math.random() * 5)
   const [hovered, setHovered] = useState(false)
@@ -83,8 +60,8 @@ function AnimatedStation({
   useFrame((_, delta) => {
     time.current += delta
     if (!group.current) return
-    group.current.position.y = 0.12 + Math.sin(time.current * 3.2) * 0.08
-    group.current.rotation.y = Math.sin(time.current * 1.15) * 0.035
+    group.current.position.y = 0.1 + Math.sin(time.current * 3) * 0.06
+    group.current.rotation.y = Math.sin(time.current * 1.05) * 0.025
   })
 
   const activate = (event) => {
@@ -92,15 +69,13 @@ function AnimatedStation({
     onActivate?.()
   }
 
-  const bright = hovered || selected || distanceTo(x, STATION_Z) <= STATION_RADIUS
-
   return (
     <group ref={group} position={[x, 0, STATION_Z]}>
       <RoundedBox
-        args={[2.35, 0.38, 1.8]}
-        radius={0.18}
+        args={[2.1, 0.34, 1.55]}
+        radius={0.17}
         smoothness={3}
-        position={[0, 0.22, 0]}
+        position={[0, 0.2, 0]}
         onClick={activate}
         onPointerOver={() => {
           setHovered(true)
@@ -114,17 +89,17 @@ function AnimatedStation({
         <meshStandardMaterial
           color={accent}
           emissive={accent}
-          emissiveIntensity={bright ? 0.9 : 0.38}
+          emissiveIntensity={hovered ? 0.9 : 0.42}
           roughness={0.55}
         />
       </RoundedBox>
-      <mesh position={[0, 0.7, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.31, 0.31, 0.11, 18]} />
-        <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={bright ? 0.75 : 0.35} metalness={0.25} />
+      <mesh position={[0, 0.65, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.27, 0.27, 0.1, 18]} />
+        <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.45} metalness={0.25} />
       </mesh>
-      <Billboard position={[0, 1.58, 0]}>
+      <Billboard position={[0, 1.46, 0]}>
         <mesh>
-          <planeGeometry args={[2.7, 0.74]} />
+          <planeGeometry args={[2.42, 0.68]} />
           <meshBasicMaterial
             map={labelTexture(label, { bg: '#071748', color: '#ffffff', accent })}
             transparent
@@ -134,9 +109,9 @@ function AnimatedStation({
         </mesh>
       </Billboard>
       {sublabel && (
-        <Billboard position={[0, 1.07, 0]}>
+        <Billboard position={[0, 0.98, 0]}>
           <mesh>
-            <planeGeometry args={[2.62, 0.62]} />
+            <planeGeometry args={[2.36, 0.55]} />
             <meshBasicMaterial
               map={labelTexture(sublabel, { bg: '#ffffff', color: '#071748', accent })}
               transparent
@@ -150,28 +125,39 @@ function AnimatedStation({
   )
 }
 
+// Three separate paths make it obvious that left, middle, AND right are valid
+// choices. This also fixes the old visual impression that only the middle pad
+// was the intended destination.
+function ChoicePath({ x, accent = '#1464f0' }) {
+  const dz = STATION_Z - PATH_START_Z
+  const length = Math.hypot(x, dz)
+  const angle = Math.atan2(x, dz)
+  return (
+    <mesh
+      position={[x / 2, 0.052, (STATION_Z + PATH_START_Z) / 2]}
+      rotation={[-Math.PI / 2, 0, -angle]}
+      receiveShadow
+    >
+      <planeGeometry args={[0.42, length]} />
+      <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.2} transparent opacity={0.72} />
+    </mesh>
+  )
+}
+
 function CelebrationBurst({ active }) {
   const group = useRef()
-
   useFrame((_, delta) => {
     if (!group.current || !active) return
     group.current.rotation.y += delta * 0.65
-    group.current.rotation.x = Math.sin(Date.now() / 900) * 0.06
   })
-
   if (!active) return null
-
   return (
     <group ref={group} position={[0, 4.7, 2.2]}>
       {Array.from({ length: 12 }, (_, i) => {
         const angle = (i / 12) * Math.PI * 2
-        const radius = 2 + (i % 3) * 0.32
+        const radius = 2 + (i % 3) * 0.3
         return (
-          <mesh
-            key={i}
-            position={[Math.cos(angle) * radius, Math.sin(angle * 2) * 0.7, Math.sin(angle) * radius]}
-            rotation={[Math.PI / 2, angle, 0]}
-          >
+          <mesh key={i} position={[Math.cos(angle) * radius, Math.sin(angle * 2) * 0.65, Math.sin(angle) * radius]} rotation={[Math.PI / 2, angle, 0]}>
             <cylinderGeometry args={[0.13, 0.13, 0.04, 14]} />
             <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.75} metalness={0.35} />
           </mesh>
@@ -184,9 +170,9 @@ function CelebrationBurst({ active }) {
 function ModuleBoard({ headline, line }) {
   return (
     <group>
-      <Billboard position={[0, 5.02, 0.75]}>
+      <Billboard position={[0, 5.05, 0.72]}>
         <mesh>
-          <planeGeometry args={[5.85, 0.95]} />
+          <planeGeometry args={[6.1, 0.95]} />
           <meshBasicMaterial
             map={labelTexture(headline, { bg: '#00dca0', color: '#071748', accent: '#ffd700' })}
             transparent
@@ -196,9 +182,9 @@ function ModuleBoard({ headline, line }) {
         </mesh>
       </Billboard>
       {line && (
-        <Billboard position={[0, 4.48, 0.78]}>
+        <Billboard position={[0, 4.48, 0.76]}>
           <mesh>
-            <planeGeometry args={[5.65, 0.64]} />
+            <planeGeometry args={[5.95, 0.66]} />
             <meshBasicMaterial
               map={labelTexture(line, { bg: '#ffffff', color: '#071748', accent: '#ff8a3d' })}
               transparent
@@ -212,65 +198,185 @@ function ModuleBoard({ headline, line }) {
   )
 }
 
+function TaxFilingPanel({ phase, taxCase, stepNumber, feedback, onStart, onChooseCase, onAnswer, onNext, onHint, onFinish }) {
+  const math = taxReturnMath(taxCase)
+  const step = taxCase ? filingStepFor(taxCase, stepNumber) : null
+  const isIntro = phase === 'intro'
+  const isComplete = phase === 'complete'
+
+  return (
+    <Html fullscreen zIndexRange={[760, 500]} style={{ pointerEvents: 'none' }}>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-3 sm:p-5">
+        <section
+          role="dialog"
+          aria-modal={isIntro || isComplete ? 'true' : 'false'}
+          aria-label={isIntro ? 'Module 5 tax filing introduction' : isComplete ? 'Module 5 complete' : 'Tax filing activity'}
+          className={`pointer-events-auto max-h-[86vh] overflow-y-auto rounded-3xl border-2 border-white/30 bg-white text-navy shadow-2xl ${isIntro ? 'w-[min(94vw,46rem)] p-5 sm:p-7' : 'w-[min(94vw,38rem)] p-4 sm:p-5'}`}
+        >
+          {isIntro && (
+            <>
+              <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Module 5 · Tax Filing Lab</div>
+              <h2 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">File a practice tax return</h2>
+              <p className="mt-3 text-base font-semibold leading-relaxed text-navy/75 sm:text-lg">
+                This module is about <strong>how a tax return works</strong>, not just watching money leave a paycheck. You will use a pretend W-2 and do the math one small step at a time.
+              </p>
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                {TAX_INTRO_STEPS.map((line, index) => (
+                  <div key={line} className="flex gap-3 rounded-2xl bg-[#eef8ff] p-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-electric font-extrabold text-white">{index + 1}</span>
+                    <span className="font-semibold leading-snug">{line}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-2xl border border-sun/40 bg-sun/15 p-3 text-sm font-semibold leading-relaxed">
+                The numbers and tax brackets are simplified for practice. Real tax rules change and can be more complicated.
+              </div>
+              <button type="button" onClick={onStart} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 text-lg font-extrabold text-white active:scale-[0.99]">
+                Start the tax return
+              </button>
+            </>
+          )}
+
+          {phase === 'case' && (
+            <>
+              <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Choose your practice W-2</div>
+              <h2 className="mt-1 font-display text-2xl font-extrabold">Pick any income case</h2>
+              <p className="mt-2 font-semibold text-navy/70">All three paths are valid. The popup is the main control, so no choice can be blocked by the map.</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {TAX_CASES.map((item) => (
+                  <button key={item.id} type="button" onClick={() => onChooseCase(item)} className="rounded-2xl border-2 border-electric/20 bg-[#eef8ff] p-4 text-left transition hover:border-electric active:scale-[0.98]">
+                    <span className="block text-xs font-extrabold uppercase tracking-wide text-electric">{item.label}</span>
+                    <span className="mt-2 block text-lg font-extrabold">Wages {money(item.wages)}</span>
+                    <span className="block text-sm font-bold text-navy/65">Withheld {money(item.withheld)}</span>
+                    <span className="mt-2 block text-xs font-semibold text-navy/55">{item.note}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {phase === 'steps' && step && (
+            <>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-electric">{step.eyebrow}</div>
+                  <h2 className="mt-1 font-display text-2xl font-extrabold">{step.title}</h2>
+                </div>
+                <div className="shrink-0 rounded-xl bg-navy px-3 py-2 text-center text-white">
+                  <div className="text-[10px] font-extrabold uppercase tracking-wide text-white/65">Progress</div>
+                  <div className="text-lg font-extrabold">{stepNumber}/{TOTAL_TAX_STEPS}</div>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#fff7e8] p-3 text-sm sm:grid-cols-4">
+                <div><div className="text-[10px] font-extrabold uppercase text-navy/45">W-2 wages</div><div className="font-extrabold">{money(math.wages)}</div></div>
+                <div><div className="text-[10px] font-extrabold uppercase text-navy/45">Withheld</div><div className="font-extrabold">{money(math.withheld)}</div></div>
+                <div><div className="text-[10px] font-extrabold uppercase text-navy/45">Deduction</div><div className="font-extrabold">{money(math.deduction)}</div></div>
+                <div><div className="text-[10px] font-extrabold uppercase text-navy/45">Credit</div><div className="font-extrabold">{money(math.credit)}</div></div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border-2 border-electric/15 bg-[#eef8ff] p-4">
+                <div className="text-lg font-extrabold leading-snug">{step.prompt}</div>
+              </div>
+
+              <div className="mt-3 grid gap-2">
+                {step.choices.map((choice, index) => (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    disabled={feedback?.correct}
+                    onClick={() => onAnswer(choice)}
+                    className="min-h-[54px] rounded-2xl border-2 border-navy/10 bg-white px-4 py-3 text-left font-extrabold shadow-sm transition hover:border-electric disabled:opacity-60 active:scale-[0.99]"
+                  >
+                    <span className="mr-2 inline-grid h-7 w-7 place-items-center rounded-full bg-navy/10 text-xs">{String.fromCharCode(65 + index)}</span>
+                    {choice.label}
+                  </button>
+                ))}
+              </div>
+
+              {!feedback && (
+                <button type="button" onClick={() => onHint(step.hint)} className="mt-3 min-h-[44px] w-full rounded-xl border-2 border-electric/20 bg-electric/5 px-4 text-sm font-extrabold text-electric active:scale-[0.99]">
+                  Show a hint on the side
+                </button>
+              )}
+
+              {feedback && (
+                <div className={`mt-4 rounded-2xl border-2 p-4 ${feedback.correct ? 'border-teal/40 bg-teal/10' : 'border-[#ff6b6b]/40 bg-[#fff1f1]'}`}>
+                  <div className={`font-display text-xl font-extrabold ${feedback.correct ? 'text-[#008a67]' : 'text-[#bd2f2f]'}`}>
+                    {feedback.correct ? 'Correct — you did the tax math.' : 'Try that step again.'}
+                  </div>
+                  <p className="mt-1 font-semibold leading-relaxed text-navy/75">{feedback.correct ? step.explanation : step.hint}</p>
+                  {feedback.correct && (
+                    <button type="button" onClick={onNext} className="mt-3 min-h-[50px] w-full rounded-xl bg-teal px-4 font-extrabold text-navy active:scale-[0.99]">
+                      {stepNumber === TOTAL_TAX_STEPS ? 'File this practice return' : 'Next tax step'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {isComplete && taxCase && (
+            <>
+              <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module 5 complete</div>
+              <h2 className="mt-1 font-display text-3xl font-extrabold">Practice return filed</h2>
+              <div className="mt-4 rounded-2xl bg-[#eef8ff] p-4">
+                <div className="font-extrabold">{taxResultSummary(taxCase)}</div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+                  <div><span className="block text-navy/50">Wages</span><strong>{money(math.wages)}</strong></div>
+                  <div><span className="block text-navy/50">Taxable</span><strong>{money(math.taxableIncome)}</strong></div>
+                  <div><span className="block text-navy/50">Final tax</span><strong>{money(math.finalTax)}</strong></div>
+                  <div><span className="block text-navy/50">Withheld</span><strong>{money(math.withheld)}</strong></div>
+                  <div><span className="block text-navy/50">Refund</span><strong>{money(math.refund)}</strong></div>
+                  <div><span className="block text-navy/50">Amount due</span><strong>{money(math.amountDue)}</strong></div>
+                </div>
+              </div>
+              <p className="mt-4 font-semibold leading-relaxed text-navy/70">
+                You practiced the filing flow: read the W-2, found taxable income, used brackets, applied a credit, and reconciled withholding.
+              </p>
+              <button type="button" onClick={onFinish} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 text-lg font-extrabold text-white active:scale-[0.99]">
+                Finish Module 5
+              </button>
+            </>
+          )}
+        </section>
+      </div>
+    </Html>
+  )
+}
+
 export function PaycheckPlanetWorld() {
   const [active, setActive] = useState(() => isPaycheckWorldActive())
-  const [week, setWeek] = useState(1)
-  const [phase, setPhase] = useState('job')
-  const [job, setJob] = useState(null)
-  const [budgetPlan, setBudgetPlan] = useState(null)
-  const [weekBudget, setWeekBudget] = useState(null)
-  const [cash, setCash] = useState(0)
-  const [savings, setSavings] = useState(0)
-  const [debt, setDebt] = useState(0)
-  const [comfort, setComfort] = useState(5)
-  const [freeTime, setFreeTime] = useState(5)
-  const [grossBonus, setGrossBonus] = useState(0)
-  const [history, setHistory] = useState([])
-  const [nearStation, setNearStation] = useState('')
-  const nearStationRef = useRef('')
+  const [phase, setPhase] = useState('intro')
+  const [taxCase, setTaxCase] = useState(null)
+  const [stepNumber, setStepNumber] = useState(1)
+  const [feedback, setFeedback] = useState(null)
   const loadedSessionRef = useRef(false)
 
-  const spec = WEEK_SPECS[week - 1] || WEEK_SPECS[0]
-  const paycheck = useMemo(() => paycheckMath(job, grossBonus), [grossBonus, job])
-  const summary = useMemo(
-    () => lifeSummary({ savings, debt, comfort, freeTime }),
-    [comfort, debt, freeTime, savings],
+  const currentStep = useMemo(
+    () => (taxCase ? filingStepFor(taxCase, stepNumber) : null),
+    [stepNumber, taxCase],
   )
+  const math = useMemo(() => taxReturnMath(taxCase), [taxCase])
 
   const restoreOrStart = useCallback(() => {
     const profile = loadProfile() || {}
     const saved = profile.taxLabProgress
+    const savedCase = TAX_CASES.find((item) => item.id === saved?.caseId) || null
 
-    if (saved && !saved.completed && saved.week >= 1 && saved.week <= TOTAL_PAYCHECK_WEEKS) {
-      setWeek(saved.week)
-      setPhase(saved.phase || (saved.week === 1 ? 'job' : 'tax'))
-      setJob(findJob(saved.jobId))
-      setBudgetPlan(BUDGET_PLANS.find((item) => item.id === saved.budgetPlanId) || null)
-      setWeekBudget(saved.weekBudget || null)
-      setCash(roundMoney(saved.cash))
-      setSavings(roundMoney(saved.savings))
-      setDebt(roundMoney(saved.debt))
-      setComfort(Math.max(0, Math.min(10, Number(saved.comfort ?? 5))))
-      setFreeTime(Math.max(0, Math.min(10, Number(saved.freeTime ?? 5))))
-      setGrossBonus(roundMoney(saved.grossBonus))
-      setHistory(Array.isArray(saved.history) ? saved.history : [])
-      showCoach(`Week ${saved.week} is ready. Continue with the glowing choice pads.`)
+    if (saved && !saved.completed && savedCase) {
+      setTaxCase(savedCase)
+      setStepNumber(Math.max(1, Math.min(TOTAL_TAX_STEPS, Number(saved.stepNumber || 1))))
+      setPhase(saved.phase === 'steps' ? 'steps' : 'case')
+      setFeedback(null)
+      sendHint(`Resume Module 5 at tax step ${saved.stepNumber || 1}. Your W-2 is still selected.`)
       return
     }
 
-    setWeek(1)
-    setPhase('job')
-    setJob(null)
-    setBudgetPlan(null)
-    setWeekBudget(null)
-    setCash(0)
-    setSavings(0)
-    setDebt(0)
-    setComfort(5)
-    setFreeTime(5)
-    setGrossBonus(0)
-    setHistory([])
-    showCoach('Module 5 starts with a job choice. Compare take-home pay and free time, then click one glowing pad.')
+    setPhase('intro')
+    setTaxCase(null)
+    setStepNumber(1)
+    setFeedback(null)
   }, [])
 
   useEffect(() => {
@@ -292,294 +398,136 @@ export function PaycheckPlanetWorld() {
       moduleName: 'tax',
       type: 'module_start',
       outcome: 'started',
-      detail: 'six_week_in_world_simulation',
+      detail: 'six_step_tax_filing_practice',
     }).catch(() => {})
   }, [active, restoreOrStart])
 
-  // Never overwrite the completed checkpoint with completed:false after the
-  // final render. That race could make a finished Module 5 look unfinished.
   useEffect(() => {
     if (!active || !loadedSessionRef.current || phase === 'complete') return
     saveProfile({
       taxLabProgress: {
-        week,
         phase,
-        jobId: job?.id || null,
-        budgetPlanId: budgetPlan?.id || null,
-        weekBudget,
-        cash,
-        savings,
-        debt,
-        comfort,
-        freeTime,
-        grossBonus,
-        history,
+        caseId: taxCase?.id || null,
+        stepNumber,
         completed: false,
       },
     })
-  }, [active, budgetPlan, cash, comfort, debt, freeTime, grossBonus, history, job, phase, savings, week, weekBudget])
+  }, [active, phase, stepNumber, taxCase?.id])
 
-  const stations = useMemo(() => {
-    if (!active) return []
-    if (phase === 'job') return START_JOBS.map((item) => ({ id: `job:${item.id}`, x: item.x }))
-    if (phase === 'career') return CAREER_JOBS.map((item) => ({ id: `career:${item.id}`, x: item.x }))
-    if (phase === 'tax') return [{ id: 'tax', x: 0 }]
-    if (phase === 'budget') return BUDGET_PLANS.map((item) => ({ id: `budget:${item.id}`, x: item.x }))
-    if (phase === 'life') return spec.choices.map((item) => ({ id: `life:${item.id}`, x: item.x }))
-    if (phase === 'recap') return [{ id: 'recap', x: 0 }]
-    if (phase === 'complete') return [{ id: 'finish', x: 0 }]
-    return []
-  }, [active, phase, spec.choices])
+  const startReturn = useCallback(() => {
+    setPhase('case')
+    setFeedback(null)
+    sendHint('Pick any W-2 case. The three glowing paths are all valid; use the popup buttons to choose.')
+  }, [])
 
-  useFrame(() => {
-    if (!active) {
-      nearStationRef.current = ''
-      return
+  const chooseCase = useCallback((selected) => {
+    if (!selected) return
+    setTaxCase(selected)
+    setStepNumber(1)
+    setFeedback(null)
+    setPhase('steps')
+    pushCoins(worldPoint(selected.x, STATION_Z), { x: playerPos.x, y: 1.1, z: playerPos.z }, 8, 'w2-choice')
+    recordLearningEvent({
+      moduleName: 'tax',
+      type: 'w2_case_choice',
+      outcome: selected.id,
+      detail: `wages=${selected.wages};withheld=${selected.withheld}`,
+    }).catch(() => {})
+  }, [])
+
+  const answerChoice = useCallback((choice) => {
+    if (!taxCase || !currentStep || !choice || feedback?.correct) return
+    const correct = Boolean(choice.correct)
+    setFeedback({ correct, choiceId: choice.id })
+    recordLearningEvent({
+      moduleName: 'tax',
+      type: correct ? 'tax_step_correct' : 'tax_step_retry',
+      outcome: choice.id,
+      detail: `step=${stepNumber};case=${taxCase.id}`,
+    }).catch(() => {})
+    if (correct) {
+      pushCoins(worldPoint(0, STATION_Z, 1.25), { x: playerPos.x, y: 1.1, z: playerPos.z }, 5, `tax-step-${stepNumber}`)
     }
+  }, [currentStep, feedback?.correct, stepNumber, taxCase])
 
-    let closest = ''
-    let closestDistance = Infinity
-    stations.forEach((station) => {
-      const d = distanceTo(station.x, STATION_Z)
-      if (d < closestDistance) {
-        closestDistance = d
-        closest = station.id
-      }
+  const finishReturn = useCallback(() => {
+    if (!taxCase) return
+    const profile = loadProfile() || {}
+    const result = taxReturnMath(taxCase)
+    saveProfile({
+      badges: [...new Set([...(profile.badges || []), 'tax'])],
+      taxLab: {
+        caseId: taxCase.id,
+        wages: result.wages,
+        withheld: result.withheld,
+        deduction: result.deduction,
+        taxableIncome: result.taxableIncome,
+        taxBeforeCredits: result.taxBeforeCredits,
+        credit: result.credit,
+        finalTax: result.finalTax,
+        refund: result.refund,
+        amountDue: result.amountDue,
+        stepsCompleted: TOTAL_TAX_STEPS,
+        completedAt: new Date().toISOString(),
+      },
+      taxLabProgress: {
+        phase: 'complete',
+        caseId: taxCase.id,
+        stepNumber: TOTAL_TAX_STEPS,
+        completed: true,
+      },
     })
-    if (closestDistance > STATION_RADIUS) closest = ''
-    nearStationRef.current = closest
-    setNearStation((current) => (current === closest ? current : closest))
-  })
-
-  const chooseJob = useCallback((selected) => {
-    if (phase !== 'job' || !selected) return
-    const math = paycheckMath(selected, grossBonus)
-    setJob(selected)
-    setFreeTime(selected.freeTime)
-    setComfort(selected.comfort)
-    setPhase('tax')
-    pushCoins(worldPoint(selected.x, STATION_Z), { x: playerPos.x, y: 1.1, z: playerPos.z }, 8, 'job-choice')
-    showCoach(`${selected.label}: $${math.takeHome} take-home and ${selected.freeTime}/10 free time. Next, collect the paycheck.`)
+    setPhase('complete')
+    setFeedback(null)
+    pushCoins(worldPoint(0, STATION_Z, 1.7), { x: playerPos.x, y: 1.1, z: playerPos.z }, 14, 'tax-complete')
     recordLearningEvent({
       moduleName: 'tax',
-      type: 'job_choice',
-      outcome: selected.id,
-      detail: `week=${week};gross=${math.gross};takeHome=${math.takeHome}`,
-    }).catch(() => {})
-  }, [grossBonus, phase, week])
-
-  const chooseCareer = useCallback((selected) => {
-    if (phase !== 'career' || !selected) return
-    const math = paycheckMath(selected, grossBonus)
-    setJob(selected)
-    setFreeTime(selected.freeTime)
-    setComfort(selected.comfort)
-    setPhase('tax')
-    pushCoins(worldPoint(selected.x, STATION_Z), { x: playerPos.x, y: 1.1, z: playerPos.z }, 8, 'career-choice')
-    showCoach(`${selected.label}: about $${math.takeHome} take-home with ${selected.freeTime}/10 free time. Next, collect the new paycheck.`)
-    recordLearningEvent({
-      moduleName: 'tax',
-      type: 'career_choice',
-      outcome: selected.id,
-      detail: `week=${week};gross=${math.gross};freeTime=${selected.freeTime}`,
-    }).catch(() => {})
-  }, [grossBonus, phase, week])
-
-  const collectPaycheck = useCallback(() => {
-    if (phase !== 'tax' || !job) return
-    const math = paycheckMath(job, grossBonus)
-    setCash((value) => roundMoney(value + math.takeHome))
-    setBudgetPlan(null)
-    setWeekBudget(null)
-    setPhase('budget')
-    pushCoins(worldPoint(0, STATION_Z, 1.35), { x: playerPos.x, y: 1.1, z: playerPos.z }, 10, `paycheck-week-${week}`)
-    showCoach(`Paycheck: $${math.gross} gross − $${math.tax} withheld = $${math.takeHome} take-home. Now choose a budget.`)
-    recordLearningEvent({
-      moduleName: 'tax',
-      type: 'withholding',
+      type: 'module_complete',
       outcome: 'completed',
-      detail: `week=${week};tax=${math.tax};takeHome=${math.takeHome}`,
+      detail: `tax_filing;case=${taxCase.id};finalTax=${result.finalTax};refund=${result.refund};due=${result.amountDue}`,
     }).catch(() => {})
-  }, [grossBonus, job, phase, week])
+  }, [taxCase])
 
-  const chooseBudget = useCallback((selected) => {
-    if (phase !== 'budget' || !job || !selected) return
-    const math = paycheckMath(job, grossBonus)
-    const amounts = budgetAmounts(math.takeHome, selected)
-    setBudgetPlan(selected)
-    setWeekBudget(amounts)
-    setCash((value) => roundMoney(Math.max(0, value - amounts.needs - amounts.save)))
-    setSavings((value) => roundMoney(value + amounts.save))
-    setComfort((value) => Math.max(0, Math.min(10, value + selected.comfort)))
-    setPhase('life')
-    pushCoins(worldPoint(selected.x, STATION_Z), worldPoint(0, 0.7, 1.1), 7, `budget-week-${week}`)
-    showCoach(`${selected.label}: needs $${amounts.needs}, wants $${amounts.wants}, savings $${amounts.save}. Next, make this week’s life choice.`)
-    recordLearningEvent({
-      moduleName: 'tax',
-      type: 'budget_choice',
-      outcome: selected.id,
-      detail: `week=${week};needs=${amounts.needs};wants=${amounts.wants};save=${amounts.save}`,
-    }).catch(() => {})
-  }, [grossBonus, job, phase, week])
-
-  const chooseLife = useCallback((selected) => {
-    if (phase !== 'life' || !selected) return
-    const next = applyLifeChoice({ cash, savings, debt, comfort, freeTime, grossBonus }, selected)
-    const snapshot = {
-      week,
-      title: spec.title,
-      job: job?.label || '',
-      budget: budgetPlan?.label || '',
-      lifeChoice: selected.label,
-      cash: roundMoney(next.cash),
-      savings: roundMoney(next.savings),
-      debt: roundMoney(next.debt),
-      comfort: next.comfort,
-      freeTime: next.freeTime,
-    }
-
-    setCash(snapshot.cash)
-    setSavings(snapshot.savings)
-    setDebt(snapshot.debt)
-    setComfort(snapshot.comfort)
-    setFreeTime(snapshot.freeTime)
-    setGrossBonus(roundMoney(next.grossBonus))
-    setHistory((items) => [...items, snapshot])
-    setPhase('recap')
-    pushCoins(worldPoint(selected.x, STATION_Z), { x: playerPos.x, y: 1.1, z: playerPos.z }, 6, `life-week-${week}`)
-    showCoach(`${selected.lesson} Week ${week}: cash $${snapshot.cash}, savings $${snapshot.savings}, debt $${snapshot.debt}.`)
-    recordLearningEvent({
-      moduleName: 'tax',
-      type: 'life_choice',
-      outcome: selected.id,
-      detail: `week=${week};cash=${snapshot.cash};savings=${snapshot.savings};debt=${snapshot.debt}`,
-    }).catch(() => {})
-  }, [budgetPlan?.label, cash, comfort, debt, freeTime, grossBonus, job?.label, phase, savings, spec.title, week])
-
-  const finishWeek = useCallback(() => {
-    if (phase !== 'recap') return
-
-    recordLearningEvent({
-      moduleName: 'tax',
-      type: 'week_complete',
-      outcome: 'completed',
-      detail: `week=${week};savings=${savings};debt=${debt}`,
-    }).catch(() => {})
-
-    if (week >= TOTAL_PAYCHECK_WEEKS) {
-      const profile = loadProfile() || {}
-      const finalSummary = lifeSummary({ savings, debt, comfort, freeTime })
-      saveProfile({
-        badges: [...new Set([...(profile.badges || []), 'tax'])],
-        taxLab: {
-          weeksCompleted: TOTAL_PAYCHECK_WEEKS,
-          finalJob: job?.id || null,
-          gross: paycheckMath(job, grossBonus).gross,
-          tax: paycheckMath(job, grossBonus).tax,
-          takeHome: paycheckMath(job, grossBonus).takeHome,
-          cash,
-          savings,
-          debt,
-          comfort,
-          freeTime,
-          summary: finalSummary,
-          history,
-          completedAt: new Date().toISOString(),
-        },
-        taxLabProgress: {
-          week: TOTAL_PAYCHECK_WEEKS,
-          phase: 'complete',
-          jobId: job?.id || null,
-          budgetPlanId: budgetPlan?.id || null,
-          weekBudget,
-          cash,
-          savings,
-          debt,
-          comfort,
-          freeTime,
-          grossBonus,
-          history,
-          completed: true,
-        },
-      })
-      setPhase('complete')
-      pushCoins(worldPoint(0, STATION_Z, 1.8), { x: playerPos.x, y: 1.1, z: playerPos.z }, 14, 'tax-complete')
-      showCoach(`Module 5 complete. Your final result: ${finalSummary}. Play Again is available from the module menu after completion.`)
-      recordLearningEvent({
-        moduleName: 'tax',
-        type: 'module_complete',
-        outcome: 'completed',
-        detail: `six_weeks;savings=${savings};debt=${debt};comfort=${comfort};freeTime=${freeTime}`,
-      }).catch(() => {})
+  const nextStep = useCallback(() => {
+    if (!feedback?.correct) return
+    if (stepNumber >= TOTAL_TAX_STEPS) {
+      finishReturn()
       return
     }
-
-    const nextWeek = week + 1
-    const nextSpec = WEEK_SPECS[nextWeek - 1]
-    setWeek(nextWeek)
-    setBudgetPlan(null)
-    setWeekBudget(null)
-    setPhase(nextWeek === 4 ? 'career' : 'tax')
-    showCoach(`Week ${nextWeek}: ${nextSpec.title}. ${nextSpec.intro}`)
-  }, [budgetPlan?.id, cash, comfort, debt, freeTime, grossBonus, history, job, phase, savings, week, weekBudget])
+    setStepNumber((value) => value + 1)
+    setFeedback(null)
+  }, [feedback?.correct, finishReturn, stepNumber])
 
   const finishModule = useCallback(() => {
-    if (phase !== 'complete') return
     try { useGame.getState().adminClearUi() } catch { /* no-op */ }
     deactivatePaycheckWorld()
-  }, [phase])
+  }, [])
 
-  const runStation = useCallback((id) => {
-    if (!id) return
-    if (id.startsWith('job:')) chooseJob(START_JOBS.find((item) => item.id === id.slice(4)))
-    else if (id.startsWith('career:')) chooseCareer(CAREER_JOBS.find((item) => item.id === id.slice(7)))
-    else if (id === 'tax') collectPaycheck()
-    else if (id.startsWith('budget:')) chooseBudget(BUDGET_PLANS.find((item) => item.id === id.slice(7)))
-    else if (id.startsWith('life:')) chooseLife(spec.choices.find((item) => item.id === id.slice(5)))
-    else if (id === 'recap') finishWeek()
-    else if (id === 'finish') finishModule()
-  }, [chooseBudget, chooseCareer, chooseJob, chooseLife, collectPaycheck, finishModule, finishWeek, spec.choices])
-
-  // Keep the existing interaction key working for players who already use it,
-  // but do not advertise or render any "Press E" bubble in Module 5. Clicking
-  // or tapping the glowing pads is the primary interaction.
-  useEffect(() => {
-    const interact = (event) => {
-      if (!active) return
-      if (event.type === 'keydown' && event.code !== 'KeyE' && event.code !== 'Enter') return
-      runStation(nearStationRef.current)
-    }
-    window.addEventListener('keydown', interact)
-    window.addEventListener('tayu-interact', interact)
-    return () => {
-      window.removeEventListener('keydown', interact)
-      window.removeEventListener('tayu-interact', interact)
-    }
-  }, [active, runStation])
+  const stations = phase === 'case'
+    ? TAX_CASES.map((item) => ({ id: item.id, x: item.x, label: item.label, sublabel: `${money(item.wages)} WAGES`, action: () => chooseCase(item) }))
+    : phase === 'steps' && currentStep
+      ? currentStep.choices.map((choice, index) => ({
+          id: choice.id,
+          x: [-2.6, 0, 2.6][index],
+          label: `ANSWER ${String.fromCharCode(65 + index)}`,
+          sublabel: String(choice.label).slice(0, 25).toUpperCase(),
+          action: () => answerChoice(choice),
+        }))
+      : []
 
   const boardHeadline = !active
-    ? 'PAYCHECK PLANET'
-    : phase === 'job' ? 'WEEK 1 · CHOOSE A JOB'
-      : phase === 'career' ? 'WEEK 4 · CHOOSE A NEW JOB'
-        : phase === 'tax' ? `WEEK ${week} · COLLECT PAYCHECK`
-          : phase === 'budget' ? `WEEK ${week} · CHOOSE A BUDGET`
-            : phase === 'life' ? `WEEK ${week} · ${spec.lifeTitle}`
-              : phase === 'recap' ? `WEEK ${week} COMPLETE`
-                : 'MODULE 5 COMPLETE'
+    ? 'PAYCHECK PLANET · TAX FILING LAB'
+    : phase === 'intro' ? 'MODULE 5 · LEARN TO FILE TAXES'
+      : phase === 'case' ? 'CHOOSE A PRACTICE W-2'
+        : phase === 'steps' ? `TAX STEP ${stepNumber} OF ${TOTAL_TAX_STEPS}`
+          : 'PRACTICE RETURN FILED'
 
   const boardLine = !active
-    ? 'MODULE 5 · JOBS · TAXES · BUDGETS · LIFE CHOICES'
-    : phase === 'job' || phase === 'career'
-      ? 'Compare take-home pay and free time'
-      : phase === 'tax'
-        ? (job ? `$${paycheck.gross} gross − $${paycheck.tax} tax = $${paycheck.takeHome} take-home` : 'Choose a job first')
-        : phase === 'budget'
-          ? 'Choose how much goes to needs, wants, and savings'
-          : phase === 'life'
-            ? 'Your choice changes money, comfort, and free time'
-            : phase === 'recap'
-              ? `Cash $${roundMoney(cash)} · Savings $${roundMoney(savings)} · Debt $${roundMoney(debt)}`
-              : `${summary} · Savings $${roundMoney(savings)} · Debt $${roundMoney(debt)}`
+    ? 'W-2 · TAXABLE INCOME · BRACKETS · CREDITS · REFUND / AMOUNT DUE'
+    : phase === 'intro' ? 'Start with the large instruction card in front of you'
+      : phase === 'case' ? 'Three paths · three valid cases · choose in the popup'
+        : phase === 'steps' && currentStep ? currentStep.title.toUpperCase()
+          : taxResultSummary(taxCase)
 
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
@@ -610,9 +558,9 @@ export function PaycheckPlanetWorld() {
 
       <Billboard position={[0, 6.15, 0]}>
         <mesh>
-          <planeGeometry args={[6.5, 1.55]} />
+          <planeGeometry args={[6.8, 1.55]} />
           <meshBasicMaterial
-            map={labelTexture('PAYCHECK PLANET', { bg: '#071748', color: '#ffffff', accent: '#ff8a3d' })}
+            map={labelTexture('PAYCHECK PLANET · TAX LAB', { bg: '#071748', color: '#ffffff', accent: '#ff8a3d' })}
             transparent
             toneMapped={false}
             depthTest={false}
@@ -622,93 +570,32 @@ export function PaycheckPlanetWorld() {
 
       <ModuleBoard headline={boardHeadline} line={boardLine} />
 
-      {active && phase === 'job' && START_JOBS.map((item) => {
-        const math = paycheckMath(item, grossBonus)
-        return (
-          <AnimatedStation
-            key={item.id}
-            x={item.x}
-            label={item.label}
-            sublabel={`$${math.takeHome} TAKE-HOME · FREE TIME ${item.freeTime}/10`}
-            accent="#ff8a3d"
-            selected={nearStation === `job:${item.id}`}
-            onActivate={() => chooseJob(item)}
-          />
-        )
-      })}
-
-      {active && phase === 'career' && CAREER_JOBS.map((item) => {
-        const math = paycheckMath(item, grossBonus)
-        return (
-          <AnimatedStation
-            key={item.id}
-            x={item.x}
-            label={item.label}
-            sublabel={`$${math.takeHome} TAKE-HOME · FREE TIME ${item.freeTime}/10`}
-            accent="#ff8a3d"
-            selected={nearStation === `career:${item.id}`}
-            onActivate={() => chooseCareer(item)}
-          />
-        )
-      })}
-
-      {active && phase === 'tax' && (
+      {active && stations.map((station, index) => (
+        <ChoicePath key={`path-${station.id}-${index}`} x={station.x} accent={phase === 'case' ? '#ff8a3d' : '#1464f0'} />
+      ))}
+      {active && stations.map((station) => (
         <AnimatedStation
-          x={0}
-          label="COLLECT PAYCHECK"
-          sublabel={job ? `$${paycheck.gross} − $${paycheck.tax} = $${paycheck.takeHome}` : 'CHOOSE A JOB FIRST'}
-          accent="#1464f0"
-          selected={nearStation === 'tax'}
-          onActivate={collectPaycheck}
-        />
-      )}
-
-      {active && phase === 'budget' && BUDGET_PLANS.map((item) => {
-        const amounts = budgetAmounts(paycheck.takeHome, item)
-        return (
-          <AnimatedStation
-            key={item.id}
-            x={item.x}
-            label={item.label}
-            sublabel={`NEEDS $${amounts.needs} · WANTS $${amounts.wants} · SAVE $${amounts.save}`}
-            accent="#7850f0"
-            selected={nearStation === `budget:${item.id}`}
-            onActivate={() => chooseBudget(item)}
-          />
-        )
-      })}
-
-      {active && phase === 'life' && spec.choices.map((item) => (
-        <AnimatedStation
-          key={item.id}
-          x={item.x}
-          label={item.label}
-          sublabel={item.sublabel}
-          accent={week === 5 ? '#ffd700' : '#00dca0'}
-          selected={nearStation === `life:${item.id}`}
-          onActivate={() => chooseLife(item)}
+          key={station.id}
+          x={station.x}
+          label={station.label}
+          sublabel={station.sublabel}
+          accent={phase === 'case' ? '#ff8a3d' : '#1464f0'}
+          onActivate={station.action}
         />
       ))}
 
-      {active && phase === 'recap' && (
-        <AnimatedStation
-          x={0}
-          label={week === TOTAL_PAYCHECK_WEEKS ? 'SEE FINAL RESULT' : `CONTINUE TO WEEK ${week + 1}`}
-          sublabel={`COMFORT ${comfort}/10 · FREE TIME ${freeTime}/10`}
-          accent="#ffd700"
-          selected={nearStation === 'recap'}
-          onActivate={finishWeek}
-        />
-      )}
-
-      {active && phase === 'complete' && (
-        <AnimatedStation
-          x={0}
-          label="FINISH MODULE 5"
-          sublabel={`$${roundMoney(savings)} SAVED · $${roundMoney(debt)} DEBT`}
-          accent="#00dca0"
-          selected={nearStation === 'finish'}
-          onActivate={finishModule}
+      {active && (
+        <TaxFilingPanel
+          phase={phase}
+          taxCase={taxCase}
+          stepNumber={stepNumber}
+          feedback={feedback}
+          onStart={startReturn}
+          onChooseCase={chooseCase}
+          onAnswer={answerChoice}
+          onNext={nextStep}
+          onHint={sendHint}
+          onFinish={finishModule}
         />
       )}
 

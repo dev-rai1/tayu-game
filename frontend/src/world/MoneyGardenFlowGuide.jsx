@@ -15,7 +15,7 @@ const HIDE_OLD_PINNED_LESSON = `
 .tayu-world-declutter [class*="top-[150px]"][class*="z-[160]"][class*="w-[min(92vw,26rem)]"] {
   display: none !important;
 }
-.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="primary"] {
+.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="side-hint"] {
   display: none !important;
 }
 `

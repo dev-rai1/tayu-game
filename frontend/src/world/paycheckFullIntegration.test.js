@@ -29,13 +29,12 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('launches public Module 5 directly at Paycheck Planet', () => {
+  it('launches public Module 5 directly at the Tax Filing Lab', () => {
     expect(world).toContain("jump === '5'")
     expect(world).toContain('enterPaycheckPlanet()')
     expect(world).toContain('game.adminTeleport(PAYCHECK_START)')
     expect(world).toContain('activatePaycheckWorld()')
-    expect(world).not.toContain('guideToPaycheckPlanet')
-    expect(world).not.toContain('you will not be teleported')
+    expect(world).toContain('Paycheck Planet · Tax Filing Lab')
     expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("jump === '6' ? 5")
     expect(moduleSelect).toContain("String(target.n)")
@@ -43,23 +42,46 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
   })
 
-  it('expands Module 5 into a six-week job, tax, budget, and life simulation', () => {
-    expect(paycheckScenario).toContain('TOTAL_PAYCHECK_WEEKS = 6')
-    expect(paycheckScenario).toContain("title: 'JOB CHANGE'")
-    expect(paycheckScenario).toContain("title: 'SURPRISE WEEK'")
-    expect(paycheckScenario).toContain('BUDGET_PLANS')
-    expect(paycheckScenario).toContain('applyLifeChoice')
-    expect(paycheckWorld).toContain('WEEK 1 · CHOOSE A JOB')
-    expect(paycheckWorld).toContain('START_JOBS.map')
-    expect(paycheckWorld).toContain('CAREER_JOBS.map')
-    expect(paycheckWorld).toContain('BUDGET_PLANS.map')
-    expect(paycheckWorld).toContain('spec.choices.map')
-    expect(paycheckWorld).toContain("type: 'week_complete'")
+  it('makes Module 5 a six-step practice tax return with real math decisions', () => {
+    expect(paycheckScenario).toContain('TOTAL_TAX_STEPS = 6')
+    expect(paycheckScenario).toContain('TAX_CASES')
+    expect(paycheckScenario).toContain('GAME_STANDARD_DEDUCTION')
+    expect(paycheckScenario).toContain('bracketTax')
+    expect(paycheckScenario).toContain('taxReturnMath')
+    expect(paycheckScenario).toContain('filingStepFor')
+    expect(paycheckScenario).toContain('Read the W-2')
+    expect(paycheckScenario).toContain('Find taxable income')
+    expect(paycheckScenario).toContain('Use the tax brackets')
+    expect(paycheckScenario).toContain('Apply the tax credit')
+    expect(paycheckScenario).toContain('Refund or amount due?')
+    expect(paycheckScenario).toContain('Review and file')
+    expect(paycheckWorld).toContain('six_step_tax_filing_practice')
+    expect(paycheckWorld).toContain("type: correct ? 'tax_step_correct' : 'tax_step_retry'")
     expect(paycheckWorld).toContain('taxLabProgress')
   })
 
-  it('keeps Module 5 animated and clickable without stacked Press E or no-teleport labels', () => {
-    expect(paycheckWorld).toContain("labelTexture('PAYCHECK PLANET'")
+  it('starts with a large explanation and then uses a popup for every choice', () => {
+    expect(paycheckWorld).toContain('File a practice tax return')
+    expect(paycheckWorld).toContain('This module is about <strong>how a tax return works</strong>')
+    expect(paycheckWorld).toContain('TAX_INTRO_STEPS.map')
+    expect(paycheckWorld).toContain('<TaxFilingPanel')
+    expect(paycheckWorld).toContain('<Html fullscreen')
+    expect(paycheckWorld).toContain('Show a hint on the side')
+    expect(paycheckWorld).toContain('onChooseCase')
+    expect(paycheckWorld).toContain('onAnswer')
+  })
+
+  it('keeps all three choices reachable and visibly gives each one a path', () => {
+    expect(paycheckScenario).toContain('x: -2.6')
+    expect(paycheckScenario).toContain('x: 0')
+    expect(paycheckScenario).toContain('x: 2.6')
+    expect(paycheckWorld).toContain('function ChoicePath')
+    expect(paycheckWorld).toContain('<ChoicePath')
+    expect(paycheckWorld).toContain('The popup is the main control, so no choice can be blocked by the map.')
+  })
+
+  it('keeps Module 5 animated without stacked Press E instructions', () => {
+    expect(paycheckWorld).toContain("labelTexture('PAYCHECK PLANET · TAX LAB'")
     expect(paycheckWorld).toContain('AnimatedStation')
     expect(paycheckWorld).toContain('pushCoins(')
     expect(paycheckWorld).toContain('CelebrationBurst')
@@ -67,10 +89,9 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckWorld).not.toContain('NO TELEPORT')
     expect(paycheckWorld).not.toContain('WALK TO MODULE 6')
     expect(paycheckWorld).toContain("phase === 'complete'")
-    expect(paycheckWorld).toContain("phase === 'complete') return")
   })
 
-  it('turns off the redundant world arrow and first-time Press E tutorial during Module 5', () => {
+  it('turns off redundant world navigation prompts during Module 5', () => {
     expect(objective).toContain('if (isPaycheckWorldActive()) return null')
     expect(world).toContain('<FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />')
   })
@@ -103,16 +124,11 @@ describe('Paycheck Planet full integration', () => {
     expect(admin).toContain('MODULE {moduleStep} of 7')
   })
 
-  it('keeps one fresh coach lane inside Paycheck Planet', () => {
-    expect(world).toContain("key={paycheckMode ? 'paycheck-coach' : 'world-coach'}")
-    expect(world).toContain('paycheckMode={paycheckMode}')
-    expect(world).toContain('{!paycheckMode && <PersistentImprovementCoach />}')
-    expect(coach).toContain('paycheckMode = false')
-    expect(coach).toContain("type === 'lesson'")
-  })
-
-  it('lets non-button coach space pass clicks through to the game', () => {
+  it('uses important popups in front and ordinary hints on the side', () => {
+    expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
+    expect(coach).toContain('data-important-message-scrim="true"')
+    expect(coach).toContain("queuedMessage?.kind === 'actor'")
+    expect(coach).toContain('right-[max(0.75rem,env(safe-area-inset-right,0px))]')
     expect(coach).toContain('pointer-events-none fixed')
-    expect(coach).toContain('pointer-events-auto')
   })
 })

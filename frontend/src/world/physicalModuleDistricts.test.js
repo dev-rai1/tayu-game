@@ -14,12 +14,14 @@ const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8'
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
 describe('physical module districts', () => {
-  it('renders Paycheck Planet as a playable animated district without leaving the world', () => {
+  it('renders Paycheck Planet as a playable animated Tax Filing Lab without leaving the world', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
     expect(landmarks).toContain('<PaycheckPlanetWorld />')
-    expect(paycheck).toContain("labelTexture('PAYCHECK PLANET'")
-    expect(paycheck).toContain('PRESS E / TAP')
-    expect(paycheck).toContain('InteractiveStation')
+    expect(paycheck).toContain("labelTexture('PAYCHECK PLANET · TAX LAB'")
+    expect(paycheck).toContain('AnimatedStation')
+    expect(paycheck).toContain('ChoicePath')
+    expect(paycheck).toContain('<TaxFilingPanel')
+    expect(paycheck).not.toContain('PRESS E / TAP')
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 

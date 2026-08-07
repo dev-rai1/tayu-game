@@ -29,14 +29,11 @@ import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
-// (Paycheck Planet) runs physically inside the same world between internal
-// Bank (4) and Money Garden (5).
+// (Paycheck Planet · Tax Filing Lab) runs physically inside the same world
+// between internal Bank (4) and Money Garden (5).
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
-const PAYCHECK_START = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.1]
+const PAYCHECK_START = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.3]
 
-// Module 5 is a selectable module, so selecting it should behave like selecting
-// every other module: clear old UI, place the player at the activity, then start
-// the module. Do not make the learner walk across the map just to begin.
 function enterPaycheckPlanet() {
   try {
     const game = useGame.getState()
@@ -107,9 +104,8 @@ export default function World() {
     }
   }, [state.player.name, navigate, dispatch])
 
-  // Keep the Bank handoff short. The Start Module 5 action now launches the
-  // learner directly into Paycheck Planet instead of adding another travel
-  // instruction card on top of the game.
+  // Keep the Bank handoff short, but tell the learner what Module 5 is really
+  // about before the large Tax Filing Lab intro explains each step.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -118,7 +114,7 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Next is Paycheck Planet: six weeks of jobs, taxes, take-home pay, budgeting, and life choices.',
+            text: 'Your bank plan is ready. Next is the Tax Filing Lab: read a practice W-2, do simple tax math, and file a practice return.',
             buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5' })),
           }
         : card),
@@ -147,12 +143,9 @@ export default function World() {
 
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
-      // Public numbering: 5 = in-world Paycheck Planet, 6 = internal Money Garden.
       if (jump === '5') {
         enterPaycheckPlanet()
       } else {
-        // Leaving/replaying another module must also leave Paycheck mode so its
-        // stations cannot leak into the other world chapters.
         deactivatePaycheckWorld()
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
@@ -166,8 +159,6 @@ export default function World() {
         }, 400)
       }
     } else if (gardenEntryPart === 'B') {
-      // A learner who saved at the 6A/6B divider can choose the dedicated 6B
-      // card and resume directly in 6B instead of seeing the divider again.
       setTimeout(enterGardenPartB, 120)
     }
     crossfadeTo('town')
@@ -186,7 +177,7 @@ export default function World() {
   const gardenPartB = week === 5 && (Boolean(mg?.partTwoStarted) || Number(mg?.week || 1) > 6)
   const publicModule = paycheckMode ? '5' : week === 5 ? `6${gardenPartB ? 'B' : 'A'}` : String(week)
   const publicModuleTitle = paycheckMode
-    ? 'Paycheck Planet'
+    ? 'Paycheck Planet · Tax Filing Lab'
     : week === 5
       ? gardenPartB
         ? 'Money Garden · Markets, Risk & Patience'

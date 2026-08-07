@@ -38,13 +38,13 @@ describe('multi-transcript follow-up regressions', () => {
     expect(gardenGuide).toContain('Decision {partWeek} of 5')
   })
 
-  it('shows one Money Garden clue surface before the portfolio and one lesson afterward', () => {
+  it('shows one Money Garden clue surface before the portfolio and hides duplicate side hints', () => {
     expect(gardenGuide).toContain('data-money-garden-clue')
     expect(gardenGuide).toContain('Next Clue →')
     expect(gardenGuide).toContain('Make My Choice →')
     expect(gardenGuide).toContain("speaker: 'Lesson learned'")
     expect(gardenGuide).toContain('data-money-garden-flow')
-    expect(gardenGuide).toContain('[data-guidance-lane="primary"]')
+    expect(gardenGuide).toContain('[data-guidance-lane="side-hint"]')
   })
 
   it('keeps unmistakable Lemonade price controls', () => {
