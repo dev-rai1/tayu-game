@@ -16,16 +16,16 @@ const PAYCHECK_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]
 export function getObjectiveTarget(st) {
   if (st.adminHideArrows) return null // Part 0: presenter toggle
   if (st.weekComplete || st.scenarioLocked) return null
+  // Public Module 5 (Paycheck Planet) sits physically between Bank and Garden.
+  // The travel arrow stays visible even while the short intro lesson is open,
+  // so the learner immediately sees where to go after leaving the Bank.
+  if (st.objective === 'tax') return PAYCHECK_ENTRY
+  if (st.objective === 'tax-active') return null
   // When the next action is already on screen, remove the world arrow so it
   // never competes with the card or panel the player must use.
   if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
   // Part J: everything is done - the arrow leads to the party house door
   if (st.gameComplete) return [PARTY_HOUSE[0], PARTY_HOUSE[1] - 3]
-  // Public Module 5 (Paycheck Planet) sits physically between Bank and Garden.
-  // During the handoff, keep the normal world guidance aimed at its entrance
-  // instead of the legacy internal week-5 Money Garden objective.
-  if (st.objective === 'tax') return PAYCHECK_ENTRY
-  if (st.objective === 'tax-active') return null
   // Round 8 order: 3 = Budget Town, 4 = the Bank, 5 = the Money Garden
   if (st.week === 5) {
     // the arrow targets Mr. Sprout the PERSON, tracked live (E-I.6)
