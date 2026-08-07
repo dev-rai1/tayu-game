@@ -17,9 +17,9 @@ export const MONEY_GARDEN_PARTS = [
 ]
 
 export const MONEY_GARDEN_FLOW = [
-  '1. Read the clue.',
+  '1. Read one clue.',
   '2. Make one evidence-based change.',
-  '3. Start the week and compare the result.',
+  '3. See the result and lesson.',
 ]
 
 export const MONEY_GARDEN_DECISIONS = {
@@ -33,6 +33,96 @@ export const MONEY_GARDEN_DECISIONS = {
   8: { title: 'Price excitement is not research', instruction: 'A company just jumped. What business evidence would justify buying, and what would make the move only hype?' },
   9: { title: 'Compare steady and flashy results', instruction: 'Which company has supported the portfolio over several weeks instead of only producing one dramatic move?' },
   10: { title: 'Check concentration risk', instruction: 'What percentage depends on the largest holding? Adjust only if one company has too much control over the outcome.' },
+}
+
+const COMPANY_NAMES = {
+  toy: 'Toy Town',
+  snack: 'Snack Shack',
+  game: 'Game Land',
+}
+
+const companyName = (id) => COMPANY_NAMES[id] || 'This company'
+const money = (value) => Number.isFinite(Number(value)) ? `$${Math.round(Number(value) * 100) / 100}` : '$0'
+
+function largestHolding(mg) {
+  const companies = mg?.companies || {}
+  let total = 0
+  let largest = null
+  let largestValue = 0
+
+  for (const [id, company] of Object.entries(companies)) {
+    const value = Math.max(0, Number(company?.owned || 0) * Number(company?.price || 0))
+    total += value
+    if (value > largestValue) {
+      largestValue = value
+      largest = id
+    }
+  }
+
+  if (!largest || total <= 0) return null
+  return { id: largest, percent: Math.round((largestValue / total) * 100) }
+}
+
+// Screen-sized evidence for each decision. The UI reveals these entries one at
+// a time so the 3D world remains readable instead of being buried by a modal.
+export function moneyGardenClues(week, mg = {}) {
+  const fx = mg?.fx || {}
+
+  switch (Number(week)) {
+    case 1:
+      return [
+        'Toy Town has steady customer activity. That is evidence about the business.',
+        'Snack Shack has exciting product news, but news alone does not prove a business is healthy.',
+        'Game Land can move up or down quickly, so it brings more price risk.',
+      ]
+    case 2:
+      return [
+        `${companyName(fx.rain)} may fall this week. Notice how much of your plan depends on it.`,
+      ]
+    case 3:
+      return [
+        `${companyName(fx.dip)} has a price dip on screen.`,
+        'There is no new warning that the business itself became weaker.',
+      ]
+    case 4:
+      return [
+        `${companyName(fx.busy)} is PACKED — lots of customers are showing up.`,
+        `${companyName(fx.dusty)} is EMPTY — very few customers are showing up.`,
+      ]
+    case 5:
+      return [
+        `${companyName(fx.busy || fx.sale)} is on SALE and PACKED — the price is lower while customers are still active.`,
+        `${companyName(fx.dusty || fx.sale2)} is on SALE and EMPTY — the price is lower while customer activity is weak.`,
+      ]
+    case 6:
+      return [
+        `Pocket money ready right now: ${money(mg?.pocket)}.`,
+        'A surprise bill can arrive before an investment has time to recover.',
+      ]
+    case 7:
+      return [
+        `${companyName(fx.shabby)} shows EMPTY aisles, damaged signs, and falling activity.`,
+        'Those are business warning signs, not just a small price wiggle.',
+      ]
+    case 8:
+      return [
+        `${companyName(fx.balloon)} just had a big price jump and the town is excited.`,
+        'A price jump is not the same thing as new evidence about the business.',
+      ]
+    case 9:
+      return [
+        `${companyName(fx.star)} has been steadier across several weeks.`,
+        'Compare the pattern over time instead of judging only the latest move.',
+      ]
+    case 10: {
+      const largest = largestHolding(mg)
+      return largest
+        ? [`${companyName(largest.id)} is about ${largest.percent}% of your invested company value.`]
+        : ['No company currently dominates the invested part of your plan.']
+    }
+    default:
+      return ['Use the evidence visible in the world before changing your plan.']
+  }
 }
 
 export function moneyGardenPart(week) {
