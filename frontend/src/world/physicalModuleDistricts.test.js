@@ -20,12 +20,12 @@ describe('physical module districts', () => {
     expect(landmarks).toContain('PRESS E OR CLICK TO PLAY')
   })
 
-  it('keeps physical signs clean while the menu explicitly names Module 6', () => {
+  it('keeps physical signs clean while the catalog identifies Money Garden as module 6', () => {
     expect(bank).toContain("labelTexture('BANK OF TAYU'")
     expect(bank).not.toContain("labelTexture('MODULE 4")
     expect(landmarks).toContain("labelTexture('THE MONEY GARDEN'")
     expect(landmarks).not.toContain("labelTexture('MODULE 6")
-    expect(modules).toContain("title: 'Module 6: Money Garden'")
+    expect(modules).toMatch(/n:\s*6,[\s\S]*?badge:\s*'garden',[\s\S]*?title:\s*'Money Garden'/)
   })
 
   it('gives Bank, Paycheck Planet, Money Garden, and Finale real breathing room', () => {
