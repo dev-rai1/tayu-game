@@ -20,9 +20,7 @@ import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
-import { LemonadeFocusGuide } from '../world/LemonadeFocusGuide.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
-import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
 import { hasWebGL } from '../utils/webgl.js'
@@ -155,16 +153,13 @@ export default function World() {
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
-      {!paycheckMode && <LemonadeFocusGuide />}
-      {!paycheckMode && <BudgetTakeawayGuard />}
-      {!paycheckMode && <PersistentCoach />}
-      {!paycheckMode && <PersistentImprovementCoach />}
+      <PersistentCoach paycheckMode={paycheckMode} />
+      <PersistentImprovementCoach />
       {!paycheckMode && <GuidedCommerceOverlay />}
       <OverlayEscapeControls />
       {paycheckMode && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-[#FF8A3D]/60 bg-navy/90 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
+        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] -translate-x-1/2 rounded-full border border-[#FF8A3D]/60 bg-navy/90 px-4 py-1.5 text-center shadow-lg backdrop-blur-sm">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module 5 · Paycheck Planet</div>
-          <div className="text-sm font-extrabold text-white">Stay in the world and walk to the glowing stations.</div>
         </div>
       )}
       {use3D && usesTouchControls && <MobileControls />}
