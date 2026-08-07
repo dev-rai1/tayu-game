@@ -23,6 +23,7 @@ import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
+import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.jsx'
 import { AdminPanel } from '../components/AdminPanel.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
@@ -157,6 +158,7 @@ export default function World() {
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
+      <LemonadeCompletionCheck onContinue={onContinue} />
       <PersistentCoach paycheckMode={paycheckMode} />
       <PersistentImprovementCoach />
       {!paycheckMode && <GuidedCommerceOverlay />}
