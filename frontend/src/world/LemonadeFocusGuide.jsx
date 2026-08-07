@@ -80,7 +80,7 @@ export function LemonadeFocusGuide() {
         aria-modal="true"
         aria-labelledby="lemonade-focus-title"
         aria-describedby="lemonade-focus-copy"
-        className="pop-in w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        className="pop-in max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl"
       >
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-electric">
