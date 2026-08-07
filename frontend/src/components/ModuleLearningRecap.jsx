@@ -208,7 +208,8 @@ export function WorldModuleLearningRecap() {
 
   const triggerModule = useMemo(() => {
     if (week === 1 && weekComplete) return 1
-    if (week === 2 && weekComplete) return 2
+    // Module 2 has its own required two-question Check 2 and actual-profit recap.
+    // Do not stack this generic recap on top of that completion flow.
     if (week === 3 && cards[0]?.id === 'bt4') return 3
     if (week === 4 && cards[0]?.id === 'bkhand') return 4
     // Internal world week 5 is public Module 6 (Money Garden).
