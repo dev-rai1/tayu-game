@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGame } from './store.js'
 import {
+  applyStarterInvestingGift,
+  MONEY_GARDEN_STARTER_GIFT,
   moneyGardenDecision,
   moneyGardenPart,
   MONEY_GARDEN_FLOW,
@@ -26,6 +28,18 @@ export function MoneyGardenFlowGuide() {
   const isDecision = week === 5 && mg?.phase === 'adjust'
   const intermission = isDecision && shouldPauseBetweenGardenParts(decisionWeek, partTwoStarted)
   const canOpen = isDecision && !intermission && cards.length === 0 && !dialog
+
+  // Give every player enough room to experiment with investing. This runs for
+  // new games and older saved gardens, but the persisted flag prevents a
+  // second gift on reload or React StrictMode re-renders.
+  useEffect(() => {
+    if (week !== 5 || !mg || mg.starterGiftApplied) return
+    useGame.setState((state) => {
+      if (!state.mg || state.mg.starterGiftApplied) return {}
+      return { mg: applyStarterInvestingGift(state.mg) }
+    })
+    persist()
+  }, [week, mg?.starterGiftApplied, persist])
 
   useEffect(() => {
     if (!canOpen || panelPortfolio || openedForWeek.current === decisionWeek) return
@@ -93,6 +107,11 @@ export function MoneyGardenFlowGuide() {
           <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Money Garden · Part {part.part}: {part.title}</div>
           <div className="rounded-full bg-navy/10 px-2 py-1 text-[10px] font-extrabold">Decision {partWeek} of 5</div>
         </div>
+        {decisionWeek === 1 && mg.starterGiftApplied && (
+          <div className="mt-2 rounded-xl border border-teal/40 bg-teal/10 px-3 py-2 text-sm font-extrabold text-navy">
+            Mr. Sprout's investing gift: ${MONEY_GARDEN_STARTER_GIFT} · Ready to invest: ${Math.round(mg.cash * 100) / 100}
+          </div>
+        )}
         <h2 className="mt-1 font-display text-lg font-extrabold">{guide.title}</h2>
         <div className="mt-2 rounded-xl border border-sun/40 bg-sun/15 px-3 py-2">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-navy/55">Do this now</div>
