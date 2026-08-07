@@ -3,9 +3,11 @@ import { useEffect } from 'react'
 const ACTION_RULES = [
   { action: 'success', icon: '✓', pattern: /continue|start|play|resume|submit|finish|complete|confirm|save|deposit|cash out|buy|choose this/i },
   // Put close/hide actions before help so labels like "Hide this hint" do not
-  // get mistaken for help buttons and rendered as a duplicate "? ×" control.
+  // get mistaken for help buttons and rendered as a duplicate icon.
   { action: 'back', icon: '←', pattern: /back|cancel|close|hide|dismiss|choose another|not now|return/i },
-  { action: 'help', icon: '?', pattern: /help|glossary|word|hint|learn|guide|explain/i },
+  // Clues, hints, guides, and help controls keep their help styling but do not
+  // receive a generated question mark. The clue copy itself should be the focus.
+  { action: 'help', icon: null, pattern: /help|glossary|word|hint|clue|learn|guide|explain/i },
   { action: 'settings', icon: '⚙', pattern: /setting|preference|change grade|customize|edit/i },
   { action: 'practice', icon: '↻', pattern: /practice|retake|try again|play again|restart|replay/i },
   { action: 'reward', icon: '★', pattern: /certificate|reward|achievement|badge|score/i },
@@ -30,10 +32,10 @@ function classifyButton(button) {
   button.dataset.tayuEnhanced = 'true'
   button.dataset.tayuAction = match?.action || 'primary'
 
-  // Only add a semantic icon when a rule actually matched and the control does
-  // not already have its own icon. Unmatched controls should never get a random
-  // default arrow.
-  if (match && !hasOwnVisualIcon(button, visibleLabel)) {
+  // Only add a semantic icon when a rule explicitly supplies one and the
+  // control does not already have its own icon. Hint/clue/help rules purposely
+  // have no icon, so they stay clean instead of getting a generated question mark.
+  if (match?.icon && !hasOwnVisualIcon(button, visibleLabel)) {
     button.dataset.tayuActionIcon = 'true'
     button.style.setProperty('--tayu-action-icon', `"${match.icon}"`)
   } else {
