@@ -13,11 +13,14 @@ const KEYS = {
   ArrowRight: 'lookRight',
 }
 
+const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
+
 // Returns a stable ref whose .current holds the live pressed-direction booleans.
 export function useKeyboardControls() {
   const keys = useRef({ forward: false, backward: false, left: false, right: false, lookLeft: false, lookRight: false })
   useEffect(() => {
     const onDown = (e) => {
+      if (isTypingTarget(e.target)) return
       const k = KEYS[e.code]
       if (!k) return
       e.preventDefault()
