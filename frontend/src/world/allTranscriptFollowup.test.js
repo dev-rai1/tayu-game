@@ -30,10 +30,11 @@ describe('multi-transcript follow-up regressions', () => {
     expect(moduleSelect).not.toContain('Retake a quick check')
   })
 
-  it('keeps the already-implemented two-part Money Garden flow', () => {
-    expect(gardenGuide).toContain('Part 1 complete')
-    expect(gardenGuide).toContain('Start Part 2')
-    expect(gardenGuide).toContain('Save and exit')
+  it('keeps the Money Garden split unmistakably labeled as modules 6A and 6B', () => {
+    expect(gardenGuide).toContain('Module 6A complete')
+    expect(gardenGuide).toContain('Start Module 6B')
+    expect(gardenGuide).toContain('Save &amp; return to modules')
+    expect(gardenGuide).toContain('{part.moduleLabel} · Money Garden')
     expect(gardenGuide).toContain('Decision {partWeek} of 5')
   })
 
