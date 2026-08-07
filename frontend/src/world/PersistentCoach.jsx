@@ -12,7 +12,33 @@ function hintKey(type, value, week, objective) {
   return `${type}:${week}:${objective}:${value.title}:${value.action}`
 }
 
-export function PersistentCoach() {
+function actorName(value = '') {
+  const names = {
+    penny: 'Penny',
+    bram: 'Mr. Bram',
+    sprout: 'Mr. Sprout',
+    bea: 'Banker Bea',
+    theo: 'Theo',
+    mia: 'Mia',
+    scoop: 'Scoop',
+    wanderer: 'Milo',
+    nea: 'Nea',
+  }
+  return names[value] || String(value || 'Character').replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
+}
+
+function queuedMessage(kind, title, body) {
+  const text = String(body || '').trim()
+  if (!text) return null
+  return {
+    id: `${kind}:${text}`,
+    kind,
+    title,
+    body: text,
+  }
+}
+
+export function PersistentCoach({ paycheckMode = false }) {
   const week = useGame((s) => s.week)
   const objective = useGame((s) => s.objective)
   const scenarioLocked = useGame((s) => s.scenarioLocked)
@@ -41,13 +67,42 @@ export function PersistentCoach() {
   const actorCaption = useGame((s) => s.actorCaption)
   const banner = useGame((s) => s.banner)
   const feedbackByModule = useFeedbackCoach((s) => s.feedbackByModule)
-  const [expanded, setExpanded] = useState(false)
+  const [queue, setQueue] = useState([])
   const [dismissedKey, setDismissedKey] = useState('')
 
   const activeLesson = lessons[0]
   useLayoutEffect(() => {
     if (activeLesson?.learn === 'jars') useGame.getState().dismissLesson()
   }, [activeLesson?.id, activeLesson?.learn])
+
+  const enqueue = (entry) => {
+    if (!entry) return
+    setQueue((current) => current.some((item) => item.id === entry.id) ? current : [...current, entry])
+  }
+
+  // Short-lived messages used to disappear before younger players could read
+  // them. Capture every one here and keep it until the player explicitly moves
+  // to the next message. The old visual bubbles are hidden by worldDeclutter.css.
+  useEffect(() => {
+    enqueue(queuedMessage('feedback', 'Feedback', toast))
+  }, [toast])
+
+  useEffect(() => {
+    enqueue(queuedMessage('hint', 'Hint', guide?.line))
+  }, [guide])
+
+  useEffect(() => {
+    enqueue(queuedMessage('update', 'Update', banner))
+  }, [banner])
+
+  useEffect(() => {
+    enqueue(queuedMessage('character', `${actorName(actorCaption?.actor)} says`, actorCaption?.line))
+  }, [actorCaption])
+
+  useEffect(() => {
+    setQueue([])
+    setDismissedKey('')
+  }, [week])
 
   const stateForGuidance = {
     week, objective, scenarioLocked, scenario, scenarioState, gameComplete, lemPhase, bramTalked,
@@ -64,59 +119,85 @@ export function PersistentCoach() {
   const visibility = coachVisibility(stateForGuidance)
   const feedbackKey = activeFeedbackKey(stateForGuidance)
   const improvement = feedbackKey ? feedbackByModule[feedbackKey] : null
-  const transientMessageVisible = Boolean(toast || guide || actorCaption || banner)
-  const type = improvement ? 'improvement' : 'guidance'
-  const content = improvement || guidance
-  const key = hintKey(type, content, week, objective)
-  const canShow = Boolean(content && visibility.showGuidance && !transientMessageVisible && dismissedKey !== key)
+  const waiting = queue[0]
 
-  useEffect(() => { setExpanded(type === 'improvement') }, [key, type])
+  const paycheckGuidance = paycheckMode
+    ? {
+        title: 'Paycheck Planet',
+        action: usesTouchControls
+          ? 'Follow the glowing station, then tap the blue action button when you reach it.'
+          : 'Follow the glowing station, then press E when you reach it.',
+      }
+    : null
+
+  const type = waiting ? 'queued' : improvement ? 'improvement' : 'guidance'
+  const content = waiting || improvement || paycheckGuidance || guidance
+  const key = waiting?.id || hintKey(type, content, week, objective)
+  const canShow = Boolean(
+    content &&
+    !visibility.blocking &&
+    !visibility.commerce &&
+    !visibility.specialized &&
+    (waiting || paycheckMode || !gameComplete) &&
+    dismissedKey !== key
+  )
+
   if (!canShow) return null
 
-  const label = improvement ? "Benny's feedback" : 'Show hint'
-  const title = improvement ? improvement.title : guidance.title
+  const label = waiting
+    ? waiting.kind === 'character' ? 'CHARACTER' : waiting.kind === 'feedback' ? 'FEEDBACK' : waiting.kind === 'update' ? 'UPDATE' : 'HINT'
+    : improvement ? "BENNY'S FEEDBACK" : 'WHAT TO DO'
+  const title = waiting ? waiting.title : improvement ? improvement.title : content.title
   const diagnosis = improvement?.diagnosis
-  const action = improvement ? improvement.action : (guidance.action || guidance.instruction)
+  const action = waiting ? waiting.body : improvement ? improvement.action : (content.action || content.instruction)
   const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
-  const positionClass = usesTouchControls
-    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
-    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const sizeClass = improvement ? 'w-[min(94vw,30rem)] border-4 ring-4 ring-electric/25' : 'w-[min(90vw,23rem)] border-2'
+  const queueCount = queue.length
+
+  const advance = () => {
+    if (waiting) {
+      setQueue((current) => current.slice(1))
+      return
+    }
+    setDismissedKey(key)
+  }
 
   return (
     <aside
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
-      className={`pointer-events-none fixed left-1/2 z-[490] max-h-[min(65vh,32rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-electric bg-white text-navy shadow-2xl ${sizeClass} ${positionClass}`}
+      data-guidance-rail="true"
+      className="pointer-events-auto fixed right-3 top-[5.5rem] z-[490] w-[min(92vw,27rem)] max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-3xl border-2 border-electric bg-white p-4 text-navy shadow-2xl sm:right-4 sm:w-[min(32vw,27rem)]"
     >
-      {!expanded ? (
-        <div className={`flex items-center gap-2 ${improvement ? 'p-3' : 'p-2'}`}>
-          <button type="button" onClick={() => setExpanded(true)} className={`pointer-events-auto min-h-[48px] min-w-0 flex-1 rounded-xl bg-electric/10 px-4 text-left active:scale-[0.99] ${improvement ? 'py-2' : ''}`}>
-            <span className={`block font-extrabold uppercase tracking-[0.14em] text-electric ${improvement ? 'text-xs' : 'text-[10px]'}`}>{label}</span>
-            <span className={`block truncate font-extrabold ${improvement ? 'mt-1 text-lg leading-snug' : 'text-sm'}`}>{title}</span>
-          </button>
-          <button type="button" aria-label="Hide this hint" onClick={() => setDismissedKey(key)} className="pointer-events-auto grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy/10 text-xl font-extrabold text-navy active:scale-95">×</button>
-        </div>
-      ) : (
-        <div className={improvement ? 'p-4 sm:p-5' : 'p-3'}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className={`font-extrabold uppercase tracking-[0.14em] text-electric ${improvement ? 'text-xs' : 'text-[10px]'}`}>{label}</div>
-              <div className={`mt-1 break-words font-extrabold leading-snug ${improvement ? 'text-xl' : 'text-sm'}`}>{title}</div>
-              {diagnosis && <div className="mt-3 rounded-xl bg-navy/5 px-4 py-3 text-base font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
-              {improvement && <div className="mt-3 text-xs font-extrabold uppercase tracking-[0.12em] text-electric">Try one change</div>}
-              <p className={`break-words font-semibold text-navy/80 ${improvement ? 'mt-1 text-lg leading-relaxed' : 'mt-1 text-sm leading-snug'}`}>{action}</p>
-            </div>
-            <button type="button" onClick={() => setExpanded(false)} className={`pointer-events-auto shrink-0 rounded-xl bg-navy/10 px-3 font-extrabold text-navy active:scale-95 ${improvement ? 'min-h-[44px] text-sm' : 'min-h-[40px] text-xs'}`}>Hide</button>
-          </div>
-          <div className={improvement ? 'mt-4 flex gap-2' : 'mt-2 flex gap-2'}>
-            <button type="button" onClick={() => say(spoken)} className={`pointer-events-auto flex-1 rounded-xl bg-electric/10 px-3 font-extrabold text-electric active:scale-95 ${improvement ? 'min-h-[48px] text-sm' : 'min-h-[42px] text-xs'}`}>Read aloud</button>
-            <button type="button" onClick={() => setDismissedKey(key)} className={`pointer-events-auto flex-1 rounded-xl bg-navy/10 px-3 font-extrabold text-navy active:scale-95 ${improvement ? 'min-h-[48px] text-sm' : 'min-h-[42px] text-xs'}`}>Dismiss</button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
+        {waiting && queueCount > 1 && (
+          <span className="text-xs font-extrabold text-navy/45">1 of {queueCount}</span>
+        )}
+      </div>
+
+      <h2 className="mt-3 break-words font-display text-xl font-extrabold leading-snug text-navy">{title}</h2>
+      {diagnosis && (
+        <p className="mt-3 rounded-2xl bg-navy/5 px-4 py-3 text-base font-semibold leading-relaxed text-navy/85">{diagnosis}</p>
       )}
+      <p className="mt-3 break-words text-lg font-semibold leading-relaxed text-navy/85">{action}</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => say(spoken)}
+          className="min-h-[50px] rounded-2xl bg-navy/10 px-3 text-sm font-extrabold text-navy active:scale-95"
+        >
+          Read aloud
+        </button>
+        <button
+          type="button"
+          onClick={advance}
+          className="min-h-[50px] rounded-2xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95"
+        >
+          {waiting ? (queueCount > 1 ? 'Next' : 'Got it') : 'Got it'}
+        </button>
+      </div>
     </aside>
   )
 }
