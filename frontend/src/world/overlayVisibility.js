@@ -1,8 +1,10 @@
 const activeList = (value) => Array.isArray(value) && value.length > 0
+const activeLesson = (value) => (activeList(value) ? value[0] : null)
+const hasMajorLesson = (value) => Boolean(activeLesson(value) && !activeLesson(value).soft)
 
 export function isBlockingGameOverlay(state = {}) {
   return Boolean(
-    state.helpOpen || state.dialog || activeList(state.cards) || activeList(state.lessons) ||
+    state.helpOpen || state.dialog || activeList(state.cards) || hasMajorLesson(state.lessons) ||
     state.panelJar || state.panelItem || state.btPanel || state.bkPanel ||
     state.panelPortfolio || state.weekComplete
   )
