@@ -81,6 +81,13 @@
   }
 }
 
+/* Soft lessons and animation captions use their own low-screen wrappers rather
+   than the modal IDs above. They are also routed into the primary coach lane. */
+.tayu-world-declutter .pointer-events-none.absolute.inset-x-0.z-\[240\],
+.tayu-world-declutter .pointer-events-none.absolute.inset-x-0.z-\[220\] {
+  display: none !important;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;
