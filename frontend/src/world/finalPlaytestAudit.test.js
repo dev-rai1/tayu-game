@@ -16,8 +16,10 @@ describe('final middle-school playtest audit', () => {
     expect(tracker).toContain('return null')
     expect(tracker).not.toContain('<aside')
     expect(coach).toContain("Benny's feedback")
-    expect(coach).toContain('const action = improvement ? improvement.action')
+    expect(coach).toContain('coachMessageFromTransient')
+    expect(coach).toContain('data-guidance-lane="primary"')
     expect(coach).toContain('activeFeedbackKey')
+    expect(coach).toContain('advanceDialog')
   })
 
   it('keeps retry clues directional instead of revealing exact answers', () => {
