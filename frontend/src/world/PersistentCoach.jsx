@@ -71,6 +71,7 @@ export function PersistentCoach({ paycheckMode = false }) {
   const [dismissedKey, setDismissedKey] = useState('')
   const messageCounter = useRef(0)
   const queuedFocus = useRef(new Set())
+  const bankWatching = week === 4 && scenarioLocked
 
   const activeLesson = lessons[0]
   const stateForGuidance = {
@@ -84,6 +85,21 @@ export function PersistentCoach({ paycheckMode = false }) {
     storeMissionDone, bought, mg, bt, bk, weekComplete, cards, lessons, dialog,
     panelJar, panelItem, btPanel, bkPanel, panelPortfolio, helpOpen,
   ])
+
+  // During a Bank cutscene, E is not an action. Capture it before the world
+  // interaction listener so impatient repeat presses cannot restart or advance
+  // anything while the animation is still communicating the result.
+  useEffect(() => {
+    if (!bankWatching || typeof window === 'undefined') return undefined
+    const blockBankE = (event) => {
+      if (event.code !== 'KeyE') return
+      event.preventDefault()
+      event.stopPropagation()
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation()
+    }
+    window.addEventListener('keydown', blockBankE, true)
+    return () => window.removeEventListener('keydown', blockBankE, true)
+  }, [bankWatching])
 
   // Route short-lived message fields into this one tray before Hud can paint
   // separate toast/banner/NPC bubbles. Lessons and dialogue stay in the store
@@ -197,7 +213,7 @@ export function PersistentCoach({ paycheckMode = false }) {
 
   if (!canShow) return null
 
-  const label = dialogMessage?.label || lessonMessage?.label || queuedMessage?.label || (improvement ? "Benny's feedback" : 'Next step')
+  const label = dialogMessage?.label || lessonMessage?.label || queuedMessage?.label || (bankWatching ? 'Bank animation' : improvement ? "Benny's feedback" : 'Next step')
   const title = dialogMessage?.title || lessonMessage?.title || queuedMessage?.title || improvement?.title || generatedGuidance?.title
   const diagnosis = improvement?.diagnosis
   const action = dialogMessage?.action || lessonMessage?.action || queuedMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
@@ -214,7 +230,12 @@ export function PersistentCoach({ paycheckMode = false }) {
   const positionClass = usesTouchControls
     ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
     : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const emphasized = ['queued', 'dialog', 'lesson', 'improvement'].includes(type)
+  const emphasized = bankWatching || ['queued', 'dialog', 'lesson', 'improvement'].includes(type)
+  const frameClass = bankWatching
+    ? 'border-4 border-electric ring-8 ring-electric/20'
+    : emphasized
+      ? 'border-electric ring-4 ring-electric/15'
+      : 'border-navy/15'
   const learnResource = type === 'lesson' && activeLesson?.learn ? LEARN[activeLesson.learn] : null
 
   return (
@@ -224,21 +245,36 @@ export function PersistentCoach({ paycheckMode = false }) {
       aria-atomic="true"
       data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
       data-guidance-lane="primary"
-      className={`pointer-events-none fixed left-1/2 z-[560] max-h-[min(62vh,30rem)] w-[min(92vw,27rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 bg-white text-navy shadow-2xl ${emphasized ? 'border-electric ring-4 ring-electric/15' : 'border-navy/15'} ${positionClass}`}
+      data-bank-watching={bankWatching ? 'true' : 'false'}
+      className={`pointer-events-none fixed left-1/2 z-[560] max-h-[min(62vh,30rem)] w-[min(92vw,27rem)] -translate-x-1/2 overflow-y-auto rounded-2xl bg-white text-navy shadow-2xl ${frameClass} ${positionClass}`}
     >
-      <div className="p-3 sm:p-4">
+      <div className={bankWatching ? 'p-5 sm:p-6' : 'p-3 sm:p-4'}>
         <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 text-sm font-black text-electric shadow-sm" aria-hidden="true">
-            {helperFace(dialogMessage ? 'actor' : lessonMessage ? 'lesson' : queuedMessage?.kind || type)}
+          <div className={`${bankWatching ? 'h-14 w-14 text-lg' : 'h-10 w-10 text-sm'} grid shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 font-black text-electric shadow-sm`} aria-hidden="true">
+            {bankWatching ? '▶' : helperFace(dialogMessage ? 'actor' : lessonMessage ? 'lesson' : queuedMessage?.kind || type)}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
+              <span className={`${bankWatching ? 'text-xs' : 'text-[10px]'} font-extrabold uppercase tracking-[0.14em] text-electric`}>{label}</span>
               {queueProgress && <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{queueProgress}</span>}
             </div>
-            <div className="mt-0.5 break-words text-base font-extrabold leading-snug text-navy">{title}</div>
+            <div className={`${bankWatching ? 'mt-1 text-xl' : 'mt-0.5 text-base'} break-words font-extrabold leading-snug text-navy`}>{title}</div>
             {diagnosis && <div className="mt-2 rounded-xl bg-navy/5 px-3 py-2 text-sm font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
-            <p className="mt-1.5 break-words text-sm font-semibold leading-relaxed text-navy/80">{action}</p>
+            <p className={`${bankWatching ? 'mt-2 text-base' : 'mt-1.5 text-sm'} break-words font-semibold leading-relaxed text-navy/80`}>{action}</p>
+            {bankWatching && (
+              <div className="mt-3 rounded-2xl border-2 border-electric/20 bg-electric/10 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-electric">
+                  <span className="h-3 w-3 animate-pulse rounded-full bg-electric" aria-hidden="true" />
+                  Bank animation playing
+                </div>
+                <p className="mt-1 text-base font-extrabold leading-snug text-navy">Watch the scene. You do not need to press E while this is moving.</p>
+                <div className="mt-3 flex gap-2" aria-hidden="true">
+                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/30" />
+                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/50 [animation-delay:180ms]" />
+                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/70 [animation-delay:360ms]" />
+                </div>
+              </div>
+            )}
             {learnResource && (
               <a
                 href={learnResource.url}
@@ -266,8 +302,12 @@ export function PersistentCoach({ paycheckMode = false }) {
             </button>
           ) : queuedMessage ? (
             <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-              {queue.length > 1 ? 'Next' : 'Got it'}
+              {bankWatching ? (queue.length > 1 ? 'Next message' : 'Keep watching') : (queue.length > 1 ? 'Next' : 'Got it')}
             </button>
+          ) : bankWatching ? (
+            <div className="grid min-h-[44px] flex-1 place-items-center rounded-xl bg-navy/10 px-3 text-center text-sm font-extrabold text-navy/70" aria-live="polite">
+              Waiting for the scene…
+            </div>
           ) : (
             <button type="button" onClick={() => setDismissedKey(key)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95">
               Hide hint
