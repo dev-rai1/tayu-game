@@ -89,7 +89,7 @@ export const EDUCATOR_GRADE_BANDS = [
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
     copy: 'All six core modules are available. Module 5 includes a guided practice tax return, and the investing finale is clearly split into Module 6A and Module 6B.',
     currentModules: MODULE_CATALOG,
-    plannedModules: [],
+    plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
