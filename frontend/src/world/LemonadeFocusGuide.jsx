@@ -38,8 +38,8 @@ export function LemonadeFocusGuide() {
 
   useEffect(() => {
     if (guide && shouldSuppressTransientGuide({ ...stateSnapshot, guide })) {
-      // Lemonade already has a full decision surface or a focused animation.
-      // Remove the short-lived coach bubble so the learner sees one message.
+      // The focus sequence owns the one shared guidance location for these
+      // decisions, so the older transient bubble should not compete with it.
       useGame.setState({ guide: null })
     }
   }, [actorCaption, cards, dialog, guide, helpOpen, lemPhase, lessons, week])
@@ -74,13 +74,13 @@ export function LemonadeFocusGuide() {
   }
 
   return (
-    <div className="pointer-events-auto absolute inset-0 z-[360] flex items-center justify-center bg-navy/65 p-4 backdrop-blur-sm">
+    <div className="pointer-events-none fixed inset-0 z-[510]">
       <div
         role="dialog"
-        aria-modal="true"
         aria-labelledby="lemonade-focus-title"
         aria-describedby="lemonade-focus-copy"
-        className="pop-in w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        data-guidance-rail="true"
+        className="pop-in pointer-events-auto absolute right-3 top-[5.5rem] w-[min(92vw,27rem)] max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-3xl border-2 border-electric bg-white p-5 shadow-2xl sm:right-4 sm:w-[min(32vw,27rem)]"
       >
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-electric">
@@ -93,14 +93,14 @@ export function LemonadeFocusGuide() {
         <button
           type="button"
           onClick={() => say(`${step.title}. ${step.text}`)}
-          className="mt-4 min-h-[44px] rounded-xl bg-navy/10 px-4 text-sm font-extrabold text-navy transition active:scale-95"
+          className="mt-4 min-h-[48px] w-full rounded-xl bg-navy/10 px-4 text-sm font-extrabold text-navy transition active:scale-95"
         >
           Read aloud
         </button>
         <button
           type="button"
           onClick={advance}
-          className="mt-4 min-h-[60px] w-full rounded-2xl bg-electric px-6 text-lg font-extrabold text-white transition hover:bg-teal hover:text-navy active:scale-95"
+          className="mt-2 min-h-[56px] w-full rounded-2xl bg-electric px-6 text-lg font-extrabold text-white transition hover:bg-teal hover:text-navy active:scale-95"
         >
           {last ? finishLabel : 'Next step'}
         </button>
