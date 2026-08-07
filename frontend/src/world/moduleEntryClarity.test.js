@@ -5,7 +5,9 @@ import path from 'node:path'
 const read = (relative) => fs.readFileSync(path.resolve(relative), 'utf8')
 
 const world = read('src/pages/World.jsx')
-const entryCss = read('src/world/moduleEntryFixes.css')
+const paycheck = read('src/world/PaycheckPlanetWorld.jsx')
+const taxScene = read('src/world/TaxLabWorld.jsx')
+const taxCss = read('src/world/taxWorkbench.css')
 
 describe('module entry clarity', () => {
   it('starts Explore launches from the beginning instead of resuming Module 5', () => {
@@ -23,24 +25,31 @@ describe('module entry clarity', () => {
     expect(world).toContain('helpOpen: false')
   })
 
-  it('gives Tax Lab one primary foreground surface', () => {
-    expect(world).toContain("{!paycheckMode && <Hud")
-    expect(world).toContain("{!paycheckMode && <LemonadeCompletionCheck")
-    expect(world).toContain("paycheckMode ? <TaxSideHint /> : <PersistentCoach")
-    expect(world).toContain("{!paycheckMode && <WorldModuleLearningRecap />}")
+  it('gives Tax Lab one full-screen foreground surface with no side popup', () => {
+    expect(world).toContain('taxMode ? <TaxLabWorld />')
+    expect(world).toContain('{!taxMode && <Hud')
+    expect(world).toContain('{!taxMode && <PersistentCoach')
+    expect(world).toContain('{!taxMode && <AdminPanel />')
+    expect(world).not.toContain('TaxSideHint')
+    expect(paycheck).toContain('createPortal(')
+    expect(paycheck).toContain('data-tax-workbench="true"')
+    expect(paycheck).not.toContain('<Html fullscreen')
+    expect(taxCss).toContain('width: 100vw')
+    expect(taxCss).toContain('min-width: 100vw')
   })
 
-  it('keeps tax hints secondary and filters automatic entry chatter', () => {
-    expect(world).toContain('data-guidance-kind="tax-hint"')
-    expect(world).toContain("line.startsWith('Pick any W-2 case')")
-    expect(world).toContain("line.startsWith('Resume Module 5')")
-    expect(world).toContain('Got it')
+  it('uses an isolated Tax Lab scene instead of showing the entire town behind Module 5', () => {
+    expect(taxScene).toContain('export function TaxLabWorld()')
+    expect(taxScene).toContain('<PaycheckPlanetWorld />')
+    expect(taxScene).not.toContain('<Environment3D />')
+    expect(taxScene).not.toContain('<MoneyGarden />')
+    expect(taxScene).not.toContain('<BankDistrict />')
   })
 
-  it('never splits an active module dialog to make room for a side hint', () => {
-    expect(entryCss).toContain('align-items: center !important')
-    expect(entryCss).toContain('justify-content: center !important')
-    expect(entryCss).toContain('width: min(94vw, 46rem) !important')
-    expect(entryCss).not.toContain('tayu-guidance-rail-width')
+  it('keeps hints inside the same tax workbench instead of opening another overlay', () => {
+    expect(paycheck).toContain("{hintOpen ? 'Hide hint' : 'Need a hint?'}")
+    expect(paycheck).toContain('<strong className="text-electric">Hint:</strong>')
+    expect(paycheck).not.toContain('data-guidance-kind="tax-hint"')
+    expect(paycheck).not.toContain('Show a hint on the side')
   })
 })
