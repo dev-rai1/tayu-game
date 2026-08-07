@@ -29,7 +29,7 @@
   touch-action: none;
 }
 
-/* Keep the permanent HUD controls in separate, predictable screen zones. */
+/* Keep permanent HUD controls in separate, predictable screen zones. */
 .tayu-world-declutter .absolute.left-4.top-4 {
   left: max(0.75rem, env(safe-area-inset-left, 0px));
   top: max(0.75rem, env(safe-area-inset-top, 0px));
@@ -46,20 +46,15 @@
   display: none;
 }
 
-/* Replace the ambiguous question-mark-only control with one clear Help label. */
+/* Keep Help as one compact, familiar question-mark button. */
 .tayu-world-declutter button[aria-label="Help"] {
-  width: auto;
-  min-width: 4.5rem;
-  padding-inline: 0.9rem;
-  font-size: 0;
-  white-space: nowrap;
-}
-
-.tayu-world-declutter button[aria-label="Help"]::after {
-  content: "Help";
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 800;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
@@ -90,7 +85,7 @@
 
 @media (max-width: 640px) {
   .tayu-world-declutter .absolute.left-4.top-4 {
-    max-width: calc(100vw - 6.5rem);
+    max-width: calc(100vw - 5.75rem);
     gap: 0.4rem;
   }
 
@@ -107,12 +102,6 @@
   .tayu-world-declutter .absolute.right-4.top-\[104px\] {
     top: calc(10.75rem + env(safe-area-inset-top, 0px));
     right: 0.75rem;
-  }
-
-  .tayu-world-declutter button[aria-label="Help"] {
-    min-width: 3.75rem;
-    min-height: 2.75rem;
-    padding-inline: 0.65rem;
   }
 
   .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
@@ -133,7 +122,7 @@
 
 @media (max-width: 380px) {
   .tayu-world-declutter .absolute.left-4.top-4 {
-    max-width: calc(100vw - 5.25rem);
+    max-width: calc(100vw - 5rem);
   }
 
   .tayu-world-declutter .absolute.left-4.top-4 > button,
@@ -143,12 +132,10 @@
   }
 
   .tayu-world-declutter button[aria-label="Help"] {
-    min-width: 3.25rem;
-    padding-inline: 0.5rem;
-  }
-
-  .tayu-world-declutter button[aria-label="Help"]::after {
-    content: "Help";
-    font-size: 0.75rem;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    font-size: 1.1rem;
   }
 }
