@@ -45,6 +45,23 @@ function moveToPaycheckPlanet() {
   }, 350)
 }
 
+function enterGardenPartB() {
+  try {
+    let game = useGame.getState()
+    if (game.week !== 5 || !game.mg) return
+    if (Number(game.mg.week || 1) < 6) {
+      game.adminJumpWeek(6)
+      game = useGame.getState()
+    }
+    useGame.setState((state) => ({
+      mg: state.mg ? { ...state.mg, partTwoStarted: true } : state.mg,
+    }))
+    useGame.getState().persist()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 export default function World() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
@@ -123,6 +140,9 @@ export default function World() {
   useEffect(() => {
     initWorld()
     const jump = localStorage.getItem('tayu-jump-module')
+    const gardenEntryPart = localStorage.getItem('tayu-garden-entry-part')
+    if (gardenEntryPart) localStorage.removeItem('tayu-garden-entry-part')
+
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
       // Public numbering: 5 = in-world Paycheck Planet, 6 = internal Money Garden.
@@ -135,9 +155,21 @@ export default function World() {
         deactivatePaycheckWorld()
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
-        setTimeout(() => { try { useGame.getState().adminJumpModule(internal) } catch (e) { console.error(e) } }, 400)
+        setTimeout(() => {
+          try {
+            useGame.getState().adminJumpModule(internal)
+            if (jump === '6' && gardenEntryPart === 'B') setTimeout(enterGardenPartB, 80)
+          } catch (e) {
+            console.error(e)
+          }
+        }, 400)
       }
+    } else if (gardenEntryPart === 'B') {
+      // A learner who saved at the 6A/6B divider can choose the dedicated 6B
+      // card and resume directly in 6B instead of seeing the divider again.
+      setTimeout(enterGardenPartB, 120)
     }
+
     crossfadeTo('town')
     const t1 = setTimeout(() => setFaded(true), 60)
     return () => clearTimeout(t1)
