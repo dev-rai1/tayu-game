@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { moduleCheckForBadge } from '../constants/moduleChecks.js'
 import { addModuleCheckAttempt, moduleCheckProgress } from '../services/modulePractice.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
@@ -50,6 +51,7 @@ function saveCheckAttempt(score) {
 }
 
 export function PaycheckCompletionCheck() {
+  const { pathname } = useLocation()
   const [visible, setVisible] = useState(shouldShowNow)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selected, setSelected] = useState(null)
@@ -71,7 +73,7 @@ export function PaycheckCompletionCheck() {
 
   const progress = useMemo(() => moduleCheckProgress(result), [result])
 
-  if (!visible || !CHECK) return null
+  if (pathname !== '/world' || !visible || !CHECK) return null
 
   const question = CHECK.questions[questionIndex]
   const correct = selected === question.answer
