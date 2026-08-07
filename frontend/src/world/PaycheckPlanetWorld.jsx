@@ -57,7 +57,7 @@ function showLesson(text, key) {
   try { useGame.getState().showLesson(text, key, true, 'tax') } catch { /* world stays playable */ }
 }
 
-function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = '#00dca0', onActivate }) {
+function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = '#00dca0', actionLabel = 'PRESS E / TAP', onActivate }) {
   const group = useRef()
   const time = useRef(Math.random() * 4)
 
@@ -103,7 +103,7 @@ function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = 
       {sublabel && (
         <Billboard position={[0, 1.02, 0]}>
           <mesh>
-            <planeGeometry args={[2.45, 0.76]} />
+            <planeGeometry args={[2.75, 0.76]} />
             <meshBasicMaterial map={labelTexture(sublabel, { bg: '#ffffff', color: '#071748', accent })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
@@ -111,8 +111,8 @@ function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = 
       {near && (
         <Billboard position={[0, 2.18, 0]}>
           <mesh>
-            <planeGeometry args={[2.05, 0.64]} />
-            <meshBasicMaterial map={labelTexture('PRESS E / TAP', { bg: '#00dca0', color: '#071748', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
+            <planeGeometry args={[2.45, 0.64]} />
+            <meshBasicMaterial map={labelTexture(actionLabel, { bg: '#00dca0', color: '#071748', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
       )}
@@ -181,8 +181,8 @@ export function PaycheckPlanetWorld() {
     setJob(null)
     setPlan(null)
     try { useGame.getState().adminClearUi() } catch { /* no-op */ }
-    setToast('Paycheck Planet is live. Walk to a glowing job station.')
-    showLesson('Welcome to Paycheck Planet! Pick a job, watch taxes come out of the paycheck, plan the take-home pay, then handle a surprise expense. Everything happens right here in the world.', 'tax-world-intro')
+    setToast('Step 1: compare the 3 jobs, walk to ONE glowing job pad, then press E or tap to choose it.')
+    showLesson('FIRST CHOICE: Compare each job’s gross pay, tax rate, and take-home pay. Pick one job by walking to its glowing pad and pressing E or tapping it.', 'tax-world-intro')
     recordLearningEvent({ moduleName: 'tax', type: 'module_start', outcome: 'started', detail: 'in_world_3d' }).catch(() => {})
   }, [active])
 
@@ -215,8 +215,8 @@ export function PaycheckPlanetWorld() {
     setJob(selected)
     setPhase('tax')
     pushCoins(worldPoint(selected.x, STATION_Z, 1.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 9, 'gross-pay')
-    setToast(`${selected.label}: $${selected.gross} gross pay. Now use the tax station.`)
-    showLesson(`Gross pay is the full $${selected.gross}. At this job, ${Math.round(selected.rate * 100)}% ($${withheld}) is withheld for taxes, leaving $${net} of take-home pay.`, `tax-job-${selected.id}`)
+    setToast(`${selected.label} chosen: $${selected.gross} gross − $${withheld} tax = $${net} take-home. Now use the center tax station.`)
+    showLesson(`You chose ${selected.label}. Gross pay is $${selected.gross}; ${Math.round(selected.rate * 100)}% ($${withheld}) is withheld for taxes, so your take-home pay is $${net}.`, `tax-job-${selected.id}`)
     recordLearningEvent({ moduleName: 'tax', type: 'job_choice', outcome: selected.id, detail: `gross=${selected.gross};rate=${selected.rate}` }).catch(() => {})
   }, [phase])
 
@@ -313,11 +313,19 @@ export function PaycheckPlanetWorld() {
 
   const phaseHeadline = !active
     ? (nearEntrance ? 'PRESS E / TAP TO ENTER' : 'WALK UP TO PLAY')
-    : phase === 'job' ? '1 · CHOOSE A JOB'
-      : phase === 'tax' ? '2 · WATCH TAXES COME OUT'
-        : phase === 'plan' ? '3 · PLAN YOUR TAKE-HOME PAY'
-          : phase === 'event' ? `4 · SURPRISE: BIKE REPAIR $${REPAIR_COST}`
+    : phase === 'job' ? 'STEP 1 · CHOOSE 1 OF 3 JOBS'
+      : phase === 'tax' ? 'STEP 2 · USE THE TAX STATION'
+        : phase === 'plan' ? 'STEP 3 · CHOOSE 1 OF 3 PLANS'
+          : phase === 'event' ? `STEP 4 · BIKE REPAIR COSTS $${REPAIR_COST}`
             : 'MODULE 5 COMPLETE!'
+
+  const phaseInstruction = !active
+    ? 'ENTER PAYCHECK PLANET TO START'
+    : phase === 'job' ? 'COMPARE GROSS · TAX · TAKE-HOME'
+      : phase === 'tax' ? 'SEE WHAT LEAVES YOUR PAYCHECK'
+        : phase === 'plan' ? 'COMPARE HOW MUCH EACH PLAN SAVES'
+          : phase === 'event' ? 'TEST WHETHER YOUR PLAN COVERS IT'
+            : 'CONTINUE TO MODULE 6'
 
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
@@ -360,8 +368,14 @@ export function PaycheckPlanetWorld() {
       </Billboard>
       <Billboard position={[0, 3.0, 2.45]}>
         <mesh>
-          <planeGeometry args={[5.2, 1.34]} />
+          <planeGeometry args={[5.8, 1.34]} />
           <meshBasicMaterial map={labelTexture(phaseHeadline, { bg: active ? '#00dca0' : '#071748', color: active ? '#071748' : '#ffffff', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
+        </mesh>
+      </Billboard>
+      <Billboard position={[0, 2.35, 2.48]}>
+        <mesh>
+          <planeGeometry args={[5.4, 0.82]} />
+          <meshBasicMaterial map={labelTexture(phaseInstruction, { bg: '#ffffff', color: '#071748', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
 
@@ -381,17 +395,22 @@ export function PaycheckPlanetWorld() {
         </mesh>
       )}
 
-      {active && phase === 'job' && JOBS.map((item) => (
-        <InteractiveStation
-          key={item.id}
-          x={item.x}
-          label={item.label}
-          sublabel={`$${item.gross} GROSS · ${Math.round(item.rate * 100)}% TAX`}
-          near={nearStation === `job:${item.id}`}
-          accent="#ff8a3d"
-          onActivate={() => chooseJob(item)}
-        />
-      ))}
+      {active && phase === 'job' && JOBS.map((item) => {
+        const withheld = Math.round(item.gross * item.rate)
+        const net = item.gross - withheld
+        return (
+          <InteractiveStation
+            key={item.id}
+            x={item.x}
+            label={item.label}
+            sublabel={`$${item.gross} GROSS · $${net} TAKE-HOME`}
+            near={nearStation === `job:${item.id}`}
+            accent="#ff8a3d"
+            actionLabel="CHOOSE THIS JOB · E / TAP"
+            onActivate={() => chooseJob(item)}
+          />
+        )
+      })}
 
       {active && phase === 'tax' && (
         <InteractiveStation
@@ -400,6 +419,7 @@ export function PaycheckPlanetWorld() {
           sublabel={job ? `$${job.gross} − $${tax} = $${takeHome}` : 'GROSS − TAX = TAKE-HOME'}
           near={nearStation === 'withhold'}
           accent="#1464f0"
+          actionLabel="WITHHOLD TAX · E / TAP"
           onActivate={withholdTax}
         />
       )}
@@ -412,6 +432,7 @@ export function PaycheckPlanetWorld() {
           sublabel={takeHome ? `$${Math.round(takeHome * item.future)} FOR FUTURE` : `${Math.round(item.future * 100)}% FOR FUTURE`}
           near={nearStation === `plan:${item.id}`}
           accent="#7850f0"
+          actionLabel="CHOOSE THIS PLAN · E / TAP"
           onActivate={() => choosePlan(item)}
         />
       ))}
@@ -423,6 +444,7 @@ export function PaycheckPlanetWorld() {
           sublabel={plan ? `YOU SET ASIDE $${futureFund}` : 'CAN YOUR PLAN COVER IT?'}
           near={nearStation === 'repair'}
           accent="#ffd700"
+          actionLabel="TEST MY PLAN · E / TAP"
           onActivate={handleRepair}
         />
       )}
@@ -434,6 +456,7 @@ export function PaycheckPlanetWorld() {
           sublabel="MODULE 6 →"
           near={nearStation === 'continue'}
           accent="#00dca0"
+          actionLabel="GO TO MODULE 6 · E / TAP"
           onActivate={continueToGarden}
         />
       )}
