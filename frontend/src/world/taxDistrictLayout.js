@@ -16,6 +16,30 @@ export const TAX_POINTS = {
   filing: worldPoint(0, 2.15),
 }
 
+export const TAX_CLIENTS = [
+  {
+    caseId: 'library',
+    name: 'Ari',
+    point: TAX_POINTS.clientLeft,
+    line: 'I worked at the library after school. Can you help me figure out what my W-2 means?',
+    avatar: { skinTone: 'tan', hairColor: 'brown', hairStyle: 'curly', shirtColor: 'teal', pantsColor: 'navy', topStyle: 'tee', bottomStyle: 'pants' },
+  },
+  {
+    caseId: 'camp',
+    name: 'Sam',
+    point: TAX_POINTS.clientMiddle,
+    line: 'I had a summer camp job. I know money was withheld, but I do not know if that means I get it all back.',
+    avatar: { skinTone: 'medium', hairColor: 'black', hairStyle: 'short', shirtColor: 'blue', pantsColor: 'gray', topStyle: 'hoodie', bottomStyle: 'pants' },
+  },
+  {
+    caseId: 'design',
+    name: 'Jordan',
+    point: TAX_POINTS.clientRight,
+    line: 'My design job paid more, and I am not sure whether I already paid enough tax during the year.',
+    avatar: { skinTone: 'light', hairColor: 'darkBrown', hairStyle: 'long', shirtColor: 'purple', pantsColor: 'black', topStyle: 'tee', bottomStyle: 'pants' },
+  },
+]
+
 export const TAX_STEP_STATIONS = {
   1: { key: 'w2', label: 'W-2 SCANNER', point: TAX_POINTS.w2 },
   2: { key: 'deduction', label: 'DEDUCTION DESK', point: TAX_POINTS.deduction },
