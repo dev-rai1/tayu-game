@@ -21,6 +21,8 @@ describe('whole-game next-step guidance', () => {
     [{ week: 3, bt: { stage: 'intro' } }, 'TALK TO THE BUDGET KEEPER', 'Press E'],
     [{ week: 3, bt: { stage: 'split' } }, 'BUILD THE MONEY PLAN', 'automatically'],
     [{ week: 4, bk: { week: 3, seen: { intro: true } } }, 'BANK LESSON 3 OF 6', 'Press E'],
+    [{ week: 5, objective: 'tax', mgPhase: 'toGarden', mg: { week: 1, phase: 'opening' } }, 'GO TO PAYCHECK PLANET', 'glowing entrance'],
+    [{ week: 5, objective: 'tax-active', mgPhase: 'toGarden', mg: { week: 1, phase: 'opening' } }, 'COMPLETE PAYCHECK PLANET', 'Press E'],
     [{ week: 5, mgPhase: 'toGarden', mg: { week: 1, phase: 'opening' } }, 'TALK TO MR. SPROUT', 'Press E'],
     [{ week: 5, mgPhase: 'rounds', mg: { week: 4, phase: 'adjust' } }, 'MONEY GARDEN WEEK 4', 'Start the Week'],
     [{ gameComplete: true }, 'GO TO THE FINALE AREA', 'Press E'],
