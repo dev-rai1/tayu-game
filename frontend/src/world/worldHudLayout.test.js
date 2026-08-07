@@ -5,6 +5,7 @@ import path from 'node:path'
 const worldSource = fs.readFileSync(path.resolve('src/pages/World.jsx'), 'utf8')
 const hudSource = fs.readFileSync(path.resolve('src/world/Hud.jsx'), 'utf8')
 const coachSource = fs.readFileSync(path.resolve('src/world/PersistentCoach.jsx'), 'utf8')
+const visibilitySource = fs.readFileSync(path.resolve('src/world/overlayVisibility.js'), 'utf8')
 const cssSource = fs.readFileSync(path.resolve('src/world/worldDeclutter.css'), 'utf8')
 
 describe('world HUD layout', () => {
@@ -39,10 +40,19 @@ describe('world HUD layout', () => {
     expect(coachSource).toContain('data-guided-clue-tray="true"')
     expect(coachSource).toContain('transientClue({ toast, guide, actorCaption, banner })')
     expect(coachSource).toContain("left: 'max(0.75rem, env(safe-area-inset-left, 0px))'")
-    expect(coachSource).not.toContain('transientMessageVisible')
     expect(cssSource).toContain('.absolute.inset-x-0.bottom-24.z-\\[220\\]')
     expect(cssSource).toContain('.absolute.inset-x-0.top-32.z-\\[150\\]')
     expect(cssSource).toContain('.absolute.inset-x-0.top-24.z-\\[200\\]')
+  })
+
+  it('keeps major instructions focused while minor tips use the tray', () => {
+    expect(visibilitySource).toContain('hasMajorLesson')
+    expect(visibilitySource).toContain('!activeLesson(value).soft')
+    expect(coachSource).toContain('minorLessonClue(activeLesson)')
+    expect(coachSource).toContain("data-message-level={minorLesson || improvement || transient ? 'secondary' : 'guidance'}")
+    expect(cssSource).toContain('.absolute.inset-x-0.z-\\[240\\]')
+    expect(hudSource).toContain('aria-labelledby="tayu-lesson-title"')
+    expect(hudSource).toContain('aria-labelledby="tayu-dialog-speaker"')
   })
 
   it('keeps clue copy short and readable', () => {
