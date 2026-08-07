@@ -54,12 +54,14 @@ const MODULE_RECAPS = {
   },
   6: {
     title: 'Money Garden',
-    memory: 'Do not bet everything on one seed: spread, watch, and stay patient.',
+    memory: 'Strong investing is a plan: own carefully, diversify, research, think long term, and rebalance.',
     items: [
-      'Diversifying means spreading money across different investments so one bad result hurts less.',
-      'Prices move up and down, so one exciting week does not automatically make something a good long-term choice.',
-      'Keeping some money in cash or the bank can help you handle surprises without selling investments at a bad time.',
-      'Patient investors watch what changes, rebalance when needed, and avoid chasing whatever is suddenly popular.',
+      'A stock represents a small ownership interest in a company, and a share is one unit of that ownership.',
+      'Return is the gain or loss in an investment’s value. Risk is the uncertainty that the value can fall, and higher possible returns usually come with more risk.',
+      'Diversification spreads money across investments so one company has less control over the result, but diversification cannot eliminate all losses.',
+      'Research means looking at credible evidence about the company and its business, not buying only because a price is low, rising fast, or popular.',
+      'Time horizon is how long until you need the money. Keeping short-term needs in ready cash can prevent being forced to sell long-term investments at a bad time.',
+      'Rebalancing means adjusting holdings after prices change so the portfolio returns closer to its intended mix and risk level.',
     ],
   },
 }
@@ -74,7 +76,7 @@ export function ModuleLearningRecap({ module, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`module-${module}-recap-title`}
-        className="pop-in max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7"
+        className="pop-in max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7"
       >
         <div className="text-center">
           <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module {module} complete</div>
