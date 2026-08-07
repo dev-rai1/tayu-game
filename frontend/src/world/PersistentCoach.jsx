@@ -165,7 +165,7 @@ export function PersistentCoach() {
           ? 'calc(10.75rem + env(safe-area-inset-bottom, 0px))'
           : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
       }}
-      className="fixed z-[490] w-[min(88vw,24rem)] rounded-2xl border-2 border-electric bg-white p-3 text-navy shadow-xl"
+      className="pointer-events-none fixed z-[490] w-[min(88vw,24rem)] rounded-2xl border-2 border-electric bg-white p-3 text-navy shadow-xl"
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
