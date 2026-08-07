@@ -15,19 +15,20 @@ import {
 
 export const TAX_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]
 const ENTRY_RADIUS = 4.2
-const STATION_RADIUS = 2.85
+const STATION_RADIUS = 2.8
 const REPAIR_COST = 32
+const STATION_Z = 4.2
 
 const JOBS = [
-  { id: 'library', label: 'LIBRARY HELPER', gross: 120, rate: 0.10, x: -3.1, z: 5.1 },
-  { id: 'camp', label: 'CAMP ASSISTANT', gross: 160, rate: 0.15, x: 0, z: 5.1 },
-  { id: 'design', label: 'DESIGN GIG', gross: 200, rate: 0.20, x: 3.1, z: 5.1 },
+  { id: 'library', label: 'LIBRARY HELPER', gross: 120, rate: 0.10, x: -2.7 },
+  { id: 'camp', label: 'CAMP ASSISTANT', gross: 160, rate: 0.15, x: 0 },
+  { id: 'design', label: 'DESIGN GIG', gross: 200, rate: 0.20, x: 2.7 },
 ]
 
 const PLANS = [
-  { id: 'spend', label: 'SPEND MOST', spend: 0.70, save: 0.15, future: 0.15, x: -3.1, z: 8.6 },
-  { id: 'balanced', label: 'BALANCED PLAN', spend: 0.40, save: 0.25, future: 0.35, x: 0, z: 8.6 },
-  { id: 'future', label: 'PLAN AHEAD', spend: 0.25, save: 0.25, future: 0.50, x: 3.1, z: 8.6 },
+  { id: 'spend', label: 'SPEND MOST', spend: 0.70, save: 0.15, future: 0.15, x: -2.7 },
+  { id: 'balanced', label: 'BALANCED PLAN', spend: 0.40, save: 0.25, future: 0.35, x: 0 },
+  { id: 'future', label: 'PLAN AHEAD', spend: 0.25, save: 0.25, future: 0.50, x: 2.7 },
 ]
 
 function worldPoint(x, z, y = 1.1) {
@@ -53,23 +54,22 @@ function setToast(text) {
 }
 
 function showLesson(text, key) {
-  try { useGame.getState().showLesson(text, key, true, 'tax') } catch { /* world can still continue */ }
+  try { useGame.getState().showLesson(text, key, true, 'tax') } catch { /* world stays playable */ }
 }
 
-function InteractiveStation({ x, z, label, sublabel, active, near, accent = '#00dca0', onActivate }) {
+function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = '#00dca0', onActivate }) {
   const group = useRef()
   const time = useRef(Math.random() * 4)
 
   useFrame((_, delta) => {
     time.current += delta
     if (!group.current) return
-    group.current.position.y = active ? 0.12 + Math.sin(time.current * 3) * 0.09 : 0
-    group.current.rotation.y = active ? Math.sin(time.current * 1.2) * 0.035 : 0
+    group.current.position.y = 0.12 + Math.sin(time.current * 3) * 0.09
+    group.current.rotation.y = Math.sin(time.current * 1.2) * 0.035
   })
 
   const activate = (event) => {
     event?.stopPropagation?.()
-    if (!active) return
     if (distanceTo(x, z) > STATION_RADIUS + 0.8) {
       setToast('Walk a little closer to the glowing station.')
       return
@@ -80,43 +80,38 @@ function InteractiveStation({ x, z, label, sublabel, active, near, accent = '#00
   return (
     <group ref={group} position={[x, 0, z]}>
       <RoundedBox
-        args={[2.45, 0.42, 2.05]}
+        args={[2.25, 0.42, 1.9]}
         radius={0.18}
         smoothness={3}
         position={[0, 0.23, 0]}
         onClick={activate}
-        onPointerOver={() => { if (active) document.body.style.cursor = 'pointer' }}
+        onPointerOver={() => { document.body.style.cursor = 'pointer' }}
         onPointerOut={() => { document.body.style.cursor = '' }}
       >
-        <meshStandardMaterial
-          color={active ? accent : '#394567'}
-          emissive={active ? accent : '#111936'}
-          emissiveIntensity={active ? (near ? 0.9 : 0.38) : 0.05}
-          roughness={0.55}
-        />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={near ? 0.95 : 0.4} roughness={0.55} />
       </RoundedBox>
-      <mesh position={[0, 0.78, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.36, 0.36, 0.12, 18]} />
-        <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={active ? 0.6 : 0.08} metalness={0.35} />
+      <mesh position={[0, 0.75, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.34, 0.34, 0.12, 18]} />
+        <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.65} metalness={0.35} />
       </mesh>
-      <Billboard position={[0, 1.65, 0]}>
+      <Billboard position={[0, 1.58, 0]}>
         <mesh>
-          <planeGeometry args={[3.1, 0.96]} />
-          <meshBasicMaterial map={labelTexture(label, { bg: active ? '#071748' : '#263252', color: '#ffffff', accent })} transparent toneMapped={false} depthTest={false} />
+          <planeGeometry args={[2.9, 0.9]} />
+          <meshBasicMaterial map={labelTexture(label, { bg: '#071748', color: '#ffffff', accent })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
       {sublabel && (
-        <Billboard position={[0, 1.03, 0]}>
+        <Billboard position={[0, 1.02, 0]}>
           <mesh>
-            <planeGeometry args={[2.55, 0.8]} />
+            <planeGeometry args={[2.45, 0.76]} />
             <meshBasicMaterial map={labelTexture(sublabel, { bg: '#ffffff', color: '#071748', accent })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
       )}
-      {active && near && (
-        <Billboard position={[0, 2.28, 0]}>
+      {near && (
+        <Billboard position={[0, 2.18, 0]}>
           <mesh>
-            <planeGeometry args={[2.2, 0.68]} />
+            <planeGeometry args={[2.05, 0.64]} />
             <meshBasicMaterial map={labelTexture('PRESS E / TAP', { bg: '#00dca0', color: '#071748', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
@@ -129,17 +124,17 @@ function CelebrationBurst({ active }) {
   const group = useRef()
   useFrame((_, delta) => {
     if (!group.current || !active) return
-    group.current.rotation.y += delta * 0.65
+    group.current.rotation.y += delta * 0.7
     group.current.rotation.x = Math.sin(Date.now() / 850) * 0.08
   })
   if (!active) return null
   return (
-    <group ref={group} position={[0, 4.8, 3.8]}>
+    <group ref={group} position={[0, 4.7, 3.2]}>
       {Array.from({ length: 14 }, (_, i) => {
-        const a = (i / 14) * Math.PI * 2
-        const r = 2.2 + (i % 3) * 0.45
+        const angle = (i / 14) * Math.PI * 2
+        const radius = 2.1 + (i % 3) * 0.4
         return (
-          <mesh key={i} position={[Math.cos(a) * r, Math.sin(a * 2) * 0.8, Math.sin(a) * r]} rotation={[Math.PI / 2, a, 0]}>
+          <mesh key={i} position={[Math.cos(angle) * radius, Math.sin(angle * 2) * 0.8, Math.sin(angle) * radius]} rotation={[Math.PI / 2, angle, 0]}>
             <cylinderGeometry args={[0.14, 0.14, 0.045, 14]} />
             <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.8} metalness={0.4} />
           </mesh>
@@ -165,11 +160,11 @@ export function PaycheckPlanetWorld() {
 
   const stations = useMemo(() => {
     if (!active) return []
-    if (phase === 'job') return JOBS.map((item) => ({ id: `job:${item.id}`, x: item.x, z: item.z }))
-    if (phase === 'tax') return [{ id: 'withhold', x: 0, z: 5.1 }]
-    if (phase === 'plan') return PLANS.map((item) => ({ id: `plan:${item.id}`, x: item.x, z: item.z }))
-    if (phase === 'event') return [{ id: 'repair', x: 0, z: 11.4 }]
-    if (phase === 'complete') return [{ id: 'continue', x: 0, z: 11.4 }]
+    if (phase === 'job') return JOBS.map((item) => ({ id: `job:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'tax') return [{ id: 'withhold', x: 0, z: STATION_Z }]
+    if (phase === 'plan') return PLANS.map((item) => ({ id: `plan:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'event') return [{ id: 'repair', x: 0, z: STATION_Z }]
+    if (phase === 'complete') return [{ id: 'continue', x: 0, z: STATION_Z }]
     return []
   }, [active, phase])
 
@@ -186,8 +181,8 @@ export function PaycheckPlanetWorld() {
     setJob(null)
     setPlan(null)
     try { useGame.getState().adminClearUi() } catch { /* no-op */ }
-    setToast('Paycheck Planet is live in the world. Walk to a glowing job station.')
-    showLesson('Welcome to Paycheck Planet! Pick a job, watch taxes come out of the paycheck, plan the take-home pay, then handle a real surprise expense. Everything happens right here in the world.', 'tax-world-intro')
+    setToast('Paycheck Planet is live. Walk to a glowing job station.')
+    showLesson('Welcome to Paycheck Planet! Pick a job, watch taxes come out of the paycheck, plan the take-home pay, then handle a surprise expense. Everything happens right here in the world.', 'tax-world-intro')
     recordLearningEvent({ moduleName: 'tax', type: 'module_start', outcome: 'started', detail: 'in_world_3d' }).catch(() => {})
   }, [active])
 
@@ -214,20 +209,20 @@ export function PaycheckPlanetWorld() {
   })
 
   const chooseJob = useCallback((selected) => {
-    if (phase !== 'job') return
+    if (phase !== 'job' || !selected) return
     const withheld = Math.round(selected.gross * selected.rate)
     const net = selected.gross - withheld
     setJob(selected)
     setPhase('tax')
-    pushCoins(worldPoint(selected.x, selected.z, 1.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 9, 'gross-pay')
-    setToast(`${selected.label}: $${selected.gross} gross pay. Next, visit WITHHOLD TAX.`)
+    pushCoins(worldPoint(selected.x, STATION_Z, 1.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 9, 'gross-pay')
+    setToast(`${selected.label}: $${selected.gross} gross pay. Now use the tax station.`)
     showLesson(`Gross pay is the full $${selected.gross}. At this job, ${Math.round(selected.rate * 100)}% ($${withheld}) is withheld for taxes, leaving $${net} of take-home pay.`, `tax-job-${selected.id}`)
     recordLearningEvent({ moduleName: 'tax', type: 'job_choice', outcome: selected.id, detail: `gross=${selected.gross};rate=${selected.rate}` }).catch(() => {})
   }, [phase])
 
   const withholdTax = useCallback(() => {
     if (phase !== 'tax' || !job) return
-    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, -0.5, 1.8), Math.max(3, Math.round(tax / 8)), 'tax-withheld')
+    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, 0.2, 1.8), Math.max(3, Math.round(tax / 8)), 'tax-withheld')
     setPhase('plan')
     setToast(`$${tax} withheld. You actually take home $${takeHome}. Choose a plan for that money.`)
     showLesson(`PAYCHECK MATH: $${job.gross} gross − $${tax} taxes = $${takeHome} take-home pay. Plan the money you actually receive, not the larger gross number.`, `tax-math-${job.id}`)
@@ -235,11 +230,11 @@ export function PaycheckPlanetWorld() {
   }, [job, phase, takeHome, tax])
 
   const choosePlan = useCallback((selected) => {
-    if (phase !== 'plan' || !job) return
+    if (phase !== 'plan' || !job || !selected) return
     setPlan(selected)
     setPhase('event')
     const future = Math.round(takeHome * selected.future)
-    setToast(`${selected.label}: $${future} set aside for a future expense. A surprise is waiting ahead.`)
+    setToast(`${selected.label}: $${future} set aside for a future expense. Now test the plan.`)
     recordLearningEvent({ moduleName: 'tax', type: 'allocation_choice', outcome: selected.id, detail: `futureFund=${future};takeHome=${takeHome}` }).catch(() => {})
   }, [job, phase, takeHome])
 
@@ -247,7 +242,7 @@ export function PaycheckPlanetWorld() {
     if (phase !== 'event' || !plan) return
     if (futureFund < REPAIR_COST) {
       setToast(`Bike repair costs $${REPAIR_COST}, but this plan left only $${futureFund} for the future. Replan and try again.`)
-      showLesson(`The surprise costs $${REPAIR_COST}. Your future fund had $${futureFund}, so this plan could not cover it. Walk back and choose a plan that leaves a bigger cushion.`, `tax-retry-${plan.id}-${job?.id || 'job'}`)
+      showLesson(`The surprise costs $${REPAIR_COST}. Your future fund had $${futureFund}, so this plan could not cover it. Choose a plan that leaves a bigger cushion.`, `tax-retry-${plan.id}-${job?.id || 'job'}`)
       recordLearningEvent({ moduleName: 'tax', type: 'future_expense', outcome: 'retry', detail: `needed=${REPAIR_COST};available=${futureFund}` }).catch(() => {})
       setPlan(null)
       setPhase('plan')
@@ -255,12 +250,11 @@ export function PaycheckPlanetWorld() {
     }
 
     const remaining = futureFund - REPAIR_COST
-    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, 11.4, 0.7), 6, 'future-expense')
+    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, STATION_Z, 0.7), 6, 'future-expense')
     setPhase('complete')
     const profile = loadProfile() || {}
-    const badges = [...new Set([...(profile.badges || []), 'tax'])]
     saveProfile({
-      badges,
+      badges: [...new Set([...(profile.badges || []), 'tax'])],
       taxLab: {
         job: job?.id,
         gross: job?.gross,
@@ -274,7 +268,7 @@ export function PaycheckPlanetWorld() {
         completedAt: new Date().toISOString(),
       },
     })
-    pushCoins(worldPoint(0, -0.5, 2.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 12, 'tax-complete')
+    pushCoins(worldPoint(0, 0.2, 2.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 12, 'tax-complete')
     setToast(`Paycheck Planet complete! You covered the $${REPAIR_COST} surprise and still have $${remaining} in the future fund.`)
     showLesson(`You did it: gross pay became take-home pay after taxes, then your plan handled a $${REPAIR_COST} surprise. That cushion is why planning ahead matters.`, `tax-complete-${job?.id || 'job'}`)
     recordLearningEvent({ moduleName: 'tax', type: 'future_expense', outcome: 'covered', detail: `needed=${REPAIR_COST};available=${futureFund};remaining=${remaining}` }).catch(() => {})
@@ -285,9 +279,9 @@ export function PaycheckPlanetWorld() {
     if (phase !== 'complete') return
     deactivatePaycheckWorld()
     const game = useGame.getState()
-    try { game.adminJumpModule(5) } catch { /* fall through to normal world */ }
+    try { game.adminJumpModule(5) } catch { /* keep world alive */ }
     setTimeout(() => {
-      try { useGame.getState().showLesson('Module 5 complete. Now head into Module 6: Money Garden and use the money you planned to think about investing for longer-term goals.', 'paycheck-to-garden-world', true, 'garden') } catch { /* no-op */ }
+      try { useGame.getState().showLesson('Module 5 complete. Now head into Module 6: Money Garden and use the same planning mindset for longer-term goals.', 'paycheck-to-garden-world', true, 'garden') } catch { /* no-op */ }
     }, 250)
   }, [phase])
 
@@ -304,8 +298,7 @@ export function PaycheckPlanetWorld() {
     const interact = (event) => {
       if (event.type === 'keydown' && event.code !== 'KeyE' && event.code !== 'Enter') return
       if (!active) {
-        if (!nearEntranceRef.current) return
-        activatePaycheckWorld()
+        if (nearEntranceRef.current) activatePaycheckWorld()
         return
       }
       runStation(nearStationRef.current)
@@ -365,7 +358,7 @@ export function PaycheckPlanetWorld() {
           <meshBasicMaterial map={labelTexture('JOBS · TAXES · TAKE-HOME PAY', { bg: '#ff8a3d', color: '#071748', accent: '#ffffff' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
-      <Billboard position={[0, 3.0, 2.55]}>
+      <Billboard position={[0, 3.0, 2.45]}>
         <mesh>
           <planeGeometry args={[5.2, 1.34]} />
           <meshBasicMaterial map={labelTexture(phaseHeadline, { bg: active ? '#00dca0' : '#071748', color: active ? '#071748' : '#ffffff', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
@@ -388,55 +381,62 @@ export function PaycheckPlanetWorld() {
         </mesh>
       )}
 
-      {JOBS.map((item) => (
+      {active && phase === 'job' && JOBS.map((item) => (
         <InteractiveStation
           key={item.id}
           x={item.x}
-          z={item.z}
           label={item.label}
           sublabel={`$${item.gross} GROSS · ${Math.round(item.rate * 100)}% TAX`}
-          active={active && phase === 'job'}
           near={nearStation === `job:${item.id}`}
           accent="#ff8a3d"
           onActivate={() => chooseJob(item)}
         />
       ))}
 
-      <InteractiveStation
-        x={0}
-        z={5.1}
-        label="WITHHOLD TAX"
-        sublabel={job ? `$${job.gross} − $${tax} = $${takeHome}` : 'GROSS − TAX = TAKE-HOME'}
-        active={active && phase === 'tax'}
-        near={nearStation === 'withhold'}
-        accent="#1464f0"
-        onActivate={withholdTax}
-      />
+      {active && phase === 'tax' && (
+        <InteractiveStation
+          x={0}
+          label="WITHHOLD TAX"
+          sublabel={job ? `$${job.gross} − $${tax} = $${takeHome}` : 'GROSS − TAX = TAKE-HOME'}
+          near={nearStation === 'withhold'}
+          accent="#1464f0"
+          onActivate={withholdTax}
+        />
+      )}
 
-      {PLANS.map((item) => (
+      {active && phase === 'plan' && PLANS.map((item) => (
         <InteractiveStation
           key={item.id}
           x={item.x}
-          z={item.z}
           label={item.label}
           sublabel={takeHome ? `$${Math.round(takeHome * item.future)} FOR FUTURE` : `${Math.round(item.future * 100)}% FOR FUTURE`}
-          active={active && phase === 'plan'}
           near={nearStation === `plan:${item.id}`}
           accent="#7850f0"
           onActivate={() => choosePlan(item)}
         />
       ))}
 
-      <InteractiveStation
-        x={0}
-        z={11.4}
-        label={phase === 'complete' ? 'CONTINUE TO MONEY GARDEN' : `BIKE REPAIR · $${REPAIR_COST}`}
-        sublabel={phase === 'complete' ? 'MODULE 6 →' : plan ? `YOU SET ASIDE $${futureFund}` : 'CAN YOUR PLAN COVER IT?'}
-        active={active && (phase === 'event' || phase === 'complete')}
-        near={nearStation === (phase === 'complete' ? 'continue' : 'repair')}
-        accent={phase === 'complete' ? '#00dca0' : '#ffd700'}
-        onActivate={phase === 'complete' ? continueToGarden : handleRepair}
-      />
+      {active && phase === 'event' && (
+        <InteractiveStation
+          x={0}
+          label={`BIKE REPAIR · $${REPAIR_COST}`}
+          sublabel={plan ? `YOU SET ASIDE $${futureFund}` : 'CAN YOUR PLAN COVER IT?'}
+          near={nearStation === 'repair'}
+          accent="#ffd700"
+          onActivate={handleRepair}
+        />
+      )}
+
+      {active && phase === 'complete' && (
+        <InteractiveStation
+          x={0}
+          label="CONTINUE TO MONEY GARDEN"
+          sublabel="MODULE 6 →"
+          near={nearStation === 'continue'}
+          accent="#00dca0"
+          onActivate={continueToGarden}
+        />
+      )}
 
       <CelebrationBurst active={active && phase === 'complete'} />
     </group>
