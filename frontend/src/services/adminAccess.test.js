@@ -61,15 +61,20 @@ describe('protected admin access', () => {
     await expect(verifyAdminAccess({ id: 'admin-uid' })).resolves.toBeNull()
   })
 
-  it('does not trust a local user whose id differs from the authenticated Firebase uid', async () => {
+  it('uses the authenticated Firebase uid instead of trusting stale local identity data', async () => {
+    mocks.getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'student' }),
+    })
+
     const result = await verifyAdminAccess({
       id: 'different-uid',
-      email: 'admin@example.com',
+      email: 'stale@example.com',
       role: 'admin',
     })
 
     expect(result).toBeNull()
-    expect(mocks.getDoc).not.toHaveBeenCalled()
+    expect(mocks.getDoc).toHaveBeenCalledWith('profiles/admin-uid')
   })
 
   it('requires an authenticated Firebase user and Firestore', async () => {
