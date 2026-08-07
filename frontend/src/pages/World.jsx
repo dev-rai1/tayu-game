@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import { GameWorld } from '../world/GameWorld.jsx'
+import { TaxLabWorld } from '../world/TaxLabWorld.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
@@ -30,8 +31,8 @@ import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
-// (Paycheck Planet · Tax Filing Lab) runs physically inside the same world
-// between internal Bank (4) and Money Garden (5).
+// (Paycheck Planet · Tax Filing Lab) runs between internal Bank (4) and Money
+// Garden (5), but now gets its own isolated scene while the activity is active.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
 const PAYCHECK_START = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.3]
 
@@ -57,8 +58,6 @@ function enterPaycheckPlanet({ restart = false } = {}) {
     clearWorldMessages()
     if (restart) {
       // "Explore this module" always means start the activity from step 1.
-      // Keep the learner's overall badges/profile, but discard the resumable
-      // Tax Lab session so a previous W-2 or tax step never leaks into entry.
       saveProfile({ taxLabProgress: null, taxLab: null })
     }
     const game = useGame.getState()
@@ -86,34 +85,6 @@ function enterGardenPartB() {
   }
 }
 
-function TaxSideHint() {
-  const guide = useGame((s) => s.guide)
-  const line = typeof guide === 'string' ? guide : guide?.line || guide?.text || ''
-  const automatic = line.startsWith('Pick any W-2 case') || line.startsWith('Resume Module 5')
-
-  if (!line || automatic) return null
-
-  return (
-    <aside
-      role="status"
-      aria-live="polite"
-      data-guidance-lane="side-hint"
-      data-guidance-kind="tax-hint"
-      className="pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right,0px))] top-[calc(6.25rem+env(safe-area-inset-top,0px))] z-[540] w-[min(88vw,20rem)] rounded-2xl border border-electric/20 bg-white p-3 text-navy shadow-xl"
-    >
-      <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-electric">Hint</div>
-      <p className="mt-1 text-sm font-semibold leading-relaxed text-navy/80">{line}</p>
-      <button
-        type="button"
-        onClick={() => useGame.setState({ guide: null })}
-        className="pointer-events-auto mt-2 min-h-[40px] w-full rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95"
-      >
-        Got it
-      </button>
-    </aside>
-  )
-}
-
 export default function World() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
@@ -125,6 +96,7 @@ export default function World() {
   const cards = useGame((s) => s.cards)
   const mg = useGame((s) => s.mg)
   const [use3D] = useState(hasWebGL)
+  const taxMode = paycheckMode || isPaycheckWorldActive()
 
   useEffect(() => {
     const sync = (event) => setPaycheckMode(event?.detail?.active ?? isPaycheckWorldActive())
@@ -134,9 +106,9 @@ export default function World() {
   }, [])
 
   useEffect(() => {
-    setUsageModule(paycheckMode ? 'tax' : (MODULE_BY_WEEK[week] || '')).catch(() => {})
+    setUsageModule(taxMode ? 'tax' : (MODULE_BY_WEEK[week] || '')).catch(() => {})
     return () => { setUsageModule('').catch(() => {}) }
-  }, [paycheckMode, week])
+  }, [taxMode, week])
 
   useEffect(() => {
     if (enterParty) {
@@ -156,8 +128,6 @@ export default function World() {
     }
   }, [state.player.name, navigate, dispatch])
 
-  // Keep the Bank handoff short, but tell the learner what Module 5 is really
-  // about before the large Tax Filing Lab intro explains each step.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -166,17 +136,15 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Next is the Tax Filing Lab: read a practice W-2, do simple tax math, and file a practice return.',
+            text: 'Your bank plan is ready. Next is the Tax Filing Lab: scan a W-2, work through the tax math, and file a practice return.',
             buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5' })),
           }
         : card),
     })
   }, [cards])
 
-  // Finishing Bank initializes the legacy internal Money Garden week. Intercept
-  // that transition once and start public Module 5 at its real play area.
   useEffect(() => {
-    if (week !== 5 || paycheckMode) return
+    if (week !== 5 || taxMode) return
     const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
     if (bypass) {
       sessionStorage.removeItem('tayu-bypass-tax-story-once')
@@ -185,7 +153,7 @@ export default function World() {
     const profile = loadProfile() || {}
     const badges = profile.badges || []
     if (badges.includes('bank') && !badges.includes('tax')) enterPaycheckPlanet()
-  }, [paycheckMode, week])
+  }, [taxMode, week])
 
   useEffect(() => {
     initWorld()
@@ -204,9 +172,6 @@ export default function World() {
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
         setTimeout(() => {
           try {
-            // A module selected through Explore is a fresh practice run, not a
-            // resume action. adminJumpModule(..., false) rebuilds that module's
-            // opening state instead of dropping the learner into a later beat.
             useGame.getState().adminJumpModule(internal, false)
             if (jump === '6' && gardenEntryPart === 'B') setTimeout(enterGardenPartB, 80)
           } catch (e) {
@@ -239,20 +204,24 @@ export default function World() {
     : ''
 
   return (
-    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
-      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
+    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'}>
+      {use3D
+        ? taxMode
+          ? <TaxLabWorld />
+          : <GameWorld avatar={state.avatar} />
+        : <AccessibleWorld />}
 
-      {/* Module 5 owns the foreground while its tax step is open. Hiding the
-          normal HUD and world coaches prevents map/help/old-module overlays from
-          splitting or covering the filing activity. */}
-      {!paycheckMode && <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />}
-      {!paycheckMode && <LemonadeCompletionCheck onContinue={onContinue} />}
-      {paycheckMode ? <TaxSideHint /> : <PersistentCoach key="world-coach" />}
-      {!paycheckMode && <PersistentImprovementCoach />}
-      {!paycheckMode && <GuidedCommerceOverlay />}
-      <OverlayEscapeControls />
+      {/* Module 5 is a focused minigame. Nothing from the normal world UI is
+          allowed to render over it: no HUD/map, generic coach, admin panel,
+          movement controls, completion cards, or side-hint rail. */}
+      {!taxMode && <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />}
+      {!taxMode && <LemonadeCompletionCheck onContinue={onContinue} />}
+      {!taxMode && <PersistentCoach key="world-coach" />}
+      {!taxMode && <PersistentImprovementCoach />}
+      {!taxMode && <GuidedCommerceOverlay />}
+      {!taxMode && <OverlayEscapeControls />}
 
-      {!paycheckMode && week === 5 && (
+      {!taxMode && week === 5 && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} · Investing finale</div>
           <div className="text-base font-extrabold text-white">{publicModuleTitle}</div>
@@ -260,10 +229,10 @@ export default function World() {
         </div>
       )}
 
-      {use3D && usesTouchControls && <MobileControls />}
-      <FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />
-      {!paycheckMode && <WorldModuleLearningRecap />}
-      <AdminPanel />
+      {use3D && usesTouchControls && !taxMode && <MobileControls />}
+      <FirstTimeMovementTutorial enabled={use3D && !taxMode} />
+      {!taxMode && <WorldModuleLearningRecap />}
+      {!taxMode && <AdminPanel />}
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
     </div>
   )
