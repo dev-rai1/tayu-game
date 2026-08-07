@@ -14,21 +14,19 @@ describe('overlay visibility', () => {
     expect(isBlockingGameOverlay({ cards: [], lessons: [] })).toBe(false)
   })
 
-  it('reserves only the focused Lemonade walkthroughs for their sequential guide', () => {
+  it('keeps the shared guidance rail available during commerce gameplay', () => {
     expect(isCommerceOverlayActive({
       week: 1,
       objective: 'store',
       bramTalked: true,
       storeMissionDone: false,
-      cards: [],
-      lessons: [],
     })).toBe(false)
 
     expect(isCommerceOverlayActive({
       week: 2,
       objective: 'lemonade',
       lemPhase: 'template',
-    })).toBe(true)
+    })).toBe(false)
 
     expect(isCommerceOverlayActive({
       week: 2,
@@ -44,10 +42,10 @@ describe('overlay visibility', () => {
     expect(coachVisibility(state).showSavedMessage).toBe(false)
   })
 
-  it('shows the persistent coach unless another sequential reading surface owns the rail', () => {
+  it('shows the persistent coach unless a blocking read or specialized coach owns the rail', () => {
     expect(coachVisibility({ week: 3, objective: 'house' }).showGuidance).toBe(true)
     expect(coachVisibility({ dialog: { name: 'Penny' } }).showGuidance).toBe(false)
-    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(false)
+    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(true)
     expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(true)
   })
 })
