@@ -26,6 +26,7 @@ import { BudgetTakeawayGuard } from '../world/BudgetTakeawayGuard.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
 import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.jsx'
+import { AdminPanel } from '../components/AdminPanel.jsx'
 import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 
@@ -87,8 +88,6 @@ export default function World() {
     }
   }, [state.player.name, navigate, dispatch])
 
-  // The Bank engine predates Paycheck Planet. Keep its final story beat, but
-  // send the learner to the physical Paycheck Planet district in this world.
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
     if (!handoff || handoff.__paycheckIntegrated) return
@@ -104,8 +103,6 @@ export default function World() {
     })
   }, [cards])
 
-  // Finishing Bank still initializes the legacy internal Money Garden chapter.
-  // Intercept that handoff once and physically move the learner to Module 5.
   useEffect(() => {
     if (week !== 5 || paycheckMode) return
     const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
@@ -126,13 +123,10 @@ export default function World() {
     const jump = localStorage.getItem('tayu-jump-module')
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
-      // Public numbering: 5 = in-world Paycheck Planet, 6 = internal Money Garden.
       if (jump === '5') {
         activatePaycheckWorld()
         moveToPaycheckPlanet()
       } else {
-        // Leaving/replaying another module must also leave Paycheck mode so its
-        // stations and prompts cannot leak into the other world chapters.
         deactivatePaycheckWorld()
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
@@ -152,6 +146,9 @@ export default function World() {
     g.unlockParty()
   }
 
+  const publicModule = paycheckMode ? 5 : week === 5 ? 6 : week
+  const publicModuleTitle = paycheckMode ? 'Paycheck Planet' : week === 5 ? 'Money Garden' : ''
+
   return (
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy">
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
@@ -163,15 +160,17 @@ export default function World() {
       {!paycheckMode && <PersistentImprovementCoach />}
       {!paycheckMode && <GuidedCommerceOverlay />}
       <OverlayEscapeControls />
-      {paycheckMode && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-[#FF8A3D]/60 bg-navy/90 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module 5 · Paycheck Planet</div>
-          <div className="text-sm font-extrabold text-white">Stay in the world and walk to the glowing stations.</div>
+      {(paycheckMode || week === 5) && (
+        <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,34rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} of 6</div>
+          <div className="text-base font-extrabold text-white">{publicModuleTitle}</div>
+          {paycheckMode && <div className="text-xs font-bold text-white/80">Follow the glowing arrow and complete each paycheck station.</div>}
         </div>
       )}
       {use3D && usesTouchControls && <MobileControls />}
       <FirstTimeMovementTutorial enabled={use3D} />
       <WorldModuleLearningRecap />
+      <AdminPanel />
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
     </div>
   )

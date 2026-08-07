@@ -12,7 +12,7 @@ export const BANK_DRIP_MIN = 5
 
 export const OPENING = [
   'This is the grow part of your plan. Company-seed values can rise or fall over time.',
-  'Pocket stays ready, Bank grows more steadily, and the Money Garden takes more risk.',
+  'Mr. Sprout added a $100 investing gift on top of the money you already set aside for the Money Garden.',
   'For each decision, read one clue, adjust the portfolio, and test what happens.',
 ]
 

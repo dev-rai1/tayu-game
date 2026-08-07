@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyStarterInvestingGift,
   MONEY_GARDEN_DECISIONS,
   MONEY_GARDEN_PARTS,
+  MONEY_GARDEN_STARTER_GIFT,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
 } from './moneyGardenGuidance.js'
@@ -21,6 +23,18 @@ describe('Money Garden playtest redesign', () => {
     expect(shouldPauseBetweenGardenParts(6, false)).toBe(true)
     expect(shouldPauseBetweenGardenParts(6, true)).toBe(false)
     expect(shouldPauseBetweenGardenParts(7, false)).toBe(false)
+  })
+
+  it('gives enough starter money to experiment without double-gifting', () => {
+    const original = { cash: 8, startTotal: 8, goal: 20 }
+    const gifted = applyStarterInvestingGift(original)
+    expect(MONEY_GARDEN_STARTER_GIFT).toBe(100)
+    expect(gifted.cash).toBe(108)
+    expect(gifted.startTotal).toBe(108)
+    expect(gifted.goal).toBe(120)
+    expect(gifted.starterGiftApplied).toBe(true)
+    expect(applyStarterInvestingGift(gifted)).toBe(gifted)
+    expect(OPENING.join(' ')).toContain('$100 investing gift')
   })
 
   it('frames every week as a clue rather than an exact trade instruction', () => {
