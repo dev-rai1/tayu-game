@@ -8,7 +8,10 @@ const gameWorld = read('src/world/GameWorld.jsx')
 const keyboard = read('src/world/useKeyboardControls.js')
 const world = read('src/pages/World.jsx')
 const moduleSelect = read('src/pages/ModuleSelect.jsx')
-const tax = read('src/pages/TaxPaycheck.jsx')
+const paycheckWorld = read('src/world/PaycheckPlanetWorld.jsx')
+const paycheckMode = read('src/world/paycheckMode.js')
+const app = read('src/App.jsx')
+const watcher = read('src/components/PathCompletionWatcher.jsx')
 const admin = read('src/components/AdminPanel.jsx')
 const dashboard = read('src/pages/Dashboard.jsx')
 const teacher = read('src/pages/TeacherDashboard.jsx')
@@ -22,19 +25,35 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight:")
   })
 
-  it('routes public Module 5 to Paycheck Planet and public Module 6 to Money Garden', () => {
+  it('launches public Module 5 inside the same world and keeps public Module 6 mapped to Money Garden', () => {
     expect(world).toContain("jump === '5'")
-    expect(world).toContain("navigate('/tax-paycheck'")
+    expect(world).toContain('activatePaycheckWorld()')
+    expect(world).toContain('adminTeleport(TAX_ENTRY)')
+    expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("jump === '6' ? 5")
     expect(moduleSelect).toContain("String(target.n)")
+    expect(moduleSelect).not.toContain('target.route')
+    expect(paycheckMode).toContain('tayu-paycheck-world-mode')
   })
 
-  it('puts Paycheck Planet between Bank and Money Garden in the story', () => {
+  it('puts an animated physical Paycheck Planet between Bank and Money Garden', () => {
     expect(world).toContain("badges.includes('bank') && !badges.includes('tax')")
-    expect(world).toContain("/tax-paycheck?from=story")
     expect(world).toContain('To Paycheck Planet!')
-    expect(tax).toContain('Continue to Module 6: Money Garden')
-    expect(tax).toContain("localStorage.setItem('tayu-jump-module', '6')")
+    expect(paycheckWorld).toContain("labelTexture('PAYCHECK PLANET'")
+    expect(paycheckWorld).toContain('InteractiveStation')
+    expect(paycheckWorld).toContain('pushCoins(')
+    expect(paycheckWorld).toContain('CelebrationBurst')
+    expect(paycheckWorld).toContain('CONTINUE TO MONEY GARDEN')
+    expect(paycheckWorld).toContain('adminJumpModule(5)')
+  })
+
+  it('removes the standalone tax and per-module quiz detours', () => {
+    expect(app).not.toContain("lazy(() => import('./pages/TaxPaycheck.jsx'))")
+    expect(app).not.toContain("lazy(() => import('./pages/ModuleCheck.jsx'))")
+    expect(app).toContain('LegacyPaycheckRedirect')
+    expect(moduleSelect).not.toContain('Retake a quick check')
+    expect(moduleSelect).not.toContain('Best quick check')
+    expect(watcher).not.toContain('navigate(`/module-check/')
   })
 
   it('tracks tax as a real module in admin and teacher analytics', () => {
@@ -43,15 +62,16 @@ describe('Paycheck Planet full integration', () => {
       expect(source).toContain('Paycheck Planet')
       expect(source).toContain('Money Garden')
     }
-    expect(tax).toContain("setUsageModule('tax')")
-    expect(tax).toContain("type: 'module_complete'")
+    expect(world).toContain("paycheckMode ? 'tax'")
+    expect(paycheckWorld).toContain("type: 'module_complete'")
   })
 
-  it('gives admin navigation seven public stops including Paycheck Planet', () => {
+  it('gives admin navigation seven public stops including in-world Paycheck Planet', () => {
     expect(admin).toContain("5: 'Paycheck Planet'")
     expect(admin).toContain("6: 'Money Garden'")
     expect(admin).toContain("7: 'Finale Area'")
-    expect(admin).toContain("/tax-paycheck?admin=1")
+    expect(admin).not.toContain('/tax-paycheck?admin=1')
+    expect(admin).toContain("localStorage.setItem('tayu-jump-module', String(step))")
     expect(admin).toContain('MODULE {moduleStep} of 7')
   })
 
