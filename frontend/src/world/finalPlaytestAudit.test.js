@@ -12,12 +12,13 @@ const usage = frontendSource('services/usageAnalytics.js')
 const deployWorkflow = repositorySource('.github/workflows/firebase-hosting-deploy.yml')
 
 describe('final middle-school playtest audit', () => {
-  it('uses one visible coach tray instead of competing coach cards', () => {
+  it('uses one message system with an explicit importance hierarchy', () => {
     expect(tracker).toContain('return null')
     expect(tracker).not.toContain('<aside')
     expect(coach).toContain("Benny's feedback")
     expect(coach).toContain('coachMessageFromTransient')
-    expect(coach).toContain('data-guidance-lane="primary"')
+    expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
+    expect(coach).toContain('data-important-message-scrim="true"')
     expect(coach).toContain('activeFeedbackKey')
     expect(coach).toContain('advanceDialog')
   })
