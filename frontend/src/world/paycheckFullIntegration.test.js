@@ -103,9 +103,10 @@ describe('Paycheck Planet full integration', () => {
     expect(admin).toContain('MODULE {moduleStep} of 7')
   })
 
-  it('keeps the same coach lane active inside Paycheck Planet', () => {
-    expect(world).toContain('<PersistentCoach paycheckMode={paycheckMode} />')
-    expect(world).not.toContain('!paycheckMode && <PersistentCoach')
+  it('keeps one fresh coach lane inside Paycheck Planet', () => {
+    expect(world).toContain("key={paycheckMode ? 'paycheck-coach' : 'world-coach'}")
+    expect(world).toContain('paycheckMode={paycheckMode}')
+    expect(world).toContain('{!paycheckMode && <PersistentImprovementCoach />}')
     expect(coach).toContain('paycheckMode = false')
     expect(coach).toContain("type === 'lesson'")
   })
