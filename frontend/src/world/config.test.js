@@ -12,7 +12,9 @@ import {
   ROYAL_APPROACH,
   SCENERY_ZONES,
   SPROUT,
+  STOP_ANGLES,
   STORE,
+  TAX_DISTRICT,
   distanceToPaths,
   isClearOfModuleGates,
   isClearOfPaths,
@@ -27,7 +29,7 @@ describe('world path separation', () => {
   })
 
   it('keeps substantial space between every major district', () => {
-    const districts = [HOME, STORE, LEMONADE, BUDGET_TOWN, BANK_DISTRICT, SPROUT, PARTY_HOUSE]
+    const districts = [HOME, STORE, LEMONADE, BUDGET_TOWN, BANK_DISTRICT, TAX_DISTRICT, SPROUT, PARTY_HOUSE]
     const distances = districts.flatMap((point, i) =>
       districts.slice(i + 1).map((other) => Math.hypot(point[0] - other[0], point[1] - other[1])),
     )
@@ -52,7 +54,7 @@ describe('world path separation', () => {
   })
 
   it('ends the normal road at Money Garden and uses one gold Finale path', () => {
-    const finalModuleGate = ringPoint(14)
+    const finalModuleGate = ringPoint(STOP_ANGLES.garden)
     expect(PATHS.ring.at(-1)).toEqual(finalModuleGate)
     expect(ROYAL_APPROACH.gate).toEqual(finalModuleGate)
     expect(PATHS.royalParty[0]).toEqual(finalModuleGate)
@@ -73,6 +75,7 @@ describe('world path separation', () => {
       'spurJars',
       'spurLemonade',
       'spurMarket',
+      'spurTax',
     ])
     Object.entries(PATHS)
       .filter(([name]) => name.startsWith('spur'))
