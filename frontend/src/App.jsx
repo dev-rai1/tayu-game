@@ -8,6 +8,7 @@ import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
 import { recordPageView } from './services/siteAnalytics.js'
 import AdminRoute from './components/AdminRoute.jsx'
+import DialogAccessibility from './components/DialogAccessibility.jsx'
 import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
@@ -122,6 +123,7 @@ export default function App() {
   return (
     <div className="tayu-app-viewport bg-navy text-white font-body">
       <PageMetadata />
+      <DialogAccessibility />
       <div id="app-content" tabIndex="-1">
         <Boundary name="routes" hard>
           <Suspense fallback={<LoadingScreen />}>
