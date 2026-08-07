@@ -77,7 +77,7 @@ export const WEEK_SPECS = [
   },
   {
     week: 6,
-    title: 'ONE MONTH LATER',
+    title: 'SIX WEEKS LATER',
     intro: 'Make one final paycheck and budget. Then choose how to use your weekend and look back at the life your repeated decisions created.',
     lifeTitle: 'WEEKEND CHOICE',
     choices: [
