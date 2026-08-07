@@ -62,15 +62,16 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
   if (step === 1 && !near) return null
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[515] flex justify-center px-4" aria-live="polite">
-      <section className="pointer-events-auto flex w-[min(90vw,27rem)] items-center gap-3 rounded-2xl border-2 border-teal bg-navy/95 px-3 py-2 text-white shadow-xl">
-        <p className="min-w-0 flex-1 text-sm font-extrabold leading-snug">
+    <div className="pointer-events-none fixed inset-0 z-[515]" aria-live="polite">
+      <section data-guidance-rail="true" className="pointer-events-auto absolute right-3 top-[5.5rem] w-[min(92vw,27rem)] rounded-3xl border-2 border-teal bg-navy/95 p-4 text-white shadow-2xl sm:right-4 sm:w-[min(32vw,27rem)]">
+        <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-teal">Controls</div>
+        <p className="mt-2 text-lg font-extrabold leading-relaxed">
           {step === 0
             ? mobile ? 'Use the MOVE pad to walk toward the glowing destination.' : 'Use WASD to walk toward the glowing destination.'
             : mobile ? 'You made it. Tap the blue action button.' : 'You made it. Press E or click the action button.'}
         </p>
         {showExperiencedOption && (
-          <button type="button" onClick={() => completeTutorial(setStep)} aria-label="I already know how to use these controls" className="min-h-[42px] shrink-0 rounded-xl bg-white/10 px-3 text-xs font-extrabold active:scale-95">I know these controls</button>
+          <button type="button" onClick={() => completeTutorial(setStep)} aria-label="I already know how to use these controls" className="mt-3 min-h-[48px] w-full rounded-2xl bg-white/10 px-3 text-sm font-extrabold active:scale-95">I know these controls</button>
         )}
       </section>
     </div>
