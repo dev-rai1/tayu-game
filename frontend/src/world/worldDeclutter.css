@@ -48,6 +48,16 @@
   display: none;
 }
 
+/* One feedback home: short-lived toast, NPC caption, guide bubble, and banner
+   text are consumed by PersistentCoach and shown only in the bottom-left tray. */
+.tayu-world-declutter .absolute.inset-x-0.bottom-4.z-\[150\] > [role="status"],
+.tayu-world-declutter .absolute.inset-x-0.bottom-24.z-\[220\],
+.tayu-world-declutter .absolute.inset-x-0.top-32.z-\[150\],
+.tayu-world-declutter .absolute.inset-x-0.top-24.z-\[200\],
+.tayu-world-declutter .tayu-cash-pop {
+  display: none !important;
+}
+
 /* Make Help unmistakable and keep its full touch target visible. */
 .tayu-world-declutter button[aria-label="Help"] {
   width: auto;
