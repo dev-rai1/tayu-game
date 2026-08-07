@@ -66,12 +66,15 @@ export default function GameScreen() {
         </div>
       </div>
 
-      {/* controls hint */}
-      <div className="pointer-events-none absolute bottom-3 left-3 hidden rounded-xl bg-black/40 px-3 py-2 text-xs text-white/70 sm:block">
-        <b>WASD / Arrows</b> to move · <b>E</b> to enter a building
-      </div>
+      {/* One predictable instruction location. */}
+      {!toast && !modal && (
+        <aside className="pointer-events-none absolute right-3 top-24 z-30 w-[min(92vw,25rem)] rounded-2xl border-2 border-white/20 bg-black/90 px-5 py-4 text-white shadow-lg sm:right-4 sm:w-[min(32vw,25rem)]">
+          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-highlight">What to do</div>
+          <p className="mt-2 text-base font-semibold leading-relaxed"><b>WASD / Arrows</b> to move. <b>E</b> to enter the highlighted building.</p>
+        </aside>
+      )}
 
-      {/* interaction prompt */}
+      {/* interaction prompt stays next to the action itself */}
       {near && !modal && (
         <div className="pointer-events-none absolute inset-x-0 bottom-24 flex justify-center sm:bottom-16">
           <div className="rounded-2xl bg-highlight px-5 py-2 font-bold text-tayubg shadow-lg">
@@ -80,16 +83,15 @@ export default function GameScreen() {
         </div>
       )}
 
-      {/* Persistent, player-dismissible notification */}
+      {/* Feedback uses the same right-side lane and waits for the player. */}
       {toast && (
-        <div className="pointer-events-auto absolute inset-x-0 top-24 z-30 flex justify-center px-4">
-          <div role="status" aria-live="polite" className="flex max-w-lg items-start gap-3 rounded-2xl bg-black/90 px-5 py-3 text-white shadow-lg">
-            <p className="flex-1 font-semibold leading-snug">{toast}</p>
-            <button type="button" onClick={() => setToast('')} className="min-h-[40px] rounded-xl bg-white/15 px-3 text-xs font-extrabold active:scale-95">
-              Got it
-            </button>
-          </div>
-        </div>
+        <aside className="pointer-events-auto absolute right-3 top-24 z-30 w-[min(92vw,25rem)] rounded-2xl border-2 border-highlight bg-black/90 px-5 py-4 text-white shadow-lg sm:right-4 sm:w-[min(32vw,25rem)]" role="status" aria-live="polite">
+          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-highlight">Feedback</div>
+          <p className="mt-2 text-lg font-semibold leading-relaxed">{toast}</p>
+          <button type="button" onClick={() => setToast('')} className="mt-3 min-h-[44px] w-full rounded-xl bg-white/15 px-3 text-sm font-extrabold active:scale-95">
+            Got it
+          </button>
+        </aside>
       )}
 
       {/* mobile controls */}
