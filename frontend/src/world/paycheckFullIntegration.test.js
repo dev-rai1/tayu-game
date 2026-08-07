@@ -23,6 +23,8 @@ const dashboard = read('src/pages/Dashboard.jsx')
 const teacher = read('src/pages/TeacherDashboard.jsx')
 const behavior = read('src/components/PlaytestBehaviorSummary.jsx')
 const coach = read('src/world/PersistentCoach.jsx')
+const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
+const activity = read('src/world/TaxDistrictActivity.jsx')
 
 describe('Paycheck Planet full integration', () => {
   it('removes the This way edge pointer and uses left/right arrows only for camera rotation', () => {
@@ -33,10 +35,13 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('starts Module 5 in the same persistent town instead of teleporting or swapping scenes', () => {
+  it('starts Module 5 in the same persistent town without teleporting or swapping scenes', () => {
     expect(world).toContain("jump === '5'")
-    expect(world).toContain('enterPaycheckPlanet({ restart: true })')
+    expect(world).toContain("enterPaycheckPlanet({ restart: true, origin: 'module-select' })")
     expect(world).toContain('activatePaycheckWorld()')
+    expect(world).toContain("const preservedTaxPosition = jump === '5'")
+    expect(world).toContain('playerPos.x = preservedTaxPosition.x')
+    expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
     expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}')
@@ -46,6 +51,26 @@ describe('Paycheck Planet full integration', () => {
     expect(moduleSelect).toContain("String(target.n)")
     expect(moduleSelect).not.toContain('target.route')
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
+  })
+
+  it('clears legacy freezes so normal movement remains available in tax mode', () => {
+    expect(world).toContain('prepareWorldForTaxWalking()')
+    expect(world).toContain('scenarioLocked: false')
+    expect(world).toContain('weekComplete: false')
+    expect(world).toContain('lemPhase: null')
+    expect(world).toContain("mgPhase: state.mg ? 'tax-paused' : state.mgPhase")
+    expect(world).toContain("mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg")
+    expect(world).toContain('playerSpeedMult: 1')
+    expect(world).toContain('moveTarget.x = null')
+    expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
+  })
+
+  it('does not secretly start Money Garden from the Start Module 5 handoff', () => {
+    expect(world).toContain("label: 'Start Module 5', act: null")
+    expect(world).toContain('finishBankHandoffIntoTax()')
+    expect(world).toContain("enterPaycheckPlanet({ origin: 'bank-handoff' })")
+    expect(world).toContain("if (origin === 'bank-handoff')")
+    expect(world).toContain('game.startGarden()')
   })
 
   it('keeps the six-step tax math but requires decisions and calculations instead of next-button clicking', () => {
@@ -76,6 +101,16 @@ describe('Paycheck Planet full integration', () => {
     expect(objective).toContain('taxStationForStep(tax.stepNumber).point')
   })
 
+  it('supports proximity E/action interactions instead of requiring 3D mouse clicks', () => {
+    expect(world).toContain('<TaxWorldInteractionBridge />')
+    expect(world).toContain('<TaxActionPrompt />')
+    expect(bridge).toContain("event.code !== 'KeyE'")
+    expect(bridge).toContain("window.addEventListener('tayu-interact'")
+    expect(bridge).toContain('TAX_CLIENTS')
+    expect(bridge).toContain('taxStationForStep(state.stepNumber)')
+    expect(taxStore).toContain('nearbyAction')
+  })
+
   it('keeps the map and movement usable while focused station panels stay compact', () => {
     expect(world).toContain('<Hud playerName={state.player.name')
     expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
@@ -99,6 +134,9 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckWorld).toContain('DeskWorker')
     expect(paycheckWorld).toContain('Nia · checking math')
     expect(paycheckWorld).toContain('CharacterMesh')
+    expect(activity).toContain('Owen · intake runner')
+    expect(activity).toContain('Priya · review helper')
+    expect(activity).toContain('PaperConveyor')
   })
 
   it('makes the client choice teach evidence instead of revealing the answer upfront', () => {
