@@ -27,6 +27,13 @@ export function getGuidance(st, touch = false) {
   if (st.panelPortfolio) return guide('MAKE YOUR MONEY MOVES', 'Buy, sell, save, or keep cash based on this week’s lesson.', 'Close My Portfolio, then tap Start the Week')
   if (st.scenarioLocked) return guide('WATCH WHAT HAPPENS', 'Your choice is playing out in the world.', 'The next step will appear automatically')
 
+  if (st.objective === 'tax') {
+    return guide('GO TO PAYCHECK PLANET', 'The Bank is finished. Follow the arrow along the road to Paycheck Planet.', 'Walk to the glowing entrance')
+  }
+  if (st.objective === 'tax-active') {
+    return guide('COMPLETE PAYCHECK PLANET', 'Use the glowing stations in order: job, taxes, plan, then the surprise expense.', `${act} at each glowing station`)
+  }
+
   if (st.gameComplete) {
     return guide('GO TO THE FINALE AREA', 'Follow the gold arrow to the celebration house.', `${act} at the entrance`)
   }
