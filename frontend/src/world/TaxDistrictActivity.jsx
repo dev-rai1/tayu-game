@@ -1,9 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Billboard } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { CharacterMesh } from './CharacterMesh.jsx'
 import { labelTexture } from './textures.js'
-import { isPaycheckWorldActive } from './paycheckMode.js'
+import { PAYCHECK_MODE_EVENT, isPaycheckWorldActive } from './paycheckMode.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_POINTS, taxStationForStep, toTaxLocal } from './taxDistrictLayout.js'
 
@@ -100,10 +100,18 @@ function PaperConveyor({ active, pointA, pointB }) {
 }
 
 export function TaxDistrictActivity() {
-  const active = isPaycheckWorldActive()
+  const [active, setActive] = useState(() => isPaycheckWorldActive())
   const phase = useTaxLab((state) => state.phase)
   const stepNumber = useTaxLab((state) => state.stepNumber)
   const work = useTaxLab((state) => state.work)
+
+  useEffect(() => {
+    const sync = (event) => setActive(event?.detail?.active ?? isPaycheckWorldActive())
+    sync()
+    window.addEventListener(PAYCHECK_MODE_EVENT, sync)
+    return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync)
+  }, [])
+
   if (!active) return null
 
   const currentStation = taxStationForStep(stepNumber)
