@@ -8,15 +8,11 @@ export function isBlockingGameOverlay(state = {}) {
   )
 }
 
-export function isCommerceOverlayActive(state = {}) {
-  // Only the two intentionally sequential Lemonade focus walkthroughs own the
-  // guidance rail. Market shopping and the other Lemonade phases are gameplay
-  // surfaces, so the shared coach remains available beside them.
-  return Boolean(
-    state.week === 2 && state.objective === 'lemonade' &&
-    ['supplies', 'template'].includes(state.lemPhase) &&
-    !state.weekComplete
-  )
+export function isCommerceOverlayActive() {
+  // Commerce controls now stay in the gameplay area while guidance stays in the
+  // right rail. Focus walkthroughs render above the shared coach when active,
+  // so commerce never needs to permanently suppress the shared instructions.
+  return false
 }
 
 export function isSpecializedCoachActive(state = {}) {
