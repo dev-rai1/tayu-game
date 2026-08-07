@@ -135,10 +135,10 @@ export function PersistentCoach({ paycheckMode = false }) {
   const key = waiting?.id || hintKey(type, content, week, objective)
   const canShow = Boolean(
     content &&
+    (waiting || paycheckMode || visibility.showGuidance) &&
     !visibility.blocking &&
     !visibility.commerce &&
     !visibility.specialized &&
-    (waiting || paycheckMode || !gameComplete) &&
     dismissedKey !== key
   )
 
@@ -146,11 +146,12 @@ export function PersistentCoach({ paycheckMode = false }) {
 
   const label = waiting
     ? waiting.kind === 'character' ? 'CHARACTER' : waiting.kind === 'feedback' ? 'FEEDBACK' : waiting.kind === 'update' ? 'UPDATE' : 'HINT'
-    : improvement ? "BENNY'S FEEDBACK" : 'WHAT TO DO'
+    : improvement ? "Benny's feedback" : 'Show hint'
   const title = waiting ? waiting.title : improvement ? improvement.title : content.title
   const diagnosis = improvement?.diagnosis
-  const action = waiting ? waiting.body : improvement ? improvement.action : (content.action || content.instruction)
-  const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
+  const action = improvement ? improvement.action : (content.action || content.instruction)
+  const messageBody = waiting ? waiting.body : action
+  const spoken = [title, diagnosis, messageBody].filter(Boolean).join('. ')
   const queueCount = queue.length
 
   const advance = () => {
@@ -162,42 +163,44 @@ export function PersistentCoach({ paycheckMode = false }) {
   }
 
   return (
-    <aside
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      data-guidance-rail="true"
-      className="pointer-events-auto fixed right-3 top-[5.5rem] z-[490] w-[min(92vw,27rem)] max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-3xl border-2 border-electric bg-white p-4 text-navy shadow-2xl sm:right-4 sm:w-[min(32vw,27rem)]"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
-        {waiting && queueCount > 1 && (
-          <span className="text-xs font-extrabold text-navy/45">1 of {queueCount}</span>
+    <div className="pointer-events-none fixed inset-0 z-[490]">
+      <aside
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-guidance-rail="true"
+        className="pointer-events-auto absolute right-3 top-[5.5rem] w-[min(92vw,27rem)] max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-3xl border-2 border-electric bg-white p-4 text-navy shadow-2xl sm:right-4 sm:w-[min(32vw,27rem)]"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="rounded-full bg-electric/10 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-electric">{label}</span>
+          {waiting && queueCount > 1 && (
+            <span className="text-xs font-extrabold text-navy/45">1 of {queueCount}</span>
+          )}
+        </div>
+
+        <h2 className="mt-3 break-words font-display text-xl font-extrabold leading-snug text-navy">{title}</h2>
+        {diagnosis && (
+          <p className="mt-3 rounded-2xl bg-navy/5 px-4 py-3 text-base font-semibold leading-relaxed text-navy/85">{diagnosis}</p>
         )}
-      </div>
+        <p className="mt-3 break-words text-lg font-semibold leading-relaxed text-navy/85">{messageBody}</p>
 
-      <h2 className="mt-3 break-words font-display text-xl font-extrabold leading-snug text-navy">{title}</h2>
-      {diagnosis && (
-        <p className="mt-3 rounded-2xl bg-navy/5 px-4 py-3 text-base font-semibold leading-relaxed text-navy/85">{diagnosis}</p>
-      )}
-      <p className="mt-3 break-words text-lg font-semibold leading-relaxed text-navy/85">{action}</p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => say(spoken)}
-          className="min-h-[50px] rounded-2xl bg-navy/10 px-3 text-sm font-extrabold text-navy active:scale-95"
-        >
-          Read aloud
-        </button>
-        <button
-          type="button"
-          onClick={advance}
-          className="min-h-[50px] rounded-2xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95"
-        >
-          {waiting ? (queueCount > 1 ? 'Next' : 'Got it') : 'Got it'}
-        </button>
-      </div>
-    </aside>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => say(spoken)}
+            className="min-h-[50px] rounded-2xl bg-navy/10 px-3 text-sm font-extrabold text-navy active:scale-95"
+          >
+            Read aloud
+          </button>
+          <button
+            type="button"
+            onClick={advance}
+            className="min-h-[50px] rounded-2xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95"
+          >
+            {waiting ? (queueCount > 1 ? 'Next' : 'Got it') : 'Dismiss'}
+          </button>
+        </div>
+      </aside>
+    </div>
   )
 }
