@@ -22,6 +22,7 @@ function markSeen(key) {
 export function LemonadeFocusGuide() {
   const week = useGame((state) => state.week)
   const lemPhase = useGame((state) => state.lemPhase)
+  const lemFeatures = useGame((state) => state.lemFeatures)
   const helpOpen = useGame((state) => state.helpOpen)
   const dialog = useGame((state) => state.dialog)
   const cards = useGame((state) => state.cards)
@@ -32,7 +33,10 @@ export function LemonadeFocusGuide() {
   const [stepIndex, setStepIndex] = useState(0)
 
   const readingBand = getReadingBand()
-  const steps = useMemo(() => focusStepsFor(activePhase, readingBand), [activePhase, readingBand])
+  const steps = useMemo(
+    () => focusStepsFor(activePhase, readingBand, lemFeatures),
+    [activePhase, readingBand, lemFeatures],
+  )
   const stateSnapshot = { week, lemPhase, helpOpen, dialog, cards, lessons, actorCaption }
   const clearToShow = canShowFocusGuide(stateSnapshot)
 
