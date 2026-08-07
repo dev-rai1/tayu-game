@@ -21,7 +21,7 @@ export const MONEY_GARDEN_FLOW = [
   '1. Learn the concept.',
   '2. Read the evidence.',
   '3. Make one change.',
-  '4. Test and explain the result.',
+  '4. Test your choice and continue.',
 ]
 
 export const MONEY_GARDEN_DECISIONS = {
