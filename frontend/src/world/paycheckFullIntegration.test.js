@@ -12,6 +12,8 @@ const paycheckWorld = read('src/world/PaycheckPlanetWorld.jsx')
 const paycheckScenario = read('src/scenarios/paycheckPlanet.js')
 const paycheckMode = read('src/world/paycheckMode.js')
 const objective = read('src/world/objective.js')
+const taxScene = read('src/world/TaxLabWorld.jsx')
+const taxCss = read('src/world/taxWorkbench.css')
 const app = read('src/App.jsx')
 const watcher = read('src/components/PathCompletionWatcher.jsx')
 const admin = read('src/components/AdminPanel.jsx')
@@ -29,71 +31,85 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('launches public Module 5 directly at the Tax Filing Lab', () => {
+  it('launches public Module 5 directly at the isolated Tax Filing Lab', () => {
     expect(world).toContain("jump === '5'")
-    expect(world).toContain('enterPaycheckPlanet()')
+    expect(world).toContain('enterPaycheckPlanet({ restart: true })')
     expect(world).toContain('game.adminTeleport(PAYCHECK_START)')
     expect(world).toContain('activatePaycheckWorld()')
-    expect(world).toContain('Paycheck Planet · Tax Filing Lab')
+    expect(world).toContain('taxMode ? <TaxLabWorld />')
     expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("jump === '6' ? 5")
     expect(moduleSelect).toContain("String(target.n)")
     expect(moduleSelect).not.toContain('target.route')
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
+    expect(taxScene).toContain('<PaycheckPlanetWorld />')
   })
 
-  it('makes Module 5 a six-step practice tax return with real math decisions', () => {
+  it('keeps the six-step tax math but turns the experience into workbench actions', () => {
     expect(paycheckScenario).toContain('TOTAL_TAX_STEPS = 6')
     expect(paycheckScenario).toContain('TAX_CASES')
     expect(paycheckScenario).toContain('GAME_STANDARD_DEDUCTION')
     expect(paycheckScenario).toContain('bracketTax')
     expect(paycheckScenario).toContain('taxReturnMath')
-    expect(paycheckScenario).toContain('filingStepFor')
-    expect(paycheckScenario).toContain('Read the W-2')
-    expect(paycheckScenario).toContain('Find taxable income')
-    expect(paycheckScenario).toContain('Use the tax brackets')
-    expect(paycheckScenario).toContain('Apply the tax credit')
-    expect(paycheckScenario).toContain('Refund or amount due?')
-    expect(paycheckScenario).toContain('Review and file')
-    expect(paycheckWorld).toContain('six_step_tax_filing_practice')
-    expect(paycheckWorld).toContain("type: correct ? 'tax_step_correct' : 'tax_step_retry'")
+    expect(paycheckWorld).toContain('interactive_tax_workbench')
+    expect(paycheckWorld).toContain("type: 'tax_workbench_action'")
+    expect(paycheckWorld).toContain('W2Scanner')
+    expect(paycheckWorld).toContain('DeductionWorkbench')
+    expect(paycheckWorld).toContain('BracketMachine')
+    expect(paycheckWorld).toContain('CreditStation')
+    expect(paycheckWorld).toContain('ReconcileScale')
+    expect(paycheckWorld).toContain('FilingDesk')
     expect(paycheckWorld).toContain('taxLabProgress')
   })
 
-  it('starts with a large explanation and then uses a popup for every choice', () => {
-    expect(paycheckWorld).toContain('File a practice tax return')
-    expect(paycheckWorld).toContain('This module is about <strong>how a tax return works</strong>')
-    expect(paycheckWorld).toContain('TAX_INTRO_STEPS.map')
-    expect(paycheckWorld).toContain('<TaxFilingPanel')
-    expect(paycheckWorld).toContain('<Html fullscreen')
-    expect(paycheckWorld).toContain('Show a hint on the side')
-    expect(paycheckWorld).toContain('onChooseCase')
-    expect(paycheckWorld).toContain('onAnswer')
+  it('uses one browser-level workbench instead of a canvas popup plus side hint', () => {
+    expect(paycheckWorld).toContain('createPortal(')
+    expect(paycheckWorld).toContain('data-tax-workbench="true"')
+    expect(paycheckWorld).not.toContain('<Html fullscreen')
+    expect(paycheckWorld).not.toContain('Show a hint on the side')
+    expect(world).not.toContain('TaxSideHint')
+    expect(taxCss).toContain('width: 100vw')
+    expect(taxCss).toContain('min-width: 100vw')
   })
 
-  it('keeps all three choices reachable and visibly gives each one a path', () => {
+  it('is not multiple-choice gameplay after selecting a W-2 folder', () => {
+    expect(paycheckWorld).toContain('There are no A/B/C quiz answers.')
+    expect(paycheckWorld).toContain('Tap the two boxes')
+    expect(paycheckWorld).toContain('PRESS TO APPLY')
+    expect(paycheckWorld).toContain('Run the bracket lanes')
+    expect(paycheckWorld).toContain('Compare the two totals')
+    expect(paycheckWorld).toContain('Sign & file practice return')
+    expect(paycheckWorld).not.toContain('answerChoice')
+    expect(paycheckWorld).not.toContain('ANSWER ${String.fromCharCode')
+  })
+
+  it('keeps all three W-2 folders reachable and visibly gives each one a path', () => {
     expect(paycheckScenario).toContain('x: -2.6')
     expect(paycheckScenario).toContain('x: 0')
     expect(paycheckScenario).toContain('x: 2.6')
     expect(paycheckWorld).toContain('function ChoicePath')
     expect(paycheckWorld).toContain('<ChoicePath')
-    expect(paycheckWorld).toContain('The popup is the main control, so no choice can be blocked by the map.')
+    expect(paycheckWorld).toContain('Open one W-2 folder')
   })
 
-  it('keeps Module 5 animated without stacked Press E instructions', () => {
-    expect(paycheckWorld).toContain("labelTexture('PAYCHECK PLANET · TAX LAB'")
-    expect(paycheckWorld).toContain('AnimatedStation')
+  it('adds visible motion to both the DOM workbench and 3D Tax Lab', () => {
+    expect(paycheckWorld).toContain('TaxMachineAnimation')
     expect(paycheckWorld).toContain('pushCoins(')
     expect(paycheckWorld).toContain('CelebrationBurst')
+    expect(taxCss).toContain('@keyframes taxScanLine')
+    expect(taxCss).toContain('@keyframes taxCoinFlow')
+    expect(taxCss).toContain('@keyframes taxCreditSlide')
+    expect(taxCss).toContain('@keyframes taxEnvelopeFly')
     expect(paycheckWorld).not.toContain('PRESS E')
-    expect(paycheckWorld).not.toContain('NO TELEPORT')
-    expect(paycheckWorld).not.toContain('WALK TO MODULE 6')
-    expect(paycheckWorld).toContain("phase === 'complete'")
   })
 
-  it('turns off redundant world navigation prompts during Module 5', () => {
+  it('turns off unrelated world UI and navigation prompts during Module 5', () => {
     expect(objective).toContain('if (isPaycheckWorldActive()) return null')
-    expect(world).toContain('<FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />')
+    expect(world).toContain('{!taxMode && <Hud')
+    expect(world).toContain('{!taxMode && <PersistentCoach')
+    expect(world).toContain('{!taxMode && <AdminPanel />')
+    expect(world).toContain('<FirstTimeMovementTutorial enabled={use3D && !taxMode} />')
+    expect(world).toContain('usesTouchControls && !taxMode')
   })
 
   it('removes the standalone tax and per-module quiz detours', () => {
@@ -111,24 +127,22 @@ describe('Paycheck Planet full integration', () => {
       expect(source).toContain('Paycheck Planet')
       expect(source).toContain('Money Garden')
     }
-    expect(world).toContain("paycheckMode ? 'tax'")
+    expect(world).toContain("taxMode ? 'tax'")
     expect(paycheckWorld).toContain("type: 'module_complete'")
   })
 
-  it('gives admin navigation seven public stops including in-world Paycheck Planet', () => {
+  it('gives admin navigation seven public stops including Paycheck Planet', () => {
     expect(admin).toContain("5: 'Paycheck Planet'")
     expect(admin).toContain("6: 'Money Garden'")
     expect(admin).toContain("7: 'Finale Area'")
     expect(admin).not.toContain('/tax-paycheck?admin=1')
     expect(admin).toContain("localStorage.setItem('tayu-jump-module', String(step))")
-    expect(admin).toContain('MODULE {moduleStep} of 7')
   })
 
-  it('uses important popups in front and ordinary hints on the side', () => {
+  it('keeps the shared world coach hierarchy for normal modules', () => {
     expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coach).toContain('data-important-message-scrim="true"')
-    expect(coach).toContain("queuedMessage?.kind === 'actor'")
-    expect(coach).toContain('right-[max(0.75rem,env(safe-area-inset-right,0px))]')
     expect(coach).toContain('pointer-events-none fixed')
+    expect(world).toContain('{!taxMode && <PersistentCoach key="world-coach" />}')
   })
 })
