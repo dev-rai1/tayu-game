@@ -64,6 +64,13 @@
   box-shadow: 0 8px 22px rgba(7, 23, 72, 0.32);
 }
 
+/* The Help button already renders its own "?". The global action enhancer also
+   injects a help icon via ::before, so suppress that duplicate in the world HUD. */
+.tayu-world-declutter button[aria-label="Help"]::before {
+  content: none;
+  display: none;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;

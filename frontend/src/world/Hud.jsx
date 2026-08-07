@@ -1340,7 +1340,7 @@ export function Hud({ playerName, onContinue }) {
 
       {/* E: hidden on phones - it collided with the objective chip */}
       <div className="glass--navy absolute left-1/2 top-4 hidden -translate-x-1/2 rounded-2xl px-4 py-2 text-sm font-bold text-white text-legible sm:block">
-        Module {week} of 5
+        Module {week} of {MODULES.length}
       </div>
 
       <div className="absolute right-4 top-4 flex items-start gap-2">
