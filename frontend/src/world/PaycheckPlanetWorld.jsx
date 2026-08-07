@@ -7,6 +7,17 @@ import { labelTexture } from './textures.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
 import {
+  BUDGET_PLANS,
+  CAREER_JOBS,
+  START_JOBS,
+  TOTAL_PAYCHECK_WEEKS,
+  WEEK_SPECS,
+  applyLifeChoice,
+  budgetAmounts,
+  lifeSummary,
+  paycheckMath,
+} from '../scenarios/paycheckPlanet.js'
+import {
   PAYCHECK_MODE_EVENT,
   activatePaycheckWorld,
   deactivatePaycheckWorld,
@@ -16,20 +27,14 @@ import {
 export const TAX_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]
 const ENTRY_RADIUS = 4.2
 const STATION_RADIUS = 2.8
-const REPAIR_COST = 32
 const STATION_Z = 4.2
 
-const JOBS = [
-  { id: 'library', label: 'LIBRARY HELPER', gross: 120, rate: 0.10, x: -2.7 },
-  { id: 'camp', label: 'CAMP ASSISTANT', gross: 160, rate: 0.15, x: 0 },
-  { id: 'design', label: 'DESIGN GIG', gross: 200, rate: 0.20, x: 2.7 },
-]
+const roundMoney = (value) => Math.max(0, Math.round(Number(value || 0)))
+const allJobs = [...START_JOBS, ...CAREER_JOBS]
 
-const PLANS = [
-  { id: 'spend', label: 'SPEND MOST', spend: 0.70, save: 0.15, future: 0.15, x: -2.7 },
-  { id: 'balanced', label: 'BALANCED PLAN', spend: 0.40, save: 0.25, future: 0.35, x: 0 },
-  { id: 'future', label: 'PLAN AHEAD', spend: 0.25, save: 0.25, future: 0.50, x: 2.7 },
-]
+function findJob(id) {
+  return allJobs.find((item) => item.id === id) || null
+}
 
 function worldPoint(x, z, y = 1.1) {
   return { x: TAX_DISTRICT[0] + x, y, z: TAX_DISTRICT[1] + z }
@@ -53,11 +58,21 @@ function setToast(text) {
   try { useGame.getState().setToast(text) } catch { useGame.setState({ toast: text }) }
 }
 
-function showLesson(text, key) {
+function showLesson(text, key = null) {
   try { useGame.getState().showLesson(text, key, true, 'tax') } catch { /* world stays playable */ }
 }
 
-function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = '#00dca0', actionLabel = 'PRESS E / TAP', onActivate }) {
+function InteractiveStation({
+  x,
+  z = STATION_Z,
+  label,
+  sublabel,
+  detail,
+  near,
+  accent = '#00dca0',
+  actionLabel = 'PRESS E / TAP',
+  onActivate,
+}) {
   const group = useRef()
   const time = useRef(Math.random() * 4)
 
@@ -71,7 +86,7 @@ function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = 
   const activate = (event) => {
     event?.stopPropagation?.()
     if (distanceTo(x, z) > STATION_RADIUS + 0.8) {
-      setToast('Walk a little closer to the glowing station.')
+      setToast('Walk a little closer to the glowing choice pad.')
       return
     }
     onActivate?.()
@@ -94,24 +109,32 @@ function InteractiveStation({ x, z = STATION_Z, label, sublabel, near, accent = 
         <cylinderGeometry args={[0.34, 0.34, 0.12, 18]} />
         <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.65} metalness={0.35} />
       </mesh>
-      <Billboard position={[0, 1.58, 0]}>
+      <Billboard position={[0, 1.72, 0]}>
         <mesh>
-          <planeGeometry args={[2.9, 0.9]} />
+          <planeGeometry args={[2.95, 0.86]} />
           <meshBasicMaterial map={labelTexture(label, { bg: '#071748', color: '#ffffff', accent })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
       {sublabel && (
-        <Billboard position={[0, 1.02, 0]}>
+        <Billboard position={[0, 1.12, 0]}>
           <mesh>
-            <planeGeometry args={[2.75, 0.76]} />
+            <planeGeometry args={[2.9, 0.72]} />
             <meshBasicMaterial map={labelTexture(sublabel, { bg: '#ffffff', color: '#071748', accent })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
       )}
-      {near && (
-        <Billboard position={[0, 2.18, 0]}>
+      {detail && (
+        <Billboard position={[0, 0.64, 0]}>
           <mesh>
-            <planeGeometry args={[2.45, 0.64]} />
+            <planeGeometry args={[2.72, 0.58]} />
+            <meshBasicMaterial map={labelTexture(detail, { bg: '#fff8e8', color: '#071748', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
+          </mesh>
+        </Billboard>
+      )}
+      {near && (
+        <Billboard position={[0, 2.3, 0]}>
+          <mesh>
+            <planeGeometry args={[2.6, 0.64]} />
             <meshBasicMaterial map={labelTexture(actionLabel, { bg: '#00dca0', color: '#071748', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
           </mesh>
         </Billboard>
@@ -144,29 +167,99 @@ function CelebrationBurst({ active }) {
   )
 }
 
+function LifeSnapshot({ week, cash, savings, debt, comfort, freeTime, summary }) {
+  return (
+    <group>
+      <Billboard position={[0, 4.08, 2.58]}>
+        <mesh>
+          <planeGeometry args={[6.2, 0.84]} />
+          <meshBasicMaterial
+            map={labelTexture(`WEEK ${week}/${TOTAL_PAYCHECK_WEEKS} · CASH $${cash} · SAVINGS $${savings} · DEBT $${debt}`, { bg: '#071748', color: '#ffffff', accent: '#00dca0' })}
+            transparent
+            toneMapped={false}
+            depthTest={false}
+          />
+        </mesh>
+      </Billboard>
+      <Billboard position={[0, 3.57, 2.6]}>
+        <mesh>
+          <planeGeometry args={[5.8, 0.7]} />
+          <meshBasicMaterial
+            map={labelTexture(`LIFE SNAPSHOT · COMFORT ${comfort}/10 · FREE TIME ${freeTime}/10`, { bg: '#ffffff', color: '#071748', accent: '#7850f0' })}
+            transparent
+            toneMapped={false}
+            depthTest={false}
+          />
+        </mesh>
+      </Billboard>
+      <Billboard position={[0, 3.14, 2.62]}>
+        <mesh>
+          <planeGeometry args={[5.35, 0.58]} />
+          <meshBasicMaterial map={labelTexture(summary, { bg: '#fff0dc', color: '#071748', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
+        </mesh>
+      </Billboard>
+    </group>
+  )
+}
+
 export function PaycheckPlanetWorld() {
   const [active, setActive] = useState(() => isPaycheckWorldActive())
+  const [week, setWeek] = useState(1)
   const [phase, setPhase] = useState('job')
   const [job, setJob] = useState(null)
-  const [plan, setPlan] = useState(null)
+  const [budgetPlan, setBudgetPlan] = useState(null)
+  const [weekBudget, setWeekBudget] = useState(null)
+  const [cash, setCash] = useState(0)
+  const [savings, setSavings] = useState(0)
+  const [debt, setDebt] = useState(0)
+  const [comfort, setComfort] = useState(5)
+  const [freeTime, setFreeTime] = useState(5)
+  const [grossBonus, setGrossBonus] = useState(0)
+  const [history, setHistory] = useState([])
   const [nearEntrance, setNearEntrance] = useState(false)
   const [nearStation, setNearStation] = useState('')
   const nearEntranceRef = useRef(false)
   const nearStationRef = useRef('')
+  const loadedSessionRef = useRef(false)
 
-  const tax = job ? Math.round(job.gross * job.rate) : 0
-  const takeHome = job ? job.gross - tax : 0
-  const futureFund = plan && takeHome ? Math.round(takeHome * plan.future) : 0
+  const spec = WEEK_SPECS[week - 1] || WEEK_SPECS[0]
+  const paycheck = useMemo(() => paycheckMath(job, grossBonus), [grossBonus, job])
+  const summary = useMemo(() => lifeSummary({ savings, debt, comfort, freeTime }), [comfort, debt, freeTime, savings])
 
-  const stations = useMemo(() => {
-    if (!active) return []
-    if (phase === 'job') return JOBS.map((item) => ({ id: `job:${item.id}`, x: item.x, z: STATION_Z }))
-    if (phase === 'tax') return [{ id: 'withhold', x: 0, z: STATION_Z }]
-    if (phase === 'plan') return PLANS.map((item) => ({ id: `plan:${item.id}`, x: item.x, z: STATION_Z }))
-    if (phase === 'event') return [{ id: 'repair', x: 0, z: STATION_Z }]
-    if (phase === 'complete') return [{ id: 'continue', x: 0, z: STATION_Z }]
-    return []
-  }, [active, phase])
+  const restoreOrStart = useCallback(() => {
+    const profile = loadProfile() || {}
+    const saved = profile.taxLabProgress
+    if (saved && !saved.completed && saved.week >= 1 && saved.week <= TOTAL_PAYCHECK_WEEKS) {
+      setWeek(saved.week)
+      setPhase(saved.phase || (saved.week === 1 ? 'job' : 'tax'))
+      setJob(findJob(saved.jobId))
+      setBudgetPlan(BUDGET_PLANS.find((item) => item.id === saved.budgetPlanId) || null)
+      setWeekBudget(saved.weekBudget || null)
+      setCash(roundMoney(saved.cash))
+      setSavings(roundMoney(saved.savings))
+      setDebt(roundMoney(saved.debt))
+      setComfort(Math.max(0, Math.min(10, Number(saved.comfort ?? 5))))
+      setFreeTime(Math.max(0, Math.min(10, Number(saved.freeTime ?? 5))))
+      setGrossBonus(roundMoney(saved.grossBonus))
+      setHistory(Array.isArray(saved.history) ? saved.history : [])
+      setToast(`Module 5 resumed at Week ${saved.week} of ${TOTAL_PAYCHECK_WEEKS}.`)
+      return
+    }
+
+    setWeek(1)
+    setPhase('job')
+    setJob(null)
+    setBudgetPlan(null)
+    setWeekBudget(null)
+    setCash(0)
+    setSavings(0)
+    setDebt(0)
+    setComfort(5)
+    setFreeTime(5)
+    setGrossBonus(0)
+    setHistory([])
+    setToast('Paycheck Planet is a 6-week life simulation. Start by comparing all 3 jobs.')
+  }, [])
 
   useEffect(() => {
     const sync = (event) => setActive(event?.detail?.active ?? isPaycheckWorldActive())
@@ -176,15 +269,50 @@ export function PaycheckPlanetWorld() {
   }, [])
 
   useEffect(() => {
-    if (!active) return
-    setPhase('job')
-    setJob(null)
-    setPlan(null)
+    if (!active) {
+      loadedSessionRef.current = false
+      return
+    }
+    if (loadedSessionRef.current) return
+    loadedSessionRef.current = true
     try { useGame.getState().adminClearUi() } catch { /* no-op */ }
-    setToast('Step 1: compare the 3 jobs, walk to ONE glowing job pad, then press E or tap to choose it.')
-    showLesson('FIRST CHOICE: Compare each job’s gross pay, tax rate, and take-home pay. Pick one job by walking to its glowing pad and pressing E or tapping it.', 'tax-world-intro')
-    recordLearningEvent({ moduleName: 'tax', type: 'module_start', outcome: 'started', detail: 'in_world_3d' }).catch(() => {})
-  }, [active])
+    restoreOrStart()
+    showLesson('PAYCHECK PLANET: You will live through 6 weeks. Each week you get paid, see taxes come out, make a budget, and make a life choice. Your cash, savings, debt, comfort, and free time will change based on what you choose.', 'tax-world-long-intro')
+    recordLearningEvent({ moduleName: 'tax', type: 'module_start', outcome: 'started', detail: 'six_week_in_world_simulation' }).catch(() => {})
+  }, [active, restoreOrStart])
+
+  useEffect(() => {
+    if (!active || !loadedSessionRef.current) return
+    saveProfile({
+      taxLabProgress: {
+        week,
+        phase,
+        jobId: job?.id || null,
+        budgetPlanId: budgetPlan?.id || null,
+        weekBudget,
+        cash,
+        savings,
+        debt,
+        comfort,
+        freeTime,
+        grossBonus,
+        history,
+        completed: false,
+      },
+    })
+  }, [active, budgetPlan, cash, comfort, debt, freeTime, grossBonus, history, job, phase, savings, week, weekBudget])
+
+  const stations = useMemo(() => {
+    if (!active) return []
+    if (phase === 'job') return START_JOBS.map((item) => ({ id: `job:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'career') return CAREER_JOBS.map((item) => ({ id: `career:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'tax') return [{ id: 'tax', x: 0, z: STATION_Z }]
+    if (phase === 'budget') return BUDGET_PLANS.map((item) => ({ id: `budget:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'life') return spec.choices.map((item) => ({ id: `life:${item.id}`, x: item.x, z: STATION_Z }))
+    if (phase === 'recap') return [{ id: 'recap', x: 0, z: STATION_Z }]
+    if (phase === 'complete') return [{ id: 'finish', x: 0, z: STATION_Z }]
+    return []
+  }, [active, phase, spec.choices])
 
   useFrame(() => {
     const entryDistance = Math.hypot(playerPos.x - TAX_ENTRY[0], playerPos.z - TAX_ENTRY[1])
@@ -210,89 +338,160 @@ export function PaycheckPlanetWorld() {
 
   const chooseJob = useCallback((selected) => {
     if (phase !== 'job' || !selected) return
-    const withheld = Math.round(selected.gross * selected.rate)
-    const net = selected.gross - withheld
+    const math = paycheckMath(selected, grossBonus)
     setJob(selected)
+    setFreeTime(selected.freeTime)
+    setComfort(selected.comfort)
     setPhase('tax')
-    pushCoins(worldPoint(selected.x, STATION_Z, 1.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 9, 'gross-pay')
-    setToast(`${selected.label} chosen: $${selected.gross} gross − $${withheld} tax = $${net} take-home. Now use the center tax station.`)
-    showLesson(`You chose ${selected.label}. Gross pay is $${selected.gross}; ${Math.round(selected.rate * 100)}% ($${withheld}) is withheld for taxes, so your take-home pay is $${net}.`, `tax-job-${selected.id}`)
-    recordLearningEvent({ moduleName: 'tax', type: 'job_choice', outcome: selected.id, detail: `gross=${selected.gross};rate=${selected.rate}` }).catch(() => {})
-  }, [phase])
+    pushCoins(worldPoint(selected.x, STATION_Z, 1.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 9, 'job-choice')
+    setToast(`${selected.label}: $${math.gross} gross, about $${math.tax} withheld in this simulation, $${math.takeHome} take-home.`)
+    showLesson(`JOB TRADEOFF: ${selected.label} gives $${math.takeHome} take-home pay in this practice week and starts you at ${selected.freeTime}/10 free time. Higher pay is useful, but time is part of the choice too.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'job_choice', outcome: selected.id, detail: `week=${week};gross=${math.gross};takeHome=${math.takeHome}` }).catch(() => {})
+  }, [grossBonus, phase, week])
 
-  const withholdTax = useCallback(() => {
+  const chooseCareer = useCallback((selected) => {
+    if (phase !== 'career' || !selected) return
+    const math = paycheckMath(selected, grossBonus)
+    setJob(selected)
+    setFreeTime(selected.freeTime)
+    setPhase('tax')
+    setToast(`New job chosen: ${selected.label}. Take-home this week will be about $${math.takeHome}.`)
+    showLesson(`WEEK 4 JOB CHANGE: ${selected.label} changes both income and free time. Your budget should change when your income or schedule changes.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'career_choice', outcome: selected.id, detail: `week=${week};gross=${math.gross};freeTime=${selected.freeTime}` }).catch(() => {})
+  }, [grossBonus, phase, week])
+
+  const collectPaycheck = useCallback(() => {
     if (phase !== 'tax' || !job) return
-    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, 0.2, 1.8), Math.max(3, Math.round(tax / 8)), 'tax-withheld')
-    setPhase('plan')
-    setToast(`$${tax} withheld. You actually take home $${takeHome}. Choose a plan for that money.`)
-    showLesson(`PAYCHECK MATH: $${job.gross} gross − $${tax} taxes = $${takeHome} take-home pay. Plan the money you actually receive, not the larger gross number.`, `tax-math-${job.id}`)
-    recordLearningEvent({ moduleName: 'tax', type: 'withholding', outcome: 'completed', detail: `tax=${tax};takeHome=${takeHome}` }).catch(() => {})
-  }, [job, phase, takeHome, tax])
+    const math = paycheckMath(job, grossBonus)
+    setCash((value) => roundMoney(value + math.takeHome))
+    setBudgetPlan(null)
+    setWeekBudget(null)
+    setPhase('budget')
+    pushCoins(worldPoint(0, STATION_Z, 1.4), { x: playerPos.x, y: 1.1, z: playerPos.z }, Math.max(6, Math.min(12, Math.round(math.takeHome / 20))), `paycheck-week-${week}`)
+    setToast(`Week ${week}: $${math.gross} gross − $${math.tax} withheld = $${math.takeHome} take-home. Now budget that take-home pay.`)
+    showLesson(`PAYCHECK MATH: Gross pay is $${math.gross}. This simulation withholds $${math.tax}, so $${math.takeHome} actually reaches you. Build the budget from $${math.takeHome}, not $${math.gross}.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'withholding', outcome: 'completed', detail: `week=${week};tax=${math.tax};takeHome=${math.takeHome}` }).catch(() => {})
+  }, [grossBonus, job, phase, week])
 
-  const choosePlan = useCallback((selected) => {
-    if (phase !== 'plan' || !job || !selected) return
-    setPlan(selected)
-    setPhase('event')
-    const future = Math.round(takeHome * selected.future)
-    setToast(`${selected.label}: $${future} set aside for a future expense. Now test the plan.`)
-    recordLearningEvent({ moduleName: 'tax', type: 'allocation_choice', outcome: selected.id, detail: `futureFund=${future};takeHome=${takeHome}` }).catch(() => {})
-  }, [job, phase, takeHome])
+  const chooseBudget = useCallback((selected) => {
+    if (phase !== 'budget' || !job || !selected) return
+    const math = paycheckMath(job, grossBonus)
+    const amounts = budgetAmounts(math.takeHome, selected)
+    setBudgetPlan(selected)
+    setWeekBudget(amounts)
+    setCash((value) => roundMoney(Math.max(0, value - amounts.needs - amounts.save)))
+    setSavings((value) => roundMoney(value + amounts.save))
+    setComfort((value) => Math.max(0, Math.min(10, value + selected.comfort)))
+    setPhase('life')
+    setToast(`${selected.label}: Needs $${amounts.needs}, wants $${amounts.wants}, savings $${amounts.save}. Now make this week’s life choice.`)
+    showLesson(`BUDGET WEEK ${week}: From $${math.takeHome} take-home pay, you planned $${amounts.needs} for needs, $${amounts.wants} for wants, and $${amounts.save} for savings. Different plans change both today's flexibility and tomorrow's cushion.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'budget_choice', outcome: selected.id, detail: `week=${week};needs=${amounts.needs};wants=${amounts.wants};save=${amounts.save}` }).catch(() => {})
+  }, [grossBonus, job, phase, week])
 
-  const handleRepair = useCallback(() => {
-    if (phase !== 'event' || !plan) return
-    if (futureFund < REPAIR_COST) {
-      setToast(`Bike repair costs $${REPAIR_COST}, but this plan left only $${futureFund} for the future. Replan and try again.`)
-      showLesson(`The surprise costs $${REPAIR_COST}. Your future fund had $${futureFund}, so this plan could not cover it. Choose a plan that leaves a bigger cushion.`, `tax-retry-${plan.id}-${job?.id || 'job'}`)
-      recordLearningEvent({ moduleName: 'tax', type: 'future_expense', outcome: 'retry', detail: `needed=${REPAIR_COST};available=${futureFund}` }).catch(() => {})
-      setPlan(null)
-      setPhase('plan')
+  const chooseLife = useCallback((selected) => {
+    if (phase !== 'life' || !selected) return
+    const next = applyLifeChoice({ cash, savings, debt, comfort, freeTime, grossBonus }, selected)
+    setCash(roundMoney(next.cash))
+    setSavings(roundMoney(next.savings))
+    setDebt(roundMoney(next.debt))
+    setComfort(next.comfort)
+    setFreeTime(next.freeTime)
+    setGrossBonus(roundMoney(next.grossBonus))
+    setHistory((items) => [...items, {
+      week,
+      title: spec.title,
+      job: job?.label || '',
+      budget: budgetPlan?.label || '',
+      lifeChoice: selected.label,
+      cash: roundMoney(next.cash),
+      savings: roundMoney(next.savings),
+      debt: roundMoney(next.debt),
+      comfort: next.comfort,
+      freeTime: next.freeTime,
+    }])
+    setPhase('recap')
+    setToast(`${selected.label} changed your life snapshot. Check the board, then end Week ${week}.`)
+    showLesson(`${selected.lesson} LOOK BACK: You now have $${roundMoney(next.cash)} cash, $${roundMoney(next.savings)} savings, $${roundMoney(next.debt)} debt, ${next.comfort}/10 comfort, and ${next.freeTime}/10 free time.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'life_choice', outcome: selected.id, detail: `week=${week};cash=${roundMoney(next.cash)};savings=${roundMoney(next.savings)};debt=${roundMoney(next.debt)}` }).catch(() => {})
+  }, [budgetPlan?.label, cash, comfort, debt, freeTime, grossBonus, job?.label, phase, savings, spec.title, week])
+
+  const finishWeek = useCallback(() => {
+    if (phase !== 'recap') return
+    const latest = history[history.length - 1]
+    showLesson(`WEEK ${week} RECAP: ${latest?.job || job?.label || 'Your job'} funded the week. Your budget was ${latest?.budget || budgetPlan?.label || 'your plan'}, and your life choice was ${latest?.lifeChoice || 'completed'}. Repeated choices are what build the final result.`)
+    recordLearningEvent({ moduleName: 'tax', type: 'week_complete', outcome: 'completed', detail: `week=${week};savings=${savings};debt=${debt}` }).catch(() => {})
+
+    if (week >= TOTAL_PAYCHECK_WEEKS) {
+      const profile = loadProfile() || {}
+      const finalSummary = lifeSummary({ savings, debt, comfort, freeTime })
+      saveProfile({
+        badges: [...new Set([...(profile.badges || []), 'tax'])],
+        taxLab: {
+          weeksCompleted: TOTAL_PAYCHECK_WEEKS,
+          finalJob: job?.id || null,
+          gross: paycheckMath(job, grossBonus).gross,
+          tax: paycheckMath(job, grossBonus).tax,
+          takeHome: paycheckMath(job, grossBonus).takeHome,
+          cash,
+          savings,
+          debt,
+          comfort,
+          freeTime,
+          summary: finalSummary,
+          history,
+          completedAt: new Date().toISOString(),
+        },
+        taxLabProgress: {
+          week: TOTAL_PAYCHECK_WEEKS,
+          phase: 'complete',
+          jobId: job?.id || null,
+          budgetPlanId: budgetPlan?.id || null,
+          weekBudget,
+          cash,
+          savings,
+          debt,
+          comfort,
+          freeTime,
+          grossBonus,
+          history,
+          completed: true,
+        },
+      })
+      setPhase('complete')
+      pushCoins(worldPoint(0, 0.2, 2.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 14, 'tax-complete')
+      setToast(`Six weeks complete. Final life snapshot: ${finalSummary}.`)
+      showLesson(`MODULE 5 COMPLETE: Over 6 weeks you saw how jobs, taxes, budgets, recurring costs, goals, work-life tradeoffs, emergencies, and wants interact. Your final snapshot is: ${finalSummary}.`)
+      recordLearningEvent({ moduleName: 'tax', type: 'module_complete', outcome: 'completed', detail: `six_weeks;savings=${savings};debt=${debt};comfort=${comfort};freeTime=${freeTime}` }).catch(() => {})
       return
     }
 
-    const remaining = futureFund - REPAIR_COST
-    pushCoins({ x: playerPos.x, y: 1.1, z: playerPos.z }, worldPoint(0, STATION_Z, 0.7), 6, 'future-expense')
-    setPhase('complete')
-    const profile = loadProfile() || {}
-    saveProfile({
-      badges: [...new Set([...(profile.badges || []), 'tax'])],
-      taxLab: {
-        job: job?.id,
-        gross: job?.gross,
-        taxRate: job?.rate,
-        tax,
-        takeHome,
-        plan: plan.id,
-        futureFund,
-        repairCost: REPAIR_COST,
-        remaining,
-        completedAt: new Date().toISOString(),
-      },
-    })
-    pushCoins(worldPoint(0, 0.2, 2.1), { x: playerPos.x, y: 1.1, z: playerPos.z }, 12, 'tax-complete')
-    setToast(`Paycheck Planet complete! You covered the $${REPAIR_COST} surprise and still have $${remaining} in the future fund.`)
-    showLesson(`You did it: gross pay became take-home pay after taxes, then your plan handled a $${REPAIR_COST} surprise. That cushion is why planning ahead matters.`, `tax-complete-${job?.id || 'job'}`)
-    recordLearningEvent({ moduleName: 'tax', type: 'future_expense', outcome: 'covered', detail: `needed=${REPAIR_COST};available=${futureFund};remaining=${remaining}` }).catch(() => {})
-    recordLearningEvent({ moduleName: 'tax', type: 'module_complete', outcome: 'completed', detail: 'in_world_3d' }).catch(() => {})
-  }, [futureFund, job, phase, plan, takeHome, tax])
+    const nextWeek = week + 1
+    setWeek(nextWeek)
+    setBudgetPlan(null)
+    setWeekBudget(null)
+    setPhase(nextWeek === 4 ? 'career' : 'tax')
+    const nextSpec = WEEK_SPECS[nextWeek - 1]
+    setToast(`Week ${nextWeek} of ${TOTAL_PAYCHECK_WEEKS}: ${nextSpec.title}.`)
+    showLesson(`NEXT WEEK — ${nextSpec.title}: ${nextSpec.intro}`)
+  }, [budgetPlan?.id, budgetPlan?.label, cash, comfort, debt, freeTime, grossBonus, history, job, phase, savings, week, weekBudget])
 
-  const continueToGarden = useCallback(() => {
+  const finishModule = useCallback(() => {
     if (phase !== 'complete') return
     deactivatePaycheckWorld()
-    const game = useGame.getState()
-    try { game.adminJumpModule(5) } catch { /* keep world alive */ }
-    setTimeout(() => {
-      try { useGame.getState().showLesson('Module 5 complete. Now head into Module 6: Money Garden and use the same planning mindset for longer-term goals.', 'paycheck-to-garden-world', true, 'garden') } catch { /* no-op */ }
-    }, 250)
+    setToast('Module 5 complete. No teleport — stay in the world and follow the route to Money Garden when you are ready.')
+    showLesson('Module 5 is complete. You will NOT be teleported. Walk out of Paycheck Planet and follow the world guidance to Module 6: Money Garden.', 'paycheck-no-teleport-handoff')
   }, [phase])
 
   const runStation = useCallback((id) => {
     if (!id) return
-    if (id.startsWith('job:')) chooseJob(JOBS.find((item) => item.id === id.slice(4)))
-    else if (id === 'withhold') withholdTax()
-    else if (id.startsWith('plan:')) choosePlan(PLANS.find((item) => item.id === id.slice(5)))
-    else if (id === 'repair') handleRepair()
-    else if (id === 'continue') continueToGarden()
-  }, [chooseJob, choosePlan, continueToGarden, handleRepair, withholdTax])
+    if (id.startsWith('job:')) chooseJob(START_JOBS.find((item) => item.id === id.slice(4)))
+    else if (id.startsWith('career:')) chooseCareer(CAREER_JOBS.find((item) => item.id === id.slice(7)))
+    else if (id === 'tax') collectPaycheck()
+    else if (id.startsWith('budget:')) chooseBudget(BUDGET_PLANS.find((item) => item.id === id.slice(7)))
+    else if (id.startsWith('life:')) chooseLife(spec.choices.find((item) => item.id === id.slice(5)))
+    else if (id === 'recap') finishWeek()
+    else if (id === 'finish') finishModule()
+  }, [chooseBudget, chooseCareer, chooseJob, chooseLife, collectPaycheck, finishModule, finishWeek, spec.choices])
 
   useEffect(() => {
     const interact = (event) => {
@@ -313,19 +512,22 @@ export function PaycheckPlanetWorld() {
 
   const phaseHeadline = !active
     ? (nearEntrance ? 'PRESS E / TAP TO ENTER' : 'WALK UP TO PLAY')
-    : phase === 'job' ? 'STEP 1 · CHOOSE 1 OF 3 JOBS'
-      : phase === 'tax' ? 'STEP 2 · USE THE TAX STATION'
-        : phase === 'plan' ? 'STEP 3 · CHOOSE 1 OF 3 PLANS'
-          : phase === 'event' ? `STEP 4 · BIKE REPAIR COSTS $${REPAIR_COST}`
-            : 'MODULE 5 COMPLETE!'
+    : phase === 'job' ? 'WEEK 1 · CHOOSE YOUR FIRST JOB'
+      : phase === 'career' ? 'WEEK 4 · CHOOSE A NEW JOB'
+        : phase === 'tax' ? `WEEK ${week} · COLLECT YOUR PAYCHECK`
+          : phase === 'budget' ? `WEEK ${week} · BUILD YOUR BUDGET`
+            : phase === 'life' ? `WEEK ${week} · ${spec.lifeTitle}`
+              : phase === 'recap' ? `WEEK ${week} · LOOK BACK`
+                : 'MODULE 5 · SIX WEEKS COMPLETE'
 
   const phaseInstruction = !active
-    ? 'ENTER PAYCHECK PLANET TO START'
-    : phase === 'job' ? 'COMPARE GROSS · TAX · TAKE-HOME'
-      : phase === 'tax' ? 'SEE WHAT LEAVES YOUR PAYCHECK'
-        : phase === 'plan' ? 'COMPARE HOW MUCH EACH PLAN SAVES'
-          : phase === 'event' ? 'TEST WHETHER YOUR PLAN COVERS IT'
-            : 'CONTINUE TO MODULE 6'
+    ? 'ENTER TO START THE 6-WEEK SIMULATION'
+    : phase === 'job' || phase === 'career' ? 'COMPARE PAY · TAX · FREE TIME'
+      : phase === 'tax' ? 'GROSS PAY − WITHHOLDING = TAKE-HOME PAY'
+        : phase === 'budget' ? 'PLAN NEEDS · WANTS · SAVINGS FROM TAKE-HOME PAY'
+          : phase === 'life' ? 'YOUR CHOICE CHANGES MONEY AND DAILY LIFE'
+            : phase === 'recap' ? 'CHECK THE LIFE SNAPSHOT · THEN END THE WEEK'
+              : 'FINISH HERE · THEN WALK TO MONEY GARDEN'
 
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
@@ -362,19 +564,32 @@ export function PaycheckPlanetWorld() {
       </Billboard>
       <Billboard position={[0, 5.15, 0.2]}>
         <mesh>
-          <planeGeometry args={[4.8, 1.5]} />
-          <meshBasicMaterial map={labelTexture('JOBS · TAXES · TAKE-HOME PAY', { bg: '#ff8a3d', color: '#071748', accent: '#ffffff' })} transparent toneMapped={false} depthTest={false} />
+          <planeGeometry args={[5.7, 1.5]} />
+          <meshBasicMaterial map={labelTexture('6-WEEK JOB · TAX · BUDGET · LIFE SIM', { bg: '#ff8a3d', color: '#071748', accent: '#ffffff' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
-      <Billboard position={[0, 3.0, 2.45]}>
+
+      {active && (
+        <LifeSnapshot
+          week={week}
+          cash={roundMoney(cash)}
+          savings={roundMoney(savings)}
+          debt={roundMoney(debt)}
+          comfort={comfort}
+          freeTime={freeTime}
+          summary={summary}
+        />
+      )}
+
+      <Billboard position={[0, 2.56, 2.48]}>
         <mesh>
-          <planeGeometry args={[5.8, 1.34]} />
+          <planeGeometry args={[6.0, 1.08]} />
           <meshBasicMaterial map={labelTexture(phaseHeadline, { bg: active ? '#00dca0' : '#071748', color: active ? '#071748' : '#ffffff', accent: '#ffd700' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
-      <Billboard position={[0, 2.35, 2.48]}>
+      <Billboard position={[0, 1.98, 2.5]}>
         <mesh>
-          <planeGeometry args={[5.4, 0.82]} />
+          <planeGeometry args={[5.8, 0.76]} />
           <meshBasicMaterial map={labelTexture(phaseInstruction, { bg: '#ffffff', color: '#071748', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
         </mesh>
       </Billboard>
@@ -395,15 +610,15 @@ export function PaycheckPlanetWorld() {
         </mesh>
       )}
 
-      {active && phase === 'job' && JOBS.map((item) => {
-        const withheld = Math.round(item.gross * item.rate)
-        const net = item.gross - withheld
+      {active && phase === 'job' && START_JOBS.map((item) => {
+        const math = paycheckMath(item, grossBonus)
         return (
           <InteractiveStation
             key={item.id}
             x={item.x}
             label={item.label}
-            sublabel={`$${item.gross} GROSS · $${net} TAKE-HOME`}
+            sublabel={`$${math.gross} GROSS · $${math.takeHome} TAKE-HOME`}
+            detail={`${item.note} · FREE TIME ${item.freeTime}/10`}
             near={nearStation === `job:${item.id}`}
             accent="#ff8a3d"
             actionLabel="CHOOSE THIS JOB · E / TAP"
@@ -412,52 +627,90 @@ export function PaycheckPlanetWorld() {
         )
       })}
 
+      {active && phase === 'career' && CAREER_JOBS.map((item) => {
+        const math = paycheckMath(item, grossBonus)
+        return (
+          <InteractiveStation
+            key={item.id}
+            x={item.x}
+            label={item.label}
+            sublabel={`$${math.gross} GROSS · $${math.takeHome} TAKE-HOME`}
+            detail={`${item.note} · FREE TIME ${item.freeTime}/10`}
+            near={nearStation === `career:${item.id}`}
+            accent="#ff8a3d"
+            actionLabel="TAKE THIS JOB · E / TAP"
+            onActivate={() => chooseCareer(item)}
+          />
+        )
+      })}
+
       {active && phase === 'tax' && (
         <InteractiveStation
           x={0}
-          label="WITHHOLD TAX"
-          sublabel={job ? `$${job.gross} − $${tax} = $${takeHome}` : 'GROSS − TAX = TAKE-HOME'}
-          near={nearStation === 'withhold'}
+          label={`WEEK ${week} PAYCHECK`}
+          sublabel={job ? `$${paycheck.gross} − $${paycheck.tax} = $${paycheck.takeHome}` : 'CHOOSE A JOB FIRST'}
+          detail="GROSS − WITHHOLDING = TAKE-HOME"
+          near={nearStation === 'tax'}
           accent="#1464f0"
-          actionLabel="WITHHOLD TAX · E / TAP"
-          onActivate={withholdTax}
+          actionLabel="COLLECT PAYCHECK · E / TAP"
+          onActivate={collectPaycheck}
         />
       )}
 
-      {active && phase === 'plan' && PLANS.map((item) => (
+      {active && phase === 'budget' && BUDGET_PLANS.map((item) => {
+        const amounts = budgetAmounts(paycheck.takeHome, item)
+        return (
+          <InteractiveStation
+            key={item.id}
+            x={item.x}
+            label={item.label}
+            sublabel={`NEEDS $${amounts.needs} · WANTS $${amounts.wants}`}
+            detail={`SAVE $${amounts.save} · ${item.note}`}
+            near={nearStation === `budget:${item.id}`}
+            accent="#7850f0"
+            actionLabel="USE THIS BUDGET · E / TAP"
+            onActivate={() => chooseBudget(item)}
+          />
+        )
+      })}
+
+      {active && phase === 'life' && spec.choices.map((item) => (
         <InteractiveStation
           key={item.id}
           x={item.x}
           label={item.label}
-          sublabel={takeHome ? `$${Math.round(takeHome * item.future)} FOR FUTURE` : `${Math.round(item.future * 100)}% FOR FUTURE`}
-          near={nearStation === `plan:${item.id}`}
-          accent="#7850f0"
-          actionLabel="CHOOSE THIS PLAN · E / TAP"
-          onActivate={() => choosePlan(item)}
+          sublabel={item.sublabel}
+          detail="THIS CHANGES YOUR LIFE SNAPSHOT"
+          near={nearStation === `life:${item.id}`}
+          accent={week === 5 ? '#ffd700' : '#00dca0'}
+          actionLabel="MAKE THIS CHOICE · E / TAP"
+          onActivate={() => chooseLife(item)}
         />
       ))}
 
-      {active && phase === 'event' && (
+      {active && phase === 'recap' && (
         <InteractiveStation
           x={0}
-          label={`BIKE REPAIR · $${REPAIR_COST}`}
-          sublabel={plan ? `YOU SET ASIDE $${futureFund}` : 'CAN YOUR PLAN COVER IT?'}
-          near={nearStation === 'repair'}
+          label={`END WEEK ${week}`}
+          sublabel={`CASH $${roundMoney(cash)} · SAVE $${roundMoney(savings)} · DEBT $${roundMoney(debt)}`}
+          detail={`COMFORT ${comfort}/10 · FREE TIME ${freeTime}/10`}
+          near={nearStation === 'recap'}
           accent="#ffd700"
-          actionLabel="TEST MY PLAN · E / TAP"
-          onActivate={handleRepair}
+          actionLabel={week === TOTAL_PAYCHECK_WEEKS ? 'SEE FINAL RESULT · E / TAP' : 'START NEXT WEEK · E / TAP'}
+          onActivate={finishWeek}
         />
       )}
 
       {active && phase === 'complete' && (
         <InteractiveStation
           x={0}
-          label="CONTINUE TO MONEY GARDEN"
-          sublabel="MODULE 6 →"
-          near={nearStation === 'continue'}
+          label="MODULE 5 COMPLETE"
+          sublabel={`$${roundMoney(savings)} SAVED · $${roundMoney(debt)} DEBT`}
+          detail="NO TELEPORT · WALK TO MODULE 6"
+          near={nearStation === 'finish'}
           accent="#00dca0"
-          actionLabel="GO TO MODULE 6 · E / TAP"
-          onActivate={continueToGarden}
+          actionLabel="FINISH MODULE 5 · E / TAP"
+          onActivate={finishModule}
         />
       )}
 
