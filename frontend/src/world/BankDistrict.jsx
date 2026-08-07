@@ -49,7 +49,7 @@ function CheckingGauge() {
     <group position={[-4.9, 0, 2]} scale={1.22}>
       <mesh position={[0, 1.1, 0]} castShadow><boxGeometry args={[0.5, 1.6, 0.24]} /><meshStandardMaterial color="#071748" roughness={0.6} /></mesh>
       <mesh ref={bar} position={[0, 1.1, 0.14]} scale={[1, 0.5, 1]}>
-        <boxGeometry args={[0.3, 1.1, 0.06]} /><meshStandardMaterial color="#00DCA0" emissive="#00DCA0" emissiveIntensity={0.55} /></mesh>
+        <boxGeometry args={[0.3, 1.1, 0.06]} /><meshStandardMaterial color="#00DCA0" emissive="#00DCA0" emissiveIntensity={0.55} />
       </mesh>
       <Billboard position={[0, 2.35, 0]}>
         <mesh><planeGeometry args={[1.8, 0.62]} /><meshBasicMaterial map={cardTexture('CHECKING', null, { accent: '#1464F0' })} transparent depthTest={false} /></mesh>
