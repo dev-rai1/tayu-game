@@ -55,6 +55,9 @@ export default function ModuleSelect() {
   const pathComplete = isLearningPathComplete(required, badges)
   const firstIncompleteRequired = required.find((number) => !completedNumbers.includes(number)) || required[0] || 1
   const pendingCard = MODULE_CARDS.find((module) => module.n === pendingModule)
+  const completedPractice = MODULE_CARDS
+    .filter((module) => badges.includes(module.badge))
+    .map((module) => ({ module, progress: moduleCheckProgress(profile?.moduleChecks?.[module.badge]) }))
 
   useEffect(() => {
     if (!context || teacherPreview || !required.length) return
@@ -113,7 +116,16 @@ export default function ModuleSelect() {
           <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Get a grade-based recommendation</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">What grade are you in?</h1>
           <p className="mx-auto mt-2 max-w-2xl font-semibold text-white/70">We recommend a path and reading pace. Every module stays available.</p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">{GRADE_PATHS.map((path) => <button key={path.id} type="button" onClick={() => chooseGradePath(path.id)} className="rounded-2xl border-2 border-white/15 bg-black/20 p-5 text-left transition hover:border-teal hover:bg-white/10 active:scale-[0.98]"><div className="text-xs font-extrabold uppercase tracking-wide text-teal">{path.label}</div><div className="mt-1 font-display text-xl font-extrabold">{path.title}</div><p className="mt-2 text-sm font-semibold text-white/70">{path.copy}</p><div className="mt-3 text-sm font-extrabold text-sun">Recommended: Modules {path.modules.join(', ')}</div></button>)}</div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {GRADE_PATHS.map((path) => (
+              <button key={path.id} type="button" onClick={() => chooseGradePath(path.id)} className="rounded-2xl border-2 border-white/15 bg-black/20 p-5 text-left transition hover:border-teal hover:bg-white/10 active:scale-[0.98]">
+                <div className="text-xs font-extrabold uppercase tracking-wide text-teal">{path.label}</div>
+                <div className="mt-1 font-display text-xl font-extrabold">{path.title}</div>
+                <p className="mt-2 text-sm font-semibold text-white/70">{path.copy}</p>
+                <div className="mt-3 text-sm font-extrabold text-sun">Recommended: Modules {path.modules.join(', ')}</div>
+              </button>
+            ))}
+          </div>
         </section>
       </main>
     )
@@ -123,22 +135,79 @@ export default function ModuleSelect() {
     <>
       <main className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3"><img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" /><div><h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : context.plain ? 'Choose a module' : 'Your classroom path'}</h1><p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected grade'} · Modules ${required.join(', ')} are recommended.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p></div></div>
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setGlossaryOpen(true)} className="rounded-xl bg-sun px-4 py-2 text-sm font-extrabold text-navy">Money word help</button>{teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}{!teacherPreview && <Link to="/settings" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Reading settings</Link>}{context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}<Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link></div>
+          <div className="flex items-center gap-3">
+            <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
+            <div>
+              <h1 className="font-display text-2xl font-extrabold">{teacherPreview ? 'Preview your classroom session' : context.plain ? 'Choose a module' : 'Your classroom path'}</h1>
+              <p className="text-sm font-semibold text-white/75">{context.plain ? `${gradePath?.label || 'Selected grade'} · Modules ${required.join(', ')} are recommended, but you can choose any module.` : `Class session from ${context.teacherEmail || 'your teacher'}`}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setGlossaryOpen(true)} className="rounded-xl bg-sun px-4 py-2 text-sm font-extrabold text-navy">Money word help</button>
+            {teacherPreview && <Link to="/teacher-guide" className="rounded-xl bg-teal px-4 py-2 text-sm font-extrabold text-navy">Teacher guide</Link>}
+            {!teacherPreview && <Link to="/settings" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Reading settings</Link>}
+            {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Change grade</button>}
+            <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-white/10 px-4 py-2 text-sm font-extrabold">Back</Link>
+          </div>
         </div>
+
+        <section className="mt-6 rounded-3xl border-2 border-[#FF8A3D] bg-[#FF8A3D]/10 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span className="rounded-full bg-[#FF8A3D] px-3 py-1 text-xs font-extrabold text-navy">NEW MODULE</span>
+              <h2 className="mt-3 font-display text-2xl font-extrabold text-[#FFB27D]">5. Paycheck Planet</h2>
+              <p className="mt-1 max-w-2xl text-sm font-semibold text-white/80">Practice paycheck taxes, take-home pay, money allocation, and planning for a future expense.</p>
+            </div>
+            <button type="button" onClick={() => play(5)} className="min-h-[52px] rounded-2xl bg-[#FF8A3D] px-5 font-extrabold text-navy active:scale-95">Play the new module →</button>
+          </div>
+        </section>
 
         {!teacherPreview && pathComplete && required.length < MODULE_CARDS.length && <Link to="/path-complete" className="mt-6 block rounded-2xl border-2 border-teal bg-teal px-5 py-4 text-center font-display text-xl font-extrabold text-navy shadow-lg">Recommended path complete — view your certificate</Link>}
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">{MODULE_CARDS.map((module) => {
-          const done = badges.includes(module.badge)
-          const accessible = canPlay(module.n)
-          const requiredForPath = required.includes(module.n)
-          const olderOptional = Boolean(context.plain && gradePath && !requiredForPath)
-          const practice = moduleCheckProgress(profile?.moduleChecks?.[module.badge])
-          return <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: done ? module.color : olderOptional ? '#FFD700' : 'rgba(255,255,255,0.1)' }}><div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : olderOptional ? 'bg-sun text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : !accessible ? 'LOCKED' : olderOptional ? 'OLDER TOPIC' : requiredForPath ? 'RECOMMENDED' : 'AVAILABLE'}</span></div><div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div><p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>{done && practice.attempts > 0 && <p className="mt-2 rounded-xl bg-teal/10 px-3 py-2 text-xs font-extrabold text-teal">Best quick check: {practice.bestScore}/{practice.total}</p>}<div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? done ? 'Play again →' : 'Start →' : `Complete Module ${firstIncompleteRequired} first`}</div></button>
-        })}</div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {MODULE_CARDS.map((module) => {
+            const done = badges.includes(module.badge)
+            const accessible = canPlay(module.n)
+            const requiredForPath = required.includes(module.n)
+            const olderOptional = Boolean(context.plain && gradePath && !requiredForPath)
+            const practice = moduleCheckProgress(profile?.moduleChecks?.[module.badge])
+            const action = done
+              ? 'Play again →'
+              : olderOptional
+                ? 'Optional — choose this module →'
+                : requiredForPath
+                  ? 'Start recommended module →'
+                  : 'Start →'
+            return (
+              <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`relative rounded-3xl border-2 p-5 text-left transition ${accessible ? 'bg-white/5 hover:bg-white/10 active:scale-[0.98]' : 'cursor-not-allowed bg-black/25 opacity-70'}`} style={{ borderColor: module.badge === 'tax' ? '#FF8A3D' : done ? module.color : olderOptional ? '#FFD700' : 'rgba(255,255,255,0.1)' }}>
+                {module.badge === 'tax' && <span className="absolute right-4 top-4 rounded-full bg-[#FF8A3D] px-2 py-1 text-[10px] font-extrabold text-navy">NEW</span>}
+                <div className="flex items-center justify-between gap-2 pr-12"><span className="font-display text-lg font-extrabold" style={{ color: module.color }}>{module.n}. {module.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : olderOptional ? 'bg-sun text-navy' : accessible ? 'bg-sun text-navy' : 'bg-white/15 text-white/75'}`}>{done ? 'DONE' : !accessible ? 'LOCKED' : olderOptional ? 'OLDER TOPIC' : requiredForPath ? 'RECOMMENDED' : 'AVAILABLE'}</span></div>
+                <div className="mt-1 text-xs font-extrabold uppercase tracking-wide text-white/75">{module.grades} · {module.minutes}</div>
+                <p className="mt-2 text-sm font-semibold text-white/80">{module.desc}</p>
+                {done && practice.attempts > 0 && <p className="mt-2 rounded-xl bg-teal/10 px-3 py-2 text-xs font-extrabold text-teal">Best quick check: {practice.bestScore}/{practice.total}</p>}
+                <div className="mt-3 text-sm font-extrabold" style={{ color: accessible ? module.color : 'rgba(255,255,255,.55)' }}>{accessible ? action : `Complete Module ${firstIncompleteRequired} first`}</div>
+              </button>
+            )
+          })}
+        </div>
 
-        <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">Complete the {required.length} recommended module{required.length === 1 ? '' : 's'} for your path ({completedRequired.length}/{required.length}). Paycheck Planet now appears before the Money Garden so students learn take-home pay before investing.</p>
+        {completedPractice.length > 0 && (
+          <section className="mt-6 rounded-3xl border border-teal/30 bg-teal/5 p-5">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-teal">Practice and improve</p>
+            <h2 className="mt-1 font-display text-2xl font-extrabold">Retake a quick check</h2>
+            <p className="mt-1 text-sm font-semibold text-white/70">Your previous scores stay saved so you can measure improvement.</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {completedPractice.map(({ module, progress }) => (
+                <button key={module.badge} type="button" onClick={() => nav(`/module-check/${module.badge}?retake=1`)} className="min-h-[58px] rounded-2xl bg-white/10 px-4 py-3 text-left transition hover:bg-white/15 active:scale-[0.98]">
+                  <span className="block font-extrabold" style={{ color: module.color }}>{module.title}</span>
+                  <span className="block text-xs font-bold text-white/65">{progress.attempts > 0 ? `Best ${progress.bestScore}/${progress.total} · ${progress.attempts} attempt${progress.attempts === 1 ? '' : 's'}` : 'Take your first quick check'}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">Complete the {required.length} recommended module{required.length === 1 ? '' : 's'} for your path ({completedRequired.length}/{required.length}). Paycheck Planet appears before the Money Garden so students learn take-home pay before investing.</p>
       </main>
 
       {pendingCard && <div className="fixed inset-0 z-[600] grid place-items-center bg-navy/75 p-5 backdrop-blur-sm"><section role="dialog" aria-modal="true" aria-labelledby="older-module-title" className="w-full max-w-md rounded-3xl border-4 border-sun bg-white p-6 text-center text-navy shadow-2xl"><div className="text-5xl" aria-hidden>🧠</div><h2 id="older-module-title" className="mt-3 font-display text-2xl font-extrabold">You can still continue</h2><p className="mt-3 font-bold text-navy/80"><span className="font-extrabold">{pendingCard.title}</span> is usually recommended for {pendingCard.grades.toLowerCase()}.</p><div className="mt-5 grid gap-2 sm:grid-cols-2"><button type="button" onClick={() => setPendingModule(null)} className="min-h-[54px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Choose another</button><button type="button" onClick={() => { const number = pendingModule; setPendingModule(null); launchModule(number) }} className="min-h-[54px] rounded-2xl bg-electric px-4 font-extrabold text-white">Continue anyway →</button></div></section></div>}
