@@ -7,8 +7,8 @@ const source = (path) => readFileSync(resolve(process.cwd(), 'src', path), 'utf8
 const app = source('App.jsx')
 const world = source('pages/World.jsx')
 const avatar = source('pages/AvatarCreate.jsx')
-const moduleCheck = source('pages/ModuleCheck.jsx')
 const moduleSelect = source('pages/ModuleSelect.jsx')
+const pathWatcher = source('components/PathCompletionWatcher.jsx')
 const gardenGuide = source('world/MoneyGardenFlowGuide.jsx')
 const hud = source('world/Hud.jsx')
 
@@ -21,12 +21,13 @@ describe('multi-transcript follow-up regressions', () => {
     expect(avatar).toContain('var(--tayu-viewport-height)')
   })
 
-  it('lets completed learners practice and measure improvement', () => {
-    expect(moduleCheck).toContain('Personal best:')
-    expect(moduleCheck).toContain('Practice this module again')
-    expect(moduleCheck).toContain('Retake the quick check')
-    expect(moduleSelect).toContain('Practice and improve')
-    expect(moduleSelect).toContain('Best quick check:')
+  it('keeps module completion inside gameplay instead of forcing quick-check screens', () => {
+    expect(app).not.toContain("import('./pages/ModuleCheck.jsx')")
+    expect(app).not.toContain('/module-check/:badge')
+    expect(pathWatcher).not.toContain('navigate(`/module-check/')
+    expect(moduleSelect).not.toContain('Practice and improve')
+    expect(moduleSelect).not.toContain('Best quick check:')
+    expect(moduleSelect).not.toContain('Retake a quick check')
   })
 
   it('keeps the already-implemented two-part Money Garden flow', () => {

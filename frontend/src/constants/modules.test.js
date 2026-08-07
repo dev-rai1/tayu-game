@@ -18,11 +18,12 @@ describe('module grade-level catalog', () => {
     expect(bands['High School'].plannedModules).toContain('College costs and financial aid')
   })
 
-  it('places paycheck taxes before the Money Garden', () => {
+  it('places in-world paycheck taxes before the Money Garden', () => {
     const tax = MODULE_CATALOG.find((module) => module.badge === 'tax')
     const garden = MODULE_CATALOG.find((module) => module.badge === 'garden')
     expect(tax.n).toBe(5)
-    expect(tax.route).toBe('/tax-paycheck')
+    expect(tax.route).toBeUndefined()
+    expect(tax.desc).toContain('inside the 3D world')
     expect(garden.n).toBe(6)
     expect(garden.worldModule).toBe(5)
     expect(garden.minutes).toContain('Two')

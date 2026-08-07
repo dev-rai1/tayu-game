@@ -41,9 +41,8 @@ export const MODULE_CATALOG = [
     title: 'Paycheck Planet',
     grades: 'Grades 6–12',
     minutes: '8–12 min',
-    desc: 'Choose a job, calculate taxes withheld from a paycheck, plan take-home pay, and respond to a future expense.',
+    desc: 'Choose a job, watch taxes come out of a paycheck, plan take-home pay, and handle a future expense inside the 3D world.',
     color: '#FF8A3D',
-    route: '/tax-paycheck',
   },
   {
     n: 6,

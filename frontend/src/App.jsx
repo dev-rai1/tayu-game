@@ -28,9 +28,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
 const TeacherGuide = lazy(() => import('./pages/TeacherGuide.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
-const TaxPaycheck = lazy(() => import('./pages/TaxPaycheck.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
-const ModuleCheck = lazy(() => import('./pages/ModuleCheck.jsx'))
 const Settings = lazy(() => import('./pages/Settings.jsx'))
 const Privacy = lazy(() => import('./pages/Privacy.jsx'))
 const Cookies = lazy(() => import('./pages/Cookies.jsx'))
@@ -49,6 +47,13 @@ function TeacherGate({ children }) {
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'teacher') return <Navigate to="/modules" replace />
   return children
+}
+
+// Keep old bookmarks harmless without keeping the old standalone Module 5 UI.
+// The legacy URL now launches public Module 5 inside /world.
+function LegacyPaycheckRedirect() {
+  try { localStorage.setItem('tayu-jump-module', '5') } catch { /* ignore */ }
+  return <Navigate to="/world" replace />
 }
 
 function AccountMusicControl() {
@@ -94,7 +99,6 @@ const TITLE_MAP = {
   '/modules': 'Learning Modules | TAYU',
   '/avatar': 'Create Your Avatar | TAYU',
   '/world': 'TAYU Learning World',
-  '/tax-paycheck': 'Paycheck Planet | TAYU',
   '/guru': 'TAYU Celebration',
   '/path-complete': 'Learning Path Complete | TAYU',
   '/settings': 'Settings | TAYU',
@@ -108,7 +112,6 @@ function PageMetadata() {
   useEffect(() => {
     let title = TITLE_MAP[pathname]
     if (!title && pathname.startsWith('/assessment/')) title = 'Knowledge Check | TAYU'
-    if (!title && pathname.startsWith('/module-check/')) title = 'Module Check | TAYU'
     document.title = title || 'Page Not Found | TAYU'
   }, [pathname])
   return null
@@ -135,13 +138,12 @@ export default function App() {
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
               <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
-              <Route path="/tax-paycheck" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Printing your practice paycheck..." />}><TaxPaycheck /></Suspense></PreQuizGate>} />
+              <Route path="/tax-paycheck" element={<PreQuizGate><LegacyPaycheckRedirect /></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
               <Route path="/guru" element={<Guru />} />
               <Route path="/path-complete" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your path certificate..." />}><PathComplete /></Suspense></PreQuizGate>} />
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
-              <Route path="/module-check/:badge" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your quick check..." />}><ModuleCheck /></Suspense></PreQuizGate>} />
               <Route path="/settings" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening player settings..." />}><Settings /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
               <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
