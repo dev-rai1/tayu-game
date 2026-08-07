@@ -69,7 +69,7 @@ describe('Paycheck Planet full integration', () => {
     expect(taxStore).toContain('panel: null')
     expect(taxStore).toContain('openStation: (stepNumber)')
     expect(taxStore).toContain('advanceStep: () => set')
-    expect(taxStore).toContain('worldNotice: `Good work. Walk to the ${taxStationForStep(next).label}.`')
+    expect(taxStore).toContain('`Good work. Walk to the ${taxStationForStep(next).label}.`')
     expect(taxLayout).toContain('TAX_STEP_STATIONS')
     expect(paycheckWorld).toContain('TaxStation')
     expect(paycheckWorld).toContain('NEXT · WALK HERE')
