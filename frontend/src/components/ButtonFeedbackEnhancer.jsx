@@ -9,12 +9,28 @@ const ACTION_RULES = [
   { action: 'reward', icon: '★', pattern: /certificate|reward|achievement|badge|score/i },
 ]
 
+function hideLegacyMoneyGardenCashOut(button, label) {
+  const normalized = label.replace(/\s+/g, ' ').trim().toLowerCase()
+  if (normalized !== 'cash out all') return false
+
+  // Money Garden now progresses by testing the player's current choice.
+  // Keep the old portfolio-wide liquidation control out of the UI so players
+  // are not encouraged to exit every investment between decisions.
+  button.hidden = true
+  button.setAttribute('aria-hidden', 'true')
+  button.tabIndex = -1
+  button.dataset.tayuEnhanced = 'true'
+  button.dataset.tayuLegacyControl = 'hidden'
+  return true
+}
+
 function classifyButton(button) {
   if (!(button instanceof HTMLElement) || button.dataset.tayuEnhanced === 'true') return
   if (button.getAttribute('role') === 'switch' || button.closest('[role="menu"]')) return
 
   const label = (button.getAttribute('aria-label') || button.textContent || '').trim()
   if (!label) return
+  if (hideLegacyMoneyGardenCashOut(button, label)) return
 
   const match = ACTION_RULES.find((rule) => rule.pattern.test(label))
   button.dataset.tayuEnhanced = 'true'
