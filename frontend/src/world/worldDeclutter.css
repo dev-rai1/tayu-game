@@ -71,6 +71,16 @@
   display: none;
 }
 
+/* NPC dialogue and informational lesson copy are rendered by PersistentCoach.
+   Hide the legacy popup wrappers so there is only one place to read/advance
+   guidance. Interactive cards and module workspaces remain untouched. */
+@supports selector(div:has(> [aria-labelledby="tayu-dialog-speaker"])) {
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-dialog-speaker"]),
+  .tayu-world-declutter div:has(> [aria-labelledby="tayu-lesson-title"]) {
+    display: none !important;
+  }
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
   max-width: 28rem;
