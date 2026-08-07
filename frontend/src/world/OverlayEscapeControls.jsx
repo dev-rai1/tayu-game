@@ -9,10 +9,11 @@ export function OverlayEscapeControls() {
   return (
     <button
       type="button"
+      aria-label="Skip this talk"
       onClick={closeDialog}
-      className="pointer-events-auto fixed right-4 top-[5.5rem] z-[540] min-h-[42px] rounded-xl border-2 border-white/25 bg-navy/95 px-3 text-xs font-extrabold text-white shadow-xl active:scale-95"
+      className="pointer-events-auto fixed right-[max(0.75rem,env(safe-area-inset-right,0px))] top-[5.5rem] z-[540] min-h-[42px] max-w-[6rem] rounded-xl border-2 border-white/25 bg-navy/95 px-3 text-xs font-extrabold text-white shadow-xl active:scale-95"
     >
-      Skip this talk
+      Skip
     </button>
   )
 }
