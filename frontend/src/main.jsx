@@ -8,6 +8,9 @@ import './styles/actionButtons.css'
 import './styles/contrast.css'
 import { logTayuError } from './components/Boundary.jsx'
 import { ButtonFeedbackEnhancer } from './components/ButtonFeedbackEnhancer.jsx'
+import { PaycheckCompletionCheck } from './components/PaycheckCompletionCheck.jsx'
+import { PublicCopyConsistency } from './components/PublicCopyConsistency.jsx'
+import { PublicModuleProgress } from './components/PublicModuleProgress.jsx'
 import { armFirstGesture } from './services/audio.js'
 import './world/replayGuidanceListener.js'
 import { MoneyGardenFlowGuide } from './world/MoneyGardenFlowGuide.jsx'
@@ -22,6 +25,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <GameStateProvider>
         <App />
+        <PublicCopyConsistency />
+        <PublicModuleProgress />
+        <PaycheckCompletionCheck />
         <MoneyGardenFlowGuide />
         <ButtonFeedbackEnhancer />
       </GameStateProvider>

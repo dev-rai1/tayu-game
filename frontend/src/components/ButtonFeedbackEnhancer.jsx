@@ -20,19 +20,25 @@ function hasOwnVisualIcon(button, visibleLabel) {
   return /^[?×✕✖←→↻✓★⚙…]+$/u.test(visibleLabel)
 }
 
-function hideLegacyMoneyGardenCashOut(button, label) {
+function removeLegacyMoneyGardenCashOut(button, label) {
   const normalized = label.replace(/\s+/g, ' ').trim().toLowerCase()
   if (normalized !== 'cash out all') return false
 
-  // Money Garden now progresses by testing the player's current choice.
-  // Keep the old portfolio-wide liquidation control out of the UI so players
-  // are not encouraged to exit every investment between decisions.
-  button.hidden = true
-  button.setAttribute('aria-hidden', 'true')
-  button.tabIndex = -1
-  button.dataset.tayuEnhanced = 'true'
-  button.dataset.tayuLegacyControl = 'hidden'
+  // Money Garden progresses by testing the learner's current portfolio choice.
+  // Remove the obsolete liquidation control from the rendered DOM entirely so
+  // it cannot receive focus, be announced by assistive technology, or reappear.
+  button.remove()
   return true
+}
+
+function isLearningResourceLink(button, label) {
+  if (!button.matches('a[href]')) return false
+  return Boolean(
+    button.closest('#help-panel-resources') ||
+    button.classList.contains('learn-resource') ||
+    button.dataset.learningResource === 'true' ||
+    /^learn (more|about):?/i.test(label)
+  )
 }
 
 function classifyButton(button) {
@@ -42,15 +48,16 @@ function classifyButton(button) {
   const visibleLabel = (button.textContent || '').trim()
   const label = (button.getAttribute('aria-label') || visibleLabel).trim()
   if (!label) return
-  if (hideLegacyMoneyGardenCashOut(button, label)) return
+  if (removeLegacyMoneyGardenCashOut(button, label)) return
 
-  // Learning-resource links are a single browse list, not different action
-  // types. Keep every resource visually consistent so words such as "save",
-  // "credit", or "certificate" do not accidentally recolor individual rows.
-  const isLearningResource = button.matches('a[href]') && button.closest('#help-panel-resources')
+  // Learning-resource links are one browse pattern, not different action types.
+  // Keep every resource neutral so words such as save, credit, or certificate
+  // cannot accidentally recolor otherwise matching resource cards.
+  const isLearningResource = isLearningResourceLink(button, label)
   const match = isLearningResource ? null : ACTION_RULES.find((rule) => rule.pattern.test(label))
   button.dataset.tayuEnhanced = 'true'
   button.dataset.tayuAction = match?.action || 'primary'
+  if (isLearningResource) button.dataset.learningResource = 'true'
 
   // Only add a semantic icon when a rule explicitly supplies one and the
   // control does not already have its own icon. Hint/clue/help rules purposely
@@ -99,6 +106,7 @@ export function ButtonFeedbackEnhancer() {
       const target = event.target.closest('button, a[href]')
       if (!target || target.matches(':disabled,[aria-disabled="true"]')) return
       classifyButton(target)
+      if (!target.isConnected) return
       createBurst(target, event.clientX, event.clientY)
       target.classList.remove('tayu-action-confirm')
       requestAnimationFrame(() => target.classList.add('tayu-action-confirm'))
