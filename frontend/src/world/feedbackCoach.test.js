@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { useFeedbackCoach } from './feedbackCoach.js'
+import { activeFeedbackKey, feedbackModuleForState, useFeedbackCoach } from './feedbackCoach.js'
 
 const STORAGE_KEY = 'tayu-pinned-improvement-feedback-v1'
 
@@ -38,5 +38,18 @@ describe('persistent improvement feedback store', () => {
 
     expect(useFeedbackCoach.getState().feedbackByModule.jars).toBeUndefined()
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY))).toEqual({})
+  })
+
+  it('owns consequence states without showing the coach until retry controls are useful', () => {
+    expect(feedbackModuleForState({ week: 1, objective: 'kitchen', scenarioState: 'ACTING_OUT' })).toBe('jars')
+    expect(activeFeedbackKey({ week: 1, objective: 'kitchen', scenarioState: 'ACTING_OUT' })).toBeNull()
+    expect(activeFeedbackKey({ week: 1, objective: 'kitchen', scenarioState: 'ALLOCATING' })).toBe('jars')
+  })
+
+  it('keeps lemonade and bank feedback off recap or locked animation screens', () => {
+    expect(activeFeedbackKey({ week: 2, objective: 'lemonade', lemPhase: 'recapCard' })).toBeNull()
+    expect(activeFeedbackKey({ week: 2, objective: 'lemonade', lemPhase: 'template' })).toBe('lemonade')
+    expect(activeFeedbackKey({ week: 4, bk: { week: 4 }, scenarioLocked: true })).toBeNull()
+    expect(activeFeedbackKey({ week: 4, bk: { week: 4 }, scenarioLocked: false })).toBe('bank')
   })
 })
