@@ -1,0 +1,45 @@
+/*
+ * Module entry / overlay clarity
+ * ------------------------------
+ * A side hint is allowed to sit beside gameplay, but it must NEVER resize,
+ * split, or push the active module dialog out of view. The older declutter
+ * rules reserved a full guidance rail and padded the modal around it; these
+ * later overrides intentionally restore one full-screen workspace.
+ */
+
+@supports selector(.tayu-world-declutter:has([data-guidance-lane="side-hint"])) {
+  .tayu-world-declutter:has([data-guidance-lane="side-hint"])
+    div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"])) {
+    box-sizing: border-box;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+    padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.75rem, env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+  }
+
+  .tayu-world-declutter:has([data-guidance-lane="side-hint"])
+    div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"]))
+    > [role="dialog"] {
+    width: min(94vw, 46rem) !important;
+    max-width: min(94vw, 46rem) !important;
+    max-height: 88dvh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Tax Lab hints are deliberately small, secondary, and non-modal. They never
+   get a scrim and never reserve a layout column. */
+.tayu-world-declutter [data-guidance-kind="tax-hint"] {
+  max-height: min(34dvh, 12rem) !important;
+  overflow-y: auto;
+}
+
+@media (max-width: 899px) {
+  .tayu-world-declutter [data-guidance-kind="tax-hint"] {
+    top: auto !important;
+    right: max(0.65rem, env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    width: min(88vw, 20rem) !important;
+    max-height: min(28dvh, 10rem) !important;
+  }
+}
