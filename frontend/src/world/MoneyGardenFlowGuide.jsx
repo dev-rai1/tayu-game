@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGame } from './store.js'
-import {
-  moneyGardenDecision,
-  moneyGardenPart,
-  MONEY_GARDEN_FLOW,
-  shouldPauseBetweenGardenParts,
-} from '../scenarios/moneyGardenGuidance.js'
+import { shouldPauseBetweenGardenParts } from '../scenarios/moneyGardenGuidance.js'
 
 export function MoneyGardenFlowGuide() {
   const navigate = useNavigate()
@@ -35,6 +30,9 @@ export function MoneyGardenFlowGuide() {
 
   if (!isDecision) return null
 
+  // This is a real module transition with choices, so it remains in the module
+  // workspace. The repeated Money Garden explanation/next-step card was moved
+  // into PersistentCoach instead.
   if (intermission) {
     return (
       <div className="pointer-events-auto fixed inset-0 z-[620] grid place-items-center bg-navy/75 p-4 backdrop-blur-sm">
@@ -72,51 +70,19 @@ export function MoneyGardenFlowGuide() {
     )
   }
 
-  const guide = moneyGardenDecision(decisionWeek)
-  const part = moneyGardenPart(decisionWeek)
-  const partWeek = part.part === 1 ? decisionWeek : decisionWeek - 5
+  if (!panelPortfolio) return null
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[410]">
-      <section
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="pointer-events-none absolute left-1/2 top-20 max-h-[46vh] w-[min(94vw,42rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-5 text-navy shadow-2xl backdrop-blur-sm"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Module 6 · Money Garden · Part {part.part}: {part.title}</div>
-          <div className="rounded-full bg-navy/10 px-2 py-1 text-[10px] font-extrabold">Decision {partWeek} of 5</div>
-        </div>
-        <h2 className="mt-1 font-display text-xl font-extrabold">{guide.title}</h2>
-        <div className="mt-2 rounded-xl border border-sun/40 bg-sun/15 px-4 py-3">
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-navy/55">Learn this, then use it</div>
-          <p className="mt-0.5 text-base font-extrabold leading-relaxed text-navy">{guide.instruction}</p>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-1 text-xs font-bold text-navy/65" aria-label={`Money Garden flow: ${MONEY_GARDEN_FLOW.join(', then ')}`}>
-          {MONEY_GARDEN_FLOW.map((step, index) => (
-            <span key={step} className="inline-flex items-center gap-1">
-              <span className="rounded-full bg-navy/8 px-2 py-1">{step}</span>
-              {index < MONEY_GARDEN_FLOW.length - 1 && <span aria-hidden="true" className="text-electric">→</span>}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {panelPortfolio && (
-        <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(92vw,34rem)] -translate-x-1/2">
-          <p className="mb-2 rounded-xl bg-navy/90 px-4 py-2.5 text-center text-sm font-extrabold text-white shadow-lg">
-            Use the concept above, choose or adjust an investment, then test what happens.
-          </p>
-          <button
-            type="button"
-            onClick={() => { closePortfolio(); startTheWeek() }}
-            className="min-h-[64px] w-full rounded-2xl bg-electric px-6 text-xl font-extrabold text-white shadow-2xl transition hover:bg-teal hover:text-navy focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sun active:scale-95"
-          >
-            Test This Choice and Continue →
-          </button>
-        </div>
-      )}
+      <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(90vw,28rem)] -translate-x-1/2">
+        <button
+          type="button"
+          onClick={() => { closePortfolio(); startTheWeek() }}
+          className="min-h-[64px] w-full rounded-2xl bg-electric px-6 text-xl font-extrabold text-white shadow-2xl transition hover:bg-teal hover:text-navy focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sun active:scale-95"
+        >
+          Test This Choice and Continue →
+        </button>
+      </div>
     </div>
   )
 }

@@ -9,6 +9,10 @@ describe('shouldShowInteractionPrompt', () => {
     expect(shouldShowInteractionPrompt({ id: 'item:apple' })).toBe(true)
   })
 
+  it('keeps Banker Bea out of the separate bottom E prompt', () => {
+    expect(shouldShowInteractionPrompt({ id: 'host:bea' })).toBe(false)
+  })
+
   it('does not show the prompt for optional random NPC conversations', () => {
     expect(shouldShowInteractionPrompt({ id: 'npc:park-friend' })).toBe(false)
     expect(shouldShowInteractionPrompt({ id: 'npc:ambient-1' })).toBe(false)
