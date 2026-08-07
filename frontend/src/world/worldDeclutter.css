@@ -71,30 +71,45 @@
   display: none;
 }
 
-.tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
+/* Shared teaching/dialog cards were too narrow, especially once a lesson had
+   enough context to explain WHY a choice mattered. Give every world module a
+   larger reading surface while still respecting the viewport. */
+.tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"] {
+  width: min(94vw, 42rem);
+  max-width: 42rem;
+  padding: 1.25rem;
+}
+
 .tayu-world-declutter [aria-labelledby="tayu-lesson-title"] {
-  max-width: 28rem;
-  padding: 1rem;
+  width: min(94vw, 38rem);
+  max-width: 38rem;
+  padding: 1.25rem;
 }
 
 .tayu-world-declutter #tayu-dialog-line,
 .tayu-world-declutter #tayu-lesson-title {
-  max-height: min(34dvh, 15rem);
+  max-height: min(40dvh, 18rem);
   overflow-y: auto;
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+.tayu-world-declutter #tayu-dialog-line {
+  min-height: 5.5rem;
+  padding: 0.9rem 1rem;
 }
 
 .tayu-world-declutter [class*="z-[320]"] > .pop-in {
-  max-width: 29rem;
-  padding: 1rem;
+  width: min(94vw, 38rem);
+  max-width: 38rem;
+  padding: 1.2rem;
 }
 
 .tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
-  max-height: min(30dvh, 13rem);
+  max-height: min(36dvh, 16rem);
   overflow-y: auto;
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 /* Long labels must wrap inside the viewport instead of pushing neighboring controls out. */
@@ -131,17 +146,21 @@
   .tayu-world-declutter [aria-labelledby="tayu-dialog-speaker"],
   .tayu-world-declutter [aria-labelledby="tayu-lesson-title"],
   .tayu-world-declutter [class*="z-[320]"] > .pop-in {
-    width: min(92vw, 28rem);
-    max-width: calc(100% - 1.5rem);
+    width: min(94vw, 38rem);
+    max-width: calc(100% - 1rem);
     border-radius: 1rem;
-    padding: 0.85rem;
+    padding: 1rem;
   }
 
   .tayu-world-declutter #tayu-dialog-line,
   .tayu-world-declutter #tayu-lesson-title,
   .tayu-world-declutter [class*="z-[320]"] p[class*="text-xl"] {
-    font-size: 1rem;
-    line-height: 1.4;
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .tayu-world-declutter #tayu-dialog-line {
+    min-height: 4.75rem;
   }
 }
 
