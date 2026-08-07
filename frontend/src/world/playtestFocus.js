@@ -7,14 +7,21 @@ export const LEMONADE_FOCUS_KEYS = Object.freeze({
   template: 'tayu-lemonade-template-focus-v2',
 })
 
-const SUPPLY_STEPS = [
+const SUPPLY_STEPS_BEFORE_NEWS = [
   {
-    title: 'First: read the demand clue',
-    text: 'Town News tells you whether many or few customers may come. Read it before spending money.',
+    title: 'First: choose one batch',
+    text: 'Start with the batch choices on this screen. A bigger batch makes more cups, but it costs more. Pick one batch to continue.',
+  },
+]
+
+const SUPPLY_STEPS_WITH_NEWS = [
+  {
+    title: 'First: read TOWN NEWS',
+    text: 'Look for the TOWN NEWS box on this same Lemonade Stand screen. Read its weather or crowd clue before choosing a batch.',
   },
   {
     title: 'Next: choose one batch',
-    text: 'A bigger batch makes more cups, but it costs more. Pick the batch that matches the expected crowd.',
+    text: 'A bigger batch makes more cups, but it costs more. Use the TOWN NEWS clue to pick a batch that fits the expected crowd.',
   },
 ]
 
@@ -56,8 +63,10 @@ const PLAN_STEPS_OLDER = [
   },
 ]
 
-export function focusStepsFor(phase, readingBand = READING_BANDS.OLDER) {
-  if (phase === 'supplies') return SUPPLY_STEPS
+export function focusStepsFor(phase, readingBand = READING_BANDS.OLDER, lemonadeFeatures = 0) {
+  if (phase === 'supplies') {
+    return lemonadeFeatures >= 3 ? SUPPLY_STEPS_WITH_NEWS : SUPPLY_STEPS_BEFORE_NEWS
+  }
   if (phase === 'template') {
     return readingBand === READING_BANDS.YOUNGER ? PLAN_STEPS_YOUNGER : PLAN_STEPS_OLDER
   }

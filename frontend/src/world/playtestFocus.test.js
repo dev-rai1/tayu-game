@@ -8,9 +8,24 @@ import {
 
 describe('playtest focus guidance', () => {
   it('breaks Lemonade setup into one short step at a time', () => {
-    expect(focusStepsFor('supplies')).toHaveLength(2)
+    expect(focusStepsFor('supplies')).toHaveLength(1)
     expect(focusStepsFor('template', READING_BANDS.YOUNGER)).toHaveLength(4)
     expect(focusStepsFor('template', READING_BANDS.OLDER)).toHaveLength(4)
+  })
+
+  it('does not tell players to read Town News before it unlocks', () => {
+    const steps = focusStepsFor('supplies', READING_BANDS.OLDER, 0)
+    expect(steps).toHaveLength(1)
+    expect(steps[0].title).toContain('choose one batch')
+    expect(steps[0].text).not.toContain('TOWN NEWS')
+  })
+
+  it('clearly points to Town News once the feature is available', () => {
+    const steps = focusStepsFor('supplies', READING_BANDS.OLDER, 3)
+    expect(steps).toHaveLength(2)
+    expect(steps[0].title).toContain('TOWN NEWS')
+    expect(steps[0].text).toContain('same Lemonade Stand screen')
+    expect(steps[1].text).toContain('TOWN NEWS clue')
   })
 
   it('plainly defines the hourly work cost for younger players', () => {
