@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   MONEY_GARDEN_DECISIONS,
+  MONEY_GARDEN_FLOW,
   MONEY_GARDEN_PARTS,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
@@ -23,16 +24,52 @@ describe('Money Garden playtest redesign', () => {
     expect(shouldPauseBetweenGardenParts(7, false)).toBe(false)
   })
 
-  it('frames every week as a clue rather than an exact trade instruction', () => {
-    const forbidden = /favor the|avoid adding|sell seeds|do not buy|move enough money|buy the company/i
+  it('separates WHY from the exact action on every decision', () => {
+    expect(MONEY_GARDEN_FLOW).toEqual([
+      '1. Learn why.',
+      '2. Do the action.',
+      '3. Check your mix.',
+      '4. Start the week.',
+    ])
+    const exactTrade = /(buy|sell)\s+(Toy Town|Snack Shack|Game Land)/i
     for (const decision of Object.values(MONEY_GARDEN_DECISIONS)) {
-      expect(decision.instruction).not.toMatch(forbidden)
+      expect(decision.why.length).toBeGreaterThan(20)
+      expect(decision.instruction.length).toBeGreaterThan(20)
+      expect(decision.instruction).not.toMatch(exactTrade)
       expect(decision.instruction.length).toBeLessThan(190)
     }
   })
 
-  it('keeps the existing three-card opening and weekly prompts bite-sized', () => {
+  it('makes diversification the first playable portfolio requirement', () => {
+    expect(MONEY_GARDEN_DECISIONS[1].title).toMatch(/diversified/i)
+    expect(MONEY_GARDEN_DECISIONS[1].why).toMatch(/zero company shares/i)
+    expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/READY TO INVEST/)
+    expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/2 different companies/i)
+
+    const oneCompany = {
+      companies: {
+        toy: { owned: 1 },
+        snack: { owned: 0 },
+        game: { owned: 0 },
+      },
+    }
+    const twoCompanies = {
+      companies: {
+        toy: { owned: 1 },
+        snack: { owned: 1 },
+        game: { owned: 0 },
+      },
+    }
+    expect(WEEKS[0].judge(oneCompany)).toBe(false)
+    expect(WEEKS[0].judge(twoCompanies)).toBe(true)
+  })
+
+  it('explains the three money locations before the first decision', () => {
     expect(OPENING).toHaveLength(3)
+    expect(OPENING.join(' ')).toMatch(/zero company shares/i)
+    expect(OPENING.join(' ')).toMatch(/READY TO INVEST/)
+    expect(OPENING.join(' ')).toMatch(/Pocket/)
+    expect(OPENING.join(' ')).toMatch(/Bank Sprout/)
     for (const line of OPENING) expect(line.length).toBeLessThan(120)
     expect(WEEKS).toHaveLength(10)
     for (const week of WEEKS) expect(week.intro.length).toBeLessThan(190)
