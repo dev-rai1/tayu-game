@@ -23,7 +23,7 @@ describe('kid navigation support', () => {
   it('uses one compact, dismissible guidance surface', () => {
     expect(coachSource).toContain('coachVisibility')
     expect(coachSource).toContain('showGuidance')
-    expect(coachSource).toContain('Show hint')
+    expect(coachSource).toContain('Guided clue')
     expect(coachSource).toContain('Read aloud')
     expect(coachSource).toContain('Dismiss')
     expect(coachSource).toContain('pointer-events-none fixed')
