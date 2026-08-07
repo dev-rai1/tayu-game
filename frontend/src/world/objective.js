@@ -5,12 +5,13 @@
 // Master Adjustment C4/E1: the target is always the EXACT person or object of
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
-import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
+import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING, TAX_DISTRICT } from './config.js'
 import { stage } from '../anim/stage.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
 const MARKET_SHELVES = [STORE[0], STORE[1] - 1]
 const MARKET_CHECKOUT = [STORE[0], STORE[1] + 4.2]
+const PAYCHECK_ENTRY = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]
 
 export function getObjectiveTarget(st) {
   if (st.adminHideArrows) return null // Part 0: presenter toggle
@@ -20,6 +21,11 @@ export function getObjectiveTarget(st) {
   if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
   // Part J: everything is done - the arrow leads to the party house door
   if (st.gameComplete) return [PARTY_HOUSE[0], PARTY_HOUSE[1] - 3]
+  // Public Module 5 (Paycheck Planet) sits physically between Bank and Garden.
+  // During the handoff, keep the normal world guidance aimed at its entrance
+  // instead of the legacy internal week-5 Money Garden objective.
+  if (st.objective === 'tax') return PAYCHECK_ENTRY
+  if (st.objective === 'tax-active') return null
   // Round 8 order: 3 = Budget Town, 4 = the Bank, 5 = the Money Garden
   if (st.week === 5) {
     // the arrow targets Mr. Sprout the PERSON, tracked live (E-I.6)
@@ -56,6 +62,7 @@ export function getObjectiveTarget(st) {
 // How close counts as "arrived" - both the neck arrow and the overhead marker
 // hide inside this radius (comment 14: stop on arrival).
 export function arriveRadius(st) {
+  if (st.objective === 'tax') return 4.2
   if (st.week === 5) return 3.2
   if (st.week === 1 && st.objective === 'store') return 3
   return 2.5
