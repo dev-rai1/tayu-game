@@ -1,9 +1,10 @@
-const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'garden']
+const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'tax', 'garden']
 const MODULE_LABEL = {
   jars: 'Market & Jars',
   lemonade: 'Lemonade Stand',
   budget: 'Budget Town',
   bank: 'Bank of TAYU',
+  tax: 'Paycheck Planet',
   garden: 'Money Garden',
 }
 
@@ -72,7 +73,7 @@ export default function PlaytestBehaviorSummary({ sessions = [] }) {
         <Metric label="Module completions" value={summary.completions} />
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {MODULES.map((moduleName) => (
           <div key={moduleName} className="rounded-xl border border-white/10 bg-black/20 p-4">
             <div className="text-sm font-extrabold text-teal">{MODULE_LABEL[moduleName]}</div>
