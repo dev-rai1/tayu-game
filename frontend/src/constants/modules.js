@@ -48,14 +48,18 @@ export const MODULE_CATALOG = [
   {
     n: 6,
     badge: 'garden',
-    title: 'Module 6: Money Garden',
+    title: 'Money Garden',
     grades: 'Grades 6–12',
     minutes: 'Two 6–8 min parts',
-    desc: 'Part 1 introduces investing and pretend stocks. Part 2 uses market clues, risk, patience, and rebalancing.',
+    desc: 'The investing finale: use pretend stocks, market clues, risk, patience, and rebalancing to grow a balanced portfolio.',
     color: '#00b37f',
     worldModule: 5,
+    finale: true,
   },
 ]
+
+export const MODULE_COUNT = MODULE_CATALOG.length
+export const WORLD_CHAPTER_COUNT = 5
 
 export const EDUCATOR_GRADE_BANDS = [
   {
@@ -66,13 +70,13 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All six modules remain available as a building-block sequence, including paycheck taxes before investing.',
+    copy: 'All six learning modules are available. Money Garden is Module 6 and serves as the investing finale after Paycheck Planet.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All six modules establish a shared baseline, with deeper teacher prompts for withholding, gig-work reserves, banking, and investing.',
+    copy: 'All six learning modules establish a shared baseline. Money Garden is Module 6 and the investing finale, with deeper teacher prompts for withholding, banking, gig-work reserves, and investing.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Tax filing', 'College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
