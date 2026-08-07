@@ -15,6 +15,9 @@ const HIDE_OLD_PINNED_LESSON = `
 .tayu-world-declutter [class*="top-[150px]"][class*="z-[160]"][class*="w-[min(92vw,26rem)]"] {
   display: none !important;
 }
+.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="primary"] {
+  display: none !important;
+}
 `
 
 export function MoneyGardenFlowGuide() {
@@ -45,8 +48,6 @@ export function MoneyGardenFlowGuide() {
     return [...moneyGardenClues(decisionWeek, mg), guide.instruction]
   }, [decisionWeek, guide.instruction, isDecision, mg])
 
-  // Give each Money Garden run enough room to practice buying, selling, and
-  // diversifying. The persisted marker prevents duplicate gifts on reload.
   useEffect(() => {
     if (week !== 5 || !mg || mg.starterGiftApplied) return
     useGame.setState((state) => {
@@ -60,8 +61,7 @@ export function MoneyGardenFlowGuide() {
     setClueIndex(0)
   }, [decisionWeek])
 
-  // Reuse the existing result card as the one post-choice lesson instead of
-  // stacking another explanation over the scene.
+  // Reuse the existing result card as the single post-choice teaching moment.
   useEffect(() => {
     if (week !== 5 || mg?.phase !== 'results' || !cards.length) return
     const completedWeek = Math.max(1, Number(mg?.week || 2) - 1)
@@ -136,7 +136,7 @@ export function MoneyGardenFlowGuide() {
   const canShowClue = !panelPortfolio && cards.length === 0 && !dialog && Boolean(currentClue)
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[410]">
+    <div className="pointer-events-none fixed inset-0 z-[410]" data-money-garden-flow>
       <style>{HIDE_OLD_PINNED_LESSON}</style>
       {part.part === 2 && <div className="absolute inset-0" style={{ background: 'rgba(120,80,240,0.055)' }} aria-hidden="true" />}
 
@@ -166,9 +166,7 @@ export function MoneyGardenFlowGuide() {
             <p className="mt-1 text-xs font-bold leading-snug text-navy/65">Why it matters: {guide.why}</p>
           )}
           <div className="mt-3 rounded-2xl border border-sun/50 bg-sun/15 px-4 py-3">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-navy/55">
-              {isLastClue ? 'Do this now' : 'Look at this clue'}
-            </div>
+            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-navy/55">{isLastClue ? 'Do this now' : 'Look at this clue'}</div>
             <p className="mt-1 text-base font-extrabold leading-snug text-navy">{currentClue}</p>
           </div>
           {[4, 5, 7].includes(Number(decisionWeek)) && !isLastClue && (
