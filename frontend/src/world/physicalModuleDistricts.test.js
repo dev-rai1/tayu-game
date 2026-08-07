@@ -7,6 +7,8 @@ import { BANK_DISTRICT, PARTY_HOUSE, SPROUT, STOP_ANGLES, TAX_DISTRICT } from '.
 const here = path.dirname(fileURLToPath(import.meta.url))
 const landmarks = fs.readFileSync(path.join(here, 'ModuleLandmarks.jsx'), 'utf8')
 const paycheck = fs.readFileSync(path.join(here, 'PaycheckPlanetWorld.jsx'), 'utf8')
+const overlay = fs.readFileSync(path.join(here, 'TaxWorkbenchOverlay.jsx'), 'utf8')
+const taxScene = fs.readFileSync(path.join(here, 'TaxLabWorld.jsx'), 'utf8')
 const gameWorld = fs.readFileSync(path.join(here, 'GameWorld.jsx'), 'utf8')
 const bank = fs.readFileSync(path.join(here, 'BankDistrict.jsx'), 'utf8')
 const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8')
@@ -14,13 +16,20 @@ const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8'
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
 describe('physical module districts', () => {
-  it('renders Paycheck Planet as a playable animated Tax Filing Lab without leaving the world', () => {
+  it('renders Paycheck Planet as a playable animated Tax Filing Lab with a separate full-screen workbench', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
     expect(landmarks).toContain('<PaycheckPlanetWorld />')
     expect(paycheck).toContain("labelTexture('PAYCHECK PLANET · TAX LAB'")
     expect(paycheck).toContain('AnimatedStation')
     expect(paycheck).toContain('ChoicePath')
-    expect(paycheck).toContain('<TaxFilingPanel')
+    expect(paycheck).toContain('TaxMachineAnimation')
+    expect(paycheck).toContain('CelebrationBurst')
+    expect(taxScene).toContain('<PaycheckPlanetWorld />')
+    expect(overlay).toContain('data-tax-workbench="true"')
+    expect(overlay).toContain('W2Scanner')
+    expect(overlay).toContain('FilingDesk')
+    expect(paycheck).not.toContain('<TaxFilingPanel')
+    expect(paycheck).not.toContain('<Html fullscreen')
     expect(paycheck).not.toContain('PRESS E / TAP')
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })

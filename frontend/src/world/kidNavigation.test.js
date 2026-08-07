@@ -18,10 +18,10 @@ describe('kid navigation support', () => {
     expect(tutorialSource).toContain('guide: {')
     expect(tutorialSource).toContain('glowing destination')
     expect(tutorialSource).toContain('return null')
-    expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />')
+    expect(pageSource).toContain('<FirstTimeMovementTutorial enabled={use3D && !taxMode} />')
   })
 
-  it('puts important guidance in front and ordinary hints to the side', () => {
+  it('puts normal-world important guidance in front and ordinary hints to the side', () => {
     expect(coachSource).toContain('coachVisibility')
     expect(coachSource).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coachSource).toContain('coachMessageFromTransient')
@@ -30,8 +30,9 @@ describe('kid navigation support', () => {
     expect(coachSource).toContain("queue.length > 1 ? 'Next' : 'Got it'")
     expect(coachSource).toContain('pointer-events-none fixed')
     expect(coachSource).toContain('data-important-message-scrim="true"')
-    expect(pageSource).toContain('{paycheckMode ? <TaxSideHint /> : <PersistentCoach key="world-coach" />}')
-    expect(pageSource).toContain('{!paycheckMode && <Hud')
+    expect(pageSource).toContain('{!taxMode && <PersistentCoach key="world-coach" />}')
+    expect(pageSource).toContain('{!taxMode && <Hud')
+    expect(pageSource).not.toContain('TaxSideHint')
     expect(pageSource).not.toContain('<LemonadeFocusGuide />')
     expect(pageSource).not.toContain('<BudgetTakeawayGuard />')
     expect(declutterSource).toContain('[data-guidance-lane="side-hint"]')

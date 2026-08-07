@@ -1,0 +1,124 @@
+@keyframes taxWorkbenchEnter {
+  0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes taxPaperFloat {
+  0%, 100% { transform: translateY(0) rotate(-0.25deg); }
+  50% { transform: translateY(-5px) rotate(0.25deg); }
+}
+
+@keyframes taxScanLine {
+  0% { top: 18%; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: 86%; opacity: 0; }
+}
+
+@keyframes taxPop {
+  0% { transform: scale(0.96); }
+  58% { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
+@keyframes taxStamp {
+  0% { transform: translateY(0) rotate(-2deg); }
+  45% { transform: translateY(4px) rotate(1deg) scale(0.98); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+@keyframes taxCoinFlow {
+  0% { transform: translateX(-18px) translateY(8px); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: translateX(8px) translateY(-4px); opacity: 0.8; }
+}
+
+@keyframes taxCreditSlide {
+  0% { transform: translateX(-18px) rotate(-8deg) scale(0.92); }
+  65% { transform: translateX(4px) rotate(2deg) scale(1.05); }
+  100% { transform: translateX(0) rotate(0) scale(1); }
+}
+
+@keyframes taxBalanceLeft {
+  0% { transform: rotate(0); }
+  65% { transform: rotate(-2deg); }
+  100% { transform: rotate(-1deg); }
+}
+
+@keyframes taxBalanceRight {
+  0% { transform: rotate(0); }
+  65% { transform: rotate(2deg); }
+  100% { transform: rotate(1deg); }
+}
+
+@keyframes taxEnvelope {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-5px) rotate(1deg); }
+}
+
+@keyframes taxEnvelopeFly {
+  0% { transform: translateX(-24px); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateX(28px); opacity: 1; }
+}
+
+@keyframes taxCompletePulse {
+  0% { transform: scale(0.7) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.tax-workbench-enter { animation: taxWorkbenchEnter 260ms ease-out both; }
+.tax-paper-float { animation: taxPaperFloat 3s ease-in-out infinite; }
+.tax-scan-line { animation: taxScanLine 2.1s ease-in-out infinite; }
+.tax-pop { animation: taxPop 320ms ease-out both; }
+.tax-stamp-button:active { animation: taxStamp 240ms ease-out; }
+.tax-coin-flow { animation: taxCoinFlow 1.15s ease-in-out infinite; letter-spacing: 0.15rem; }
+.tax-credit-slide { animation: taxCreditSlide 420ms cubic-bezier(.2,.8,.2,1) both; }
+.tax-balance { transform-origin: 50% 100%; transition: transform 320ms ease; }
+.tax-balance-left { animation: taxBalanceLeft 520ms ease-out both; }
+.tax-balance-right { animation: taxBalanceRight 520ms ease-out both; }
+.tax-envelope { animation: taxEnvelope 2.4s ease-in-out infinite; }
+.tax-envelope-fly { animation: taxEnvelopeFly 900ms ease-out infinite alternate; }
+.tax-complete-pulse { animation: taxCompletePulse 520ms cubic-bezier(.2,.9,.3,1.15) both; }
+
+.tax-folder { position: relative; overflow: hidden; }
+.tax-folder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.7) 48%, transparent 72%);
+  transform: translateX(-130%);
+  transition: transform 500ms ease;
+  pointer-events: none;
+}
+.tax-folder:hover::before { transform: translateX(130%); }
+
+[data-tax-workbench='true'] {
+  width: 100vw;
+  min-width: 100vw;
+  max-width: 100vw;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  [data-tax-workbench='true'] { padding: 0.5rem; }
+  [data-tax-workbench='true'] section[role='dialog'] { border-radius: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tax-workbench-enter,
+  .tax-paper-float,
+  .tax-scan-line,
+  .tax-pop,
+  .tax-coin-flow,
+  .tax-credit-slide,
+  .tax-balance-left,
+  .tax-balance-right,
+  .tax-envelope,
+  .tax-envelope-fly,
+  .tax-complete-pulse {
+    animation: none !important;
+  }
+}
