@@ -48,6 +48,12 @@
   display: none;
 }
 
+/* Money Garden has its own one-clue-at-a-time guide. Hide the older pinned
+   lesson during the decision so the lesson is revealed after the result. */
+.tayu-world-declutter [class*="top-[150px]"][class*="z-[160]"][class*="w-[min(92vw,26rem)]"] {
+  display: none !important;
+}
+
 /* Make Help unmistakable and keep its full touch target visible. */
 .tayu-world-declutter button[aria-label="Help"] {
   width: auto;
