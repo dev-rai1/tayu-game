@@ -29,18 +29,18 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('launches public Module 5 in the same world without automatic gameplay teleporting', () => {
+  it('launches public Module 5 directly at Paycheck Planet', () => {
     expect(world).toContain("jump === '5'")
+    expect(world).toContain('enterPaycheckPlanet()')
+    expect(world).toContain('game.adminTeleport(PAYCHECK_START)')
     expect(world).toContain('activatePaycheckWorld()')
-    expect(world).toContain('guideToPaycheckPlanet')
-    expect(world).not.toContain('adminTeleport(TAX_ENTRY)')
+    expect(world).not.toContain('guideToPaycheckPlanet')
+    expect(world).not.toContain('you will not be teleported')
     expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("jump === '6' ? 5")
     expect(moduleSelect).toContain("String(target.n)")
     expect(moduleSelect).not.toContain('target.route')
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
-    expect(objective).toContain('isPaycheckWorldActive()')
-    expect(objective).toContain('PAYCHECK_ENTRANCE')
   })
 
   it('expands Module 5 into a six-week job, tax, budget, and life simulation', () => {
@@ -49,8 +49,7 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckScenario).toContain("title: 'SURPRISE WEEK'")
     expect(paycheckScenario).toContain('BUDGET_PLANS')
     expect(paycheckScenario).toContain('applyLifeChoice')
-    expect(paycheckWorld).toContain('6-WEEK JOB · TAX · BUDGET · LIFE SIM')
-    expect(paycheckWorld).toContain('LIFE SNAPSHOT')
+    expect(paycheckWorld).toContain('WEEK 1 · CHOOSE A JOB')
     expect(paycheckWorld).toContain('START_JOBS.map')
     expect(paycheckWorld).toContain('CAREER_JOBS.map')
     expect(paycheckWorld).toContain('BUDGET_PLANS.map')
@@ -59,14 +58,21 @@ describe('Paycheck Planet full integration', () => {
     expect(paycheckWorld).toContain('taxLabProgress')
   })
 
-  it('keeps the module physical and hands off to Money Garden without teleporting', () => {
+  it('keeps Module 5 animated and clickable without stacked Press E or no-teleport labels', () => {
     expect(paycheckWorld).toContain("labelTexture('PAYCHECK PLANET'")
-    expect(paycheckWorld).toContain('InteractiveStation')
+    expect(paycheckWorld).toContain('AnimatedStation')
     expect(paycheckWorld).toContain('pushCoins(')
     expect(paycheckWorld).toContain('CelebrationBurst')
-    expect(paycheckWorld).toContain('NO TELEPORT · WALK TO MODULE 6')
-    expect(paycheckWorld).toContain('deactivatePaycheckWorld()')
-    expect(paycheckWorld).not.toContain('adminJumpModule(5)')
+    expect(paycheckWorld).not.toContain('PRESS E')
+    expect(paycheckWorld).not.toContain('NO TELEPORT')
+    expect(paycheckWorld).not.toContain('WALK TO MODULE 6')
+    expect(paycheckWorld).toContain("phase === 'complete'")
+    expect(paycheckWorld).toContain("phase === 'complete') return")
+  })
+
+  it('turns off the redundant world arrow and first-time Press E tutorial during Module 5', () => {
+    expect(objective).toContain('if (isPaycheckWorldActive()) return null')
+    expect(world).toContain('<FirstTimeMovementTutorial enabled={use3D && !paycheckMode} />')
   })
 
   it('removes the standalone tax and per-module quiz detours', () => {
