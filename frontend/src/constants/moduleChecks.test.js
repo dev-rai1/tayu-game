@@ -6,12 +6,13 @@ const PUBLIC_MODULE_BY_BADGE = {
   lemonade: 2,
   budget: 3,
   bank: 4,
+  tax: 5,
   garden: 6,
 }
 
 describe('post-module checks', () => {
   it('defines valid questions for every module badge', () => {
-    expect(BADGE_ORDER).toHaveLength(5)
+    expect(BADGE_ORDER).toHaveLength(6)
     BADGE_ORDER.forEach((badge) => {
       const check = moduleCheckForBadge(badge)
       expect(check).toBe(MODULE_CHECKS[badge])
@@ -26,6 +27,12 @@ describe('post-module checks', () => {
         expect(question.trick.length).toBeGreaterThan(10)
       })
     })
+  })
+
+  it('keeps Paycheck Planet between Bank and Money Garden', () => {
+    expect(BADGE_ORDER).toEqual(['jars', 'lemonade', 'budget', 'bank', 'tax', 'garden'])
+    expect(MODULE_CHECKS.tax.moduleNumber).toBe(5)
+    expect(MODULE_CHECKS.garden.moduleNumber).toBe(6)
   })
 
   it('balances correct-answer positions instead of putting every answer first', () => {
