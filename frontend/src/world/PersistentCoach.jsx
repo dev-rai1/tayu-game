@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { say } from '../services/speech.js'
 import { useGame } from './store.js'
 import { getGuidance } from './guidance.js'
@@ -6,10 +6,66 @@ import { usesTouchControls } from './controlMode.js'
 import { coachVisibility } from './overlayVisibility.js'
 import { activeFeedbackKey, useFeedbackCoach } from './feedbackCoach.js'
 
+const ACTOR_LABELS = {
+  player: 'You', penny: 'Penny', theo: 'Theo', mia: 'Mia', bea: 'Banker Bea',
+  teller: 'Teller Tom', clerk: 'Clerk Cleo', mailer: 'Postal Pat',
+  scammer: 'Sneaky Sam', helper: 'Helper Hana', bram: 'Mr. Bram',
+  sprout: 'Mr. Sprout', scoop: 'Scoop', wanderer: 'Milo', nea: 'Nea',
+}
+
+function compactText(value, max = 120) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim()
+  if (!text) return ''
+
+  const sentenceEnd = text.search(/[.!?](?:\s|$)/)
+  const firstSentence = sentenceEnd >= 0 ? text.slice(0, sentenceEnd + 1) : text
+  const candidate = firstSentence.length >= 28 ? firstSentence : text
+  if (candidate.length <= max) return candidate
+
+  const clipped = candidate.slice(0, Math.max(1, max - 1)).trimEnd().replace(/[,:;.!?]+$/, '')
+  return `${clipped}…`
+}
+
+function transientClue({ toast, guide, actorCaption, banner }) {
+  if (actorCaption?.line) {
+    const name = ACTOR_LABELS[actorCaption.actor] || 'Character'
+    return {
+      sourceKey: `actor:${actorCaption.actor}:${actorCaption.line}`,
+      title: `${name} says`,
+      action: actorCaption.line,
+      transient: true,
+    }
+  }
+  if (guide?.line) {
+    return {
+      sourceKey: `guide:${guide.line}`,
+      title: "Penny's clue",
+      action: guide.line,
+      transient: true,
+    }
+  }
+  if (toast) {
+    return {
+      sourceKey: `toast:${toast}`,
+      title: 'Quick update',
+      action: toast,
+      transient: true,
+    }
+  }
+  if (banner) {
+    return {
+      sourceKey: `banner:${banner}`,
+      title: 'Quick update',
+      action: banner,
+      transient: true,
+    }
+  }
+  return null
+}
+
 function hintKey(type, value, week, objective) {
   if (!value) return ''
-  if (type === 'improvement') return `${type}:${week}:${objective}:${value.sourceKey || value.title}`
-  return `${type}:${week}:${objective}:${value.title}:${value.action}`
+  return `${type}:${week}:${objective}:${value.sourceKey || value.title}:${value.action || value.instruction || ''}`
 }
 
 export function PersistentCoach() {
@@ -41,7 +97,6 @@ export function PersistentCoach() {
   const actorCaption = useGame((s) => s.actorCaption)
   const banner = useGame((s) => s.banner)
   const feedbackByModule = useFeedbackCoach((s) => s.feedbackByModule)
-  const [expanded, setExpanded] = useState(false)
   const [dismissedKey, setDismissedKey] = useState('')
 
   const activeLesson = lessons[0]
@@ -64,24 +119,26 @@ export function PersistentCoach() {
   const visibility = coachVisibility(stateForGuidance)
   const feedbackKey = activeFeedbackKey(stateForGuidance)
   const improvement = feedbackKey ? feedbackByModule[feedbackKey] : null
-  const transientMessageVisible = Boolean(toast || guide || actorCaption || banner)
-  const type = improvement ? 'improvement' : 'guidance'
-  const content = improvement || guidance
+  const transient = transientClue({ toast, guide, actorCaption, banner })
+  const type = improvement ? 'improvement' : transient ? 'transient' : 'guidance'
+  const content = improvement || transient || guidance
   const key = hintKey(type, content, week, objective)
-  const canShow = Boolean(content && visibility.showGuidance && !transientMessageVisible && dismissedKey !== key)
 
-  useEffect(() => { setExpanded(type === 'improvement') }, [key, type])
+  // Feedback and short-lived messages may still use the tray while a specialized
+  // commerce guide is active. Blocking dialogs/panels remain the only reason to
+  // hide the clue so the player never gets two competing text surfaces.
+  const canUseTray = !visibility.blocking && (improvement || transient || visibility.showGuidance)
+  const canShow = Boolean(content && canUseTray && dismissedKey !== key)
   if (!canShow) return null
 
-  const label = improvement ? "Benny's feedback" : 'Show hint'
-  const title = improvement ? improvement.title : guidance.title
-  const diagnosis = improvement?.diagnosis
-  const action = improvement ? improvement.action : (guidance.action || guidance.instruction)
-  const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
-  const positionClass = usesTouchControls
-    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
-    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const sizeClass = improvement ? 'w-[min(94vw,30rem)] border-4 ring-4 ring-electric/25' : 'w-[min(90vw,23rem)] border-2'
+  const label = improvement ? 'Try this' : transient ? 'Quick update' : 'Guided clue'
+  const rawTitle = improvement ? improvement.title : (content.title || label)
+  const rawAction = improvement
+    ? (improvement.action || improvement.diagnosis || improvement.goal)
+    : (content.action || content.instruction || '')
+  const title = compactText(rawTitle, 58)
+  const action = compactText(rawAction, 118)
+  const spoken = [title, action].filter(Boolean).join('. ')
 
   return (
     <aside
@@ -89,33 +146,40 @@ export function PersistentCoach() {
       aria-live="polite"
       aria-atomic="true"
       data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
-      className={`pointer-events-none fixed left-1/2 z-[490] max-h-[min(65vh,32rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-electric bg-white text-navy shadow-2xl ${sizeClass} ${positionClass}`}
+      data-guided-clue-tray="true"
+      style={{
+        left: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+        bottom: usesTouchControls
+          ? 'calc(10.75rem + env(safe-area-inset-bottom, 0px))'
+          : 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+      }}
+      className="fixed z-[490] w-[min(88vw,24rem)] rounded-2xl border-2 border-electric bg-white p-3 text-navy shadow-xl"
     >
-      {!expanded ? (
-        <div className={`flex items-center gap-2 ${improvement ? 'p-3' : 'p-2'}`}>
-          <button type="button" onClick={() => setExpanded(true)} className={`pointer-events-auto min-h-[48px] min-w-0 flex-1 rounded-xl bg-electric/10 px-4 text-left active:scale-[0.99] ${improvement ? 'py-2' : ''}`}>
-            <span className={`block font-extrabold uppercase tracking-[0.14em] text-electric ${improvement ? 'text-xs' : 'text-[10px]'}`}>{label}</span>
-            <span className={`block truncate font-extrabold ${improvement ? 'mt-1 text-lg leading-snug' : 'text-sm'}`}>{title}</span>
-          </button>
-          <button type="button" aria-label="Hide this hint" onClick={() => setDismissedKey(key)} className="pointer-events-auto grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy/10 text-xl font-extrabold text-navy active:scale-95">×</button>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">{label}</div>
+          <div className="mt-0.5 text-lg font-extrabold leading-snug">{title}</div>
+          {action && action !== title && (
+            <p className="mt-1 text-base font-semibold leading-snug text-navy/80">{action}</p>
+          )}
         </div>
-      ) : (
-        <div className={improvement ? 'p-4 sm:p-5' : 'p-3'}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className={`font-extrabold uppercase tracking-[0.14em] text-electric ${improvement ? 'text-xs' : 'text-[10px]'}`}>{label}</div>
-              <div className={`mt-1 break-words font-extrabold leading-snug ${improvement ? 'text-xl' : 'text-sm'}`}>{title}</div>
-              {diagnosis && <div className="mt-3 rounded-xl bg-navy/5 px-4 py-3 text-base font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
-              {improvement && <div className="mt-3 text-xs font-extrabold uppercase tracking-[0.12em] text-electric">Try one change</div>}
-              <p className={`break-words font-semibold text-navy/80 ${improvement ? 'mt-1 text-lg leading-relaxed' : 'mt-1 text-sm leading-snug'}`}>{action}</p>
-            </div>
-            <button type="button" onClick={() => setExpanded(false)} className={`pointer-events-auto shrink-0 rounded-xl bg-navy/10 px-3 font-extrabold text-navy active:scale-95 ${improvement ? 'min-h-[44px] text-sm' : 'min-h-[40px] text-xs'}`}>Hide</button>
-          </div>
-          <div className={improvement ? 'mt-4 flex gap-2' : 'mt-2 flex gap-2'}>
-            <button type="button" onClick={() => say(spoken)} className={`pointer-events-auto flex-1 rounded-xl bg-electric/10 px-3 font-extrabold text-electric active:scale-95 ${improvement ? 'min-h-[48px] text-sm' : 'min-h-[42px] text-xs'}`}>Read aloud</button>
-            <button type="button" onClick={() => setDismissedKey(key)} className={`pointer-events-auto flex-1 rounded-xl bg-navy/10 px-3 font-extrabold text-navy active:scale-95 ${improvement ? 'min-h-[48px] text-sm' : 'min-h-[42px] text-xs'}`}>Dismiss</button>
-          </div>
-        </div>
+        <button
+          type="button"
+          aria-label="Hide this clue"
+          onClick={() => setDismissedKey(key)}
+          className="pointer-events-auto grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-navy/10 text-lg font-extrabold text-navy active:scale-95"
+        >
+          ×
+        </button>
+      </div>
+      {spoken && (
+        <button
+          type="button"
+          onClick={() => say(spoken)}
+          className="pointer-events-auto mt-2 min-h-[40px] rounded-xl bg-electric/10 px-3 text-sm font-extrabold text-electric active:scale-95"
+        >
+          Read aloud
+        </button>
       )}
     </aside>
   )
