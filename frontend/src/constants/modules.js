@@ -38,10 +38,10 @@ export const MODULE_CATALOG = [
   {
     n: 5,
     badge: 'tax',
-    title: 'Paycheck Planet',
+    title: 'Paycheck Planet · Tax Filing Lab',
     grades: 'Grades 6–12',
-    minutes: '8–12 min',
-    desc: 'Choose a job, watch taxes come out of a paycheck, plan take-home pay, and handle a future expense inside the 3D world.',
+    minutes: '10–15 min',
+    desc: 'File a simplified practice tax return: read a W-2, find taxable income, use tax brackets, apply a credit, and calculate a refund or amount due.',
     color: '#FF8A3D',
   },
   {
@@ -87,14 +87,14 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All six core modules are available. The investing finale is clearly split into Module 6A (Investing Foundations) and Module 6B (Markets, Risk & Patience).',
+    copy: 'All six core modules are available. Module 5 includes a guided practice tax return, and the investing finale is clearly split into Module 6A and Module 6B.',
     currentModules: MODULE_CATALOG,
-    plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
+    plannedModules: [],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All six core modules establish a shared baseline. The investing finale is split into Module 6A and Module 6B, with deeper teacher prompts for withholding, banking, gig-work reserves, and investing.',
+    copy: 'All six core modules establish a shared baseline. Module 5 practices W-2 reading and a simplified filing flow; the investing finale is split into Module 6A and Module 6B with deeper teacher prompts.',
     currentModules: MODULE_CATALOG,
-    plannedModules: ['Tax filing', 'College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
+    plannedModules: ['College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
 ]
