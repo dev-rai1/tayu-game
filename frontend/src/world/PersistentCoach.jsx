@@ -53,6 +53,7 @@ export function PersistentCoach({ paycheckMode = false }) {
   const cards = useGame((s) => s.cards)
   const lessons = useGame((s) => s.lessons)
   const dialog = useGame((s) => s.dialog)
+  const advanceDialog = useGame((s) => s.advanceDialog)
   const panelJar = useGame((s) => s.panelJar)
   const panelItem = useGame((s) => s.panelItem)
   const btPanel = useGame((s) => s.btPanel)
@@ -82,7 +83,7 @@ export function PersistentCoach({ paycheckMode = false }) {
     panelJar, panelItem, btPanel, bkPanel, panelPortfolio, helpOpen,
   ])
 
-  // Route the short-lived message fields into this one tray before Hud can paint
+  // Route short-lived message fields into this one tray before Hud can paint
   // separate toast/banner/NPC/lesson bubbles. Each item stays until the learner
   // advances it, so fast animations cannot make important feedback disappear.
   useLayoutEffect(() => {
@@ -160,38 +161,49 @@ export function PersistentCoach({ paycheckMode = false }) {
     ? moneyGardenDecision(mg.week)
     : null
   const queuedMessage = queue[0]
+  const dialogLine = dialog?.lines?.[dialog.index]
+  const dialogMessage = dialogLine
+    ? {
+        kind: 'actor',
+        label: `${dialog.name || 'TAYU friend'} says`,
+        title: dialog.name || 'TAYU friend',
+        action: dialogLine,
+      }
+    : null
   const generatedGuidance = gardenGuide
     ? { title: gardenGuide.title, action: gardenGuide.instruction }
     : guidance
 
-  const type = queuedMessage ? 'queued' : improvement ? 'improvement' : 'guidance'
-  const content = queuedMessage || improvement || (!paycheckMode ? generatedGuidance : null)
+  const type = queuedMessage ? 'queued' : dialogMessage ? 'dialog' : improvement ? 'improvement' : 'guidance'
+  const content = queuedMessage || dialogMessage || improvement || (!paycheckMode ? generatedGuidance : null)
   const key = queuedMessage?.id || hintKey(type, content, week, objective)
   const canShow = Boolean(
-    content && (type === 'queued' || type === 'improvement' || visibility.showGuidance) &&
-    (type === 'queued' || dismissedKey !== key)
+    content && (type === 'queued' || type === 'dialog' || type === 'improvement' || visibility.showGuidance) &&
+    (type === 'queued' || type === 'dialog' || dismissedKey !== key)
   )
 
   useEffect(() => {
-    if (type === 'queued') setDismissedKey('')
+    if (type === 'queued' || type === 'dialog') setDismissedKey('')
   }, [key, type])
 
   if (!canShow) return null
 
-  const label = queuedMessage?.label || (improvement ? "Benny's feedback" : 'Next step')
-  const title = queuedMessage?.title || improvement?.title || generatedGuidance?.title
+  const label = queuedMessage?.label || dialogMessage?.label || (improvement ? "Benny's feedback" : 'Next step')
+  const title = queuedMessage?.title || dialogMessage?.title || improvement?.title || generatedGuidance?.title
   const diagnosis = improvement?.diagnosis
-  const action = queuedMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
+  const action = queuedMessage?.action || dialogMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
   const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
-  const queueProgress = queuedMessage?.total
-    ? `${queuedMessage.step} of ${queuedMessage.total}`
-    : queue.length > 1
-      ? `1 of ${queue.length}`
-      : ''
+  const queueProgress = dialogMessage
+    ? `${dialog.index + 1} of ${dialog.lines.length}`
+    : queuedMessage?.total
+      ? `${queuedMessage.step} of ${queuedMessage.total}`
+      : queue.length > 1
+        ? `1 of ${queue.length}`
+        : ''
   const positionClass = usesTouchControls
     ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
     : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const emphasized = type === 'queued' || type === 'improvement'
+  const emphasized = type === 'queued' || type === 'dialog' || type === 'improvement'
 
   return (
     <aside
@@ -205,7 +217,7 @@ export function PersistentCoach({ paycheckMode = false }) {
       <div className="p-3 sm:p-4">
         <div className="flex items-start gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 text-sm font-black text-electric shadow-sm" aria-hidden="true">
-            {helperFace(queuedMessage?.kind || type)}
+            {helperFace(queuedMessage?.kind || (type === 'dialog' ? 'actor' : type))}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -225,6 +237,10 @@ export function PersistentCoach({ paycheckMode = false }) {
           {queuedMessage ? (
             <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
               {queue.length > 1 ? 'Next' : 'Got it'}
+            </button>
+          ) : dialogMessage ? (
+            <button type="button" onClick={advanceDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+              {dialog.index + 1 >= dialog.lines.length ? 'Got it' : 'Next'}
             </button>
           ) : (
             <button type="button" onClick={() => setDismissedKey(key)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95">
