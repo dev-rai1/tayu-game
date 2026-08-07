@@ -36,10 +36,10 @@ export function MoneyGardenFlowGuide() {
   if (intermission) {
     return (
       <div className="pointer-events-auto fixed inset-0 z-[620] grid place-items-center bg-navy/75 p-4 backdrop-blur-sm">
-        <section role="dialog" aria-modal="true" aria-labelledby="garden-intermission-title" className="w-full max-w-lg rounded-3xl border-2 border-teal bg-white p-6 text-center text-navy shadow-2xl">
+        <section role="dialog" aria-modal="true" aria-labelledby="garden-intermission-title" className="w-full max-w-2xl rounded-3xl border-2 border-teal bg-white p-7 text-center text-navy shadow-2xl">
           <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Part 1 complete</div>
           <h2 id="garden-intermission-title" className="mt-2 font-display text-3xl font-extrabold">Investing Foundations</h2>
-          <p className="mt-3 font-semibold leading-relaxed text-navy/75">You researched businesses, spread risk, and used evidence instead of price alone. Part 2 adds surprises, warning signs, hype, patience, and rebalancing.</p>
+          <p className="mt-3 text-base font-semibold leading-relaxed text-navy/75">You learned that stocks represent ownership, research should look at the business behind the price, and diversification reduces concentration risk without removing all risk. Part 2 adds time horizon, emergency cash, serious warning signs, hype, patience, and rebalancing.</p>
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
