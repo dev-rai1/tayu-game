@@ -38,10 +38,10 @@ export function MoneyGardenFlowGuide() {
   if (intermission) {
     return (
       <div className="pointer-events-auto fixed inset-0 z-[620] grid place-items-center bg-navy/75 p-4 backdrop-blur-sm">
-        <section role="dialog" aria-modal="true" aria-labelledby="garden-intermission-title" className="w-full max-w-lg rounded-3xl border-2 border-teal bg-white p-6 text-center text-navy shadow-2xl">
+        <section role="dialog" aria-modal="true" aria-labelledby="garden-intermission-title" className="w-full max-w-2xl rounded-3xl border-2 border-teal bg-white p-7 text-center text-navy shadow-2xl">
           <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Part 1 complete</div>
           <h2 id="garden-intermission-title" className="mt-2 font-display text-3xl font-extrabold">Investing Foundations</h2>
-          <p className="mt-3 font-semibold leading-relaxed text-navy/75">You researched businesses, spread risk, and used evidence instead of price alone. Part 2 adds surprises, warning signs, hype, patience, and rebalancing.</p>
+          <p className="mt-3 text-base font-semibold leading-relaxed text-navy/75">You learned that stocks represent ownership, research should look at the business behind the price, and diversification reduces concentration risk without removing all risk. Part 2 adds time horizon, emergency cash, serious warning signs, hype, patience, and rebalancing.</p>
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
@@ -66,7 +66,7 @@ export function MoneyGardenFlowGuide() {
               Save and exit
             </button>
           </div>
-          <p className="mt-3 text-xs font-bold text-navy/55">Part 2 begins from this same saved point when you resume Module 5.</p>
+          <p className="mt-3 text-xs font-bold text-navy/55">Part 2 begins from this same saved point when you resume Module 6.</p>
         </section>
       </div>
     )
@@ -82,18 +82,18 @@ export function MoneyGardenFlowGuide() {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none absolute left-1/2 top-20 max-h-[42vh] w-[min(92vw,34rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm"
+        className="pointer-events-none absolute left-1/2 top-20 max-h-[46vh] w-[min(94vw,42rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border-2 border-electric/30 bg-white/95 p-5 text-navy shadow-2xl backdrop-blur-sm"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Money Garden · Part {part.part}: {part.title}</div>
+          <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Module 6 · Money Garden · Part {part.part}: {part.title}</div>
           <div className="rounded-full bg-navy/10 px-2 py-1 text-[10px] font-extrabold">Decision {partWeek} of 5</div>
         </div>
-        <h2 className="mt-1 font-display text-lg font-extrabold">{guide.title}</h2>
-        <div className="mt-2 rounded-xl border border-sun/40 bg-sun/15 px-3 py-2">
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-navy/55">Do this now</div>
-          <p className="mt-0.5 text-sm font-extrabold leading-snug text-navy">{guide.instruction}</p>
+        <h2 className="mt-1 font-display text-xl font-extrabold">{guide.title}</h2>
+        <div className="mt-2 rounded-xl border border-sun/40 bg-sun/15 px-4 py-3">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-navy/55">Learn this, then use it</div>
+          <p className="mt-0.5 text-base font-extrabold leading-relaxed text-navy">{guide.instruction}</p>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-1 text-xs font-bold text-navy/65" aria-label={`Money Garden flow: ${MONEY_GARDEN_FLOW.join(', then ')}`}>
+        <div className="mt-3 flex flex-wrap items-center gap-1 text-xs font-bold text-navy/65" aria-label={`Money Garden flow: ${MONEY_GARDEN_FLOW.join(', then ')}`}>
           {MONEY_GARDEN_FLOW.map((step, index) => (
             <span key={step} className="inline-flex items-center gap-1">
               <span className="rounded-full bg-navy/8 px-2 py-1">{step}</span>
@@ -104,9 +104,9 @@ export function MoneyGardenFlowGuide() {
       </section>
 
       {panelPortfolio && (
-        <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(90vw,28rem)] -translate-x-1/2">
-          <p className="mb-2 rounded-xl bg-navy/90 px-3 py-2 text-center text-sm font-extrabold text-white shadow-lg">
-            Choose or adjust an investment above, then continue.
+        <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(92vw,34rem)] -translate-x-1/2">
+          <p className="mb-2 rounded-xl bg-navy/90 px-4 py-2.5 text-center text-sm font-extrabold text-white shadow-lg">
+            Use the concept above, choose or adjust an investment, then test what happens.
           </p>
           <button
             type="button"

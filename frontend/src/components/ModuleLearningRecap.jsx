@@ -122,23 +122,31 @@ const MODULE_RECAPS = {
   }),
   6: makeRecap({
     title: 'Money Garden',
-    memory: 'Do not bet everything on one seed: spread, watch, and stay patient.',
+    memory: 'Strong investing is a plan: own carefully, diversify, research, protect near-term cash, think long term, and rebalance.',
     steps: [
       {
+        activity: 'Buy company shares',
+        lesson: 'A stock is a small ownership interest in a company, and a share is one unit of that ownership. Its return can be a gain or a loss, so investing always involves uncertainty.',
+      },
+      {
         activity: 'Spread your investments',
-        lesson: 'Diversifying means putting money in different investments so one bad result hurts less.',
+        lesson: 'Diversification spreads money across investments so one company has less control over the result. It can reduce concentration risk, but it cannot eliminate every loss.',
       },
       {
-        activity: 'Watch prices move',
-        lesson: 'Prices rise and fall, so one exciting week does not automatically make something a good long-term choice.',
+        activity: 'Research the businesses',
+        lesson: 'Credible business evidence matters more than a low price, a recent jump, or hype. Price alone does not tell you whether a company is healthy.',
       },
       {
-        activity: 'Keep some cash available',
-        lesson: 'A cash cushion can help with surprises without forcing you to sell an investment at a bad time.',
+        activity: 'Keep some money ready',
+        lesson: 'Your time horizon is how long until you need the money. Keeping near-term needs in ready cash can keep a surprise from forcing a sale at a bad time.',
       },
       {
-        activity: 'Rebalance and wait',
-        lesson: 'Patient investors watch what changes, rebalance when needed, and avoid chasing whatever is suddenly popular.',
+        activity: 'Watch several weeks',
+        lesson: 'One dramatic week can reverse. Patient investing means comparing new evidence over time instead of chasing a short-term move.',
+      },
+      {
+        activity: 'Rebalance the garden',
+        lesson: 'Rebalancing means adjusting holdings after prices change so the portfolio moves back toward its intended mix and risk level.',
       },
     ],
   }),
@@ -154,7 +162,7 @@ export function ModuleLearningRecap({ module, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`module-${module}-recap-title`}
-        className="pop-in max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7"
+        className="pop-in max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7"
       >
         <div className="text-center">
           <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module {module} complete</div>

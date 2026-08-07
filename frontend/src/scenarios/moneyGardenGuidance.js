@@ -1,38 +1,40 @@
-// Decision prompts for the Money Garden. These prompts identify the question to
-// investigate without revealing the exact company or trade the player should make.
+// Decision prompts for public Module 6, Money Garden. Each prompt names the
+// investing concept being practiced, then asks the player to apply it without
+// revealing the exact company or trade they should make.
 
 export const MONEY_GARDEN_PARTS = [
   {
     part: 1,
     title: 'Investing Foundations',
     weeks: [1, 2, 3, 4, 5],
-    goal: 'Research businesses, spread risk, and separate evidence from price alone.',
+    goal: 'Understand stock ownership, research businesses, spread concentration risk, and separate business evidence from price alone.',
   },
   {
     part: 2,
     title: 'Markets, Risk, and Patience',
     weeks: [6, 7, 8, 9, 10],
-    goal: 'Protect emergency money, respond to new evidence, resist hype, and rebalance.',
+    goal: 'Match risk to time horizon, protect emergency money, respond to real evidence, resist hype, and rebalance.',
   },
 ]
 
 export const MONEY_GARDEN_FLOW = [
-  '1. Read the clue.',
-  '2. Make one evidence-based change.',
-  '3. Test your choice and continue.',
+  '1. Learn the concept.',
+  '2. Read the evidence.',
+  '3. Make one change.',
+  '4. Test your choice and continue.',
 ]
 
 export const MONEY_GARDEN_DECISIONS = {
-  1: { title: 'Research before planting', instruction: 'Compare the company stories. Which details describe the businesses, and how can you avoid depending on only one?' },
-  2: { title: 'Test diversification', instruction: 'Imagine one company falls. What mix would stop that single result from controlling the whole garden?' },
-  3: { title: 'A price dip needs context', instruction: 'Did the business itself change, or did only the price move? Use that difference before changing the portfolio.' },
-  4: { title: 'Customers are evidence', instruction: 'Compare the storefront activity. Which company appears healthier based on customers rather than price alone?' },
-  5: { title: 'Cheap is not the same as healthy', instruction: 'A low price can be an opportunity or a warning. Which business clues help you tell the difference?' },
-  6: { title: 'Protect the plan from surprises', instruction: 'A bill may arrive before investments recover. How much should remain ready instead of exposed to the market?' },
-  7: { title: 'New warnings change a decision', instruction: 'Look for evidence that a company’s business weakened. Which holding now creates the greatest risk?' },
-  8: { title: 'Price excitement is not research', instruction: 'A company just jumped. What business evidence would justify buying, and what would make the move only hype?' },
-  9: { title: 'Compare steady and flashy results', instruction: 'Which company has supported the portfolio over several weeks instead of only producing one dramatic move?' },
-  10: { title: 'Check concentration risk', instruction: 'What percentage depends on the largest holding? Adjust only if one company has too much control over the outcome.' },
+  1: { title: 'Stocks are pieces of ownership', instruction: 'A share is one small ownership unit of a company. Compare the businesses first, then choose based on evidence instead of guessing which price moves next.' },
+  2: { title: 'Diversification spreads risk', instruction: 'Diversification means not depending on one investment. Build a mix so one company falling does not control the whole result. It reduces risk, but cannot erase it.' },
+  3: { title: 'Price is not the whole business', instruction: 'A price can move even when the company has not changed. Before selling after a dip, ask whether new business evidence changed your reason for owning it.' },
+  4: { title: 'Research the company behind the stock', instruction: 'Research uses credible evidence about the business. Compare customer activity here, then connect that clue to the company instead of reacting to price alone.' },
+  5: { title: 'Cheap does not automatically mean good', instruction: 'A lower price can be an opportunity or a warning. Compare the price with business health before deciding whether the investment is actually more attractive.' },
+  6: { title: 'Match risk to your time horizon', instruction: 'Your time horizon is how long until you need the money. Keep short-term needs ready so a surprise does not force you to sell a long-term investment at a bad time.' },
+  7: { title: 'Patience still requires new evidence', instruction: 'Patience is not ignoring a weakening business. Look for evidence that the company itself changed, then decide whether your original reason for owning it still holds.' },
+  8: { title: 'Do not chase hype', instruction: 'A recent price jump is not proof of future returns. Ask what credible business evidence supports the excitement before buying because everyone else is excited.' },
+  9: { title: 'Use a longer view', instruction: 'One dramatic week can reverse. Compare several periods and the investment goal so short-term noise does not control a long-term decision.' },
+  10: { title: 'Rebalance back to the intended mix', instruction: 'Rebalancing means adjusting holdings after prices change so the portfolio returns closer to its planned balance and risk. Check whether one company has become too large.' },
 }
 
 export function moneyGardenPart(week) {
@@ -46,6 +48,6 @@ export function shouldPauseBetweenGardenParts(week, partTwoStarted) {
 export function moneyGardenDecision(week) {
   return MONEY_GARDEN_DECISIONS[week] || {
     title: 'Use evidence and keep the plan balanced',
-    instruction: 'Compare business clues, portfolio balance, and ready cash before changing one part of the plan.',
+    instruction: 'Compare business evidence, concentration, time horizon, and ready cash before changing one part of the portfolio.',
   }
 }
