@@ -62,7 +62,9 @@ export function getObjectiveTarget(st) {
 // How close counts as "arrived" - both the neck arrow and the overhead marker
 // hide inside this radius (comment 14: stop on arrival).
 export function arriveRadius(st) {
-  if (isPaycheckWorldActive()) return 0.45
+  // Once the learner reaches the Paycheck Planet area, the route disappears so
+  // it does not keep pointing back to the center while they compare stations.
+  if (isPaycheckWorldActive()) return 3.6
   if (st.week === 5) return 3.2
   if (st.week === 1 && st.objective === 'store') return 3
   return 2.5
