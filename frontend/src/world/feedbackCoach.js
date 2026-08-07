@@ -55,12 +55,32 @@ export const useFeedbackCoach = create((set) => ({
   },
 }))
 
+// Broad module ownership is used to silence short-lived NPC/toast feedback while
+// a retry clue is active. It intentionally includes consequence animations so
+// those animations can keep playing without adding another text popup.
+export function feedbackModuleForState(state = {}) {
+  if (state.week === 1 && state.objective === 'kitchen') return 'jars'
+  if (state.week === 1 && state.objective === 'store') return 'market'
+  if (state.week === 2 && state.objective === 'lemonade') return 'lemonade'
+  if (state.week === 3 && state.bt) return 'budget'
+  if (state.week === 4 && state.bk) return 'bank'
+  if (state.week === 5 && state.mg) return 'garden'
+  return null
+}
+
+// The coach itself appears only when the player is back at a useful retry or
+// decision state. That keeps the screen to one coaching popup at a time while
+// consequence animation can finish quietly in the background.
 export function activeFeedbackKey(state = {}) {
   if (state.week === 1 && state.objective === 'kitchen' && state.scenarioState === 'ALLOCATING') return 'jars'
-  if (state.week === 1 && state.objective === 'store' && state.bramTalked && !state.storeMissionDone) return 'market'
-  if (state.week === 2 && state.objective === 'lemonade') return 'lemonade'
+  if (state.week === 1 && state.objective === 'store' && state.bramTalked && !state.storeMissionDone && !state.scenarioLocked) return 'market'
+  if (
+    state.week === 2
+    && state.objective === 'lemonade'
+    && ['toMarket', 'supplies', 'toStand2', 'template', 'pool'].includes(state.lemPhase)
+  ) return 'lemonade'
   if (state.week === 3 && state.bt && (state.bt.stage === 'split' || state.btPanel === 'split')) return 'budget'
-  if (state.week === 4 && state.bk) return 'bank'
+  if (state.week === 4 && state.bk && !state.scenarioLocked) return 'bank'
   if (state.week === 5 && state.mg && ['scenario', 'adjust', 'slider'].includes(state.mg.phase)) return 'garden'
   return null
 }
