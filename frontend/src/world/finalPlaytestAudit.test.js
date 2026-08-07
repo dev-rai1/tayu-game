@@ -15,7 +15,7 @@ describe('final middle-school playtest audit', () => {
   it('uses one visible coach tray instead of competing coach cards', () => {
     expect(tracker).toContain('return null')
     expect(tracker).not.toContain('<aside')
-    expect(coach).toContain("Benny's feedback")
+    expect(coach).toContain('TRY THIS NEXT')
     expect(coach).toContain('const action = improvement ? improvement.action')
     expect(coach).toContain('activeFeedbackKey')
   })
