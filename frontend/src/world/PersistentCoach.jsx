@@ -86,9 +86,6 @@ export function PersistentCoach({ paycheckMode = false }) {
     panelJar, panelItem, btPanel, bkPanel, panelPortfolio, helpOpen,
   ])
 
-  // During a Bank cutscene, E is not an action. Capture it before the world
-  // interaction listener so impatient repeat presses cannot restart or advance
-  // anything while the animation is still communicating the result.
   useEffect(() => {
     if (!bankWatching || typeof window === 'undefined') return undefined
     const blockBankE = (event) => {
@@ -101,9 +98,6 @@ export function PersistentCoach({ paycheckMode = false }) {
     return () => window.removeEventListener('keydown', blockBankE, true)
   }, [bankWatching])
 
-  // Route short-lived message fields into this one tray before Hud can paint
-  // separate toast/banner/NPC bubbles. Lessons and dialogue stay in the store
-  // until the learner presses Next/Got it here, preserving progression logic.
   useLayoutEffect(() => {
     const incoming = []
     const add = (kind, value) => {
@@ -139,8 +133,9 @@ export function PersistentCoach({ paycheckMode = false }) {
     if (Object.keys(clear).length) useGame.setState(clear)
   }, [actorCaption, banner, guide, toast])
 
-  // The old Lemonade focus modal taught useful material, but it covered the
-  // activity. Preserve its sequence here as small coach messages instead.
+  // Lemonade's short instructional sequence is useful, but these are hints,
+  // not blocking decisions. Keep them in the side lane after any important
+  // story/lesson popup is finished.
   useEffect(() => {
     if (week !== 2 || !['supplies', 'template'].includes(lemPhase)) return
     const storageKey = LEMONADE_FOCUS_KEYS[lemPhase]
@@ -155,8 +150,8 @@ export function PersistentCoach({ paycheckMode = false }) {
         messageCounter.current += 1
         return {
           id: `lemonade-focus-${messageCounter.current}`,
-          kind: 'lesson',
-          label: 'One step at a time',
+          kind: 'guide',
+          label: 'Hint',
           title: step.title,
           action: step.text,
           helper: 'learn',
@@ -189,8 +184,6 @@ export function PersistentCoach({ paycheckMode = false }) {
     ? { title: gardenGuide.title, action: gardenGuide.instruction }
     : guidance
 
-  // Required story dialogue and lessons stay first. Short transient updates queue
-  // behind them, then persistent corrective feedback and the normal next step.
   const type = dialogMessage
     ? 'dialog'
     : lessonMessage
@@ -213,7 +206,7 @@ export function PersistentCoach({ paycheckMode = false }) {
 
   if (!canShow) return null
 
-  const label = dialogMessage?.label || lessonMessage?.label || queuedMessage?.label || (bankWatching ? 'Bank animation' : improvement ? "Benny's feedback" : 'Next step')
+  const label = dialogMessage?.label || lessonMessage?.label || queuedMessage?.label || (bankWatching ? 'Bank animation' : improvement ? "Benny's feedback" : 'Hint')
   const title = dialogMessage?.title || lessonMessage?.title || queuedMessage?.title || improvement?.title || generatedGuidance?.title
   const diagnosis = improvement?.diagnosis
   const action = dialogMessage?.action || lessonMessage?.action || queuedMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
@@ -227,94 +220,110 @@ export function PersistentCoach({ paycheckMode = false }) {
         : queue.length > 1
           ? `1 of ${queue.length}`
           : ''
-  const positionClass = usesTouchControls
-    ? 'bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))]'
-    : 'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:left-3 sm:translate-x-0'
-  const emphasized = bankWatching || ['queued', 'dialog', 'lesson', 'improvement'].includes(type)
+
+  // Whole-game rule: decisions, lessons, corrections, and story dialogue are
+  // important and appear in front. Ordinary guidance, reminders, and requested
+  // hints stay out of the gameplay area in a compact side lane.
+  const important = bankWatching || ['dialog', 'lesson', 'improvement'].includes(type) || queuedMessage?.kind === 'actor'
+  const positionClass = important
+    ? 'left-1/2 top-1/2 w-[min(92vw,34rem)] -translate-x-1/2 -translate-y-1/2'
+    : usesTouchControls
+      ? 'right-[max(0.65rem,env(safe-area-inset-right,0px))] bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))] w-[min(86vw,22rem)]'
+      : 'right-[max(0.75rem,env(safe-area-inset-right,0px))] top-[calc(7.25rem+env(safe-area-inset-top,0px))] w-[min(30vw,22rem)] min-w-[18rem]'
   const frameClass = bankWatching
     ? 'border-4 border-electric ring-8 ring-electric/20'
-    : emphasized
-      ? 'border-electric ring-4 ring-electric/15'
-      : 'border-navy/15'
+    : important
+      ? 'border-2 border-electric ring-4 ring-electric/15'
+      : 'border border-navy/15'
   const learnResource = type === 'lesson' && activeLesson?.learn ? LEARN[activeLesson.learn] : null
 
   return (
-    <aside
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
-      data-guidance-lane="primary"
-      data-bank-watching={bankWatching ? 'true' : 'false'}
-      className={`pointer-events-none fixed left-1/2 z-[560] max-h-[min(62vh,30rem)] w-[min(92vw,27rem)] -translate-x-1/2 overflow-y-auto rounded-2xl bg-white text-navy shadow-2xl ${frameClass} ${positionClass}`}
-    >
-      <div className={bankWatching ? 'p-5 sm:p-6' : 'p-3 sm:p-4'}>
-        <div className="flex items-start gap-3">
-          <div className={`${bankWatching ? 'h-14 w-14 text-lg' : 'h-10 w-10 text-sm'} grid shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 font-black text-electric shadow-sm`} aria-hidden="true">
-            {bankWatching ? '▶' : helperFace(dialogMessage ? 'actor' : lessonMessage ? 'lesson' : queuedMessage?.kind || type)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className={`${bankWatching ? 'text-xs' : 'text-[10px]'} font-extrabold uppercase tracking-[0.14em] text-electric`}>{label}</span>
-              {queueProgress && <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{queueProgress}</span>}
+    <>
+      {important && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[559] bg-navy/25 backdrop-blur-[1px]"
+          data-important-message-scrim="true"
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-control-layout={usesTouchControls ? 'touch' : 'desktop'}
+        data-guidance-lane={important ? 'important-popup' : 'side-hint'}
+        data-guidance-kind={type}
+        data-bank-watching={bankWatching ? 'true' : 'false'}
+        className={`pointer-events-none fixed z-[560] max-h-[min(72vh,34rem)] overflow-y-auto rounded-2xl bg-white text-navy shadow-2xl ${frameClass} ${positionClass}`}
+      >
+        <div className={important ? 'p-5 sm:p-6' : 'p-3'}>
+          <div className="flex items-start gap-3">
+            <div className={`${important ? 'h-12 w-12 text-base' : 'h-9 w-9 text-xs'} grid shrink-0 place-items-center rounded-2xl border-2 border-electric/20 bg-electric/10 font-black text-electric shadow-sm`} aria-hidden="true">
+              {bankWatching ? '▶' : helperFace(dialogMessage ? 'actor' : lessonMessage ? 'lesson' : queuedMessage?.kind || type)}
             </div>
-            <div className={`${bankWatching ? 'mt-1 text-xl' : 'mt-0.5 text-base'} break-words font-extrabold leading-snug text-navy`}>{title}</div>
-            {diagnosis && <div className="mt-2 rounded-xl bg-navy/5 px-3 py-2 text-sm font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
-            <p className={`${bankWatching ? 'mt-2 text-base' : 'mt-1.5 text-sm'} break-words font-semibold leading-relaxed text-navy/80`}>{action}</p>
-            {bankWatching && (
-              <div className="mt-3 rounded-2xl border-2 border-electric/20 bg-electric/10 px-4 py-3">
-                <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-electric">
-                  <span className="h-3 w-3 animate-pulse rounded-full bg-electric" aria-hidden="true" />
-                  Bank animation playing
-                </div>
-                <p className="mt-1 text-base font-extrabold leading-snug text-navy">Watch the scene. You do not need to press E while this is moving.</p>
-                <div className="mt-3 flex gap-2" aria-hidden="true">
-                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/30" />
-                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/50 [animation-delay:180ms]" />
-                  <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/70 [animation-delay:360ms]" />
-                </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className={`${important ? 'text-xs' : 'text-[10px]'} font-extrabold uppercase tracking-[0.14em] text-electric`}>{important ? label : (label || 'Hint')}</span>
+                {queueProgress && <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-extrabold text-navy/60">{queueProgress}</span>}
               </div>
-            )}
-            {learnResource && (
-              <a
-                href={learnResource.url}
-                target="_blank"
-                rel="noreferrer"
-                className="pointer-events-auto mt-2 block rounded-xl bg-electric/10 px-3 py-2 text-center text-xs font-extrabold text-electric active:scale-95"
-              >
-                Learn more: {learnResource.label}
-              </a>
+              <div className={`${important ? 'mt-1 text-xl sm:text-2xl' : 'mt-0.5 text-base'} break-words font-extrabold leading-snug text-navy`}>{title}</div>
+              {diagnosis && <div className="mt-2 rounded-xl bg-navy/5 px-3 py-2 text-sm font-semibold leading-relaxed text-navy/85">{diagnosis}</div>}
+              <p className={`${important ? 'mt-2 text-base' : 'mt-1.5 text-sm'} break-words font-semibold leading-relaxed text-navy/80`}>{action}</p>
+              {bankWatching && (
+                <div className="mt-3 rounded-2xl border-2 border-electric/20 bg-electric/10 px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-electric">
+                    <span className="h-3 w-3 animate-pulse rounded-full bg-electric" aria-hidden="true" />
+                    Bank animation playing
+                  </div>
+                  <p className="mt-1 text-base font-extrabold leading-snug text-navy">Watch the scene. You do not need to press E while this is moving.</p>
+                  <div className="mt-3 flex gap-2" aria-hidden="true">
+                    <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/30" />
+                    <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/50 [animation-delay:180ms]" />
+                    <span className="h-2 flex-1 animate-pulse rounded-full bg-electric/70 [animation-delay:360ms]" />
+                  </div>
+                </div>
+              )}
+              {learnResource && (
+                <a
+                  href={learnResource.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pointer-events-auto mt-2 block rounded-xl bg-electric/10 px-3 py-2 text-center text-xs font-extrabold text-electric active:scale-95"
+                >
+                  Learn more: {learnResource.label}
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={() => say(spoken)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95">
+              Read aloud
+            </button>
+            {dialogMessage ? (
+              <button type="button" onClick={advanceDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+                {dialog.index + 1 >= dialog.lines.length ? 'Got it' : 'Next'}
+              </button>
+            ) : lessonMessage ? (
+              <button type="button" onClick={dismissLesson} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+                {lessons.length > 1 ? 'Next' : 'Got it'}
+              </button>
+            ) : queuedMessage ? (
+              <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+                {bankWatching ? (queue.length > 1 ? 'Next message' : 'Keep watching') : (queue.length > 1 ? 'Next' : 'Got it')}
+              </button>
+            ) : bankWatching ? (
+              <div className="grid min-h-[44px] flex-1 place-items-center rounded-xl bg-navy/10 px-3 text-center text-sm font-extrabold text-navy/70" aria-live="polite">
+                Waiting for the scene…
+              </div>
+            ) : (
+              <button type="button" onClick={() => setDismissedKey(key)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95">
+                Hide hint
+              </button>
             )}
           </div>
         </div>
-
-        <div className="mt-3 flex gap-2">
-          <button type="button" onClick={() => say(spoken)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95">
-            Read aloud
-          </button>
-          {dialogMessage ? (
-            <button type="button" onClick={advanceDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-              {dialog.index + 1 >= dialog.lines.length ? 'Got it' : 'Next'}
-            </button>
-          ) : lessonMessage ? (
-            <button type="button" onClick={dismissLesson} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-              {lessons.length > 1 ? 'Next' : 'Got it'}
-            </button>
-          ) : queuedMessage ? (
-            <button type="button" onClick={() => setQueue((current) => current.slice(1))} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-              {bankWatching ? (queue.length > 1 ? 'Next message' : 'Keep watching') : (queue.length > 1 ? 'Next' : 'Got it')}
-            </button>
-          ) : bankWatching ? (
-            <div className="grid min-h-[44px] flex-1 place-items-center rounded-xl bg-navy/10 px-3 text-center text-sm font-extrabold text-navy/70" aria-live="polite">
-              Waiting for the scene…
-            </div>
-          ) : (
-            <button type="button" onClick={() => setDismissedKey(key)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-navy/10 px-3 text-xs font-extrabold text-navy active:scale-95">
-              Hide hint
-            </button>
-          )}
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }
