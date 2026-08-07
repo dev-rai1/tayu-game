@@ -44,7 +44,11 @@ function classifyButton(button) {
   if (!label) return
   if (hideLegacyMoneyGardenCashOut(button, label)) return
 
-  const match = ACTION_RULES.find((rule) => rule.pattern.test(label))
+  // Learning-resource links are a single browse list, not different action
+  // types. Keep every resource visually consistent so words such as "save",
+  // "credit", or "certificate" do not accidentally recolor individual rows.
+  const isLearningResource = button.matches('a[href]') && button.closest('#help-panel-resources')
+  const match = isLearningResource ? null : ACTION_RULES.find((rule) => rule.pattern.test(label))
   button.dataset.tayuEnhanced = 'true'
   button.dataset.tayuAction = match?.action || 'primary'
 
