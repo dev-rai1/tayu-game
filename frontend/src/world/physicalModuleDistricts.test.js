@@ -23,12 +23,14 @@ describe('physical module districts', () => {
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 
-  it('keeps physical signs clean while the catalog identifies Money Garden as module 6', () => {
+  it('keeps physical signs clean while the catalog identifies the Money Garden as modules 6A and 6B', () => {
     expect(bank).toContain("labelTexture('BANK OF TAYU'")
     expect(bank).not.toContain("labelTexture('MODULE 4")
     expect(landmarks).toContain("labelTexture('THE MONEY GARDEN'")
     expect(landmarks).not.toContain("labelTexture('MODULE 6")
-    expect(modules).toMatch(/n:\s*6,[\s\S]*?badge:\s*'garden',[\s\S]*?title:\s*'Money Garden'/)
+    expect(modules).toMatch(/n:\s*6,[\s\S]*?badge:\s*'garden',[\s\S]*?title:\s*'Money Garden — Modules 6A \+ 6B'/)
+    expect(modules).toContain("label: 'Module 6A'")
+    expect(modules).toContain("label: 'Module 6B'")
   })
 
   it('gives Bank, Paycheck Planet, Money Garden, and Finale real breathing room', () => {

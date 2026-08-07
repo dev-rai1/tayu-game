@@ -25,7 +25,16 @@ export function getGuidance(st, touch = false) {
   if (st.btPanel === 'split') return guide('DIVIDE THE LEFTOVER MONEY', 'Adjust Pocket, Bank, and Garden until the total matches.', 'Confirm the plan when it feels right')
   if (st.bkPanel) return guide('COMPLETE THE BANK ACTIVITY', 'Use the controls in the open bank panel.', 'Confirm your choice to continue')
   if (st.panelPortfolio) return guide('MAKE YOUR MONEY MOVES', 'Buy, sell, save, or keep cash based on this week’s lesson.', 'Close My Portfolio, then tap Start the Week')
-  if (st.scenarioLocked) return guide('WATCH WHAT HAPPENS', 'Your choice is playing out in the world.', 'The next step will appear automatically')
+  if (st.scenarioLocked) {
+    if (st.week === 4) {
+      return guide(
+        'BANK ACTION IN PROGRESS',
+        'Watch the bank scene play out. The movement, card swipe, teller, debt, or safety animation is the lesson right now.',
+        'Do not press E — the next choice appears automatically when the animation finishes',
+      )
+    }
+    return guide('WATCH WHAT HAPPENS', 'Your choice is playing out in the world.', 'The next step will appear automatically')
+  }
 
   if (st.gameComplete) {
     return guide('GO TO THE FINALE AREA', 'Follow the gold arrow to the celebration house.', `${act} at the entrance`)
@@ -81,8 +90,12 @@ export function getGuidance(st, touch = false) {
 
   if (st.week === 4) {
     if (!st.bk || !st.bk.seen?.intro) return guide('TALK TO BANKER BEA', 'Follow the arrow to Bea at the Bank of TAYU.', `${act} when you reach her`)
-    if ((st.bk.week || 1) > 6) return guide('FINISH THE BANK MODULE', 'Talk to Banker Bea for your final bank handoff.', `${act} beside Bea`)
-    return guide(`BANK LESSON ${st.bk.week || 1} OF 6`, 'Return to Banker Bea if the next choice is not already on screen.', `${act} beside Bea to resume`)
+    if ((st.bk.week || 1) > 6) return guide('BANK COMPLETE', 'Use the final bank card to continue to the Money Garden.', 'No extra E press is needed')
+    return guide(
+      `BANK LESSON ${st.bk.week || 1} OF 6`,
+      'Stay with the bank scene. Each choice starts the next animation automatically.',
+      'Use the single bank card or guide when it appears — no repeated E presses',
+    )
   }
 
   if (st.week === 5) {

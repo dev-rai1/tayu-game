@@ -1,0 +1,136 @@
+/*
+ * TAYU global readability guard.
+ *
+ * The game uses glass panels, animated scenery, and intentionally muted Tailwind
+ * text utilities. Those combinations can make copy disappear as the background
+ * changes. Keep the visual hierarchy, but never let instructional text fall back
+ * to decorative low-opacity contrast.
+ */
+
+:root {
+  --tayu-text-on-dark: #ffffff;
+  --tayu-muted-on-dark: #e8efff;
+  --tayu-text-on-light: #071748;
+  --tayu-muted-on-light: #24365f;
+  --tayu-world-panel-strong: rgba(7, 23, 72, 0.96);
+}
+
+/*
+ * Tailwind opacity utilities were being used as visual hierarchy for body copy.
+ * On translucent cards that pushed some text below a comfortable reading level.
+ * Preserve hierarchy with a lighter/darker solid tone instead of transparency.
+ */
+.text-white\/30,
+.text-white\/40,
+.text-white\/50,
+.text-white\/55,
+.text-white\/60,
+.text-white\/65,
+.text-white\/70,
+.text-white\/75,
+.text-white\/80 {
+  color: var(--tayu-muted-on-dark) !important;
+}
+
+.text-navy\/30,
+.text-navy\/40,
+.text-navy\/50,
+.text-navy\/55,
+.text-navy\/60,
+.text-navy\/65,
+.text-navy\/70,
+.text-navy\/75,
+.text-navy\/80 {
+  color: var(--tayu-muted-on-light) !important;
+}
+
+/* Glass surfaces must remain readable even when scenery or animation moves below them. */
+.glass--navy {
+  background: rgba(7, 23, 72, 0.88);
+  border-color: rgba(255, 255, 255, 0.44);
+  color: var(--tayu-text-on-dark);
+}
+
+/* Readable copy should not depend on the exact frame of the 3D world behind it. */
+.tayu-world-declutter .glass--navy {
+  background: var(--tayu-world-panel-strong);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 10px 28px rgba(7, 23, 72, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.tayu-world-declutter :where(
+  .text-white,
+  .text-white\/30,
+  .text-white\/40,
+  .text-white\/50,
+  .text-white\/55,
+  .text-white\/60,
+  .text-white\/65,
+  .text-white\/70,
+  .text-white\/75,
+  .text-white\/80,
+  .text-white\/90,
+  .text-white\/95,
+  .text-teal,
+  .text-electric,
+  .text-brandpurple
+) {
+  text-shadow: 0 1px 2px rgba(7, 23, 72, 0.92), 0 0 5px rgba(7, 23, 72, 0.34);
+}
+
+/* Electric blue/purple are brand colors, but the original shades are too close
+   to the navy HUD when used as small text. Use brighter brand-adjacent variants
+   only inside the world; buttons/background fills keep the official colors. */
+.tayu-world-declutter .text-electric {
+  color: #75a7ff !important;
+}
+
+.tayu-world-declutter .text-brandpurple {
+  color: #ad96ff !important;
+}
+
+/* Make selected text obvious on both light and dark screens. */
+::selection {
+  background: #00dca0;
+  color: #071748;
+}
+
+/* Users who explicitly request more contrast get opaque reading surfaces and
+   fully solid text without changing the game layout. */
+@media (prefers-contrast: more) {
+  .glass,
+  .glass--navy {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .glass--navy,
+  .tayu-world-declutter .glass--navy {
+    background: #071748;
+    border-color: #ffffff;
+  }
+
+  .text-white\/30,
+  .text-white\/40,
+  .text-white\/50,
+  .text-white\/55,
+  .text-white\/60,
+  .text-white\/65,
+  .text-white\/70,
+  .text-white\/75,
+  .text-white\/80 {
+    color: #ffffff !important;
+  }
+
+  .text-navy\/30,
+  .text-navy\/40,
+  .text-navy\/50,
+  .text-navy\/55,
+  .text-navy\/60,
+  .text-navy\/65,
+  .text-navy\/70,
+  .text-navy\/75,
+  .text-navy\/80 {
+    color: #071748 !important;
+  }
+}

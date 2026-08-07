@@ -4,6 +4,7 @@ import { RoundedBox, Billboard } from '@react-three/drei'
 import { STORE, STORE_ITEMS } from './config.js'
 import { emojiTexture, labelTexture, cardTexture } from './textures.js'
 import { useGame } from './store.js'
+import './marketChoice.css'
 
 const WALL = '#ffe0b5'
 const WALL2 = '#f5cf9c'
@@ -37,9 +38,8 @@ function Item({ item }) {
     }
   })
   const [lx, lz] = item.pos
-  const isWant = item.tags?.includes('junk') || item.tags?.includes('toy')
-  const choiceType = isWant ? 'WANT' : 'NEED'
-  const nameCard = cardTexture(item.name.toUpperCase(), `$${item.price} • ${choiceType}`)
+  // Keep the category hidden so the player has to decide whether the item is a need or a want.
+  const nameCard = cardTexture(item.name.toUpperCase(), `$${item.price}`)
   return (
     <group
       position={[lx, 1.05, lz]}
@@ -52,7 +52,7 @@ function Item({ item }) {
       <Billboard position={[0, 0.62, 0]}>
         <mesh><planeGeometry args={[0.58, 0.58]} /><meshBasicMaterial map={tex} transparent toneMapped={false} /></mesh>
       </Billboard>
-      {/* Name, price, and need/want classification stay attached to the item. */}
+      {/* Show only the item name and price before the player makes a choice. */}
       <Billboard position={[0, 1.36, 0]}>
         <mesh><planeGeometry args={[1.35, 0.65]} /><meshBasicMaterial map={nameCard} transparent toneMapped={false} /></mesh>
       </Billboard>

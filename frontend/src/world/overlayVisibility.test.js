@@ -7,14 +7,16 @@ import {
 } from './overlayVisibility.js'
 
 describe('overlay visibility', () => {
-  it('treats decision panels and lesson cards as blocking overlays', () => {
+  it('blocks only true story/choice overlays, not module workspaces', () => {
     expect(isBlockingGameOverlay({ cards: [{ id: 'choice' }] })).toBe(true)
-    expect(isBlockingGameOverlay({ lessons: [{ id: 'lesson' }] })).toBe(true)
-    expect(isBlockingGameOverlay({ panelPortfolio: true })).toBe(true)
+    expect(isBlockingGameOverlay({ dialog: { name: 'Penny' } })).toBe(true)
+    expect(isBlockingGameOverlay({ lessons: [{ id: 'lesson' }] })).toBe(false)
+    expect(isBlockingGameOverlay({ panelPortfolio: true })).toBe(false)
+    expect(isBlockingGameOverlay({ panelJar: 'save' })).toBe(false)
     expect(isBlockingGameOverlay({ cards: [], lessons: [] })).toBe(false)
   })
 
-  it('detects the market and Lemonade focus phases', () => {
+  it('still detects market and Lemonade activity phases', () => {
     expect(isCommerceOverlayActive({
       week: 1,
       objective: 'store',
@@ -37,17 +39,17 @@ describe('overlay visibility', () => {
     })).toBe(true)
   })
 
-  it('reserves Money Garden decisions for the specialized coach', () => {
+  it('lets the shared coach own Money Garden decision guidance', () => {
     const state = { week: 5, mg: { phase: 'adjust', week: 6 } }
     expect(isSpecializedCoachActive(state)).toBe(true)
-    expect(coachVisibility(state).showGuidance).toBe(false)
-    expect(coachVisibility(state).showSavedMessage).toBe(false)
+    expect(coachVisibility(state).showGuidance).toBe(true)
+    expect(coachVisibility(state).showSavedMessage).toBe(true)
   })
 
-  it('shows the persistent coach only when the play area is clear', () => {
+  it('keeps guidance beside commerce and module controls', () => {
     expect(coachVisibility({ week: 3, objective: 'house' }).showGuidance).toBe(true)
     expect(coachVisibility({ dialog: { name: 'Penny' } }).showGuidance).toBe(false)
-    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(false)
-    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(false)
+    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'supplies' }).showSavedMessage).toBe(true)
+    expect(coachVisibility({ week: 2, objective: 'lemonade', lemPhase: 'selling' }).showGuidance).toBe(true)
   })
 })

@@ -2,23 +2,27 @@ import { describe, expect, it } from 'vitest'
 import {
   applyStarterInvestingGift,
   MONEY_GARDEN_DECISIONS,
+  MONEY_GARDEN_FLOW,
   MONEY_GARDEN_PARTS,
   MONEY_GARDEN_STARTER_GIFT,
+  moneyGardenClues,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
 } from './moneyGardenGuidance.js'
 import { OPENING, WEEKS } from './marketScenarios.js'
 
-describe('Money Garden playtest redesign', () => {
-  it('splits the ten decisions into two five-decision parts', () => {
+describe('Money Garden consolidated flow', () => {
+  it('splits the investing finale into clear Module 6A and Module 6B parts', () => {
     expect(MONEY_GARDEN_PARTS).toHaveLength(2)
+    expect(MONEY_GARDEN_PARTS[0].moduleLabel).toBe('Module 6A')
+    expect(MONEY_GARDEN_PARTS[1].moduleLabel).toBe('Module 6B')
     expect(MONEY_GARDEN_PARTS[0].weeks).toEqual([1, 2, 3, 4, 5])
     expect(MONEY_GARDEN_PARTS[1].weeks).toEqual([6, 7, 8, 9, 10])
     expect(moneyGardenPart(5).part).toBe(1)
     expect(moneyGardenPart(6).part).toBe(2)
   })
 
-  it('pauses once at the Part 1 save point and resumes from saved state', () => {
+  it('pauses once at the 6A/6B divider and resumes from saved state', () => {
     expect(shouldPauseBetweenGardenParts(5, false)).toBe(false)
     expect(shouldPauseBetweenGardenParts(6, false)).toBe(true)
     expect(shouldPauseBetweenGardenParts(6, true)).toBe(false)
@@ -37,18 +41,67 @@ describe('Money Garden playtest redesign', () => {
     expect(OPENING.join(' ')).toContain('$100 investing gift')
   })
 
-  it('frames every week as a clue rather than an exact trade instruction', () => {
-    const forbidden = /favor the|avoid adding|sell seeds|do not buy|move enough money|buy the company/i
+  it('makes diversification the first playable portfolio requirement', () => {
+    expect(MONEY_GARDEN_DECISIONS[1].title).toMatch(/diversified/i)
+    expect(MONEY_GARDEN_DECISIONS[1].why).toMatch(/zero company shares/i)
+    expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/READY TO INVEST/)
+    expect(MONEY_GARDEN_DECISIONS[1].instruction).toMatch(/2 different companies/i)
+
+    const oneCompany = { companies: { toy: { owned: 1 }, snack: { owned: 0 }, game: { owned: 0 } } }
+    const twoCompanies = { companies: { toy: { owned: 1 }, snack: { owned: 1 }, game: { owned: 0 } } }
+    expect(WEEKS[0].judge(oneCompany)).toBe(false)
+    expect(WEEKS[0].judge(twoCompanies)).toBe(true)
+  })
+
+  it('separates the reason from the action without prescribing an exact company trade', () => {
+    expect(MONEY_GARDEN_FLOW).toEqual([
+      '1. Read one clue.',
+      '2. Make one evidence-based change.',
+      '3. Test your choice, then see the lesson.',
+    ])
+    const exactTrade = /(buy|sell)\s+(Toy Town|Snack Shack|Game Land)/i
     for (const decision of Object.values(MONEY_GARDEN_DECISIONS)) {
-      expect(decision.instruction).not.toMatch(forbidden)
-      expect(decision.instruction.length).toBeLessThan(190)
+      expect(decision.why.length).toBeGreaterThan(20)
+      expect(decision.instruction.length).toBeGreaterThan(20)
+      expect(decision.instruction).not.toMatch(exactTrade)
+      expect(decision.instruction.length).toBeLessThan(260)
     }
   })
 
-  it('keeps the existing three-card opening and weekly prompts bite-sized', () => {
+  it('turns busy and empty storefront evidence into separate readable clues', () => {
+    const clues = moneyGardenClues(4, { fx: { busy: 'game', dusty: 'snack' } })
+    expect(clues).toEqual([
+      'Game Land is PACKED — lots of customers are showing up.',
+      'Snack Shack is EMPTY — very few customers are showing up.',
+    ])
+  })
+
+  it('keeps evidence clues short enough to show one at a time', () => {
+    const sample = {
+      pocket: 6,
+      fx: { rain: 'toy', dip: 'game', busy: 'game', dusty: 'snack', sale: 'toy', sale2: 'snack', shabby: 'snack', balloon: 'game', star: 'toy' },
+      companies: {
+        toy: { owned: 2, price: 6 },
+        snack: { owned: 1, price: 5 },
+        game: { owned: 1, price: 4 },
+      },
+    }
+
+    for (let week = 1; week <= 10; week += 1) {
+      const clues = moneyGardenClues(week, sample)
+      expect(clues.length).toBeGreaterThan(0)
+      for (const clue of clues) expect(clue.length).toBeLessThan(180)
+    }
+  })
+
+  it('explains the three money locations before the first decision', () => {
     expect(OPENING).toHaveLength(3)
-    for (const line of OPENING) expect(line.length).toBeLessThan(120)
+    expect(OPENING.join(' ')).toMatch(/zero company shares/i)
+    expect(OPENING.join(' ')).toMatch(/READY TO INVEST/)
+    expect(OPENING.join(' ')).toMatch(/Pocket/)
+    expect(OPENING.join(' ')).toMatch(/Bank Sprout/)
     expect(WEEKS).toHaveLength(10)
-    for (const week of WEEKS) expect(week.intro.length).toBeLessThan(190)
+    for (const line of OPENING) expect(line.length).toBeLessThan(240)
+    for (const week of WEEKS) expect(week.intro.length).toBeLessThan(260)
   })
 })
