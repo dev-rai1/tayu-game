@@ -15,8 +15,11 @@ a[data-tayu-enhanced='true'] {
   box-shadow: 0 6px 16px rgba(7, 23, 72, 0.22);
 }
 
-button[data-tayu-enhanced='true']::before,
-a[data-tayu-enhanced='true']::before {
+/* Only render the generated semantic icon when the enhancer explicitly opted
+   into one. This prevents unmatched/icon-only controls from getting a random
+   arrow or a second symbol layered beside their existing icon. */
+button[data-tayu-enhanced='true'][data-tayu-action-icon='true']::before,
+a[data-tayu-enhanced='true'][data-tayu-action-icon='true']::before {
   content: var(--tayu-action-icon);
   display: inline-grid;
   place-items: center;

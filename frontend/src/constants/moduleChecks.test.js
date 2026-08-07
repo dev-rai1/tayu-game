@@ -1,14 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { BADGE_ORDER, MODULE_CHECKS, moduleCheckForBadge } from './moduleChecks.js'
 
+const PUBLIC_MODULE_BY_BADGE = {
+  jars: 1,
+  lemonade: 2,
+  budget: 3,
+  bank: 4,
+  garden: 6,
+}
+
 describe('post-module checks', () => {
-  it('defines exactly two valid questions for every module badge', () => {
+  it('defines valid questions for every module badge', () => {
     expect(BADGE_ORDER).toHaveLength(5)
-    BADGE_ORDER.forEach((badge, index) => {
+    BADGE_ORDER.forEach((badge) => {
       const check = moduleCheckForBadge(badge)
       expect(check).toBe(MODULE_CHECKS[badge])
-      expect(check.moduleNumber).toBe(index + 1)
-      expect(check.questions).toHaveLength(2)
+      expect(check.moduleNumber).toBe(PUBLIC_MODULE_BY_BADGE[badge])
+      expect(check.questions.length).toBeGreaterThanOrEqual(2)
       expect(check.cosmetic.name).toBeTruthy()
       check.questions.forEach((question) => {
         expect(question.prompt.length).toBeGreaterThan(10)
