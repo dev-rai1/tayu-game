@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import { GameWorld } from '../world/GameWorld.jsx'
 import { TaxWorkbenchOverlay } from '../world/TaxWorkbenchOverlay.jsx'
+import { TaxWorldInteractionBridge } from '../world/TaxWorldInteractionBridge.jsx'
+import { TaxActionPrompt } from '../world/TaxActionPrompt.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
-import { useGame } from '../world/store.js'
+import { useGame, playerPos, joystick, moveTarget } from '../world/store.js'
 import {
   PAYCHECK_MODE_EVENT,
   activatePaycheckWorld,
@@ -25,14 +27,17 @@ import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
 import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
 import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.jsx'
 import { AdminPanel } from '../components/AdminPanel.jsx'
+import { useTaxLab } from '../world/taxLabStore.js'
 import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
 // (Paycheck Planet · Tax Filing Lab) runs between internal Bank (4) and Money
-// Garden (5). The Tax Lab is a real district inside the same persistent town.
+// Garden (5). The Tax Lab is a district inside the same persistent town.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
+const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
+let taxWorldSnapshot = null
 
 function clearWorldMessages() {
   try {
@@ -45,21 +50,102 @@ function clearWorldMessages() {
       toast: null,
       helpOpen: false,
       near: null,
+      playerSpeedMult: 1,
+      playerPose: 'idle',
+      scenarioLocked: false,
+      weekComplete: false,
+      pendingWeekComplete: false,
     })
   } catch (error) {
     console.error(error)
   }
 }
 
-function enterPaycheckPlanet({ restart = false } = {}) {
+function rememberWorldBeforeTax() {
+  if (taxWorldSnapshot) return
+  const state = useGame.getState()
+  taxWorldSnapshot = {
+    week: state.week,
+    objective: state.objective,
+    lemPhase: state.lemPhase,
+    mgPhase: state.mgPhase,
+    mg: state.mg,
+    btPanel: state.btPanel,
+    bkPanel: state.bkPanel,
+    panelPortfolio: state.panelPortfolio,
+    scenarioLocked: state.scenarioLocked,
+    weekComplete: state.weekComplete,
+    pendingWeekComplete: state.pendingWeekComplete,
+    cards: state.cards,
+    lessons: state.lessons,
+    dialog: state.dialog,
+    helpOpen: state.helpOpen,
+    playerSpeedMult: state.playerSpeedMult,
+    playerPose: state.playerPose,
+    near: state.near,
+    toast: state.toast,
+    guide: state.guide,
+    actorCaption: state.actorCaption,
+    banner: state.banner,
+  }
+}
+
+function prepareWorldForTaxWalking() {
+  rememberWorldBeforeTax()
+  const state = useGame.getState()
+  useGame.setState({
+    cards: [],
+    lessons: [],
+    dialog: null,
+    toast: null,
+    guide: null,
+    actorCaption: null,
+    banner: null,
+    near: null,
+    helpOpen: false,
+    panelJar: null,
+    panelItem: null,
+    panelPortfolio: false,
+    btPanel: null,
+    bkPanel: null,
+    weekComplete: false,
+    pendingWeekComplete: false,
+    scenarioLocked: false,
+    // Old Lemonade/Garden panel phases used to freeze Player globally. Tax mode
+    // temporarily parks those phase flags without changing the saved module.
+    lemPhase: null,
+    mgPhase: state.mg ? 'tax-paused' : state.mgPhase,
+    mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg,
+    playerSpeedMult: 1,
+    playerPose: 'idle',
+  })
+  joystick.x = 0
+  joystick.y = 0
+  moveTarget.x = null
+  moveTarget.z = null
+}
+
+function restoreWorldAfterTax() {
+  if (!taxWorldSnapshot) return
+  useGame.setState({ ...taxWorldSnapshot, near: null })
+  taxWorldSnapshot = null
+  joystick.x = 0
+  joystick.y = 0
+  moveTarget.x = null
+  moveTarget.z = null
+}
+
+function enterPaycheckPlanet({ restart = false, origin = 'world' } = {}) {
   try {
+    rememberWorldBeforeTax()
     clearWorldMessages()
     if (restart) {
-      // "Explore this module" restarts the learning state, but deliberately does
-      // NOT move the player. They remain in the real town and walk to Tax Lab.
       saveProfile({ taxLabProgress: null, taxLab: null })
+      useTaxLab.getState().reset()
     }
+    try { sessionStorage.setItem(TAX_ORIGIN_KEY, origin) } catch { /* storage can be unavailable */ }
     activatePaycheckWorld()
+    prepareWorldForTaxWalking()
   } catch (error) {
     console.error(error)
   }
@@ -82,6 +168,18 @@ function enterGardenPartB() {
   }
 }
 
+function finishBankHandoffIntoTax() {
+  const game = useGame.getState()
+  const bank = game.bk
+  if (bank) {
+    const bankNow = Math.round((bank.vault + bank.savings + bank.cd + bank.checking + bank.bankAmount) * 100) / 100
+    useGame.setState({ split: { pocket: bank.pocket, bank: bankNow, garden: bank.gardenReserve } })
+    game.awardBadge('bank', 'BANK BUILDER')
+    game.persist()
+  }
+  enterPaycheckPlanet({ origin: 'bank-handoff' })
+}
+
 export default function World() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
@@ -94,6 +192,8 @@ export default function World() {
   const mg = useGame((s) => s.mg)
   const [use3D] = useState(hasWebGL)
   const taxMode = paycheckMode || isPaycheckWorldActive()
+  const sawBankTaxHandoff = useRef(false)
+  const previousTaxMode = useRef(taxMode)
 
   useEffect(() => {
     const sync = (event) => setPaycheckMode(event?.detail?.active ?? isPaycheckWorldActive())
@@ -106,6 +206,31 @@ export default function World() {
     setUsageModule(taxMode ? 'tax' : (MODULE_BY_WEEK[week] || '')).catch(() => {})
     return () => { setUsageModule('').catch(() => {}) }
   }, [taxMode, week])
+
+  useEffect(() => {
+    if (taxMode) prepareWorldForTaxWalking()
+  }, [taxMode])
+
+  useEffect(() => {
+    const wasTax = previousTaxMode.current
+    previousTaxMode.current = taxMode
+    if (!wasTax || taxMode) return
+
+    let origin = 'world'
+    try {
+      origin = sessionStorage.getItem(TAX_ORIGIN_KEY) || 'world'
+      sessionStorage.removeItem(TAX_ORIGIN_KEY)
+    } catch { /* storage can be unavailable */ }
+
+    if (origin === 'bank-handoff') {
+      taxWorldSnapshot = null
+      const game = useGame.getState()
+      game.adminClearUi()
+      game.startGarden()
+      return
+    }
+    restoreWorldAfterTax()
+  }, [taxMode])
 
   useEffect(() => {
     if (enterParty) {
@@ -133,36 +258,55 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Next, walk through town to Paycheck Planet. Maya will help you begin the Tax Filing Lab.',
-            buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5' })),
+            text: 'Your bank plan is ready. Module 5 is already on this same town map. Keep walking to Paycheck Planet and meet Maya.',
+            // Important: the old action was bk.togarden, which started Money
+            // Garden before Tax Lab and could freeze movement. Tax starts only
+            // after this card is dismissed; Garden begins after Module 5.
+            buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5', act: null })),
           }
         : card),
     })
   }, [cards])
 
   useEffect(() => {
-    if (week !== 5 || taxMode) return
-    const bypass = sessionStorage.getItem('tayu-bypass-tax-story-once')
-    if (bypass) {
-      sessionStorage.removeItem('tayu-bypass-tax-story-once')
+    const hasHandoff = cards.some((card) => card.id === 'bkhand')
+    if (hasHandoff) {
+      sawBankTaxHandoff.current = true
       return
     }
-    const profile = loadProfile() || {}
-    const badges = profile.badges || []
-    if (badges.includes('bank') && !badges.includes('tax')) enterPaycheckPlanet()
-  }, [taxMode, week])
+    if (!sawBankTaxHandoff.current || taxMode) return
+    sawBankTaxHandoff.current = false
+    finishBankHandoffIntoTax()
+  }, [cards, taxMode])
 
   useEffect(() => {
-    initWorld()
+    // Read the requested public module BEFORE initWorld resets the player. When
+    // Module 5 is selected, preserve the exact current town coordinates so the
+    // learner is never teleported to a special scene or a different district.
     const jump = localStorage.getItem('tayu-jump-module')
+    const preservedTaxPosition = jump === '5'
+      ? { x: playerPos.x, y: playerPos.y, z: playerPos.z }
+      : null
     const gardenEntryPart = localStorage.getItem('tayu-garden-entry-part')
-    if (gardenEntryPart) localStorage.removeItem('tayu-garden-entry-part')
 
+    initWorld()
+
+    if (preservedTaxPosition) {
+      playerPos.x = preservedTaxPosition.x
+      playerPos.y = preservedTaxPosition.y
+      playerPos.z = preservedTaxPosition.z
+      joystick.x = 0
+      joystick.y = 0
+      moveTarget.x = null
+      moveTarget.z = null
+    }
+
+    if (gardenEntryPart) localStorage.removeItem('tayu-garden-entry-part')
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
       clearWorldMessages()
       if (jump === '5') {
-        enterPaycheckPlanet({ restart: true })
+        enterPaycheckPlanet({ restart: true, origin: 'module-select' })
       } else {
         deactivatePaycheckWorld()
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
@@ -202,14 +346,14 @@ export default function World() {
 
   return (
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'}>
+      {/* There is exactly one 3D world. Module 5 never swaps this component. */}
       {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
 
-      {/* Tax Lab stays inside GameWorld. This DOM layer only shows the focused
-          station task after the player walks to and interacts with a station. */}
+      {taxMode && <TaxWorldInteractionBridge />}
       {taxMode && <TaxWorkbenchOverlay />}
+      {taxMode && <TaxActionPrompt />}
 
-      {/* The map/HUD and movement remain available in Module 5 because travel
-          between the physical tax stations is part of the gameplay. */}
+      {/* Map/HUD and movement stay mounted during Module 5. */}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       {!taxMode && <LemonadeCompletionCheck onContinue={onContinue} />}
       {!taxMode && <PersistentCoach key="world-coach" />}

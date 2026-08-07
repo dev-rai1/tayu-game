@@ -42,7 +42,8 @@ export const useTaxLab = create((set, get) => ({
   stepNumber: 1,
   panel: null,
   feedback: null,
-  worldNotice: 'Walk to Paycheck Planet and talk to Maya at the Tax Help desk.',
+  nearbyAction: null,
+  worldNotice: 'Stay in the town and walk to Paycheck Planet. Maya is waiting at the Tax Help desk.',
   work: emptyTaxWork(),
 
   reset: () => set({
@@ -52,7 +53,8 @@ export const useTaxLab = create((set, get) => ({
     stepNumber: 1,
     panel: null,
     feedback: null,
-    worldNotice: 'Walk to Paycheck Planet and talk to Maya at the Tax Help desk.',
+    nearbyAction: null,
+    worldNotice: 'Stay in the town and walk to Paycheck Planet. Maya is waiting at the Tax Help desk.',
     work: emptyTaxWork(),
   }),
 
@@ -66,14 +68,15 @@ export const useTaxLab = create((set, get) => ({
       stepNumber: restoredStep,
       panel: null,
       feedback: null,
+      nearbyAction: null,
       worldNotice: restoredPhase === 'steps'
-        ? `Walk to the ${taxStationForStep(restoredStep).label}.`
+        ? `Walk through the town to the ${taxStationForStep(restoredStep).label}.`
         : 'Meet one of the three taxpayers waiting outside the Tax Lab.',
       work: emptyTaxWork(),
     })
   },
 
-  openGuide: () => set({ panel: 'guide', feedback: null }),
+  openGuide: () => set({ panel: 'guide', feedback: null, nearbyAction: null }),
 
   startCaseSelection: () => set({
     phase: 'case',
@@ -82,7 +85,8 @@ export const useTaxLab = create((set, get) => ({
     stepNumber: 1,
     panel: null,
     feedback: null,
-    worldNotice: 'Meet a taxpayer and decide which case you want to help file.',
+    nearbyAction: null,
+    worldNotice: 'Walk up to Ari, Sam, or Jordan. Talk to one taxpayer and decide what the W-2 actually proves.',
     work: emptyTaxWork(),
   }),
 
@@ -90,6 +94,7 @@ export const useTaxLab = create((set, get) => ({
     candidateCase: taxCase,
     panel: 'client',
     feedback: null,
+    nearbyAction: null,
     work: { ...get().work, prediction: null, predictionCorrect: false },
   }),
 
@@ -100,7 +105,8 @@ export const useTaxLab = create((set, get) => ({
     stepNumber: 1,
     panel: null,
     feedback: null,
-    worldNotice: `Case accepted. Walk to the ${taxStationForStep(1).label}.`,
+    nearbyAction: null,
+    worldNotice: `Case accepted. Walk to the ${taxStationForStep(1).label} in this same district.`,
     work: { ...emptyTaxWork(), prediction: get().work.prediction, predictionCorrect: get().work.predictionCorrect, predictionMistakes: get().work.predictionMistakes },
   }),
 
@@ -109,16 +115,17 @@ export const useTaxLab = create((set, get) => ({
     const requested = boundedStep(stepNumber)
     if (state.phase !== 'steps') return false
     if (requested !== state.stepNumber) {
-      set({ worldNotice: `That station is not next. Go to the ${taxStationForStep(state.stepNumber).label}.` })
+      set({ worldNotice: `That station is not next. Walk to the ${taxStationForStep(state.stepNumber).label}.` })
       return false
     }
-    set({ panel: taxStationForStep(requested).key, feedback: null })
+    set({ panel: taxStationForStep(requested).key, feedback: null, nearbyAction: null })
     return true
   },
 
   closePanel: () => set({ panel: null, feedback: null }),
 
   setFeedback: (feedback) => set({ feedback }),
+  setNearbyAction: (nearbyAction) => set({ nearbyAction }),
 
   setWorkValue: (key, value) => set((state) => ({
     work: { ...state.work, [key]: value },
@@ -147,8 +154,9 @@ export const useTaxLab = create((set, get) => ({
       stepNumber: next,
       panel: null,
       feedback: null,
+      nearbyAction: null,
       worldNotice: state.stepNumber >= 6
-        ? 'Return reviewed. Finish filing at the E-FILE DESK.'
+        ? 'Return reviewed. Stay in the district and finish filing at the E-FILE DESK.'
         : `Good work. Walk to the ${taxStationForStep(next).label}.`,
     }
   }),
@@ -159,6 +167,7 @@ export const useTaxLab = create((set, get) => ({
     phase: 'complete',
     panel: 'complete',
     feedback: null,
+    nearbyAction: null,
     worldNotice: 'Practice return filed. Talk to Maya or finish Module 5.',
   }),
 }))

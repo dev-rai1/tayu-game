@@ -1,7 +1,8 @@
 import { Billboard } from '@react-three/drei'
-import { SPROUT } from './config.js'
+import { SPROUT, TAX_DISTRICT } from './config.js'
 import { labelTexture } from './textures.js'
 import { PaycheckPlanetWorld, TAX_ENTRY } from './PaycheckPlanetWorld.jsx'
+import { TaxDistrictActivity } from './TaxDistrictActivity.jsx'
 
 function MoneyGardenMarker() {
   return (
@@ -18,6 +19,11 @@ export function ModuleLandmarks() {
   return (
     <>
       <PaycheckPlanetWorld />
+      {/* TaxDistrictActivity uses the same local coordinate system as
+          PaycheckPlanetWorld, so mount it at the exact existing tax district. */}
+      <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
+        <TaxDistrictActivity />
+      </group>
       <MoneyGardenMarker />
     </>
   )
