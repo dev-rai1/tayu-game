@@ -90,7 +90,7 @@ function SnackStall() {
       {/* Make the tap terminal and moving card oversized enough to read as the focus. */}
       <mesh position={[-0.6, 1.25, 0.3]} castShadow><boxGeometry args={[0.4, 0.5, 0.16]} /><meshStandardMaterial color="#071748" emissive="#1464F0" emissiveIntensity={0.18} /></mesh>
       <mesh ref={card} visible={false} position={[-0.6, 1.28, 0.48]} castShadow>
-        <boxGeometry args={[0.72, 0.46, 0.04]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.5} metalness={0.3} roughness={0.25} /></mesh>
+        <boxGeometry args={[0.72, 0.46, 0.04]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.5} metalness={0.3} roughness={0.25} />
       </mesh>
       <Billboard position={[0, 2.5, 0]}>
         <mesh><planeGeometry args={[2, 0.69]} /><meshBasicMaterial map={cardTexture('Snacks', null, { accent: '#e05252' })} transparent depthTest={false} /></mesh>
@@ -145,7 +145,7 @@ function DebtBlobs() {
           <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#d84b4b" emissive="#d84b4b" emissiveIntensity={0.12} roughness={0.6} flatShading /></mesh>
       ))}
       <mesh ref={calm} visible={false} castShadow>
-        <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.22} roughness={0.5} flatShading /></mesh>
+        <icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color="#1464F0" emissive="#1464F0" emissiveIntensity={0.22} roughness={0.5} flatShading />
       </mesh>
     </group>
   )
