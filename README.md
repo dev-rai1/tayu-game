@@ -1,13 +1,13 @@
 # TAYU
 
 A free, browser-based 3D financial-literacy game for K-5. Kids build a
-character, walk a circular town, and learn real money skills through five
-playable modules — earning, budgeting, banking, and investing — with a
-printable certificate at the end.
+character, walk a circular town, and learn real money skills through six
+playable modules — spending and saving, entrepreneurship, budgeting, banking,
+paychecks, and investing — with a printable certificate at the end.
 
 **Live:** https://tayufinance.app (also on Firebase: https://tayu-financial-literacy.firebaseapp.com)
 
-## The five modules
+## The six modules
 
 | # | Module | Best for | Teaches |
 |---|--------|----------|---------|
@@ -15,7 +15,11 @@ printable certificate at the end.
 | 2 | The Lemonade Stand | Grades 2-4 | Costs, fair pricing, wages, profit, tax on profit |
 | 3 | Budget Town | Grades 3-5 | Living within your means, planning a real day |
 | 4 | The Bank of TAYU | Grades 4-6 | Accounts, interest, debit vs credit, what borrowing costs, scam safety |
-| 5 | The Money Garden | Grades 4-6 | Why people invest, diversification, patience |
+| 5 | Paycheck Planet | Grades 4-6 | Gross vs take-home pay, withholding, budgeting, emergency savings, work/time tradeoffs |
+| 6 | The Money Garden | Grades 4-6 | Investing foundations, diversification, risk, market evidence, patience, and rebalancing |
+
+Money Garden is taught in two connected parts inside Module 6:
+**6A — Investing Foundations** and **6B — Markets, Risk & Patience**.
 
 ## Tech
 
