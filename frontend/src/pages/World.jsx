@@ -10,6 +10,7 @@ import { TAX_ENTRY } from '../world/ModuleLandmarks.jsx'
 import {
   PAYCHECK_MODE_EVENT,
   activatePaycheckWorld,
+  deactivatePaycheckWorld,
   isPaycheckWorldActive,
 } from '../world/paycheckMode.js'
 import { loadProfile } from '../services/walletStore.js'
@@ -27,7 +28,7 @@ import { hasWebGL } from '../utils/webgl.js'
 import '../world/worldDeclutter.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
-// (Paycheck Planet) now runs physically inside the same world between internal
+// (Paycheck Planet) runs physically inside the same world between internal
 // Bank (4) and Money Garden (5), instead of navigating to a separate page.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
 
@@ -128,6 +129,9 @@ export default function World() {
         activatePaycheckWorld()
         moveToPaycheckPlanet()
       } else {
+        // Leaving/replaying another module must also leave Paycheck mode so its
+        // stations and prompts cannot leak into the other world chapters.
+        deactivatePaycheckWorld()
         const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
         if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
         setTimeout(() => { try { useGame.getState().adminJumpModule(internal) } catch (e) { console.error(e) } }, 400)
