@@ -4,13 +4,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function owns(userId) { return signedIn() && request.auth.uid == userId; }
-    function isApprovedAdminEmail() { return signedIn() && (request.auth.token.email == 'tayu.finance@gmail.com' || request.auth.token.email == 'devr53247@gmail.com'); }
-    function isDashboardViewer() { return signedIn() && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app'; }
-    function hasAdminProfile() { return signedIn() && exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin'; }
-    function isAdmin() { return !isDashboardViewer() && (isApprovedAdminEmail() || hasAdminProfile()); }
-    function canReadDashboard() { return isAdmin() || isDashboardViewer(); }
+    function profileExists(userId) { return exists(/databases/$(database)/documents/profiles/$(userId)); }
+    function profileRole(userId) { return profileExists(userId) ? get(/databases/$(database)/documents/profiles/$(userId)).data.role : null; }
+    function isAdmin() { return signedIn() && profileRole(request.auth.uid) == 'admin'; }
+    function isTeacher() { return signedIn() && profileRole(request.auth.uid) == 'teacher'; }
+    function canReadDashboard() { return isAdmin(); }
     function validPublicRole(role) { return role == 'student' || role == 'teacher' || role == 'other'; }
-    function validProfileRole(role) { return validPublicRole(role) || (isApprovedAdminEmail() && role == 'admin') || (isDashboardViewer() && role == 'admin'); }
     function validAuthActivityType(type) { return type == 'sign_up' || type == 'sign_in' || type == 'sign_out'; }
     function validGuestUsage() {
       return request.resource.data.guest == true
@@ -28,43 +27,56 @@ service cloud.firestore {
         && request.resource.data.device is string;
     }
     function teacherOwnsStudent(studentId) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/profiles/$(studentId))
+      return isTeacher()
+        && profileExists(studentId)
         && get(/databases/$(database)/documents/profiles/$(studentId)).data.teacherId == request.auth.uid;
     }
 
     match /profiles/{userId} {
-      allow create: if owns(userId) && request.resource.data.email == request.auth.token.email && validProfileRole(request.resource.data.role);
-      allow get: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
-      allow list: if canReadDashboard() || (signedIn() && resource.data.teacherId == request.auth.uid);
-      allow update: if isAdmin() || (owns(userId) && request.resource.data.email == resource.data.email && request.resource.data.role == resource.data.role);
+      allow create: if owns(userId)
+        && request.resource.data.email == request.auth.token.email
+        && validPublicRole(request.resource.data.role);
+      allow get: if owns(userId) || isAdmin() || teacherOwnsStudent(userId);
+      allow list: if isAdmin() || (isTeacher() && resource.data.teacherId == request.auth.uid);
+      allow update: if isAdmin() || (
+        owns(userId)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+      );
       allow delete: if isAdmin();
     }
 
     match /progress/{userId} {
-      allow read: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
+      allow read: if owns(userId) || isAdmin() || teacherOwnsStudent(userId);
       allow create, update: if owns(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
     match /classes/{teacherId} {
-      allow create, update, delete: if owns(teacherId);
+      allow create, update, delete: if owns(teacherId) && isTeacher();
+      // Signed-in students need to resolve a valid class code before their
+      // profile can be associated with the teacher. Classroom analytics remain
+      // protected by teacherOwnsStudent() on the student data collections.
       allow read: if signedIn();
     }
 
     match /authActivity/{activityId} {
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email && validAuthActivityType(request.resource.data.type);
-      allow get: if canReadDashboard() || (signedIn() && (resource.data.uid == request.auth.uid || teacherOwnsStudent(resource.data.uid)));
-      // Teacher queries must be constrained to one assigned student's uid.
-      allow list: if canReadDashboard() || (signedIn() && teacherOwnsStudent(resource.data.uid));
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && validAuthActivityType(request.resource.data.type);
+      allow get: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
+      allow list: if isAdmin() || (isTeacher() && teacherOwnsStudent(resource.data.uid));
       allow delete: if isAdmin();
       allow update: if false;
     }
 
     match /usageSessions/{sessionId} {
-      allow create, update: if (signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email)
+      allow create, update: if (signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email)
         || validGuestUsage();
-      allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid) || (signedIn() && teacherOwnsStudent(resource.data.uid));
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
       allow delete: if isAdmin();
     }
 
@@ -73,7 +85,7 @@ service cloud.firestore {
         && request.resource.data.sessionId is string
         && request.resource.data.path is string
         && request.resource.data.viewedAt is string;
-      allow read: if canReadDashboard();
+      allow read: if isAdmin();
       allow update: if false;
       allow delete: if isAdmin();
     }

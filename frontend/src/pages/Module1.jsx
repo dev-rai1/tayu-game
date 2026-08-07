@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameState } from '../hooks/useGameState.jsx'
 import TutorialStep from '../components/TutorialStep.jsx'
@@ -6,30 +6,61 @@ import JarAllocation from '../components/JarAllocation.jsx'
 import { TUTORIAL_STEPS } from '../constants/tutorialSteps.js'
 import { stopSpeaking } from '../utils/audioNarration.js'
 
+const TRANSITION_DELAY_MS = 350
+const RECOVERY_DELAY_MS = 1200
+
 // Module 1 flow controller: guided walkthrough → jar allocation → badge.
 export default function Module1() {
   const navigate = useNavigate()
   const { state, dispatch } = useGameState()
   const name = state.player.name || 'friend'
+  const transitionTimer = useRef(null)
 
-  const [phase, setPhase] = useState('tutorial') // tutorial | jars | badge
+  const [phase, setPhase] = useState('tutorial') // tutorial | transitioning | jars | badge
   const [stepIdx, setStepIdx] = useState(0)
   const [audioOn, setAudioOn] = useState(false)
   const [allocation, setAllocation] = useState(null)
+  const [showRecovery, setShowRecovery] = useState(false)
 
-  // Esc skips the tutorial.
+  const enterJars = () => {
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current)
+    transitionTimer.current = null
+    setShowRecovery(false)
+    setPhase('jars')
+  }
+
+  const beginJarTransition = () => {
+    stopSpeaking()
+    setPhase('transitioning')
+    setShowRecovery(false)
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current)
+    transitionTimer.current = window.setTimeout(enterJars, TRANSITION_DELAY_MS)
+  }
+
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape' && phase === 'tutorial') skipTutorial() }
+    const onKey = (event) => {
+      if (event.key === 'Escape' && phase === 'tutorial') beginJarTransition()
+      if ((event.key === 'Enter' || event.key === ' ') && phase === 'transitioning') enterJars()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  })
-  useEffect(() => () => stopSpeaking(), [])
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'transitioning') return undefined
+    const recoveryTimer = window.setTimeout(() => setShowRecovery(true), RECOVERY_DELAY_MS)
+    return () => window.clearTimeout(recoveryTimer)
+  }, [phase])
+
+  useEffect(() => () => {
+    stopSpeaking()
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current)
+  }, [])
 
   const nextStep = () => {
-    if (stepIdx + 1 < TUTORIAL_STEPS.length) setStepIdx((i) => i + 1)
-    else { stopSpeaking(); setPhase('jars') }
+    if (stepIdx + 1 < TUTORIAL_STEPS.length) setStepIdx((index) => index + 1)
+    else beginJarTransition()
   }
-  const skipTutorial = () => { stopSpeaking(); setPhase('jars') }
 
   const confirmJars = (jars) => {
     setAllocation(jars)
@@ -41,32 +72,29 @@ export default function Module1() {
     <div className="min-h-screen bg-navy text-white">
       <header className="flex items-center justify-between bg-navy px-5 py-3 shadow-md">
         <span className="font-display text-xl font-extrabold text-electric">TAYU</span>
-        <span className="text-sm font-bold text-white/80">Module 1: Childhood Choices</span>
-        <button
-          onClick={() => setAudioOn((v) => !v)}
-          className={`rounded-lg px-3 py-1 text-sm font-bold ${audioOn ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}
-        >
+        <span className="text-sm font-bold text-white/80">Module 1 of 6: Childhood Choices</span>
+        <button type="button" onClick={() => setAudioOn((value) => !value)} aria-pressed={audioOn} className={`rounded-lg px-3 py-1 text-sm font-bold ${audioOn ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>
           🔊 {audioOn ? 'On' : 'Off'}
         </button>
       </header>
 
-      {phase === 'tutorial' && (
-        <TutorialStep
-          step={TUTORIAL_STEPS[stepIdx]}
-          name={name}
-          index={stepIdx}
-          total={TUTORIAL_STEPS.length}
-          audioOn={audioOn}
-          onNext={nextStep}
-          onSkip={skipTutorial}
-        />
+      {phase === 'tutorial' && <TutorialStep step={TUTORIAL_STEPS[stepIdx]} name={name} index={stepIdx} total={TUTORIAL_STEPS.length} audioOn={audioOn} onNext={nextStep} onSkip={beginJarTransition} />}
+
+      {phase === 'transitioning' && (
+        <main className="mx-auto flex min-h-[80vh] max-w-md flex-col items-center justify-center gap-4 p-6 text-center" aria-live="polite" aria-busy="true">
+          <div className="text-5xl" aria-hidden="true">🪙</div>
+          <h1 className="font-display text-2xl font-extrabold text-teal">Opening your money jars…</h1>
+          <p className="text-white/75">The next activity should open automatically.</p>
+          {showRecovery && <button type="button" autoFocus className="btn-primary" onClick={enterJars}>Continue to the jars now</button>}
+          <button type="button" className="text-sm font-bold text-white/70 underline underline-offset-4" onClick={enterJars}>Skip the transition</button>
+        </main>
       )}
 
       {phase === 'jars' && <JarAllocation playerName={name} onConfirm={confirmJars} />}
 
       {phase === 'badge' && (
         <div className="mx-auto flex min-h-[80vh] max-w-md flex-col items-center justify-center gap-5 p-6 text-center">
-          <div className="text-8xl">🏅</div>
+          <div className="text-8xl" aria-hidden="true">🏅</div>
           <h1 className="font-display text-3xl font-extrabold text-teal">Allocation Expert!</h1>
           <p className="text-lg text-white/80">Amazing work, {name}! You split your $20 wisely.</p>
           <div className="card grid w-full grid-cols-3 gap-3">
@@ -74,10 +102,10 @@ export default function Module1() {
             <Stat label="Save" value={`$${allocation.save}`} color="text-save" />
             <Stat label="Give" value={`$${allocation.give}`} color="text-give" />
           </div>
-          <p className="text-sm text-white/60">You've earned the <b className="text-teal">Allocation Expert</b> badge. 🎉</p>
+          <p className="text-sm text-white/60">You&apos;ve earned the <b className="text-teal">Allocation Expert</b> badge.</p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button className="btn-secondary" onClick={() => { setPhase('tutorial'); setStepIdx(0); setAllocation(null) }}>Play again</button>
-            <button className="btn-primary" onClick={() => navigate('/')}>Back to start</button>
+            <button type="button" className="btn-secondary" onClick={() => { setPhase('tutorial'); setStepIdx(0); setAllocation(null) }}>Play again</button>
+            <button type="button" className="btn-primary" onClick={() => navigate('/')}>Back to start</button>
           </div>
         </div>
       )}
