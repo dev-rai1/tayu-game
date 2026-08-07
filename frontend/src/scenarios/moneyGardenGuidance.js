@@ -26,7 +26,7 @@ export const MONEY_GARDEN_FLOW = [
 
 export const MONEY_GARDEN_DECISIONS = {
   1: { title: 'Stocks are pieces of ownership', instruction: 'A share is one small ownership unit of a company. Compare the businesses first, then choose based on evidence instead of guessing which price moves next.' },
-  2: { title: 'Diversification spreads risk', instruction: 'Diversification means not depending on one investment. Build a mix where one company falling would not control the whole result; remember that diversification reduces risk but cannot erase it.' },
+  2: { title: 'Diversification spreads risk', instruction: 'Diversification means not depending on one investment. Build a mix so one company falling does not control the whole result. It reduces risk, but cannot erase it.' },
   3: { title: 'Price is not the whole business', instruction: 'A price can move even when the company has not changed. Before selling after a dip, ask whether new business evidence changed your reason for owning it.' },
   4: { title: 'Research the company behind the stock', instruction: 'Research uses credible evidence about the business. Compare customer activity here, then connect that clue to the company instead of reacting to price alone.' },
   5: { title: 'Cheap does not automatically mean good', instruction: 'A lower price can be an opportunity or a warning. Compare the price with business health before deciding whether the investment is actually more attractive.' },
