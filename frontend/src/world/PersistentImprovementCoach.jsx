@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { useGame } from './store.js'
-import { useFeedbackCoach } from './feedbackCoach.js'
+import { feedbackModuleForState, useFeedbackCoach } from './feedbackCoach.js'
 import { lemonadePrimaryCorrection } from './lemonadeCorrection.js'
 import { STORE_ITEMS } from './config.js'
 import { checkAllocation } from '../scenarios/jarScenario.js'
 import { cartFeedback } from '../scenarios/storeMission.js'
 import { BUNDLES, EVENTS, QUALITY, SIGNS, nextTip } from '../scenarios/lemonade.js'
 import { weekSpec } from '../scenarios/marketScenarios.js'
-import { EMERGENCY_EVENT } from '../scenarios/budgetTown.js'
+import { EMERGENCY_EVENT, EMERGENCY_REPLAY } from '../scenarios/budgetTown.js'
+import { BK } from '../scenarios/bankModule.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
 
 const money = (value) => `$${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
@@ -35,6 +36,39 @@ function bankRetryAction(week) {
     action: 'Retry after identifying which option adds cost or risk and which one protects the plan.',
     goal: 'Complete the lesson using the consequence as evidence.',
   }
+}
+
+function removeDuplicateLesson(text) {
+  if (!text) return
+  queueMicrotask(() => {
+    const game = useGame.getState()
+    const next = (game.lessons || []).filter((lesson) => lesson.text !== text)
+    if (next.length !== (game.lessons || []).length) useGame.setState({ lessons: next })
+  })
+}
+
+function clearCompetingTransientFeedback(state) {
+  const moduleKey = feedbackModuleForState(state)
+  if (!moduleKey || !useFeedbackCoach.getState().feedbackByModule[moduleKey]) return
+
+  const patch = {}
+  if (state.actorCaption) patch.actorCaption = null
+  if (state.guide) patch.guide = null
+  if (state.toast) patch.toast = null
+  if (state.banner) patch.banner = null
+
+  if (Object.keys(patch).length) useGame.setState(patch)
+}
+
+function setEarlyBankRetryFeedback(week, diagnosis) {
+  const correction = bankRetryAction(week)
+  useFeedbackCoach.getState().setFeedback('bank', {
+    sourceKey: `bank-${week}-${Date.now()}`,
+    title: correction.title,
+    diagnosis,
+    action: correction.action,
+    goal: correction.goal,
+  })
 }
 
 // This component observes game outcomes and stores one concise retry clue. It does
@@ -75,13 +109,15 @@ export function PersistentImprovementCoach() {
 
       if (state.storeAttempt > previous.storeAttempt) {
         const basket = previous.bought.map((id) => STORE_ITEMS.find((item) => item.id === id)).filter(Boolean)
+        const diagnosis = cartFeedback(basket)
         setFeedback('market', {
           sourceKey: `market-${state.storeAttempt}`,
           title: 'Recheck your basket',
-          diagnosis: cartFeedback(basket),
+          diagnosis,
           action: 'Use the red and green basket checks as clues. Change the category that is still missing, then decide whether an optional item still fits.',
           goal: 'Build a complete basket without spending beyond the limit.',
         })
+        removeDuplicateLesson(diagnosis)
         track('market', 'choice_attempt', 'incorrect', `attempt-${state.storeAttempt}`)
         track('market', 'retry_prompt', 'directional', 'basket-checks')
       }
@@ -99,15 +135,20 @@ export function PersistentImprovementCoach() {
         }
         const analysis = nextTip(result, levers, result.event || EVENTS[0], state.lemFeatures, state.lemTipHistory)
         const correction = lemonadePrimaryCorrection(result, levers, analysis)
-        setFeedback('lemonade', {
-          sourceKey: `lemonade-${result.round}`,
-          title: analysis.title,
-          diagnosis: analysis.diagnosis,
-          action: correction.action,
-          goal: analysis.goal,
-        })
         track('lemonade', 'choice_attempt', analysis.currentPerfect ? 'effective' : 'revise', `round-${result.round}`)
-        if (!analysis.currentPerfect) track('lemonade', 'retry_prompt', 'directional', correction.lever)
+
+        if (analysis.currentPerfect) {
+          clearFeedback('lemonade')
+        } else {
+          setFeedback('lemonade', {
+            sourceKey: `lemonade-${result.round}`,
+            title: analysis.title,
+            diagnosis: analysis.diagnosis,
+            action: correction.action,
+            goal: analysis.goal,
+          })
+          track('lemonade', 'retry_prompt', 'directional', correction.lever)
+        }
       }
 
       const previousLogs = previous.mg?.weekLog?.length || 0
@@ -143,10 +184,34 @@ export function PersistentImprovementCoach() {
           action: 'Make Pocket large enough for the surprise before dividing what remains between Bank and Money Garden.',
           goal: 'Keep enough money ready for an unexpected cost.',
         })
+        removeDuplicateLesson(EMERGENCY_REPLAY)
         track('budget', 'choice_attempt', 'incorrect', 'emergency-cash')
         track('budget', 'retry_prompt', 'directional', 'protect-ready-cash')
       }
       if (state.bt?.stage === 'handoff' && previous.bt?.stage !== 'handoff') clearFeedback('budget')
+
+      // Detect the two incorrect Bank choices as soon as their consequence starts.
+      // This lets us silence the rapid NPC captions before they ever compete with
+      // the persistent correction popup.
+      if (
+        state.week === 4
+        && state.bk?.week === 4
+        && state.bk?.fx?.billGrowAt
+        && state.bk?.fx?.billGrowAt !== previous.bk?.fx?.billGrowAt
+      ) {
+        setEarlyBankRetryFeedback(4, BK.w4.doneLittle)
+      }
+
+      const newestBatch = state.coinBatches?.at(-1)
+      const previousBatch = previous.coinBatches?.at(-1)
+      if (
+        state.week === 4
+        && state.bk?.week === 6
+        && newestBatch?.id !== previousBatch?.id
+        && newestBatch?.id?.startsWith('sc-')
+      ) {
+        setEarlyBankRetryFeedback(6, BK.w6.coach)
+      }
 
       const currentCard = state.cards.at(-1)
       const previousCard = previous.cards.at(-1)
@@ -155,18 +220,31 @@ export function PersistentImprovementCoach() {
         track('bank', 'choice_attempt', mustRetry ? 'incorrect' : 'effective', `week-${state.bk?.week || 0}`)
         if (mustRetry) {
           const correction = bankRetryAction(state.bk?.week)
+          const existing = useFeedbackCoach.getState().feedbackByModule.bank
           setFeedback('bank', {
-            sourceKey: `bank-${state.bk?.week}-${Date.now()}`,
+            sourceKey: existing?.sourceKey || `bank-${state.bk?.week}-${Date.now()}`,
             title: correction.title,
             diagnosis: currentCard.text,
             action: correction.action,
             goal: correction.goal,
           })
           track('bank', 'retry_prompt', 'directional', `week-${state.bk?.week || 0}`)
+
+          // The old bank feedback card is redundant now. Trigger its retry action
+          // automatically so the child sees the actual decision plus one coach.
+          queueMicrotask(() => {
+            const game = useGame.getState()
+            const retryCard = game.cards?.[0]
+            if (retryCard?.id === 'bkfb' && retryCard.buttons?.some((button) => button.act === 'bk.retry')) {
+              game.cardAct('bk.retry')
+            }
+          })
         } else {
           clearFeedback('bank')
         }
       }
+
+      clearCompetingTransientFeedback(useGame.getState())
     })
 
     return unsubscribe
