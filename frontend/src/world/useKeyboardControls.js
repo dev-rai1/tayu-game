@@ -1,14 +1,16 @@
 import { useEffect, useRef } from 'react'
 
-// Movement is intentionally predictable: WASD walks, and only Up/Down mirror
-// forward/back for accessibility. Left/Right arrows are NOT gameplay controls;
-// earlier playtests showed they were easy to press accidentally and made the
-// camera/player feel like it was moving on its own.
+// Movement stays predictable: WASD walks, Up/Down mirror forward/back, and
+// Left/Right rotate the camera. Camera arrows only flip booleans here; the
+// actual rotation happens once per animation frame in Player, so holding them
+// stays smooth and does not create key-repeat lag.
 const KEYS = {
   KeyW: 'forward', ArrowUp: 'forward',
   KeyS: 'backward', ArrowDown: 'backward',
   KeyA: 'left',
   KeyD: 'right',
+  ArrowLeft: 'lookLeft',
+  ArrowRight: 'lookRight',
 }
 
 // Returns a stable ref whose .current holds the live pressed-direction booleans.

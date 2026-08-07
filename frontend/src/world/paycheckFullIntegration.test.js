@@ -21,10 +21,12 @@ const behavior = read('src/components/PlaytestBehaviorSummary.jsx')
 const coach = read('src/world/PersistentCoach.jsx')
 
 describe('Paycheck Planet full integration', () => {
-  it('removes the This way edge pointer and accidental left/right arrow controls', () => {
+  it('removes the This way edge pointer and uses left/right arrows only for camera rotation', () => {
     expect(gameWorld).not.toContain('ObjectiveEdgePointer')
-    expect(keyboard).not.toContain("ArrowLeft:")
-    expect(keyboard).not.toContain("ArrowRight:")
+    expect(keyboard).toContain("ArrowLeft: 'lookLeft'")
+    expect(keyboard).toContain("ArrowRight: 'lookRight'")
+    expect(keyboard).not.toContain("ArrowLeft: 'left'")
+    expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
   it('launches public Module 5 in the same world without automatic gameplay teleporting', () => {
