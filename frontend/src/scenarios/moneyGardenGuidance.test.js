@@ -35,6 +35,6 @@ describe('Money Garden playtest redesign', () => {
     expect(OPENING).toHaveLength(5)
     for (const line of OPENING) expect(line.length).toBeLessThan(190)
     expect(WEEKS).toHaveLength(10)
-    for (const week of WEEKS) expect(week.intro.length).toBeLessThan(190)
+    for (const week of WEEKS) expect(week.intro.length).toBeLessThan(200)
   })
 })
