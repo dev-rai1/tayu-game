@@ -5,12 +5,14 @@
 // Master Adjustment C4/E1: the target is always the EXACT person or object of
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
-import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
+import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING, TAX_DISTRICT } from './config.js'
 import { stage } from '../anim/stage.js'
+import { isPaycheckWorldActive } from './paycheckMode.js'
 
 const BRAM = [STORE[0] + SHOPKEEPER.pos[0], STORE[1] + SHOPKEEPER.pos[1]]
 const MARKET_SHELVES = [STORE[0], STORE[1] - 1]
 const MARKET_CHECKOUT = [STORE[0], STORE[1] + 4.2]
+const PAYCHECK_ENTRANCE = [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.2]
 
 export function getObjectiveTarget(st) {
   if (st.adminHideArrows) return null // Part 0: presenter toggle
@@ -18,6 +20,10 @@ export function getObjectiveTarget(st) {
   // When the next action is already on screen, remove the world arrow so it
   // never competes with the card or panel the player must use.
   if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
+  // Public Module 5 is an in-world layer rather than a legacy week number.
+  // While it is active, all shared world guidance points to Paycheck Planet so
+  // the learner can WALK there instead of being teleported between modules.
+  if (isPaycheckWorldActive()) return PAYCHECK_ENTRANCE
   // Part J: everything is done - the arrow leads to the party house door
   if (st.gameComplete) return [PARTY_HOUSE[0], PARTY_HOUSE[1] - 3]
   // Round 8 order: 3 = Budget Town, 4 = the Bank, 5 = the Money Garden
@@ -56,6 +62,7 @@ export function getObjectiveTarget(st) {
 // How close counts as "arrived" - both the neck arrow and the overhead marker
 // hide inside this radius (comment 14: stop on arrival).
 export function arriveRadius(st) {
+  if (isPaycheckWorldActive()) return 0.45
   if (st.week === 5) return 3.2
   if (st.week === 1 && st.objective === 'store') return 3
   return 2.5
