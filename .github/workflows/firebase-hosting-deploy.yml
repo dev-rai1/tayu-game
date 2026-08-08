@@ -39,7 +39,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -89,27 +89,52 @@ jobs:
         run: |
           set -euo pipefail
 
+          fetch_url() {
+            local url="$1"
+            curl --fail --location --silent --show-error \
+              --retry 3 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 10 --max-time 25 \
+              "$url"
+          }
+
+          verify_routes() {
+            local host="$1"
+            local route=""
+            local body=""
+            for route in / /modules /teacher-guide; do
+              # A transient CDN/network timeout must not terminate the whole
+              # verification loop. Return to the outer retry instead.
+              if ! body="$(fetch_url "${host}${route}?deployment=${GITHUB_SHA}" 2>/dev/null)"; then
+                echo "Route ${host}${route} was temporarily unreachable; retrying host."
+                return 1
+              fi
+              if ! printf '%s' "$body" | grep -Fq '<div id="root"></div>'; then
+                echo "Route ${host}${route} did not return the SPA shell yet; retrying host."
+                return 1
+              fi
+            done
+            return 0
+          }
+
           verify_host() {
             local host="$1"
             local marker=""
             echo "Verifying ${host}"
             for attempt in $(seq 1 18); do
-              marker="$(curl --fail --location --silent --show-error \
-                --connect-timeout 15 --max-time 30 \
-                "${host}/deployment.json?sha=${GITHUB_SHA}&attempt=${attempt}" || true)"
+              # The previous workflow protected only this marker request. The
+              # route checks below could still abort immediately under pipefail.
+              marker="$(fetch_url "${host}/deployment.json?sha=${GITHUB_SHA}&attempt=${attempt}" 2>/dev/null || true)"
               if printf '%s' "$marker" | grep -Fq "$GITHUB_SHA"; then
-                for route in / /modules /teacher-guide; do
-                  curl --fail --location --silent --show-error \
-                    --connect-timeout 15 --max-time 30 \
-                    "${host}${route}?deployment=${GITHUB_SHA}" \
-                    | grep -Fq '<div id="root"></div>'
-                done
-                echo "Verified ${host} at ${GITHUB_SHA}"
-                return 0
+                if verify_routes "$host"; then
+                  echo "Verified ${host} at ${GITHUB_SHA}"
+                  return 0
+                fi
+              else
+                echo "Attempt ${attempt}: ${host} has not served ${GITHUB_SHA} yet."
               fi
               sleep 10
             done
-            echo "::error::${host} did not serve deployment ${GITHUB_SHA}. Last marker: ${marker}"
+            echo "::error::${host} did not consistently serve deployment ${GITHUB_SHA} after 18 attempts. Last marker: ${marker}"
             return 1
           }
 
