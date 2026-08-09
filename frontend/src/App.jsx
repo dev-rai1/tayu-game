@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Welcome from './pages/Welcome.jsx'
 import About from './pages/About.jsx'
@@ -15,7 +15,7 @@ import SiteFooter from './components/SiteFooter.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { PrivacyChoices } from './components/PrivacyChoices.jsx'
-import { currentUser } from './services/auth.js'
+import { currentUser, isCloud } from './services/auth.js'
 import { loadProfile } from './services/walletStore.js'
 import { installViewportSync } from './utils/viewport.js'
 import './styles/viewport.css'
@@ -35,7 +35,28 @@ const Cookies = lazy(() => import('./pages/Cookies.jsx'))
 const Accessibility = lazy(() => import('./pages/Accessibility.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 
+function useAuthGateReady() {
+  const [ready, setReady] = useState(() => Boolean(currentUser()) || !isCloud())
+
+  useEffect(() => {
+    if (ready) return undefined
+    const finish = () => setReady(true)
+    window.addEventListener('tayu-auth-changed', finish, { once: true })
+    // Firebase restores an existing browser session asynchronously. Give that
+    // callback a short window before deciding a deep link really is logged out.
+    const timer = window.setTimeout(finish, 1500)
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('tayu-auth-changed', finish)
+    }
+  }, [ready])
+
+  return ready
+}
+
 function PreQuizGate({ children }) {
+  const authReady = useAuthGateReady()
+  if (!authReady) return <LoadingScreen label="Restoring your account..." />
   const user = currentUser()
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'admin' && user.role !== 'teacher' && !loadProfile()?.assessment?.pre) return <Navigate to="/assessment/pre" replace />
@@ -43,6 +64,8 @@ function PreQuizGate({ children }) {
 }
 
 function TeacherGate({ children }) {
+  const authReady = useAuthGateReady()
+  if (!authReady) return <LoadingScreen label="Restoring your teacher account..." />
   const user = currentUser()
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'teacher') return <Navigate to="/modules" replace />
