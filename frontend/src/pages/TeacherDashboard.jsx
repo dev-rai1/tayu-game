@@ -142,6 +142,13 @@ export default function TeacherDashboard() {
     }
   }
 
+  const trySession = () => {
+    const enabledModules = classroom?.settings?.enabledModules || []
+    const firstEnabledModule = [...enabledModules].sort((a, b) => Number(a) - Number(b))[0] || 1
+    try { localStorage.setItem('tayu-jump-module', String(firstEnabledModule)) } catch { /* storage can be unavailable */ }
+    nav('/world')
+  }
+
   const allSessions = useMemo(() => students.flatMap((student) => student.sessions || []), [students])
   const classActivity = useMemo(
     () => students.flatMap((student) => student.activity || []).sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))),
@@ -211,7 +218,7 @@ export default function TeacherDashboard() {
           <div className="flex flex-wrap items-center gap-3"><h1 className="font-display text-3xl font-extrabold">Teacher Classroom</h1><span className={`rounded-full px-3 py-1 text-xs font-extrabold ${syncing ? 'bg-sun/20 text-sun' : 'bg-teal/20 text-teal'}`}>{syncing ? 'Syncing…' : 'Ready'}</span></div>
           <p className="mt-1 max-w-3xl text-white/65">Customize the student session and review detailed analytics for students assigned to your class only.</p>
         </div>
-        <div className="flex flex-wrap gap-2"><Link to="/modules?teacherPreview=1" className="btn-primary">Try my session</Link><button type="button" onClick={loadStudents} disabled={loadingStudents} className="rounded-xl bg-white/10 px-4 py-3 font-extrabold disabled:opacity-50">{loadingStudents ? 'Refreshing…' : 'Refresh analytics'}</button><button type="button" onClick={exportCsv} disabled={!students.length} className="rounded-xl bg-white/10 px-4 py-3 font-extrabold disabled:opacity-40">Export detailed CSV</button><Link to="/" className="rounded-xl bg-white/10 px-4 py-3 font-extrabold">Home</Link></div>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={trySession} className="btn-primary">Try my session</button><button type="button" onClick={loadStudents} disabled={loadingStudents} className="rounded-xl bg-white/10 px-4 py-3 font-extrabold disabled:opacity-50">{loadingStudents ? 'Refreshing…' : 'Refresh analytics'}</button><button type="button" onClick={exportCsv} disabled={!students.length} className="rounded-xl bg-white/10 px-4 py-3 font-extrabold disabled:opacity-40">Export detailed CSV</button><Link to="/" className="rounded-xl bg-white/10 px-4 py-3 font-extrabold">Home</Link></div>
       </header>
 
       {error && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-300/15 p-3 font-bold text-amber-100"><span>{error}</span><button type="button" onClick={syncClassroom} className="rounded-lg bg-white/10 px-3 py-2 text-sm">Sync again</button></div>}
@@ -237,7 +244,6 @@ export default function TeacherDashboard() {
         )}
         {!loadingStudents && !students.length && !studentError && <p className="mt-4 text-white/55">No students have joined this class code yet.</p>}
       </section>
-
       {selected && <StudentDetails student={selected} />}
 
       <section className="mt-6 overflow-x-auto rounded-2xl border border-white/10 bg-white/5 p-5"><h2 className="font-display text-xl font-extrabold">Class login and logout timestamps</h2>{classActivity.length === 0 ? <p className="mt-3 text-sm text-white/55">No login history has been recorded yet.</p> : <table className="mt-4 w-full min-w-[760px] text-left text-sm"><thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Event</th><th className="pr-3">Student</th><th className="pr-3">Timestamp</th><th className="pr-3">Device</th><th>Page</th></tr></thead><tbody>{classActivity.slice(0, 250).map((event) => <tr key={event.id} className="border-t border-white/10"><td className="py-2 pr-3 font-extrabold text-teal">{EVENT_LABEL[event.type] || event.type}</td><td className="pr-3">{event.email || '—'}</td><td className="pr-3">{timestamp(event.occurredAt)}</td><td className="pr-3">{event.device || 'Unknown'}</td><td>{event.path || '—'}</td></tr>)}</tbody></table>}</section>
