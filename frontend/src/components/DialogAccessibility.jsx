@@ -11,8 +11,10 @@ export default function DialogAccessibility() {
       if (!dialog || dialog === activeDialog) return
       previousFocus = document.activeElement
       activeDialog = dialog
-      const first = dialog.querySelector('[autofocus], ' + FOCUSABLE)
-      window.requestAnimationFrame(() => first?.focus())
+      const first = dialog.querySelector?.('[autofocus], ' + FOCUSABLE)
+      window.requestAnimationFrame(() => {
+        if (first && document.contains(first)) first.focus()
+      })
     }
 
     const scan = () => {
@@ -27,15 +29,16 @@ export default function DialogAccessibility() {
     }
 
     const onKeyDown = (event) => {
-      if (!activeDialog || !document.contains(activeDialog)) return
+      const dialog = activeDialog
+      if (!dialog || !document.contains(dialog)) return
       if (event.key === 'Escape') {
-        const close = activeDialog.querySelector('[data-dialog-close]')
+        const close = dialog.querySelector?.('[data-dialog-close]')
         if (close) { event.preventDefault(); close.click() }
         return
       }
       if (event.key !== 'Tab') return
-      const focusable = [...activeDialog.querySelectorAll(FOCUSABLE)].filter((node) => !node.hasAttribute('disabled'))
-      if (!focusable.length) { event.preventDefault(); activeDialog.focus?.(); return }
+      const focusable = [...(dialog.querySelectorAll?.(FOCUSABLE) || [])].filter((node) => !node.hasAttribute('disabled'))
+      if (!focusable.length) { event.preventDefault(); dialog.focus?.(); return }
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
@@ -47,6 +50,8 @@ export default function DialogAccessibility() {
     document.addEventListener('keydown', onKeyDown)
     scan()
     return () => {
+      activeDialog = null
+      previousFocus = null
       observer.disconnect()
       document.removeEventListener('keydown', onKeyDown)
     }
