@@ -22,6 +22,11 @@ const REWARD_LOOKS = {
     patch: { shirtColor: 'teal', accessories: ['necklace'] },
     detail: 'Trust-teal shirt and gold necklace',
   },
+  tax: {
+    label: 'Tax Pro Look',
+    patch: { shirtColor: 'green', accessories: ['glasses'] },
+    detail: 'Paycheck and tax-filing look',
+  },
   garden: {
     label: 'Money Garden Look',
     patch: { shirtColor: 'green', accessories: ['hat', 'necklace'] },
@@ -47,6 +52,7 @@ export default function AvatarRewards({ onApply }) {
         {BADGE_ORDER.map((badge) => {
           const check = MODULE_CHECKS[badge]
           const look = rewardLookForBadge(badge)
+          if (!check || !look) return null
           const unlocked = earned.has(badge)
 
           return (
