@@ -11,6 +11,7 @@ export const JAR_SCENARIOS = [
       'You have $30. Decide how much belongs in SPEND, SAVE, and GIVE.',
     ],
     target: { spend: 10, save: 10, give: 10 },
+    spendGoal: { label: 'toy', amount: 8 },
     rules: { min: { spend: 8, save: 1, give: 1 } },
     hints: {
       spentAll: 'Your money reset. Spending everything left nothing for later or for others. Use all three jars.',
@@ -70,6 +71,13 @@ function followsRules(allocation, rules = {}) {
   return true
 }
 
+function concreteGoalHint(allocation, scenario) {
+  const goal = scenario.spendGoal
+  if (!goal || allocation.spend >= goal.amount) return null
+  const short = Math.round((goal.amount - allocation.spend) * 100) / 100
+  return `SPEND $${allocation.spend} < $${goal.amount} ${goal.label} — you're $${short} short. Your money reset so you can re-allocate and cover the ${goal.label} while still using SAVE and GIVE.`
+}
+
 // Decide the outcome of a split against the story's financial rule.
 // Returns { ok, scene, hint }. scene ∈ BALANCED | SPENT_ALL | SAVED_ALL | GAVE_ALL | UNBALANCED
 export function checkAllocation(a, sc) {
@@ -80,5 +88,6 @@ export function checkAllocation(a, sc) {
   if (a.spend >= safeTotal * 0.85) return { ok: false, scene: 'SPENT_ALL', hint: sc.hints.spentAll }
   if (a.save >= safeTotal * 0.85) return { ok: false, scene: 'SAVED_ALL', hint: sc.hints.savedAll }
   if (a.give >= safeTotal * 0.85) return { ok: false, scene: 'GAVE_ALL', hint: sc.hints.gaveAll }
-  return { ok: false, scene: 'UNBALANCED', hint: sc.hints.unbalanced }
+  const goalHint = concreteGoalHint(a, sc)
+  return { ok: false, scene: 'UNBALANCED', hint: goalHint || sc.hints.unbalanced }
 }
