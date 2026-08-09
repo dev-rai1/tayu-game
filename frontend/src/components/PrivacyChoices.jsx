@@ -37,7 +37,7 @@ export function PrivacyChoices() {
       role="dialog"
       aria-modal="false"
       aria-labelledby="privacy-choice-title"
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] z-[950] mx-auto max-w-3xl rounded-2xl border-2 border-white/20 bg-navy p-3 text-white shadow-2xl sm:p-4"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] z-[950] mx-auto max-w-3xl rounded-2xl border-2 border-white/20 bg-navy p-3 text-white shadow-2xl sm:inset-x-auto sm:bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:right-[calc(1rem+env(safe-area-inset-right,0px))] sm:mx-0 sm:w-[min(28rem,calc(100vw-2rem))] sm:max-w-none sm:p-4"
     >
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
@@ -58,7 +58,7 @@ export function PrivacyChoices() {
             <Link to="/cookies" className="text-teal underline underline-offset-4">Cookie notice</Link>
           </div>
         </div>
-        <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+        <div className="grid w-full gap-2 sm:grid-cols-2">
           <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 text-sm font-extrabold">Necessary only</button>
           {canAllowAnalytics && (
             <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Allow analytics</button>
