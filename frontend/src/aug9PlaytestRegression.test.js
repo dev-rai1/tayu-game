@@ -13,11 +13,32 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('if (!check || !look) return null')
   })
 
+  it('keeps all protected routes present after the avatar crash fix', () => {
+    const source = read('frontend/src/App.jsx')
+    for (const route of ['/avatar', '/world', '/tax-paycheck', '/guru', '/party', '/path-complete']) {
+      expect(source).toContain(`path="${route}"`)
+    }
+  })
+
+  it('keeps Module 1 playable as the first required entry instead of self-locking', () => {
+    const source = read('frontend/src/pages/ModuleSelect.jsx')
+    expect(source).toContain('if (context?.plain) return true')
+    expect(source).toContain('moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)')
+    expect(source).toContain('const firstIncompleteRequired = required.find')
+  })
+
   it('keeps Module 6 enabled in teacher defaults and persistence', () => {
     const source = read('frontend/src/services/classroom.js')
     expect(source).toContain('export const DEFAULT_MODULES = [1, 2, 3, 4, 5, 6]')
     expect(source).toMatch(/filter\(\(n\) => n >= 1 && n <= 6\)/)
     expect(source).toContain('amountDone: `${badges.length}/6`')
+  })
+
+  it('keeps teacher CSV analytics wired across all six modules', () => {
+    const source = read('frontend/src/pages/TeacherDashboard.jsx')
+    expect(source).toContain("const MODULES = ['jars', 'lemonade', 'budget', 'bank', 'tax', 'garden']")
+    expect(source).toContain('Export detailed CSV')
+    expect(source).toContain('...MODULES.map((moduleName) => `${moduleName}Seconds`)')
   })
 
   it('keeps the modal focus trap null-safe during transitions', () => {
@@ -32,6 +53,26 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('const [introExpanded, setIntroExpanded] = useState(true)')
     expect(source).toContain('Got it — show my next step')
     expect(source).toContain('2D mode info')
+    expect(source).toContain('bg-navy/95')
+  })
+
+  it('replaces shared 3D How-to-Play instructions with a dedicated 2D help dialog', () => {
+    const source = read('frontend/src/world/AccessibleWorld.jsx')
+    expect(source).toContain('const [helpDialogOpen, setHelpDialogOpen] = useState(false)')
+    expect(source).toContain('if (!game.helpOpen) return')
+    expect(source).toContain('game.setHelpOpen(false)')
+    expect(source).toContain('No WASD, right-click camera movement, or 3D arrows are used in this mode.')
+    expect(source).toContain('Use the large buttons under “Your next step.”')
+  })
+
+  it('keeps the jar HUD, Skip Talk, and Admin controls in separate screen anchors', () => {
+    const hud = read('frontend/src/world/Hud.jsx')
+    const skip = read('frontend/src/world/OverlayEscapeControls.jsx')
+    const admin = read('frontend/src/components/AdminPanel.jsx')
+    expect(hud).toContain('absolute left-4 top-[4.5rem]')
+    expect(skip).toContain('fixed right-4 top-[5.5rem]')
+    expect(admin).toContain('fixed right-3 z-[1000]')
+    expect(admin).toContain("bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'")
   })
 
   it('keeps the desktop cookie prompt away from centered landing controls', () => {
@@ -54,10 +95,12 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('wallet: remaining - give')
   })
 
-  it('does not restore stale Module 1 jar state on a fresh world initialization', () => {
+  it('does not restore stale Module 1 jar state on a fresh world initialization or replay', () => {
     const source = read('frontend/src/world/store.js')
     expect(source).toContain('if (saved && saved.week === 2)')
     expect(source).toContain('set(get()._baseState())')
+    expect(source).toContain('allocations: { spend: 0, save: 0, give: 0 }, wallet: ALLOWANCE')
+    expect(source).toContain('clearWallet()')
   })
 
   it('keeps concrete affordability feedback for the Module 1 birthday scenario', () => {
@@ -65,5 +108,41 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain("spendGoal: { label: 'toy', amount: 8 }")
     expect(source).toContain("you're $${short} short")
     expect(source).toContain('re-allocate and cover the ${goal.label}')
+  })
+
+  it('shows the Module 1 trade-off live with icons, audio, and plan-quality reinforcement', () => {
+    const source = read('frontend/src/world/JarPlanCoach.jsx')
+    expect(source).toContain('Live plan check')
+    expect(source).toContain('Covered ✓')
+    expect(source).toContain('$${fmt(status.short)} short')
+    expect(source).toContain('🔊 Read aloud')
+    expect(source).toContain('🧸')
+    expect(source).toContain('⭐')
+    expect(source).toContain('💜')
+    expect(source).toContain('Strong three-jar plan: reward-ready!')
+    expect(source).toContain("['spend', 'save', 'give'].every")
+  })
+
+  it('mounts the live plan coach for both 3D and Accessible 2D worlds', () => {
+    const source = read('frontend/src/pages/World.jsx')
+    expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
+    expect(source).toContain('{!taxMode && <JarPlanCoach />}')
+    expect(source).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}')
+  })
+
+  it('keeps jar reward progression behind a successful three-jar financial plan', () => {
+    const scenario = read('frontend/src/scenarios/jarScenario.js')
+    const store = read('frontend/src/world/store.js')
+    expect(scenario).toContain("rules: { min: { spend: 8, save: 1, give: 1 } }")
+    expect(scenario).toContain('const ok = total === 30 && followsRules(a, sc.rules)')
+    expect(store).toContain("get().awardBadge('jars', 'JAR MASTER')")
+  })
+
+  it('keeps the PDF closure audit explicit about code-closed versus live-validation items', () => {
+    const source = read('docs/playtests/AUG9_PDF_CLOSURE_AUDIT.md')
+    expect(source).toContain('CODE-CLOSED')
+    expect(source).toContain('LIVE-VALIDATION')
+    expect(source).toContain('Modules 2, 3, 4, 5, 6A, and 6B full gameplay paths.')
+    expect(source).toContain('CI/build/unit/regression success is required before this PR can merge')
   })
 })
