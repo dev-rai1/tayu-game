@@ -24,6 +24,7 @@ import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
 import { FirstTimeMovementTutorial } from '../world/FirstTimeMovementTutorial.jsx'
 import { OverlayEscapeControls } from '../world/OverlayEscapeControls.jsx'
+import { JarPlanCoach } from '../world/JarPlanCoach.jsx'
 import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
 import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.jsx'
 import { AdminPanel } from '../components/AdminPanel.jsx'
@@ -355,6 +356,7 @@ export default function World() {
 
       {/* Map/HUD and movement stay mounted during Module 5. */}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
+      {!taxMode && <JarPlanCoach />}
       {!taxMode && <LemonadeCompletionCheck onContinue={onContinue} />}
       {!taxMode && <PersistentCoach key="world-coach" />}
       {!taxMode && <PersistentImprovementCoach />}
