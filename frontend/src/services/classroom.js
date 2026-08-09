@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase
 import { getFirebaseServices } from './firebase.js'
 import { currentUser } from './auth.js'
 
-export const DEFAULT_MODULES = [1, 2, 3, 4, 5]
+export const DEFAULT_MODULES = [1, 2, 3, 4, 5, 6]
 export const DEFAULT_CLASS_SETTINGS = Object.freeze({ enabledModules: DEFAULT_MODULES, allowSkip: false })
 
 const CACHE_PREFIX = 'tayu-teacher-class-v1:'
@@ -92,7 +92,7 @@ export async function createOrLoadTeacherClass() {
 export async function saveTeacherClassSettings(settings) {
   const user = currentUser()
   if (!user?.id || user.role !== 'teacher') throw new Error('Teacher account required.')
-  const enabledModules = [...new Set((settings.enabledModules || []).map(Number).filter((n) => n >= 1 && n <= 5))].sort()
+  const enabledModules = [...new Set((settings.enabledModules || []).map(Number).filter((n) => n >= 1 && n <= 6))].sort()
   if (!enabledModules.length) throw new Error('Keep at least one module accessible.')
   const current = createOptimisticTeacherClass()
   const next = cacheTeacherClass({ ...current, settings: { enabledModules, allowSkip: Boolean(settings.allowSkip) }, updatedAt: new Date().toISOString() })
@@ -194,7 +194,7 @@ export async function loadTeacherStudents() {
       badges,
       completed: badges.length,
       completionState: progress?.profile?.guru ? 'Certificate earned' : badges.length ? 'In progress' : 'Not started',
-      amountDone: `${badges.length}/5`,
+      amountDone: `${badges.length}/6`,
       wrongAnswers: Number(progress?.profile?.wrongAnswers || 0),
       timeSpent: sessions.reduce((sum, item) => sum + Number(item.durationSeconds || 0), 0),
       currentModule: progress?.wallet?.week || 1,
