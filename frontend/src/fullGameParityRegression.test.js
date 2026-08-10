@@ -32,7 +32,9 @@ describe('full Aug. 9 game-test closure and 2D/3D parity', () => {
     expect(source).toContain('const MAX_CARD_WORDS = 25')
     expect(source).toContain("toggle.textContent = 'Tell me more'")
     expect(source).toContain('queueModalSurfaces()')
-    expect(source).toContain("surface.style.visibility = 'hidden'")
+    expect(source).toContain("node.style.visibility = 'hidden'")
+    expect(source).toContain("node.style.pointerEvents = 'none'")
+    expect(source).toContain("node.setAttribute('aria-hidden', 'true')")
   })
 
   it('turns Lemonade configuration into progressive steps without changing the economics', () => {
