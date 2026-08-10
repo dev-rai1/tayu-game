@@ -1,6 +1,6 @@
 // Teacher/demo admin controls. Public module numbering is:
 // 1 Market & Jars, 2 Lemonade, 3 Budget, 4 Bank,
-// 5 Paycheck Planet, 6 Money Garden, 7 Finale.
+// 5 Money Garden, 6 Paycheck Planet, 7 Finale.
 import { useState, useEffect } from 'react'
 import { useGame } from '../world/store.js'
 import { isPaycheckWorldActive } from '../world/paycheckMode.js'
@@ -15,15 +15,15 @@ const MODULE_NAME = {
   2: 'Lemonade Stand',
   3: 'Budget Town',
   4: 'Bank of TAYU',
-  5: 'Paycheck Planet',
-  6: 'Money Garden',
+  5: 'Money Garden',
+  6: 'Paycheck Planet',
   7: 'Finale Area',
 }
 
 function publicModuleStep(state) {
-  if (isPaycheckWorldActive()) return 5
+  if (isPaycheckWorldActive()) return 6
   if (state.gameComplete && state.objective === 'party') return 7
-  if (state.week === 5) return 6
+  if (state.week === 5) return 5
   return Math.max(1, Math.min(4, Number(state.week || 1)))
 }
 
@@ -67,13 +67,13 @@ export function AdminPanel({ showButton = true }) {
   const moduleBack = guard(() => { if (moduleStep > 1) openPublicModule(moduleStep - 1) })
   const moduleForward = guard(() => { if (moduleStep < 7) openPublicModule(moduleStep + 1) })
 
-  const wkInfo = open && adminUnlocked && moduleStep !== 5 && moduleStep !== 7
+  const wkInfo = open && adminUnlocked && moduleStep !== 6 && moduleStep !== 7
     ? (() => { try { return g().adminCurrentWeek() } catch { return { n: 1, max: 1 } } })()
     : { n: 1, max: 1 }
   const jumpWeek = (d) => guard(() => g().adminJumpWeek(Math.max(1, Math.min(wkInfo.max, wkInfo.n + d))))()
 
   const addMoney = guard(() => {
-    if (moduleStep === 5 || moduleStep === 7) return
+    if (moduleStep === 6 || moduleStep === 7) return
     const amt = Math.max(0, Number(money) || 0)
     if (!amt) return
     const s = g()
@@ -137,15 +137,15 @@ export function AdminPanel({ showButton = true }) {
           </div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">
-            {moduleStep === 5 ? 'PAYCHECK PLANET: IN-WORLD ACTIVITY' : moduleStep === 7 ? 'FINALE' : `WEEK ${wkInfo.n} of ${wkInfo.max}`}
+            {moduleStep === 6 ? 'PAYCHECK PLANET: IN-WORLD ACTIVITY' : moduleStep === 7 ? 'FINALE' : `WEEK ${wkInfo.n} of ${wkInfo.max}`}
           </div>
           <div className="mt-1 flex gap-2">
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1 || moduleStep === 5 || moduleStep === 7} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max || moduleStep === 5 || moduleStep === 7} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
+            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1 || moduleStep === 6 || moduleStep === 7} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
+            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max || moduleStep === 6 || moduleStep === 7} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
           </div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">ADD MONEY</div>
-          {moduleStep === 5 ? (
+          {moduleStep === 6 ? (
             <div className="mt-1 rounded-lg bg-white/10 px-3 py-2 text-[11px] text-white/70">Paycheck Planet uses its own animated practice paycheck, so no admin money override is needed.</div>
           ) : (
             <div className="mt-1 flex gap-2">
