@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { flushTimelines } from '../anim/timeline.js'
 import { say } from '../services/speech.js'
+import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { useGame } from './store.js'
 import { SHOPKEEPER, STORE_ITEMS } from './config.js'
 import { WORLD_CHAPTER_COUNT } from '../constants/modules.js'
+import { useTaxLab } from './taxLabStore.js'
+import { taxStationForStep } from './taxDistrictLayout.js'
 
 const SHOP_LINES_INTRO = [
   "Welcome to the MARKET! I'm Mr. Bram.",
@@ -39,7 +42,7 @@ function Action({ children, onClick, secondary = false }) {
   )
 }
 
-export function AccessibleWorld() {
+export function AccessibleWorld({ taxMode = false }) {
   const [introExpanded, setIntroExpanded] = useState(true)
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
 
@@ -49,12 +52,9 @@ export function AccessibleWorld() {
   }, [])
 
   const game = useGame()
+  const tax = useTaxLab()
   const { week, objective, mailboxOpened, scenarioState, bramTalked, bought, lemPhase, bt, bk, mgPhase, gameComplete, weekComplete } = game
 
-  // The shared HUD owns the ? button, but its default controls describe the 3D
-  // world. In 2D, immediately consume that request and replace it with this
-  // destination-button help dialog so contradictory WASD/camera instructions
-  // are never left open behind the accessible experience.
   useEffect(() => {
     if (!game.helpOpen) return
     setHelpDialogOpen(true)
@@ -62,7 +62,20 @@ export function AccessibleWorld() {
   }, [game.helpOpen, game.setHelpOpen])
 
   const actions = []
-  if (gameComplete) {
+  if (taxMode) {
+    if (tax.phase === 'intro') {
+      actions.push(['Go to Paycheck Planet — meet Maya at the Tax Help desk', tax.openGuide])
+    } else if (tax.phase === 'case') {
+      TAX_CASES.forEach((taxCase) => {
+        actions.push([`Meet ${taxCase.name || taxCase.id} — inspect this W-2`, () => tax.previewClient(taxCase)])
+      })
+    } else if (tax.phase === 'steps') {
+      const station = taxStationForStep(tax.stepNumber)
+      if (station) actions.push([`Go to ${station.label} — complete tax step ${tax.stepNumber} of 6`, () => tax.openStation(tax.stepNumber)])
+    } else if (tax.phase === 'complete') {
+      actions.push(['Return to Maya — review Module 5', tax.openGuide])
+    }
+  } else if (gameComplete) {
     actions.push(['Final step: Enter the celebration area and get my certificate', () => useGame.setState({ enterParty: true })])
   } else if (week === 1 && objective === 'mailbox') {
     actions.push(['Step 1: Collect my $30 allowance from the Allowance Bank', game.openMailbox])
@@ -89,7 +102,14 @@ export function AccessibleWorld() {
     actions.push([mgPhase === 'toGarden' ? 'Step 1: Meet Mr. Sprout and enter the Money Garden' : 'Continue: Open my portfolio, make one choice, and test it', game.enterGarden])
   }
 
-  const busy = !!(game.dialog || game.lessons.length || game.cards.length || game.panelJar || game.panelItem || game.btPanel || game.bkPanel || game.panelPortfolio || weekComplete || LEMONADE_PANEL_PHASES.has(lemPhase) || game.scenarioLocked || (week === 5 && ['choices', 'slider', 'summary'].includes(game.mg?.phase)))
+  const busy = taxMode
+    ? Boolean(tax.panel)
+    : Boolean(game.dialog || game.lessons.length || game.cards.length || game.panelJar || game.panelItem || game.btPanel || game.bkPanel || game.panelPortfolio || weekComplete || LEMONADE_PANEL_PHASES.has(lemPhase) || game.scenarioLocked || (week === 5 && ['choices', 'slider', 'summary'].includes(game.mg?.phase)))
+
+  const title = taxMode ? 'Paycheck Planet · Tax Lab' : (MODULE_NAMES[week] || 'TAYU')
+  const intro = taxMode
+    ? 'Read a paycheck and W-2, calculate taxable income, and practice filing with Maya.'
+    : MODULE_INTROS[week]
 
   return (
     <>
@@ -99,11 +119,13 @@ export function AccessibleWorld() {
             <div className="pop-in rounded-3xl border-2 border-teal/50 bg-navy/95 p-5 shadow-2xl">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="inline-flex rounded-full bg-teal px-3 py-1 text-xs font-extrabold text-navy">ACCESSIBLE 2D MODE</div>
-                <div aria-label={`World chapter ${week} of ${WORLD_CHAPTER_COUNT}`} className="rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white">WORLD CHAPTER {week} / {WORLD_CHAPTER_COUNT}</div>
+                <div aria-label={taxMode ? 'Learning Module 5' : `World chapter ${week} of ${WORLD_CHAPTER_COUNT}`} className="rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white">
+                  {taxMode ? 'MODULE 5' : `WORLD CHAPTER ${week} / ${WORLD_CHAPTER_COUNT}`}
+                </div>
               </div>
-              <h1 aria-live="polite" className="mt-3 font-display text-3xl font-extrabold">{MODULE_NAMES[week] || 'TAYU'}</h1>
-              <p className="mt-2 rounded-2xl bg-teal/10 px-4 py-3 text-base font-bold leading-relaxed text-teal">{MODULE_INTROS[week]}</p>
-              <p className="mt-2 text-base font-semibold leading-relaxed text-white/85">Walking is replaced with clear destination buttons. Each button says exactly what it opens and what to do next. Your lessons, choices, money, progress, and rewards work the same way.</p>
+              <h1 aria-live="polite" className="mt-3 font-display text-3xl font-extrabold">{title}</h1>
+              <p className="mt-2 rounded-2xl bg-teal/10 px-4 py-3 text-base font-bold leading-relaxed text-teal">{intro}</p>
+              <p className="mt-2 text-base font-semibold leading-relaxed text-white/85">No walking is required. Use one destination button at a time; the next button appears after each activity.</p>
               <button type="button" onClick={() => setIntroExpanded(false)} className="mt-4 w-full rounded-2xl bg-teal px-4 py-3 font-extrabold text-navy">Got it — show my next step</button>
             </div>
           ) : (
@@ -112,7 +134,7 @@ export function AccessibleWorld() {
 
           {!busy && actions.length > 0 && <section aria-labelledby="next-step-title" aria-live="polite" aria-atomic="true" className="pop-in mt-4 rounded-3xl bg-navy/95 p-5 shadow-xl"><div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/60">Do this now</div><h2 id="next-step-title" className="mt-1 font-display text-xl font-extrabold text-teal">Your next step</h2><div className="mt-3 flex flex-col gap-3">{actions.map(([label, action, secondary]) => <Action key={label} onClick={action} secondary={secondary}>{label}</Action>)}</div></section>}
           {!busy && actions.length === 0 && <div role="status" aria-live="polite" className="mt-4 rounded-3xl bg-navy/95 p-5 text-center text-lg font-bold shadow-xl">Complete the choice currently shown on screen. The next step will appear here automatically.</div>}
-          {game.scenarioLocked && <div role="status" aria-live="polite" className="mt-4 rounded-3xl bg-navy/95 p-5 text-center text-lg font-bold shadow-xl">Finishing this activity… Your next choice will appear automatically.</div>}
+          {!taxMode && game.scenarioLocked && <div role="status" aria-live="polite" className="mt-4 rounded-3xl bg-navy/95 p-5 text-center text-lg font-bold shadow-xl">Finishing this activity… Your next choice will appear automatically.</div>}
         </div>
       </main>
 
