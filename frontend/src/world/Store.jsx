@@ -37,6 +37,7 @@ function Item({ item }) {
     }
   })
   const [lx, lz] = item.pos
+  // Keep the category hidden so the player has to decide whether the item is a need or a want.
   const nameCard = cardTexture(item.name.toUpperCase(), `$${item.price}`)
   return (
     <group
