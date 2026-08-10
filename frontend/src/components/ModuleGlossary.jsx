@@ -46,6 +46,21 @@ const WORDS = {
     ],
   },
   5: {
+    title: 'Money Garden · Modules 5A + 5B',
+    terms: [
+      ['Stock', 'A small ownership interest in a company.'],
+      ['Share', 'One unit of stock ownership.'],
+      ['Return', 'The gain or loss in an investment’s value over time.'],
+      ['Risk', 'The uncertainty that an investment may lose value or earn less than expected.'],
+      ['Diversification', 'Spreading money across different investments so one result matters less. It reduces some risk but cannot remove all risk.'],
+      ['Concentration risk', 'The extra risk created when too much of a portfolio depends on one investment.'],
+      ['Research', 'Looking at credible information about an investment and the business behind it before making a decision.'],
+      ['Time horizon', 'How long until you expect to need the money for your goal.'],
+      ['Rebalancing', 'Adjusting holdings after prices change so a portfolio moves back toward its intended mix and risk level.'],
+      ['Hype', 'Excitement or attention that can push people to act without enough evidence.'],
+    ],
+  },
+  6: {
     title: 'Paycheck Planet · Tax Filing Lab',
     terms: [
       ['Tax return', 'A form used to report tax information and figure out whether tax is still due or money should be refunded.'],
@@ -58,21 +73,6 @@ const WORDS = {
       ['Tax credit', 'An amount that reduces calculated tax directly.'],
       ['Refund', 'Money returned when the practice amount withheld is more than final tax.'],
       ['Amount due', 'Money still owed when final tax is more than the practice amount withheld.'],
-    ],
-  },
-  6: {
-    title: 'Money Garden',
-    terms: [
-      ['Stock', 'A small ownership interest in a company.'],
-      ['Share', 'One unit of stock ownership.'],
-      ['Return', 'The gain or loss in an investment’s value over time.'],
-      ['Risk', 'The uncertainty that an investment may lose value or earn less than expected.'],
-      ['Diversification', 'Spreading money across different investments so one result matters less. It reduces some risk but cannot remove all risk.'],
-      ['Concentration risk', 'The extra risk created when too much of a portfolio depends on one investment.'],
-      ['Research', 'Looking at credible information about an investment and the business behind it before making a decision.'],
-      ['Time horizon', 'How long until you expect to need the money for your goal.'],
-      ['Rebalancing', 'Adjusting holdings after prices change so a portfolio moves back toward its intended mix and risk level.'],
-      ['Hype', 'Excitement or attention that can push people to act without enough evidence.'],
     ],
   },
 }
