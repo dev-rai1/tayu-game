@@ -44,7 +44,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
-    expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}')
+    expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("jump === '6' ? 5")
