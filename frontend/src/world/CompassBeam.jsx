@@ -5,18 +5,10 @@ import { getObjectiveTarget, arriveRadius, guidePath } from './objective.js'
 import { TAX_DISTRICT, TAYU } from './config.js'
 import { isPaycheckWorldActive } from './paycheckMode.js'
 
-// THE guidance arrow (Master Adjustment C2 - comments 11/14/17).
-//  • Emits from the avatar's NECK height - never from the ground.
-//  • A straight, HORIZONTAL shaft+head locked flat (never tilts into the floor).
-//  • Re-aimed at the exact current target EVERY frame - cannot be stale.
-//  • Bright brand teal with a glow and a gentle pulse toward the target.
-//  • Disappears the moment the player arrives (paired with the overhead marker).
-// A breadcrumb dot trail regenerates from the avatar outward so the route
-// visibly "flows" toward the destination like airport floor lights.
-
 const NECK_H = 1.5
 const DOTS = 18
 const DOT_SPACING = 1.1
+const AVATAR_CLEARANCE = 2.6
 
 export function CompassBeam() {
   const grp = useRef()
@@ -31,9 +23,6 @@ export function CompassBeam() {
     t.current += d
     const st = useGame.getState()
     const paycheck = isPaycheckWorldActive()
-    // Paycheck Planet is public Module 5 but intentionally does not consume a
-    // legacy world-week number. Give it its own guidance destination so an
-    // admin/module jump never leaves the arrows pointing at the old chapter.
     const target = paycheck
       ? [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.2]
       : getObjectiveTarget(st)
@@ -46,8 +35,6 @@ export function CompassBeam() {
     g.visible = show
     if (b) b.visible = show
 
-    // R9 1.3: the guide path follows the RING ROAD around the park; the neck
-    // arrow aims at the first waypoint, the breadcrumbs march the whole path.
     let path = null
     if (show) {
       path = guidePath(playerPos.x, playerPos.z, target)
@@ -64,8 +51,6 @@ export function CompassBeam() {
         pulse.current.position.z = 0.95 + 0.12 * Math.sin(t.current * 4)
       }
 
-      // A tall, always-visible destination beacon answers "where are the arrows?"
-      // even when the route bends behind scenery.
       if (b) b.position.set(target[0], 0.08, target[1])
       if (beaconArrow.current) {
         beaconArrow.current.position.y = 2.35 + 0.22 * Math.sin(t.current * 4)
@@ -77,11 +62,12 @@ export function CompassBeam() {
       }
     }
 
-    // Breadcrumbs: march along the guide path, fresh each frame.
     let di = 0
     if (show && path) {
       let px = playerPos.x, pz = playerPos.z
-      let carry = DOT_SPACING
+      // The first breadcrumb starts outside the avatar footprint so the path
+      // never stacks dots under the player or competes with the neck arrow.
+      let carry = AVATAR_CLEARANCE
       for (const [qx, qz] of path) {
         let segLen = Math.hypot(qx - px, qz - pz)
         while (segLen >= carry && di < DOTS) {

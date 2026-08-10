@@ -30,7 +30,6 @@ function Item({ item }) {
     const st = useGame.getState()
     const bought = st.bought.includes(item.id)
     const near = st.near?.id === `item:${item.id}` && !st.panelItem
-    // attempt-3 scaffold: gently glow the food + drink items so kids find them
     const ghost = st.storeGhost && (item.tags?.includes('food') || item.tags?.includes('drink')) && !bought
     if (box.current) {
       box.current.material.emissiveIntensity = bought ? 0 : near ? Math.sin(Date.now() * 0.006) * 0.35 + 0.5 : ghost ? Math.sin(Date.now() * 0.004) * 0.25 + 0.35 : 0.08
@@ -52,9 +51,9 @@ function Item({ item }) {
       <Billboard position={[0, 0.62, 0]}>
         <mesh><planeGeometry args={[0.58, 0.58]} /><meshBasicMaterial map={tex} transparent toneMapped={false} /></mesh>
       </Billboard>
-      {/* Show only the item name and price before the player makes a choice. */}
-      <Billboard position={[0, 1.36, 0]}>
-        <mesh><planeGeometry args={[1.35, 0.65]} /><meshBasicMaterial map={nameCard} transparent toneMapped={false} /></mesh>
+      {/* Larger, higher labels keep item signage readable without stacking over products. */}
+      <Billboard position={[0, 1.52, 0]}>
+        <mesh><planeGeometry args={[1.58, 0.72]} /><meshBasicMaterial map={nameCard} transparent toneMapped={false} depthTest={false} /></mesh>
       </Billboard>
     </group>
   )
@@ -80,7 +79,6 @@ function tapCheckout(event) {
   state.confirmCheckout()
 }
 
-// Checkout mat supports walking + E/DO and direct touch/click selection.
 function Checkout() {
   const ring = useRef()
   const labelTex = labelTexture('CHECKOUT • TAP OR PRESS E', { bg: '#00DCA0', color: '#071748', accent: '#FFD700' })
@@ -117,34 +115,26 @@ export function Store() {
   const marketTex = cardTexture('MARKET', null, { accent: '#1464F0' })
   return (
     <group position={[STORE[0], 0, STORE[1]]}>
-      {/* big MARKET sign, readable from the path (Section 2.3) */}
-      <Billboard position={[0, 5.2, 0]}>
-        <mesh><planeGeometry args={[3.2, 1.1]} /><meshBasicMaterial map={marketTex} transparent toneMapped={false} /></mesh>
+      {/* Keep the district title inside the camera-safe area instead of clipping at the top edge. */}
+      <Billboard position={[0, 4.55, 0]}>
+        <mesh><planeGeometry args={[3.6, 1.2]} /><meshBasicMaterial map={marketTex} transparent toneMapped={false} depthTest={false} /></mesh>
       </Billboard>
-      {/* floor */}
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[10, 10]} /><meshStandardMaterial color="#fff1d6" roughness={1} />
       </mesh>
-      {/* OPEN-FRONT storefront: back + two low side walls; front fully open so the
-          camera sees the shelves. Sign sits on the BACK wall (never occludes). */}
       <RoundedBox args={[10, 3, 0.4]} radius={0.12} smoothness={3} position={[0, 1.5, -4.8]} castShadow><meshStandardMaterial color={WALL} roughness={0.9} /></RoundedBox>
       <RoundedBox args={[0.4, 2.4, 9.6]} radius={0.12} smoothness={3} position={[-4.8, 1.2, -0.2]} castShadow><meshStandardMaterial color={WALL2} roughness={0.9} /></RoundedBox>
       <RoundedBox args={[0.4, 2.4, 9.6]} radius={0.12} smoothness={3} position={[4.8, 1.2, -0.2]} castShadow><meshStandardMaterial color={WALL2} roughness={0.9} /></RoundedBox>
-      {/* sign mounted flat on the back wall, facing the camera */}
       <mesh position={[0, 2.4, -4.55]}><planeGeometry args={[4.16, 1.3]} /><meshBasicMaterial map={signTex} transparent toneMapped={false} /></mesh>
-      {/* slim striped awning at the very top of the open front (high, doesn't block shelves) */}
       {[-4.4, 4.4].map((x) => (<mesh key={x} position={[x, 1.5, 4.7]} castShadow><cylinderGeometry args={[0.1, 0.1, 3, 10]} /><meshStandardMaterial color="#c9a06a" /></mesh>))}
       <RoundedBox args={[10, 0.4, 0.6]} radius={0.1} smoothness={3} position={[0, 3, 4.7]} castShadow><meshStandardMaterial color="#e2564f" roughness={0.8} /></RoundedBox>
 
       <Shelf z={-1} />
       <Shelf z={2.6} />
-
-      {/* checkout counter */}
       <RoundedBox args={[3, 1, 1]} radius={0.1} smoothness={3} position={[0, 0.5, -2.4]} castShadow><meshStandardMaterial color="#8a5a2b" roughness={0.8} /></RoundedBox>
 
       {STORE_ITEMS.map((it) => <Item key={it.id} item={it} />)}
       <Checkout />
-      {/* Mr. Bram is now an animatable stage actor (ConsequenceStage), idling here. */}
     </group>
   )
 }

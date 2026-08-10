@@ -24,9 +24,11 @@ import { Boundary } from '../components/Boundary.jsx'
 // depth, ACES tone mapping. HUD is a sibling DOM layer (pages/World.jsx).
 export function GameWorld({ avatar }) {
   return (
-    <div className="tayu-world-canvas" aria-label="TAYU town game world">
+    <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
       <Boundary name="canvas" hard>
         <Canvas
+          role="application"
+          aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination. Accessible 2D mode is available in Settings."
           camera={{ position: [0, 7, 11], fov: 52 }}
           dpr={1}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}

@@ -65,6 +65,38 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('Use the large buttons under “Your next step.”')
   })
 
+  it('keeps Module 5 reachable and playable from Accessible 2D', () => {
+    const accessible = read('frontend/src/world/AccessibleWorld.jsx')
+    const world = read('frontend/src/pages/World.jsx')
+    expect(accessible).toContain('export function AccessibleWorld({ taxMode = false })')
+    expect(accessible).toContain('Go to Paycheck Planet — meet Maya at the Tax Help desk')
+    expect(accessible).toContain('tax.previewClient(taxCase)')
+    expect(accessible).toContain('tax.openStation(tax.stepNumber)')
+    expect(accessible).toContain("title = taxMode ? 'Paycheck Planet · Tax Lab'")
+    expect(world).toContain('<AccessibleWorld taxMode={taxMode} />')
+    expect(world).toContain('{taxMode && use3D && <TaxWorldInteractionBridge />}')
+    expect(world).toContain('{taxMode && use3D && <TaxActionPrompt />}')
+  })
+
+  it('keeps an explicit player-selectable 2D/3D mode and explains fallback', () => {
+    const settings = read('frontend/src/pages/Settings.jsx')
+    const prefs = read('frontend/src/services/worldModePreferences.js')
+    const world = read('frontend/src/pages/World.jsx')
+    expect(settings).toContain('Accessible 2D')
+    expect(settings).toContain('3D world')
+    expect(settings).toContain('3D is not available on this device right now')
+    expect(prefs).toContain("const STORAGE_KEY = 'tayu-world-mode'")
+    expect(world).toContain('const use3D = webglAvailable && worldMode !== WORLD_MODES.TWO_D')
+    expect(world).toContain('Accessible 2D is active')
+  })
+
+  it('labels the 3D canvas for screen readers and points to the 2D alternative', () => {
+    const source = read('frontend/src/world/GameWorld.jsx')
+    expect(source).toContain('role="application"')
+    expect(source).toContain('Interactive TAYU 3D learning world')
+    expect(source).toContain('Accessible 2D mode is available in Settings.')
+  })
+
   it('keeps the jar HUD, Skip Talk, and Admin controls in separate screen anchors', () => {
     const hud = read('frontend/src/world/Hud.jsx')
     const skip = read('frontend/src/world/OverlayEscapeControls.jsx')
@@ -73,6 +105,16 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(skip).toContain('fixed right-4 top-[5.5rem]')
     expect(admin).toContain('fixed right-3 z-[1000]')
     expect(admin).toContain("bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'")
+  })
+
+  it('keeps dead primary actions visibly disabled with a reason', () => {
+    const lemonade = read('frontend/src/world/Hud.jsx')
+    const budget = read('frontend/src/world/BudgetPanels.jsx')
+    expect(lemonade).toContain('disabled={!canAfford || price === null}')
+    expect(lemonade).toContain("price === null && <div className=\"mt-1 text-xs font-bold text-teal\"")
+    expect(budget).toContain('aria-describedby="grocery-checkout-help"')
+    expect(budget).toContain('more food')
+    expect(budget).toContain('disabled:cursor-not-allowed')
   })
 
   it('keeps the desktop cookie prompt away from centered landing controls', () => {
@@ -127,7 +169,7 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     const source = read('frontend/src/pages/World.jsx')
     expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
     expect(source).toContain('{!taxMode && <JarPlanCoach />}')
-    expect(source).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}')
+    expect(source).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
   })
 
   it('keeps jar reward progression behind a successful three-jar financial plan', () => {
