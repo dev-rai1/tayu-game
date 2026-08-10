@@ -99,18 +99,18 @@ export default function ModuleSelect() {
     const internalWorldModule = target.worldModule || target.n
     let canResume = Boolean(wallet && internalWorldModule === Number(wallet.week || 1) && !badges.includes(target.badge))
 
-    if (target.n === 6 && gardenPart) {
+    if (target.n === 5 && gardenPart) {
       localStorage.setItem('tayu-garden-entry-part', gardenPart)
-      // If the learner intentionally chooses 6A after already reaching 6B,
-      // restart 6A instead of silently dropping them back into the later part.
+      // If the learner intentionally chooses 5A after already reaching 5B,
+      // restart 5A instead of silently dropping them back into the later part.
       if (gardenPart === 'A' && gardenPartAComplete) canResume = false
-      // A completed 6B replay should begin at 6B, not the very start of 6A.
+      // A completed 5B replay should begin at 5B, not the very start of 5A.
       if (gardenPart === 'B' && gardenPartBComplete) canResume = false
     }
 
-    // World.jsx interprets this as PUBLIC module numbering. Module 5 opens
-    // Paycheck Planet; Module 6 maps to the legacy Money Garden world week.
-    if (!canResume || target.n === 5) localStorage.setItem('tayu-jump-module', String(target.n))
+    // World.jsx interprets this as PUBLIC module numbering. Module 5 maps to
+    // the legacy Money Garden world week; Module 6 opens Paycheck Planet.
+    if (!canResume || target.n === 6) localStorage.setItem('tayu-jump-module', String(target.n))
     nav('/world')
   }
 
@@ -124,13 +124,13 @@ export default function ModuleSelect() {
   }
 
   const playGardenPart = (partId) => {
-    if (!canPlay(6)) return
+    if (!canPlay(5)) return
     if (partId === 'B' && !gardenPartAComplete) return
-    const olderOptional = Boolean(!teacherPreview && context?.plain && gradePath && !required.includes(6))
+    const olderOptional = Boolean(!teacherPreview && context?.plain && gradePath && !required.includes(5))
     if (olderOptional) {
       setPendingPart(partId)
-      setPendingModule(6)
-    } else launchModule(6, partId)
+      setPendingModule(5)
+    } else launchModule(5, partId)
   }
 
   if (!context) return <main className="grid min-h-screen place-items-center">Loading your session…</main>
@@ -192,9 +192,9 @@ export default function ModuleSelect() {
                 <section key={module.n} className="rounded-3xl border-2 border-white/15 bg-white/5 p-5 sm:col-span-2">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/55">Investing finale</div>
-                      <h2 className="mt-1 font-display text-xl font-extrabold text-white">Module 6 · Money Garden</h2>
-                      <p className="mt-1 max-w-2xl text-sm font-semibold text-white/70">This is intentionally split into two separate modules. Finish 6A first, then 6B unlocks from the same saved portfolio.</p>
+                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-white/55">Investing sequence</div>
+                      <h2 className="mt-1 font-display text-xl font-extrabold text-white">Module 5 · Money Garden</h2>
+                      <p className="mt-1 max-w-2xl text-sm font-semibold text-white/70">This is intentionally split into two separate modules. Finish 5A first, then 5B unlocks from the same saved portfolio.</p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-[10px] font-extrabold ${done ? 'bg-teal text-navy' : olderOptional ? 'bg-sun text-navy' : accessible ? 'bg-white/15 text-white' : 'bg-white/10 text-white/55'}`}>{done ? 'BOTH COMPLETE' : !accessible ? 'LOCKED' : olderOptional ? 'OLDER TOPIC' : requiredForPath ? 'RECOMMENDED' : 'AVAILABLE'}</span>
                   </div>
@@ -204,7 +204,7 @@ export default function ModuleSelect() {
                       const partInProgress = part.id === 'A' ? gardenPartAInProgress : gardenPartBInProgress
                       const partAccessible = accessible && (part.id === 'A' || gardenPartAComplete)
                       const action = !partAccessible
-                        ? 'Finish Module 6A first'
+                        ? 'Finish Module 5A first'
                         : partDone
                           ? `Replay ${part.label} →`
                           : partInProgress
@@ -253,7 +253,7 @@ export default function ModuleSelect() {
           })}
         </div>
 
-        <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">Complete the {required.length} recommended core module{required.length === 1 ? '' : 's'} for your path ({completedRequired.length}/{required.length}). Module 5 plays inside the same TAYU world, and the investing finale is split clearly into Module 6A and Module 6B.</p>
+        <p className="mt-6 rounded-2xl bg-white/5 p-4 text-center text-sm font-bold text-white/70">Complete the {required.length} recommended core module{required.length === 1 ? '' : 's'} for your path ({completedRequired.length}/{required.length}). The investing sequence is split clearly into Module 5A and Module 5B, followed by Paycheck Planet as Module 6 in the same TAYU world.</p>
       </main>
 
       {pendingCard && <div className="fixed inset-0 z-[600] grid place-items-center bg-navy/75 p-5 backdrop-blur-sm"><section role="dialog" aria-modal="true" aria-labelledby="older-module-title" className="w-full max-w-md rounded-3xl border-4 border-sun bg-white p-6 text-center text-navy shadow-2xl"><div className="text-5xl" aria-hidden>🧠</div><h2 id="older-module-title" className="mt-3 font-display text-2xl font-extrabold">You can still continue</h2><p className="mt-3 font-bold text-navy/80"><span className="font-extrabold">{pendingPartCard ? `${pendingPartCard.label}: ${pendingPartCard.title}` : pendingCard.title}</span> is usually recommended for {pendingCard.grades.toLowerCase()}.</p><div className="mt-5 grid gap-2 sm:grid-cols-2"><button type="button" onClick={() => { setPendingModule(null); setPendingPart(null) }} className="min-h-[54px] rounded-2xl bg-navy/10 px-4 font-extrabold text-navy">Choose another</button><button type="button" onClick={() => { const number = pendingModule; const part = pendingPart; setPendingModule(null); setPendingPart(null); launchModule(number, part) }} className="min-h-[54px] rounded-2xl bg-electric px-4 font-extrabold text-white">Continue anyway →</button></div></section></div>}
