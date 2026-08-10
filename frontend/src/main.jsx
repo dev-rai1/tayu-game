@@ -12,6 +12,7 @@ import { PaycheckCompletionCheck } from './components/PaycheckCompletionCheck.js
 import { PublicCopyConsistency } from './components/PublicCopyConsistency.jsx'
 import { PublicModuleProgress } from './components/PublicModuleProgress.jsx'
 import { PlaytestUxParity } from './components/PlaytestUxParity.jsx'
+import { ModalQueueSanitizer } from './components/ModalQueueSanitizer.jsx'
 import { armFirstGesture } from './services/audio.js'
 import './world/replayGuidanceListener.js'
 import { MoneyGardenFlowGuide } from './world/MoneyGardenFlowGuide.jsx'
@@ -32,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <MoneyGardenFlowGuide />
         <ButtonFeedbackEnhancer />
         <PlaytestUxParity />
+        <ModalQueueSanitizer />
       </GameStateProvider>
     </BrowserRouter>
   </React.StrictMode>
