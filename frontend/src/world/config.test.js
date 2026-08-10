@@ -53,8 +53,8 @@ describe('world path separation', () => {
     expect(isClearOfModuleGates(ringPoint(120.5))).toBe(true)
   })
 
-  it('ends the normal road at Money Garden and uses one gold Finale path', () => {
-    const finalModuleGate = ringPoint(STOP_ANGLES.garden)
+  it('ends the normal road at Paycheck Planet and uses one gold Finale path', () => {
+    const finalModuleGate = ringPoint(STOP_ANGLES.tax)
     expect(PATHS.ring.at(-1)).toEqual(finalModuleGate)
     expect(ROYAL_APPROACH.gate).toEqual(finalModuleGate)
     expect(PATHS.royalParty[0]).toEqual(finalModuleGate)
