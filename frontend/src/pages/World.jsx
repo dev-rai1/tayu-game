@@ -30,6 +30,7 @@ import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.j
 import { AdminPanel } from '../components/AdminPanel.jsx'
 import { useTaxLab } from '../world/taxLabStore.js'
 import { hasWebGL } from '../utils/webgl.js'
+import { getWorldModePreference, subscribeWorldModePreference, WORLD_MODES } from '../services/worldModePreferences.js'
 import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
@@ -191,10 +192,14 @@ export default function World() {
   const week = useGame((s) => s.week)
   const cards = useGame((s) => s.cards)
   const mg = useGame((s) => s.mg)
-  const [use3D] = useState(hasWebGL)
+  const [webglAvailable] = useState(() => hasWebGL())
+  const [worldMode, setWorldMode] = useState(() => getWorldModePreference())
+  const use3D = webglAvailable && worldMode !== WORLD_MODES.TWO_D
   const taxMode = paycheckMode || isPaycheckWorldActive()
   const sawBankTaxHandoff = useRef(false)
   const previousTaxMode = useRef(taxMode)
+
+  useEffect(() => subscribeWorldModePreference(setWorldMode), [])
 
   useEffect(() => {
     const sync = (event) => setPaycheckMode(event?.detail?.active ?? isPaycheckWorldActive())
@@ -259,7 +264,9 @@ export default function World() {
         ? {
             ...card,
             __paycheckIntegrated: true,
-            text: 'Your bank plan is ready. Module 5 is already on this same town map. Keep walking to Paycheck Planet and meet Maya.',
+            text: use3D
+              ? 'Your bank plan is ready. Module 5 is on this same town map. Walk to Paycheck Planet and meet Maya.'
+              : 'Your bank plan is ready. Module 5 is next. In Accessible 2D, use the Paycheck Planet destination button to meet Maya.',
             // Important: the old action was bk.togarden, which started Money
             // Garden before Tax Lab and could freeze movement. Tax starts only
             // after this card is dismissed; Garden begins after Module 5.
@@ -267,7 +274,7 @@ export default function World() {
           }
         : card),
     })
-  }, [cards])
+  }, [cards, use3D])
 
   useEffect(() => {
     const hasHandoff = cards.some((card) => card.id === 'bkhand')
@@ -346,15 +353,13 @@ export default function World() {
     : ''
 
   return (
-    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'}>
-      {/* There is exactly one 3D world. Module 5 never swaps this component. */}
-      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld />}
+    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'} data-world-mode={use3D ? '3d' : '2d'}>
+      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}
 
-      {taxMode && <TaxWorldInteractionBridge />}
+      {taxMode && use3D && <TaxWorldInteractionBridge />}
       {taxMode && <TaxWorkbenchOverlay />}
-      {taxMode && <TaxActionPrompt />}
+      {taxMode && use3D && <TaxActionPrompt />}
 
-      {/* Map/HUD and movement stay mounted during Module 5. */}
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       {!taxMode && <JarPlanCoach />}
       {!taxMode && <LemonadeCompletionCheck onContinue={onContinue} />}
@@ -362,6 +367,14 @@ export default function World() {
       {!taxMode && <PersistentImprovementCoach />}
       {!taxMode && <GuidedCommerceOverlay />}
       {!taxMode && <OverlayEscapeControls />}
+
+      {!webglAvailable && worldMode !== WORLD_MODES.TWO_D && (
+        <div role="status" className="pointer-events-auto absolute bottom-4 left-4 z-[410] max-w-xs rounded-2xl border border-teal/40 bg-navy/95 px-4 py-3 text-sm font-bold text-white shadow-xl">
+          <div className="text-teal">Accessible 2D is active</div>
+          <div className="mt-1 text-white/80">3D is unavailable on this device. You can choose your world mode in Settings.</div>
+          <button type="button" onClick={() => navigate('/settings')} className="mt-2 rounded-xl bg-teal px-3 py-2 text-xs font-extrabold text-navy">Open Settings</button>
+        </div>
+      )}
 
       {!taxMode && week === 5 && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
