@@ -1,6 +1,8 @@
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
+const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
+const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
 
 export function MediaCoverage({ compact = false, about = false }) {
   const sectionClass = about && !compact
@@ -13,18 +15,26 @@ export function MediaCoverage({ compact = false, about = false }) {
       <section className={sectionClass} aria-labelledby={titleId}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
           <span id={titleId} className="font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
-            As seen on
+            Featured
           </span>
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
-            FOX 5 DC story
+            FOX 5 DC
           </a>
           <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
-            WTOP story
+            WTOP News
           </a>
           <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
           <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-brandpurple/10 px-3 py-1.5 text-xs font-extrabold text-brandpurple transition hover:bg-brandpurple/15">
-            Vienna Ledger story
+            Vienna Ledger
+          </a>
+          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
+            Connection Newspapers
+          </a>
+          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
+            Vision Times (Chinese)
           </a>
         </div>
       </section>
@@ -35,11 +45,11 @@ export function MediaCoverage({ compact = false, about = false }) {
     <section className={sectionClass} aria-labelledby={titleId}>
       <div className="mx-auto max-w-4xl rounded-3xl border border-navy/10 bg-white/95 p-6 shadow-lg backdrop-blur">
         <div className="text-center">
-          <p className="font-display text-xs font-extrabold uppercase tracking-[0.18em] text-electric">As seen in the news</p>
-          <h2 id={titleId} className="mt-1 font-display text-2xl font-extrabold text-navy">TAYU on FOX 5 DC, WTOP, and Vienna Ledger</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-navy/70">See how our student-led financial-literacy project, children&rsquo;s book, and classroom outreach are reaching families across Fairfax County and beyond.</p>
+          <p className="font-display text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Featured</p>
+          <h2 id={titleId} className="mt-1 font-display text-2xl font-extrabold text-navy">TAYU in the news</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-navy/70">Explore coverage of our student-led financial-literacy project, children&rsquo;s book, classroom outreach, and the next phase with TAYU.</p>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-2xl border-2 border-[#d71920]/20 bg-[#fff5f5] p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
@@ -66,6 +76,22 @@ export function MediaCoverage({ compact = false, about = false }) {
             </div>
             <p className="mt-3 font-display text-lg font-extrabold text-navy">Book reaches 12 Fairfax schools and four countries</p>
             <p className="mt-1 text-sm leading-relaxed text-navy/65">Read Vienna Ledger&rsquo;s feature on the team&rsquo;s book distribution, classroom impact, and next phase with TAYU.</p>
+          </a>
+          <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-4 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">CONNECTION</span>
+              <span className="text-sm font-extrabold text-navy">Read article →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">Oakton High Trio Plant the Seeds of Wealth in Global Book Launch</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">Connection Newspapers covers the team&rsquo;s classroom results, global book distribution, DECA win, and next phase with TAYU.</p>
+          </a>
+          <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-4 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">VISION TIMES · CHINESE</span>
+              <span className="text-sm font-extrabold text-navy">Read article →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">Fairfax County students create a financial-literacy picture book for elementary students</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">International Chinese-language coverage of the team&rsquo;s 274-book, 17-school outreach and its next step: a financial-literacy game.</p>
           </a>
         </div>
       </div>
