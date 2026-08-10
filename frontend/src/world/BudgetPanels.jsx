@@ -10,7 +10,6 @@ const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximum
 const COLORS = { pocket: '#9aa6b8', bank: '#1464F0', garden: '#00b37f' }
 const NAMES = { pocket: 'Pocket', bank: 'Bank', garden: 'Money Garden' }
 
-// a tiny 2-second line animation: flat / slope / wiggle
 function Spark({ kind, playing }) {
   const paths = {
     flat: 'M4 22 L96 22',
@@ -26,7 +25,6 @@ function Spark({ kind, playing }) {
   )
 }
 
-// Beat 1: the three homes for money
 function OptionsPanel() {
   const bt = useGame((s) => s.bt)
   const btTryOption = useGame((s) => s.btTryOption)
@@ -59,7 +57,6 @@ function OptionsPanel() {
   )
 }
 
-// Beat 2: the LIVE PIE - the heart of Budget Town
 function SplitPie({ split, total, onPick, picked }) {
   const ids = ['pocket', 'bank', 'garden']
   let acc = 0
@@ -114,7 +111,6 @@ function SplitPanel() {
           </div>
           <SplitPie split={bt.split} total={total} onPick={setPicked} picked={picked} />
         </div>
-        {/* the advisor's exact per-slice feedback, live with real percentages */}
         <div aria-live="polite" className="mt-3 min-h-[44px] rounded-2xl bg-navy/5 px-3 py-2 text-sm font-bold leading-snug text-navy/80">
           {picked
             ? sliceLine(picked, Math.round(((bt.split[picked] || 0) / Math.max(1, total)) * 100))
@@ -127,8 +123,6 @@ function SplitPanel() {
   )
 }
 
-// R9 5.1: the GROCERY BASKET mini-game - grab foods (needs) and a treat or
-// two (wants) within the food budget. Tummies first: at least 3 real foods.
 function GroceryPanel() {
   const btGroceryDone = useGame((s) => s.btGroceryDone)
   const [picked, setPicked] = useState([])
@@ -139,6 +133,7 @@ function GroceryPanel() {
     else if (cost + it.cost <= FOOD_BUDGET) setPicked([...picked, it.id])
   }
   const ready = foods >= MIN_FOODS
+  const foodsNeeded = Math.max(0, MIN_FOODS - foods)
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
       <div role="dialog" aria-modal="true" aria-labelledby="grocery-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
@@ -160,11 +155,16 @@ function GroceryPanel() {
             )
           })}
         </div>
-        <div aria-live="polite" className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold leading-snug ${ready ? 'bg-teal/15 text-navy' : 'bg-sun/20 text-navy/80'}`}>
-          {ready ? `${foods} foods and ${picked.length - foods} treat${picked.length - foods === 1 ? '' : 's'} - a smart basket!` : GROCERY_GATE}
+        <div id="grocery-checkout-help" aria-live="polite" className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold leading-snug ${ready ? 'bg-teal/15 text-navy' : 'bg-sun/20 text-navy/80'}`}>
+          {ready ? `${foods} foods and ${picked.length - foods} treat${picked.length - foods === 1 ? '' : 's'} - a smart basket!` : `${GROCERY_GATE} Add ${foodsNeeded} more food${foodsNeeded === 1 ? '' : 's'} to check out.`}
         </div>
-        <button disabled={!ready} onClick={() => btGroceryDone(picked)} className="btn-primary mt-3 min-h-[52px] w-full px-5 disabled:opacity-40">
-          Check out (${cost})
+        <button
+          disabled={!ready}
+          aria-describedby="grocery-checkout-help"
+          onClick={() => btGroceryDone(picked)}
+          className="btn-primary mt-3 min-h-[52px] w-full px-5 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {ready ? `Check out ($${cost})` : `Add ${foodsNeeded} more food${foodsNeeded === 1 ? '' : 's'} to check out`}
         </button>
       </div>
     </div>
