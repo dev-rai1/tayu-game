@@ -41,22 +41,22 @@ describe('physical module districts', () => {
     expect(paycheck).toContain('useTaxLab.getState().openStation(step)')
   })
 
-  it('keeps physical signs clean while the catalog identifies the Money Garden as modules 6A and 6B', () => {
+  it('keeps physical signs clean while the catalog identifies the Money Garden as modules 5A and 5B', () => {
     expect(bank).toContain("labelTexture('BANK OF TAYU'")
     expect(bank).not.toContain("labelTexture('MODULE 4")
     expect(landmarks).toContain("labelTexture('THE MONEY GARDEN'")
-    expect(landmarks).not.toContain("labelTexture('MODULE 6")
-    expect(modules).toMatch(/n:\s*6,[\s\S]*?badge:\s*'garden',[\s\S]*?title:\s*'Money Garden — Modules 6A \+ 6B'/)
-    expect(modules).toContain("label: 'Module 6A'")
-    expect(modules).toContain("label: 'Module 6B'")
+    expect(landmarks).not.toContain("labelTexture('MODULE 5")
+    expect(modules).toMatch(/n:\s*5,[\s\S]*?badge:\s*'garden',[\s\S]*?title:\s*'Money Garden — Modules 5A \+ 5B'/)
+    expect(modules).toContain("label: 'Module 5A'")
+    expect(modules).toContain("label: 'Module 5B'")
   })
 
-  it('gives Bank, Paycheck Planet, Money Garden, and Finale real breathing room', () => {
-    expect(STOP_ANGLES.bank).toBeGreaterThan(STOP_ANGLES.tax)
-    expect(STOP_ANGLES.tax).toBeGreaterThan(STOP_ANGLES.garden)
-    expect(STOP_ANGLES.garden).toBeGreaterThan(STOP_ANGLES.party)
-    expect(distance(BANK_DISTRICT, TAX_DISTRICT)).toBeGreaterThan(17)
-    expect(distance(TAX_DISTRICT, SPROUT)).toBeGreaterThan(17)
-    expect(distance(SPROUT, PARTY_HOUSE)).toBeGreaterThan(30)
+  it('gives Bank, Money Garden, Paycheck Planet, and Finale real breathing room', () => {
+    expect(STOP_ANGLES.bank).toBeGreaterThan(STOP_ANGLES.garden)
+    expect(STOP_ANGLES.garden).toBeGreaterThan(STOP_ANGLES.tax)
+    expect(STOP_ANGLES.tax).toBeGreaterThan(STOP_ANGLES.party)
+    expect(distance(BANK_DISTRICT, SPROUT)).toBeGreaterThan(17)
+    expect(distance(SPROUT, TAX_DISTRICT)).toBeGreaterThan(17)
+    expect(distance(TAX_DISTRICT, PARTY_HOUSE)).toBeGreaterThan(30)
   })
 })
