@@ -12,18 +12,18 @@ const taxCss = read('src/world/taxWorkbench.css')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 
 describe('module entry clarity', () => {
-  it('starts Explore from the beginning without teleporting the player', () => {
-    expect(world).toContain("if (jump === '5')")
+  it('starts Module 6 Explore from the beginning without teleporting the player', () => {
+    expect(world).toContain("if (jump === '6')")
     expect(world).toContain("enterPaycheckPlanet({ restart: true, origin: 'module-select' })")
     expect(world).toContain('saveProfile({ taxLabProgress: null, taxLab: null })')
-    expect(world).toContain("const preservedTaxPosition = jump === '5'")
+    expect(world).toContain("const preservedTaxPosition = jump === '6'")
     expect(world).toContain('playerPos.x = preservedTaxPosition.x')
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
   })
 
-  it('keeps the actual town canvas and movement active during Module 5', () => {
+  it('keeps the actual town canvas and movement active during Module 6', () => {
     expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).toContain('<Hud playerName={state.player.name')

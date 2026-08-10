@@ -35,8 +35,8 @@ import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
 // The original world still uses five internal chapter numbers. Public Module 5
-// (Paycheck Planet · Tax Filing Lab) runs between internal Bank (4) and Money
-// Garden (5). The Tax Lab is a district inside the same persistent town.
+// is Money Garden (split into 5A + 5B). Public Module 6 is Paycheck Planet,
+// which runs after the internal Money Garden week in the same persistent town.
 const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden' }
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 let taxWorldSnapshot = null
@@ -113,8 +113,8 @@ function prepareWorldForTaxWalking() {
     weekComplete: false,
     pendingWeekComplete: false,
     scenarioLocked: false,
-    // Old Lemonade/Garden panel phases used to freeze Player globally. Tax mode
-    // temporarily parks those phase flags without changing the saved module.
+    // Old Lemonade/Garden panel phases can freeze Player globally. Tax mode
+    // temporarily parks those phase flags without changing saved progress.
     lemPhase: null,
     mgPhase: state.mg ? 'tax-paused' : state.mgPhase,
     mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg,
@@ -170,7 +170,7 @@ function enterGardenPartB() {
   }
 }
 
-function finishBankHandoffIntoTax() {
+function finishBankHandoffIntoGarden() {
   const game = useGame.getState()
   const bank = game.bk
   if (bank) {
@@ -179,7 +179,8 @@ function finishBankHandoffIntoTax() {
     game.awardBadge('bank', 'BANK BUILDER')
     game.persist()
   }
-  enterPaycheckPlanet({ origin: 'bank-handoff' })
+  game.adminClearUi()
+  game.startGarden()
 }
 
 export default function World() {
@@ -196,7 +197,7 @@ export default function World() {
   const [worldMode, setWorldMode] = useState(() => getWorldModePreference())
   const use3D = webglAvailable && worldMode !== WORLD_MODES.TWO_D
   const taxMode = paycheckMode || isPaycheckWorldActive()
-  const sawBankTaxHandoff = useRef(false)
+  const sawBankGardenHandoff = useRef(false)
   const previousTaxMode = useRef(taxMode)
 
   useEffect(() => subscribeWorldModePreference(setWorldMode), [])
@@ -228,21 +229,25 @@ export default function World() {
       sessionStorage.removeItem(TAX_ORIGIN_KEY)
     } catch { /* storage can be unavailable */ }
 
-    if (origin === 'bank-handoff') {
+    if (origin === 'garden-handoff') {
       taxWorldSnapshot = null
       const game = useGame.getState()
       game.adminClearUi()
-      game.startGarden()
+      game.unlockParty()
       return
     }
     restoreWorldAfterTax()
   }, [taxMode])
 
   useEffect(() => {
-    if (enterParty) {
-      useGame.setState({ enterParty: false })
-      navigate(loadProfile()?.assessment?.post ? '/guru' : '/assessment/post')
+    if (!enterParty) return
+    useGame.setState({ enterParty: false })
+    const taxComplete = (loadProfile()?.badges || []).includes('tax')
+    if (!taxComplete) {
+      enterPaycheckPlanet({ origin: 'garden-handoff' })
+      return
     }
+    navigate(loadProfile()?.assessment?.post ? '/guru' : '/assessment/post')
   }, [enterParty, navigate])
 
   useEffect(() => {
@@ -258,18 +263,15 @@ export default function World() {
 
   useEffect(() => {
     const handoff = cards.find((card) => card.id === 'bkhand')
-    if (!handoff || handoff.__paycheckIntegrated) return
+    if (!handoff || handoff.__moduleOrderIntegrated) return
     useGame.setState({
       cards: cards.map((card) => card.id === 'bkhand'
         ? {
             ...card,
-            __paycheckIntegrated: true,
+            __moduleOrderIntegrated: true,
             text: use3D
-              ? 'Your bank plan is ready. Module 5 is on this same town map. Walk to Paycheck Planet and meet Maya.'
-              : 'Your bank plan is ready. Module 5 is next. In Accessible 2D, use the Paycheck Planet destination button to meet Maya.',
-            // Important: the old action was bk.togarden, which started Money
-            // Garden before Tax Lab and could freeze movement. Tax starts only
-            // after this card is dismissed; Garden begins after Module 5.
+              ? 'Your bank plan is ready. Module 5 is Money Garden. Follow the route to Mr. Sprout and begin Investing Foundations.'
+              : 'Your bank plan is ready. Module 5 is Money Garden. In Accessible 2D, choose the Money Garden destination to begin Investing Foundations.',
             buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5', act: null })),
           }
         : card),
@@ -279,20 +281,20 @@ export default function World() {
   useEffect(() => {
     const hasHandoff = cards.some((card) => card.id === 'bkhand')
     if (hasHandoff) {
-      sawBankTaxHandoff.current = true
+      sawBankGardenHandoff.current = true
       return
     }
-    if (!sawBankTaxHandoff.current || taxMode) return
-    sawBankTaxHandoff.current = false
-    finishBankHandoffIntoTax()
+    if (!sawBankGardenHandoff.current || taxMode) return
+    sawBankGardenHandoff.current = false
+    finishBankHandoffIntoGarden()
   }, [cards, taxMode])
 
   useEffect(() => {
     // Read the requested public module BEFORE initWorld resets the player. When
-    // Module 5 is selected, preserve the exact current town coordinates so the
-    // learner is never teleported to a special scene or a different district.
+    // Module 6 is selected, preserve the current town coordinates so the
+    // learner stays in the same persistent world while entering Paycheck Planet.
     const jump = localStorage.getItem('tayu-jump-module')
-    const preservedTaxPosition = jump === '5'
+    const preservedTaxPosition = jump === '6'
       ? { x: playerPos.x, y: playerPos.y, z: playerPos.z }
       : null
     const gardenEntryPart = localStorage.getItem('tayu-garden-entry-part')
@@ -313,16 +315,16 @@ export default function World() {
     if (jump) {
       localStorage.removeItem('tayu-jump-module')
       clearWorldMessages()
-      if (jump === '5') {
+      if (jump === '6') {
         enterPaycheckPlanet({ restart: true, origin: 'module-select' })
       } else {
         deactivatePaycheckWorld()
-        const internal = jump === '6' ? 5 : jump === '7' ? 6 : Number(jump)
-        if (jump === '6' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
+        const internal = jump === '5' ? 5 : jump === '7' ? 6 : Number(jump)
+        if (jump === '5' || jump === '7') sessionStorage.setItem('tayu-bypass-tax-story-once', '1')
         setTimeout(() => {
           try {
             useGame.getState().adminJumpModule(internal, false)
-            if (jump === '6' && gardenEntryPart === 'B') setTimeout(enterGardenPartB, 80)
+            if (jump === '5' && gardenEntryPart === 'B') setTimeout(enterGardenPartB, 80)
           } catch (e) {
             console.error(e)
           }
@@ -345,7 +347,7 @@ export default function World() {
   }
 
   const gardenPartB = week === 5 && (Boolean(mg?.partTwoStarted) || Number(mg?.week || 1) > 6)
-  const publicModule = week === 5 ? `6${gardenPartB ? 'B' : 'A'}` : String(week)
+  const publicModule = week === 5 ? `5${gardenPartB ? 'B' : 'A'}` : String(week)
   const publicModuleTitle = week === 5
     ? gardenPartB
       ? 'Money Garden · Markets, Risk & Patience'
@@ -378,9 +380,9 @@ export default function World() {
 
       {!taxMode && week === 5 && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
-          <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} · Investing finale</div>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} · Investing sequence</div>
           <div className="text-base font-extrabold text-white">{publicModuleTitle}</div>
-          <div className="text-xs font-bold text-white/80">{gardenPartB ? 'Purple theme = Module 6B' : 'Green theme = Module 6A'}</div>
+          <div className="text-xs font-bold text-white/80">{gardenPartB ? 'Purple theme = Module 5B' : 'Green theme = Module 5A'}</div>
         </div>
       )}
 

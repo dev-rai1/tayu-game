@@ -14,7 +14,7 @@ const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 const activity = read('src/world/TaxDistrictActivity.jsx')
 const keyboard = read('src/world/useKeyboardControls.js')
 
-describe('Module 5 real-map movement v2', () => {
+describe('Module 6 real-map movement v2', () => {
   it('has exactly one persistent town scene and removes the isolated tax scene', () => {
     expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
     expect(world).not.toContain('TaxLabWorld')
@@ -23,8 +23,8 @@ describe('Module 5 real-map movement v2', () => {
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 
-  it('preserves the exact player coordinates when Explore launches Module 5', () => {
-    expect(world).toContain("const preservedTaxPosition = jump === '5'")
+  it('preserves the exact player coordinates when Explore launches Module 6', () => {
+    expect(world).toContain("const preservedTaxPosition = jump === '6'")
     expect(world).toContain('x: playerPos.x, y: playerPos.y, z: playerPos.z')
     expect(world).toContain('playerPos.x = preservedTaxPosition.x')
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
@@ -43,12 +43,11 @@ describe('Module 5 real-map movement v2', () => {
     expect(world).toContain('moveTarget.x = null')
   })
 
-  it('does not accidentally start Money Garden before Module 5', () => {
+  it('hands off from the Bank into Money Garden as Module 5 before tax', () => {
     expect(world).toContain("label: 'Start Module 5', act: null")
-    expect(world).toContain('finishBankHandoffIntoTax()')
-    expect(world).toContain("enterPaycheckPlanet({ origin: 'bank-handoff' })")
-    expect(world).toContain("if (origin === 'bank-handoff')")
+    expect(world).toContain('finishBankHandoffIntoGarden()')
     expect(world).toContain('game.startGarden()')
+    expect(world).toContain("enterPaycheckPlanet({ origin: 'garden-handoff' })")
   })
 
   it('lets the player walk up and use Maya, taxpayers, and stations with E or the action control', () => {

@@ -19,16 +19,17 @@ describe('module grade-level catalog', () => {
     expect(bands['High School'].plannedModules).not.toContain('Tax filing')
   })
 
-  it('places the in-world Tax Filing Lab before the Money Garden', () => {
+  it('places Money Garden 5A/5B before the Module 6 Tax Filing Lab', () => {
     const tax = MODULE_CATALOG.find((module) => module.badge === 'tax')
     const garden = MODULE_CATALOG.find((module) => module.badge === 'garden')
-    expect(tax.n).toBe(5)
+    expect(garden.n).toBe(5)
+    expect(garden.worldModule).toBe(5)
+    expect(garden.minutes).toContain('Two')
+    expect(garden.parts.map((part) => part.label)).toEqual(['Module 5A', 'Module 5B'])
+    expect(tax.n).toBe(6)
     expect(tax.route).toBeUndefined()
     expect(tax.title).toContain('Tax Filing Lab')
     expect(tax.desc).toContain('practice tax return')
     expect(tax.desc).toContain('W-2')
-    expect(garden.n).toBe(6)
-    expect(garden.worldModule).toBe(5)
-    expect(garden.minutes).toContain('Two')
   })
 })

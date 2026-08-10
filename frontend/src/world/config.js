@@ -8,7 +8,7 @@
 // circle is a park: lake, palms, forests, animals, and ambient townsfolk.
 // Story order around the loop (walking clockwise from spawn):
 // spawn -> Allowance Bank -> Home/Jars -> Market -> Lemonade -> Budget Town
-// -> Bank -> Paycheck Planet -> Money Garden -> FINALE AREA -> back to spawn.
+// -> Bank -> Money Garden -> Paycheck Planet -> FINALE AREA -> back to spawn.
 
 // The districts need to read as separate places, with landscaped breathing
 // room between them. Scale the complete outer route about the park center so
@@ -29,8 +29,9 @@ const outerStopPoint = (deg, outward = 0) => {
   return [x + (dx / d) * outward, z + (dz / d) * outward]
 }
 // The final four destinations intentionally use wider angular gaps so each
-// reads as its own district instead of one crowded cluster.
-export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 44, tax: 22, garden: 0, party: -46 }
+// reads as its own district instead of one crowded cluster. Money Garden is
+// now the fifth public module and Paycheck Planet is the sixth/final module.
+export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 44, garden: 22, tax: 0, party: -46 }
 
 // Distinct scenery neighborhoods continue around the ENTIRE ring. The first
 // nine fill the module side; the final four prevent the quiet back half from
@@ -51,11 +52,11 @@ export const SCENERY_ZONES = [
   { angle: -160, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
 ]
 export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
-// One story road: spawn through Money Garden. It deliberately stops at the
+// One story road: spawn through Paycheck Planet. It deliberately stops at the
 // final module so the only route beyond it is the gold Finale path.
 export const RING_POINTS = [
   ...Array.from({ length: 25 }, (_, i) => ringPoint(180 - i * 7.5)),
-  ringPoint(STOP_ANGLES.garden),
+  ringPoint(STOP_ANGLES.tax),
 ]
 
 export const SPAWN = sc([0, -6]) // west point of the ring
@@ -73,10 +74,10 @@ export const STORE = sc([16.7, -42.6]) // TAYU MARKET - open front faces the rin
 export const LEMONADE = sc([31.3, -43]) // the lemonade stand
 export const BUDGET_TOWN = sc([48, -42.5]) // Budget Town - now a single indoor house
 export const BANK_DISTRICT = outerStopPoint(STOP_ANGLES.bank, 10) // Bank of TAYU
-export const TAX_DISTRICT = outerStopPoint(STOP_ANGLES.tax, 15) // Paycheck Planet
-export const SPROUT = outerStopPoint(STOP_ANGLES.garden, 12) // Money Garden plaza
-// The finale sits well beyond the garden with a landscaped buffer so the final
-// approach feels like a separate destination rather than another storefront.
+export const SPROUT = outerStopPoint(STOP_ANGLES.garden, 12) // Money Garden plaza (Module 5)
+export const TAX_DISTRICT = outerStopPoint(STOP_ANGLES.tax, 15) // Paycheck Planet (Module 6)
+// The finale sits well beyond Paycheck Planet with a landscaped buffer so the
+// final approach feels like a separate destination rather than another storefront.
 export const PARTY_HOUSE = (() => {
   const [px, pz] = ringPoint(STOP_ANGLES.party)
   const dx = px - CENTER[0], dz = pz - CENTER[1]
@@ -99,7 +100,7 @@ const partyForecourt = [
 ]
 
 // A single gold path takes over exactly where the normal road ends. Its outward
-// bow gives the Money Garden and Finale their own visual breathing room.
+// bow gives Paycheck Planet and the Finale their own visual breathing room.
 const royalArcPoint = (angle, outward = 0) => {
   const [x, z] = ringPoint(angle)
   const dx = x - CENTER[0], dz = z - CENTER[1]
@@ -108,7 +109,7 @@ const royalArcPoint = (angle, outward = 0) => {
 }
 
 export const ROYAL_APPROACH = {
-  gate: ringPoint(STOP_ANGLES.garden),
+  gate: ringPoint(STOP_ANGLES.tax),
   forecourt: partyForecourt,
   entrance: partyEntrance,
 }
@@ -124,10 +125,10 @@ export const PATHS = {
   spurLemonade: [ringPoint(STOP_ANGLES.lemonade), LEMONADE],
   spurBudget: [ringPoint(STOP_ANGLES.budget), [BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4]],
   spurBank: [ringPoint(STOP_ANGLES.bank), [BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2]],
-  spurTax: [ringPoint(STOP_ANGLES.tax), [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]],
   spurGarden: [ringPoint(STOP_ANGLES.garden), [SPROUT[0] - 6.2, SPROUT[1] + 4.6]],
+  spurTax: [ringPoint(STOP_ANGLES.tax), [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]],
   royalParty: [
-    ringPoint(STOP_ANGLES.garden),
+    ringPoint(STOP_ANGLES.tax),
     royalArcPoint(-10, 1.2),
     royalArcPoint(-20, 2.4),
     royalArcPoint(-32, 3.8),

@@ -36,20 +36,20 @@ const GUIDE = {
     extension: 'Compare APY, liquidity, interest charges, and credit utilization.',
   },
   5: {
-    goals: ['Distinguish gross pay, taxes, and take-home pay', 'Calculate a simple percentage tax', 'Allocate take-home pay for now, later, giving, and a possible tax reserve'],
-    decisions: ['Choose a job and calculate its tax withholding', 'Allocate every take-home dollar', 'Decide whether a later fund can cover an upcoming expense'],
-    discuss: ['Why should a plan use take-home pay rather than gross pay?', 'When might a worker need an extra tax reserve?', 'How did saving for later change the final decision?'],
-    evidence: 'Look for correct tax arithmetic, an allocation that does not exceed take-home pay, and a decision supported by comparing the later fund with the event cost.',
-    stop: 'Pause after the paycheck calculation, after the cash-flow plan, or complete the future-expense test.',
-    extension: 'Compare employee withholding with gig income, explain why real tax rates vary, and discuss why this simulation is educational rather than tax advice.',
-  },
-  6: {
     goals: ['Use evidence rather than hype', 'Spread risk across investments', 'Keep emergency cash and rebalance over time'],
     decisions: ['Research companies, diversify, and interpret market movement', 'Respond to surprises, warning signs, hype, and concentration risk'],
     discuss: ['Which clue described the business rather than only its price?', 'How did diversification change the outcome?'],
     evidence: 'Look for students explaining a choice with customers, company health, risk, time horizon, or portfolio balance.',
-    stop: 'Use the built-in intermission after Part 1. Each part is designed as its own 6–8 minute session.',
+    stop: 'Use the built-in intermission after Module 5A. Each part is designed as its own 6–8 minute session.',
     extension: 'Connect volatility, time horizon, concentration, and risk tolerance, then write an investment-policy rule.',
+  },
+  6: {
+    goals: ['Read key W-2 fields', 'Find taxable income and calculate simple bracket tax', 'Apply a credit and determine refund or amount due'],
+    decisions: ['Choose a taxpayer case based on evidence', 'Place a deduction and credit in the correct stage', 'Calculate the filing result and catch a planted error'],
+    discuss: ['Why can withholding alone not tell you whether someone gets a refund?', 'What is the difference between a deduction and a credit?', 'How did the brackets change the tax calculation?'],
+    evidence: 'Look for correct use of W-2 wages and withholding, correct deduction and bracket math, and a filing result supported by the calculated numbers.',
+    stop: 'Pause after the W-2 scan, after bracket math, or complete the full six-station filing lab.',
+    extension: 'Compare withholding with final tax liability, explain marginal brackets, and discuss why this simulation is educational rather than tax advice.',
   },
 }
 
