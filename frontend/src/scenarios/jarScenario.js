@@ -1,40 +1,38 @@
-// Jar scenario data. The state machine + timeline are built once in store.js and
-// scenes.js. The visible target remains an example for the late retry scaffold,
-// but success is based on the financial idea in each story, not one exact split.
+// Jar scenario data. Module 1 should ask the child to DO something before
+// explaining the rule. Each story is one short setup -> allocation decision ->
+// visible consequence -> one short retry clue or takeaway.
 
 export const JAR_SCENARIOS = [
   {
     id: 's1_birthday',
     title: "Theo's Birthday",
     intro: [
-      "It is Theo's birthday, you want an $8 toy, and Mia is collecting for the animal shelter.",
-      'You have $30. Decide how much belongs in SPEND, SAVE, and GIVE.',
+      "You have $30: an $8 birthday toy, money for later, and Mia's animal shelter. Split it into SPEND, SAVE, and GIVE.",
     ],
     target: { spend: 10, save: 10, give: 10 },
     spendGoal: { label: 'toy', amount: 8 },
     rules: { min: { spend: 8, save: 1, give: 1 } },
     hints: {
-      spentAll: 'Your money reset. Spending everything left nothing for later or for others. Use all three jars.',
-      savedAll: 'Your money reset. Saving matters, but the toy and helping others still matter too. Use all three jars.',
-      gaveAll: 'Your money reset. Giving is kind, but you also need money for the toy and for later. Use all three jars.',
-      unbalanced: 'Your money reset. The toy costs $8, and a complete plan also keeps something for later and something for others.',
+      spentAll: 'Try again: spending everything leaves nothing for later or others. Use all three jars.',
+      savedAll: 'Try again: saving everything leaves today and giving uncovered. Use all three jars.',
+      gaveAll: 'Try again: giving everything leaves the toy and future uncovered. Use all three jars.',
+      unbalanced: 'Try again: cover the $8 toy, then keep something in SAVE and GIVE.',
     },
-    recap: (a) => `You spent $${a.spend}, saved $${a.save}, and gave $${a.give}. You covered the toy and gave every dollar a job.`,
+    recap: (a) => `You chose $${a.spend} to spend, $${a.save} to save, and $${a.give} to give.`,
   },
   {
     id: 's2_rainy',
     title: 'A Rainy Day',
     intro: [
-      'The fair is next week, and a neighbor is raising money for new library books.',
-      'You have $30. Which jar should be largest when a future goal is close?',
+      'The fair is next week and the library needs help. With $30, make the jar for your future goal the largest.',
     ],
     target: { spend: 8, save: 14, give: 8 },
     rules: { min: { spend: 1, save: 1, give: 1 }, largest: 'save' },
     hints: {
-      spentAll: 'Your money reset. Spending everything made the fair and library impossible. Make SAVE the largest jar, then include the other two.',
-      savedAll: 'Your money reset. You prepared for the fair, but today and the library disappeared from the plan. Include every jar.',
-      gaveAll: 'Your money reset. The library received everything, but nothing remained for today or the fair. Make SAVE the largest jar.',
-      unbalanced: 'Your money reset. The fair is the biggest goal in this story, so SAVE should be larger than both SPEND and GIVE.',
+      spentAll: 'Try again: the fair is a future goal, so SAVE should be the largest jar.',
+      savedAll: 'Try again: SAVE should be largest, but SPEND and GIVE still need something.',
+      gaveAll: 'Try again: help the library, but keep SAVE largest for the fair.',
+      unbalanced: 'Try again: make SAVE larger than both SPEND and GIVE.',
     },
     recap: (a) => `You kept $${a.save} for the fair, $${a.spend} for now, and $${a.give} for the library.`,
   },
@@ -42,16 +40,15 @@ export const JAR_SCENARIOS = [
     id: 's3_bigwant',
     title: 'The Big Want',
     intro: [
-      'A skateboard costs $45, more than one $30 allowance. Theo and the shelter still need a small share.',
-      'Build a plan that moves you toward the skateboard without forgetting today or others.',
+      'A skateboard costs $45. You only have $30 today. Build a plan that moves toward it while keeping small amounts for today and others.',
     ],
     target: { spend: 6, save: 18, give: 6 },
     rules: { min: { spend: 1, save: 15, give: 1 }, largest: 'save' },
     hints: {
-      spentAll: 'Your money reset. Spending everything moved you away from the skateboard. Make SAVE much larger than the other jars.',
-      savedAll: 'Your money reset. The skateboard is important, but a strong plan still leaves a small amount for today and others.',
-      gaveAll: 'Your money reset. Giving everything left no path toward the skateboard. Make SAVE much larger and keep small shares elsewhere.',
-      unbalanced: 'Your money reset. A large future goal needs at least half in SAVE, plus a smaller amount in SPEND and GIVE.',
+      spentAll: 'Try again: a big future goal needs a much larger SAVE jar.',
+      savedAll: 'Try again: keep SAVE large, but leave a little for today and others.',
+      gaveAll: 'Try again: keep giving in the plan, but make SAVE much larger.',
+      unbalanced: 'Try again: put at least half in SAVE and keep smaller amounts in SPEND and GIVE.',
     },
     recap: (a) => `You saved $${a.save} toward the skateboard while keeping $${a.spend} for now and $${a.give} for others.`,
   },
@@ -75,7 +72,7 @@ function concreteGoalHint(allocation, scenario) {
   const goal = scenario.spendGoal
   if (!goal || allocation.spend >= goal.amount) return null
   const short = Math.round((goal.amount - allocation.spend) * 100) / 100
-  return `SPEND $${allocation.spend} < $${goal.amount} ${goal.label} — you're $${short} short. Your money reset so you can re-allocate and cover the ${goal.label} while still using SAVE and GIVE.`
+  return `Try again: SPEND is $${allocation.spend}, so the $${goal.amount} ${goal.label} is $${short} short.`
 }
 
 // Decide the outcome of a split against the story's financial rule.
