@@ -70,14 +70,18 @@ describe('Module 6 real-map movement v2', () => {
     expect(overlay).not.toContain('Continue to next filing step')
   })
 
-  it('adds visible NPC work around the live tax district', () => {
-    expect(paycheckWorld).toContain('Leo · carrying returns')
-    expect(paycheckWorld).toContain('Rae · delivering W-2s')
-    expect(paycheckWorld).toContain('Nia · checking math')
+  it('declutters the live tax district and shows only the current decision targets', () => {
+    expect(paycheckWorld).toContain('Maya · Tax Guide')
+    expect(paycheckWorld).toContain('TAX_CLIENTS.map')
+    expect(paycheckWorld).toContain('CurrentTaxStation')
+    expect(paycheckWorld).toContain('InteractionGlow')
+    expect(paycheckWorld).not.toContain('Leo · carrying returns')
+    expect(paycheckWorld).not.toContain('Rae · delivering W-2s')
+    expect(paycheckWorld).not.toContain('Nia · checking math')
     expect(landmarks).toContain('<TaxDistrictActivity />')
-    expect(activity).toContain('Owen · intake runner')
-    expect(activity).toContain('Priya · review helper')
-    expect(activity).toContain('PaperConveyor')
+    expect(activity).not.toContain('Owen · intake runner')
+    expect(activity).not.toContain('Priya · review helper')
+    expect(activity).not.toContain('PaperConveyor')
   })
 
   it('does not turn form typing into movement input', () => {
