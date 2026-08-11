@@ -53,11 +53,13 @@ describe('module entry clarity', () => {
     expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('makes Maya, taxpayers, moving workers, and E/action interactions part of the start experience', () => {
+  it('makes Maya, taxpayers, and E/action interactions clear without crowding the start experience', () => {
     expect(paycheck).toContain('Maya · Tax Guide')
     expect(paycheck).toContain('TAX_CLIENTS.map')
-    expect(paycheck).toContain('RovingTaxWorker')
-    expect(paycheck).toContain('DeskWorker')
+    expect(paycheck).toContain('InteractionGlow')
+    expect(paycheck).toContain('CurrentTaxStation')
+    expect(paycheck).not.toContain('RovingTaxWorker')
+    expect(paycheck).not.toContain('DeskWorker')
     expect(paycheck).toContain('closeEnough(point)')
     expect(bridge).toContain("event.code !== 'KeyE'")
     expect(bridge).toContain("window.addEventListener('tayu-interact'")

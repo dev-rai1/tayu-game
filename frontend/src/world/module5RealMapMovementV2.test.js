@@ -11,7 +11,6 @@ const paycheckWorld = read('src/world/PaycheckPlanetWorld.jsx')
 const overlay = read('src/world/TaxWorkbenchOverlay.jsx')
 const taxStore = read('src/world/taxLabStore.js')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
-const activity = read('src/world/TaxDistrictActivity.jsx')
 const keyboard = read('src/world/useKeyboardControls.js')
 
 describe('Module 6 real-map movement v2', () => {
@@ -70,14 +69,17 @@ describe('Module 6 real-map movement v2', () => {
     expect(overlay).not.toContain('Continue to next filing step')
   })
 
-  it('adds visible NPC work around the live tax district', () => {
-    expect(paycheckWorld).toContain('Leo · carrying returns')
-    expect(paycheckWorld).toContain('Rae · delivering W-2s')
-    expect(paycheckWorld).toContain('Nia · checking math')
-    expect(landmarks).toContain('<TaxDistrictActivity />')
-    expect(activity).toContain('Owen · intake runner')
-    expect(activity).toContain('Priya · review helper')
-    expect(activity).toContain('PaperConveyor')
+  it('declutters the live tax district and shows only the current decision targets', () => {
+    expect(paycheckWorld).toContain('Maya · Tax Guide')
+    expect(paycheckWorld).toContain('TAX_CLIENTS.map')
+    expect(paycheckWorld).toContain('CurrentTaxStation')
+    expect(paycheckWorld).toContain('InteractionGlow')
+    expect(paycheckWorld).not.toContain('Leo · carrying returns')
+    expect(paycheckWorld).not.toContain('Rae · delivering W-2s')
+    expect(paycheckWorld).not.toContain('Nia · checking math')
+    expect(paycheckWorld).not.toContain('Billboard')
+    expect(paycheckWorld).not.toContain('labelTexture')
+    expect(landmarks).not.toContain('TaxDistrictActivity')
   })
 
   it('does not turn form typing into movement input', () => {
