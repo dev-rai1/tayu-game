@@ -19,7 +19,23 @@ export class Boundary extends Component {
     this.state = { oops: false }
   }
   static getDerivedStateFromError() { return { oops: true } }
-  componentDidCatch(err) { logTayuError('boundary:' + (this.props.name || 'app'), err?.message || err) }
+  componentDidCatch(err) {
+    logTayuError('boundary:' + (this.props.name || 'app'), err?.message || err)
+
+    // A WebGL/3D scene crash should never trap the player on the retry screen.
+    // Recover once by switching this browser to the stable Accessible 2D world
+    // and reloading the same route. Money/progress remain untouched.
+    if (this.props.name === 'canvas' && this.props.hard && typeof window !== 'undefined') {
+      try {
+        const recoveryKey = 'tayu-canvas-recovery-attempted'
+        if (sessionStorage.getItem(recoveryKey) !== '1') {
+          sessionStorage.setItem(recoveryKey, '1')
+          localStorage.setItem('tayu-world-mode', '2d')
+          window.location.reload()
+        }
+      } catch { /* storage/reload recovery unavailable */ }
+    }
+  }
   render() {
     if (!this.state.oops) return this.props.children
     return (
@@ -29,7 +45,13 @@ export class Boundary extends Component {
         <p className="mt-2 max-w-sm text-white/80">No worries - your money is saved. Let's hop back in.</p>
         <button
           className="btn-primary mt-5 min-h-[56px] px-8 text-lg"
-          onClick={() => { this.setState({ oops: false }); if (this.props.hard) window.location.reload() }}
+          onClick={() => {
+            this.setState({ oops: false })
+            if (this.props.hard) {
+              try { localStorage.setItem('tayu-world-mode', '2d') } catch { /* ignore */ }
+              window.location.reload()
+            }
+          }}
         >
           Try again
         </button>
