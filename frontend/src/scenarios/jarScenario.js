@@ -72,7 +72,7 @@ function concreteGoalHint(allocation, scenario) {
   const goal = scenario.spendGoal
   if (!goal || allocation.spend >= goal.amount) return null
   const short = Math.round((goal.amount - allocation.spend) * 100) / 100
-  return `Try again: SPEND is $${allocation.spend}; you're $${short} short. Re-allocate and cover the ${goal.label} while keeping something in SAVE and GIVE.`
+  return `Try again: SPEND is $${allocation.spend}; you're $${short} short, so re-allocate and cover the ${goal.label} while keeping something in SAVE and GIVE.`
 }
 
 // Decide the outcome of a split against the story's financial rule.
