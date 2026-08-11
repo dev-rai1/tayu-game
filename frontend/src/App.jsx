@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Welcome from './pages/Welcome.jsx'
 import About from './pages/About.jsx'
 import Guru from './pages/Guru.jsx'
+import TeacherDashboard from './pages/TeacherDashboard.jsx'
 import { MediaCoverage } from './components/MediaCoverage.jsx'
 import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
@@ -25,7 +26,6 @@ const World = lazy(() => import('./pages/World.jsx'))
 const PathComplete = lazy(() => import('./pages/PathComplete.jsx'))
 const Auth = lazy(() => import('./pages/Auth.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
-const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard.jsx'))
 const TeacherGuide = lazy(() => import('./pages/TeacherGuide.jsx'))
 const ModuleSelect = lazy(() => import('./pages/ModuleSelect.jsx'))
 const KnowledgeQuiz = lazy(() => import('./pages/KnowledgeQuiz.jsx'))
@@ -168,7 +168,7 @@ export default function App() {
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/settings" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening player settings..." />}><Settings /></Suspense></PreQuizGate>} />
-              <Route path="/teacher" element={<TeacherGate><Suspense fallback={<LoadingScreen />}><TeacherDashboard /></Suspense></TeacherGate>} />
+              <Route path="/teacher" element={<TeacherGate><TeacherDashboard /></TeacherGate>} />
               <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
               <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><><SiteTrafficSummary /><Dashboard /></></Suspense></AdminRoute>} />
               <Route path="/assessment/:phase" element={<Suspense fallback={<LoadingScreen />}><KnowledgeQuiz /></Suspense>} />

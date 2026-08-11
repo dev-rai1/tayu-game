@@ -1,16 +1,16 @@
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 
 export const GRADE_PATHS = [
-  { id: 'early-elementary', label: 'Grades K–2', title: 'Early Elementary', modules: [1, 2], copy: 'Everyday money choices and a first business challenge.' },
-  { id: 'upper-elementary', label: 'Grades 3–5', title: 'Upper Elementary', modules: [1, 2, 3], copy: 'Foundations, business choices, and a complete daily budget.' },
-  { id: 'middle-school', label: 'Grades 6–8', title: 'Middle School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full pathway, including paycheck taxes before investing.' },
-  { id: 'high-school', label: 'Grades 9–12', title: 'High School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full pathway with paycheck, cash-flow, banking, and investing decisions.' },
+  { id: 'early-elementary', label: 'Grades K–2', title: 'Early Elementary', modules: [1, 2], copy: 'A short 2-stop adventure: everyday money choices, then a first business challenge.' },
+  { id: 'upper-elementary', label: 'Grades 3–5', title: 'Upper Elementary', modules: [1, 2, 3], copy: 'A 3-stop adventure: money foundations, a business challenge, and Budget Town.' },
+  { id: 'middle-school', label: 'Grades 6–8', title: 'Middle School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full 6-module adventure: saving, business, budgeting, banking, Money Garden, then Tax Town.' },
+  { id: 'high-school', label: 'Grades 9–12', title: 'High School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full 6-module adventure with deeper banking, investing, and Paycheck Planet · Tax Town decisions.' },
 ]
 
 export const DEFAULT_GRADE_PATH = 'middle-school'
 export const ACTIVE_PATH_KEY = 'tayu-active-learning-path-v1'
 
-const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'tax', 6: 'garden' }
+const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden', 6: 'tax' }
 
 function normalizeModules(modules) {
   return [...new Set((modules || []).map(Number).filter((number) => number >= 1 && number <= 6))].sort((a, b) => a - b)
@@ -62,8 +62,8 @@ export function milestoneBadges(state = {}) {
   if (state.week === 2 && state.weekComplete) badges.push('lemonade')
   if (state.btStage === 'handoff') badges.push('budget')
   if (Number(state.bkWeek || 0) >= 7) badges.push('bank')
-  if (loadProfile()?.badges?.includes('tax')) badges.push('tax')
   if (state.mgPhase === 'done' || state.gameComplete) badges.push('garden')
+  if (loadProfile()?.badges?.includes('tax')) badges.push('tax')
   return badges
 }
 

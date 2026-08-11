@@ -32,13 +32,13 @@ describe('grade-aware learning paths', () => {
   })
 
   it('maps required modules to the badges used by the game', () => {
-    expect(badgesForModules([1, 2, 4, 5, 6])).toEqual(['jars', 'lemonade', 'bank', 'tax', 'garden'])
+    expect(badgesForModules([1, 2, 4, 5, 6])).toEqual(['jars', 'lemonade', 'bank', 'garden', 'tax'])
   })
 
   it('unlocks a path certificate only when every required badge exists', () => {
     expect(isLearningPathComplete([1, 2], ['jars'])).toBe(false)
     expect(isLearningPathComplete([1, 2], ['jars', 'lemonade'])).toBe(true)
-    expect(isLearningPathComplete([5, 6], ['tax', 'garden'])).toBe(true)
+    expect(isLearningPathComplete([5, 6], ['garden', 'tax'])).toBe(true)
   })
 
   it('recognizes existing world-module milestones', () => {
