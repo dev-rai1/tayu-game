@@ -11,6 +11,7 @@ const moduleSelect = read('src/pages/ModuleSelect.jsx')
 const paycheckWorld = read('src/world/PaycheckPlanetWorld.jsx')
 const landmarks = read('src/world/ModuleLandmarks.jsx')
 const overlay = read('src/world/TaxWorkbenchOverlay.jsx')
+const actionPrompt = read('src/world/TaxActionPrompt.jsx')
 const taxStore = read('src/world/taxLabStore.js')
 const taxLayout = read('src/world/taxDistrictLayout.js')
 const paycheckScenario = read('src/scenarios/paycheckPlanet.js')
@@ -109,6 +110,19 @@ describe('Paycheck Planet full integration', () => {
     expect(bridge).toContain('TAX_CLIENTS')
     expect(bridge).toContain('taxStationForStep(state.stepNumber)')
     expect(taxStore).toContain('nearbyAction')
+  })
+
+  it('keeps a compact E control fixed at the bottom throughout the tax area', () => {
+    expect(actionPrompt).toContain('shortLabel')
+    expect(actionPrompt).toContain("phase === 'case'")
+    expect(actionPrompt).toContain("phase === 'steps'")
+    expect(actionPrompt).toContain("phase === 'complete'")
+    expect(actionPrompt).toContain('bottom-[max(0.9rem,env(safe-area-inset-bottom))]')
+    expect(actionPrompt).toContain('tax-workbench-enter')
+    expect(actionPrompt).toContain('E interaction is available in the Tax Lab')
+    expect(actionPrompt).toContain("panel ? 'Finish this step'")
+    expect(actionPrompt).not.toContain('if (panel) return null')
+    expect(actionPrompt).not.toContain('if (!action) return null')
   })
 
   it('keeps the map and movement usable while focused station panels stay compact', () => {
