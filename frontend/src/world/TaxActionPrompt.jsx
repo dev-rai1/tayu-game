@@ -5,13 +5,21 @@ export function TaxActionPrompt() {
   const panel = useTaxLab((state) => state.panel)
   if (!nearbyAction || panel) return null
 
+  const activate = () => window.dispatchEvent(new Event('tayu-interact'))
+
   return (
-    <div
+    <button
+      type="button"
       data-tax-action-prompt="true"
-      className="pointer-events-none fixed bottom-5 left-1/2 z-[760] -translate-x-1/2 rounded-full border border-white/60 bg-navy/92 px-4 py-2 text-center text-sm font-extrabold text-white shadow-xl backdrop-blur-sm"
+      onClick={activate}
+      className="pointer-events-auto fixed bottom-5 left-1/2 z-[760] flex min-h-[58px] max-w-[min(92vw,34rem)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-white/70 bg-navy/95 px-5 py-3 text-left text-white shadow-2xl backdrop-blur-sm transition hover:scale-[1.02] active:scale-[0.98]"
+      aria-label={`Interact: ${nearbyAction.label}`}
     >
-      <span className="mr-2 rounded-full bg-teal px-2 py-0.5 text-[11px] font-black text-navy">E / ACTION</span>
-      {nearbyAction.label}
-    </div>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-electric font-black text-white" aria-hidden="true">E</span>
+      <span>
+        <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-teal">Click here or press E</span>
+        <span className="mt-0.5 block text-sm font-black leading-tight sm:text-base">{nearbyAction.label}</span>
+      </span>
+    </button>
   )
 }
