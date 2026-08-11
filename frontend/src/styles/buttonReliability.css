@@ -1,0 +1,63 @@
+/* Button reliability + crisp rendering guard.
+   Keep controls clickable even when a HUD wrapper intentionally uses
+   pointer-events-none, and avoid CSS filters/transforms that can rasterize
+   small button text and make it look blurry. */
+button,
+[role='button'],
+a[data-tayu-enhanced='true'] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  pointer-events: auto;
+}
+
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+a[data-tayu-enhanced='true']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+/* Icons/decorations should never steal the pointer target from their button. */
+button > svg,
+button > img,
+button > [aria-hidden='true'] {
+  pointer-events: none;
+}
+
+/* Backdrop/filter effects on the control itself can make text look soft on
+   Chrome/Windows. Keep the surrounding glass panels, but render controls crisp. */
+button,
+.btn,
+.tayu-btn-glass,
+button[data-tayu-enhanced='true'],
+a[data-tayu-enhanced='true'] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* The feedback enhancer used to leave buttons scaled for 500ms after a tap,
+   which can rasterize the label and make it look blurry. Keep the feedback
+   ring, but return the control to a crisp 1:1 transform immediately. */
+.tayu-action-confirm {
+  transform: none !important;
+}
+
+button[data-tayu-enhanced='true']:hover,
+a[data-tayu-enhanced='true']:hover {
+  filter: none !important;
+}
+
+/* Preserve a short press response without leaving the label scaled afterward. */
+button[data-tayu-enhanced='true']:active,
+a[data-tayu-enhanced='true']:active {
+  transform: scale(0.98) !important;
+}
