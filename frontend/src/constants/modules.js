@@ -69,7 +69,7 @@ export const MODULE_CATALOG = [
     title: 'Paycheck Planet · Tax Town',
     grades: 'Grades 6–12',
     minutes: '10–15 min',
-    desc: 'Enter Tax Town and file a simplified practice return: read a W-2, find taxable income, use tax brackets, apply a credit, and calculate a refund or amount due.',
+    desc: 'Enter Tax Town and file a simplified practice tax return: read a W-2, find taxable income, use tax brackets, apply a credit, and calculate a refund or amount due.',
     color: '#FF8A3D',
     finale: true,
   },
