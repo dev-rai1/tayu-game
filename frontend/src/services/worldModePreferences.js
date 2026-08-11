@@ -6,27 +6,35 @@ export const WORLD_MODES = Object.freeze({
 
 const STORAGE_KEY = 'tayu-world-mode'
 const CHANGE_EVENT = 'tayu-world-mode-changed'
-const VALID = new Set(Object.values(WORLD_MODES))
 
-export function getWorldModePreference() {
+function forceThreeDPreference() {
   try {
-    const value = localStorage.getItem(STORAGE_KEY)
-    return VALID.has(value) ? value : WORLD_MODES.AUTO
-  } catch {
-    return WORLD_MODES.AUTO
-  }
+    if (localStorage.getItem(STORAGE_KEY) !== WORLD_MODES.THREE_D) {
+      localStorage.setItem(STORAGE_KEY, WORLD_MODES.THREE_D)
+    }
+  } catch { /* storage is optional */ }
+  return WORLD_MODES.THREE_D
 }
 
-export function setWorldModePreference(value) {
-  const next = VALID.has(value) ? value : WORLD_MODES.AUTO
-  try { localStorage.setItem(STORAGE_KEY, next) } catch { /* storage is optional */ }
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { value: next } }))
+// Gameplay is 3D-only. This also repairs browsers that were previously pushed
+// into the temporary Accessible 2D fallback by older builds.
+export function getWorldModePreference() {
+  return forceThreeDPreference()
+}
+
+export function setWorldModePreference() {
+  const next = forceThreeDPreference()
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { value: next } }))
+  }
   return next
 }
 
 export function subscribeWorldModePreference(listener) {
   if (typeof window === 'undefined') return () => {}
-  const handler = (event) => listener(event?.detail?.value || getWorldModePreference())
+  // Immediately repair any stale 2D value on browsers that loaded an older build.
+  forceThreeDPreference()
+  const handler = () => listener(WORLD_MODES.THREE_D)
   window.addEventListener(CHANGE_EVENT, handler)
   return () => window.removeEventListener(CHANGE_EVENT, handler)
 }
