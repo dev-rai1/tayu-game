@@ -70,6 +70,27 @@ function runTaxAction(action) {
   return false
 }
 
+// Module 6 must never be impossible to start because the player spawned a few
+// steps away from Maya. During the intro only, E / ACTION opens Maya's guide
+// even when the proximity detector has not produced a nearbyAction yet. Once
+// the intro is dismissed, all taxpayer/station interactions still require
+// proximity as normal.
+export function runTaxInteraction() {
+  if (!isPaycheckWorldActive()) return false
+  const lab = useTaxLab.getState()
+  if (lab.panel) return false
+
+  const action = nearbyTaxAction()
+  if (action) return runTaxAction(action)
+
+  if (lab.phase === 'intro') {
+    lab.openGuide()
+    return true
+  }
+
+  return false
+}
+
 export function TaxWorldInteractionBridge() {
   useEffect(() => {
     let lastKey = ''
@@ -86,23 +107,25 @@ export function TaxWorldInteractionBridge() {
     refresh()
 
     const interact = () => {
-      const action = nearbyTaxAction()
-      if (runTaxAction(action)) refresh()
+      if (runTaxInteraction()) refresh()
     }
     const onKeyDown = (event) => {
       if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
-      const action = nearbyTaxAction()
-      if (!action) return
+      if (!isPaycheckWorldActive()) return
       event.preventDefault()
-      runTaxAction(action)
+      event.stopImmediatePropagation()
+      runTaxInteraction()
       refresh()
     }
 
-    window.addEventListener('keydown', onKeyDown)
+    // Capture phase plus stopImmediatePropagation guarantees Module 6 owns the
+    // E key while Paycheck Planet is active instead of competing with the
+    // generic world interaction listener registered by Player.jsx.
+    window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('tayu-interact', interact)
     return () => {
       window.clearInterval(timer)
-      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keydown', onKeyDown, true)
       window.removeEventListener('tayu-interact', interact)
       useTaxLab.getState().setNearbyAction(null)
     }
