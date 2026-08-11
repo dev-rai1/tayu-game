@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { signUp, signIn } from '../services/auth.js'
+import { currentUser, signUp, signIn } from '../services/auth.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
@@ -46,6 +46,13 @@ export default function Auth() {
     setOk('This is an older device-only account. Create a new password below to activate it in Firebase and keep its saved progress.')
   }
 
+  const routeAfterSignIn = (user) => {
+    if (user.role === 'admin') return nav('/dashboard')
+    if (user.role === 'teacher') return nav('/teacher')
+    if (!loadProfile()?.assessment?.pre) return nav('/assessment/pre')
+    return nav(loadWallet() ? '/world' : '/modules')
+  }
+
   const submit = async (event) => {
     event?.preventDefault(); setErr(null); setOk(null); setBusy(true)
     try {
@@ -64,11 +71,18 @@ export default function Auth() {
         if (user.role === 'student') await joinStudentToClass(f.studentCode)
         nav('/')
       } else if (mode === 'signin') {
-        const user = await signIn(f.email, f.password)
-        if (user.role === 'admin') nav('/dashboard')
-        else if (user.role === 'teacher') nav('/teacher')
-        else if (!loadProfile()?.assessment?.pre) nav('/assessment/pre')
-        else nav(loadWallet() ? '/world' : '/modules')
+        let user
+        try {
+          user = await signIn(f.email, f.password)
+        } catch (error) {
+          // Firebase credentials can already be accepted before a secondary
+          // Firestore progress/profile read fails. auth.js sets the browser
+          // session as soon as authentication succeeds, so do not strand the
+          // player on the login form with a false "login failed" message.
+          user = currentUser()
+          if (!user) throw error
+        }
+        routeAfterSignIn(user)
       } else {
         const result = await requestPasswordReset(f.email); setRecovery(result); setOk(result.message)
       }
