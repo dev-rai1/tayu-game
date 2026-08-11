@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -48,12 +48,12 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('if (!dialog || !document.contains(dialog)) return')
   })
 
-  it('removes the old button-based 2D world implementation', () => {
-    const source = read('frontend/src/world/AccessibleWorld.jsx')
-    expect(source).toContain("export { GameWorld as AccessibleWorld } from './GameWorld.jsx'")
-    expect(source).not.toContain('ACCESSIBLE 2D MODE')
-    expect(source).not.toContain('2D mode info')
-    expect(source).not.toContain('Your next step')
+  it('physically removes the old button-based 2D world', () => {
+    expect(existsSync(resolve(root, 'frontend/src/world/AccessibleWorld.jsx'))).toBe(false)
+    const world = read('frontend/src/pages/World.jsx')
+    expect(world).not.toContain('AccessibleWorld')
+    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('data-world-mode="3d"')
   })
 
   it('removes the 2D/Automatic world selector from Settings', () => {
@@ -151,11 +151,12 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain("['spend', 'save', 'give'].every")
   })
 
-  it('mounts the live plan coach in the world shell', () => {
+  it('mounts the live plan coach in the 3D world shell', () => {
     const source = read('frontend/src/pages/World.jsx')
     expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
     expect(source).toContain('{!taxMode && <JarPlanCoach />}')
     expect(source).toContain('<GameWorld avatar={state.avatar} />')
+    expect(source).not.toContain('AccessibleWorld')
   })
 
   it('keeps jar reward progression behind a successful three-jar financial plan', () => {
