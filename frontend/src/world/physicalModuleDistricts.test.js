@@ -37,11 +37,21 @@ describe('physical module districts', () => {
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 
-  it('requires walking close to NPCs and stations before interaction without spawning far-away text notices', () => {
-    expect(paycheck).toContain('INTERACT_RADIUS = 3.3')
+  it('uses the normal shared world interaction radius for Module 6 NPCs and stations', () => {
+    expect(paycheck).toContain("import { INTERACT_RADIUS, TAX_DISTRICT } from './config.js'")
     expect(paycheck).toContain('closeEnough(point)')
+    expect(paycheck).toContain('<= INTERACT_RADIUS')
+    expect(paycheck).not.toContain('INTERACT_RADIUS = 3.3')
     expect(paycheck).not.toContain('Walk closer to ${label} to interact.')
     expect(paycheck).toContain('useTaxLab.getState().openStation(step)')
+  })
+
+  it('keeps Maya physically rendered at the Module 6 host location like other module hosts', () => {
+    expect(paycheck).toContain('<InteractiveTaxNpc')
+    expect(paycheck).toContain('name="Maya · Tax Guide"')
+    expect(paycheck).toContain('point={TAX_POINTS.guide}')
+    expect(paycheck).toContain('active={guideInteractive}')
+    expect(paycheck).not.toContain("active && (phase === 'intro' || phase === 'complete') && (")
   })
 
   it('keeps physical signs clean while the catalog identifies the Money Garden as modules 5A and 5B', () => {
