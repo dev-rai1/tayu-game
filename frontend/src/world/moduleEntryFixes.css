@@ -43,3 +43,72 @@
     max-height: min(28dvh, 10rem) !important;
   }
 }
+
+/*
+ * Money Garden top HUD collision guard
+ * ------------------------------------
+ * The Module 5A/5B banner and the global "Your Money" pill used to occupy
+ * overlapping absolute positions (top-3 and top-16). Keep the module banner
+ * in a bounded three-row header and reserve a separate lane underneath for
+ * the money pill. These rules intentionally use the existing World/Hud class
+ * signatures so both 5A and 5B are covered without changing game logic.
+ */
+.tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] {
+  box-sizing: border-box;
+  top: max(0.75rem, env(safe-area-inset-top, 0px)) !important;
+  height: 5.35rem;
+  max-height: 5.35rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 0.12rem;
+  overflow: hidden;
+  padding-top: 0.4rem !important;
+  padding-bottom: 0.4rem !important;
+}
+
+.tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] > div {
+  min-width: 0;
+  line-height: 1.08;
+}
+
+.tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] > div:nth-child(2) {
+  font-size: clamp(0.72rem, 3.8vw, 1rem) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] > div:first-child,
+.tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] > div:last-child {
+  font-size: clamp(0.58rem, 2.8vw, 0.75rem) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Only shift the centered top-16 glass pill while the Money Garden header is
+   present. Other modules retain the original HUD position. */
+.tayu-world-declutter:has(> div[class*="z-[210]"][class*="top-3"])
+  .glass--navy.absolute[class*="left-1/2"][class*="top-16"] {
+  top: calc(max(0.75rem, env(safe-area-inset-top, 0px)) + 6rem) !important;
+  z-index: 211;
+  max-width: min(92vw, 24rem);
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .tayu-world-declutter > div[class*="z-[210]"][class*="top-3"] {
+    width: min(94vw, 32rem) !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  .tayu-world-declutter:has(> div[class*="z-[210]"][class*="top-3"])
+    .glass--navy.absolute[class*="left-1/2"][class*="top-16"] {
+    max-width: 92vw;
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+    font-size: clamp(0.9rem, 4.6vw, 1.125rem) !important;
+  }
+}
