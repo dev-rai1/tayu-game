@@ -112,14 +112,16 @@ describe('Paycheck Planet full integration', () => {
     expect(taxStore).toContain('nearbyAction')
   })
 
-  it('keeps one animated E instruction box fixed at the bottom throughout the tax area', () => {
-    expect(actionPrompt).toContain('fallbackForPhase')
+  it('keeps a compact E control fixed at the bottom throughout the tax area', () => {
+    expect(actionPrompt).toContain('shortLabel')
     expect(actionPrompt).toContain("phase === 'case'")
     expect(actionPrompt).toContain("phase === 'steps'")
     expect(actionPrompt).toContain("phase === 'complete'")
-    expect(actionPrompt).toContain('fixed inset-x-0 bottom-4')
+    expect(actionPrompt).toContain('bottom-[max(0.9rem,env(safe-area-inset-bottom))]')
     expect(actionPrompt).toContain('tax-workbench-enter')
-    expect(actionPrompt).toContain('E interaction available in this tax area')
+    expect(actionPrompt).toContain('E interaction is available in the Tax Lab')
+    expect(actionPrompt).toContain("panel ? 'Finish this step'")
+    expect(actionPrompt).not.toContain('if (panel) return null')
     expect(actionPrompt).not.toContain('if (!action) return null')
   })
 
