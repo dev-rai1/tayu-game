@@ -113,14 +113,14 @@ export function TaxWorldInteractionBridge() {
       if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
       if (!isPaycheckWorldActive()) return
       event.preventDefault()
-      event.stopPropagation()
+      event.stopImmediatePropagation()
       runTaxInteraction()
       refresh()
     }
 
-    // Capture phase makes the Module 6 handler run before the generic world E
-    // handler. That prevents another module's interaction state from swallowing
-    // the same key press while Paycheck Planet is active.
+    // Capture phase plus stopImmediatePropagation guarantees Module 6 owns the
+    // E key while Paycheck Planet is active instead of competing with the
+    // generic world interaction listener registered by Player.jsx.
     window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('tayu-interact', interact)
     return () => {
