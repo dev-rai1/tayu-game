@@ -14,13 +14,14 @@ const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 const keyboard = read('src/world/useKeyboardControls.js')
 
 describe('Module 6 real-map movement v2', () => {
-  it('has exactly one persistent town scene and removes the isolated tax scene', () => {
+  it('has exactly one persistent town scene and isolates Tax Town in its own scene boundary', () => {
     expect(world).toContain('<GameWorld avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
     expect(world).not.toContain('TaxLabWorld')
     expect(gameWorld).toContain('<ModuleLandmarks />')
-    expect(landmarks).toContain('<PaycheckPlanetWorld />')
+    expect(gameWorld).toContain('<SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>')
+    expect(landmarks).not.toContain('<PaycheckPlanetWorld />')
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 
