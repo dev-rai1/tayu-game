@@ -1,3 +1,4 @@
+import { runTaxInteraction } from './TaxWorldInteractionBridge.jsx'
 import { useTaxLab } from './taxLabStore.js'
 
 export function TaxActionPrompt() {
@@ -13,7 +14,7 @@ export function TaxActionPrompt() {
   const action = nearbyAction || introFallback
   if (!action) return null
 
-  const activate = () => window.dispatchEvent(new Event('tayu-interact'))
+  const activate = () => runTaxInteraction()
 
   return (
     <button
