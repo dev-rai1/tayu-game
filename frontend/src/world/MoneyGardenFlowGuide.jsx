@@ -146,7 +146,7 @@ export function MoneyGardenFlowGuide() {
           aria-live="polite"
           aria-atomic="true"
           data-money-garden-clue
-          className="pointer-events-auto absolute bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))] left-3 w-[min(90vw,23rem)] rounded-2xl border-2 bg-white/95 p-4 text-navy shadow-2xl backdrop-blur-sm sm:bottom-4 sm:left-4"
+          className="pointer-events-auto absolute bottom-[calc(10.75rem+env(safe-area-inset-bottom,0px))] left-3 w-[min(86vw,20rem)] rounded-2xl border-2 bg-white/95 p-3 text-navy shadow-2xl backdrop-blur-sm sm:bottom-4 sm:left-4 sm:w-[min(30vw,20rem)]"
           style={{ borderColor: `${part.color}77` }}
         >
           <div className="flex items-center justify-between gap-2">
@@ -194,7 +194,7 @@ export function MoneyGardenFlowGuide() {
       )}
 
       {panelPortfolio && (
-        <div className="pointer-events-auto absolute bottom-5 left-1/2 w-[min(92vw,32rem)] -translate-x-1/2">
+        <div className="pointer-events-auto absolute bottom-4 left-3 w-[min(88vw,20rem)] sm:bottom-4 sm:left-4 sm:w-[20rem]">
           <div className="mb-2 rounded-2xl border-2 border-sun/50 bg-navy/95 px-4 py-3 text-white shadow-2xl">
             <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-sun">{part.moduleLabel} · Do this now</div>
             <p className="mt-1 text-sm font-extrabold leading-snug">
