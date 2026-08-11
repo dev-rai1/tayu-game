@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { currentUser, signUp, signIn } from '../services/auth.js'
+import { recoverAuthenticatedSession } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
@@ -75,13 +76,12 @@ export default function Auth() {
         try {
           user = await signIn(f.email, f.password)
         } catch (error) {
-          // Firebase credentials can already be accepted before a secondary
-          // Firestore progress/profile read fails. auth.js sets the browser
-          // session as soon as authentication succeeds, so do not strand the
-          // player on the login form with a false "login failed" message.
-          user = currentUser()
+          // If Firebase accepted the credentials, a later Firestore/profile/progress
+          // request must never turn that successful authentication into a login error.
+          user = currentUser() || await recoverAuthenticatedSession().catch(() => null)
           if (!user) throw error
         }
+        setErr(null)
         routeAfterSignIn(user)
       } else {
         const result = await requestPasswordReset(f.email); setRecovery(result); setOk(result.message)
