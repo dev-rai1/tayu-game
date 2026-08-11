@@ -89,14 +89,15 @@ describe('Paycheck Planet full integration', () => {
     expect(overlay).not.toContain('There are no A/B/C quiz answers.')
   })
 
-  it('uses physical station progression and closes the task panel between steps', () => {
+  it('uses one visible physical station at a time and closes the task panel between steps', () => {
     expect(taxStore).toContain('panel: null')
     expect(taxStore).toContain('openStation: (stepNumber)')
     expect(taxStore).toContain('advanceStep: () => set')
     expect(taxStore).toContain('`Good work. Walk to the ${taxStationForStep(next).label}.`')
     expect(taxLayout).toContain('TAX_STEP_STATIONS')
-    expect(paycheckWorld).toContain('TaxStation')
-    expect(paycheckWorld).toContain('NEXT · WALK HERE')
+    expect(paycheckWorld).toContain('CurrentTaxStation')
+    expect(paycheckWorld).toContain("phase === 'steps' && currentStation")
+    expect(paycheckWorld).not.toContain('NEXT · WALK HERE')
     expect(objective).toContain('taxStationForStep(tax.stepNumber).point')
   })
 
@@ -121,21 +122,23 @@ describe('Paycheck Planet full integration', () => {
     expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('adds multiple active NPC roles rather than using an empty Tax Lab backdrop', () => {
+  it('keeps only the current decision targets visible instead of crowding the Tax Lab', () => {
     expect(taxLayout).toContain('TAX_CLIENTS')
     expect(taxLayout).toContain("name: 'Ari'")
     expect(taxLayout).toContain("name: 'Sam'")
     expect(taxLayout).toContain("name: 'Jordan'")
     expect(paycheckWorld).toContain('Maya · Tax Guide')
-    expect(paycheckWorld).toContain('RovingTaxWorker')
-    expect(paycheckWorld).toContain('Leo · carrying returns')
-    expect(paycheckWorld).toContain('Rae · delivering W-2s')
-    expect(paycheckWorld).toContain('DeskWorker')
-    expect(paycheckWorld).toContain('Nia · checking math')
+    expect(paycheckWorld).toContain('TAX_CLIENTS.map')
+    expect(paycheckWorld).toContain('CurrentTaxStation')
+    expect(paycheckWorld).toContain('InteractionGlow')
     expect(paycheckWorld).toContain('CharacterMesh')
-    expect(activity).toContain('Owen · intake runner')
-    expect(activity).toContain('Priya · review helper')
-    expect(activity).toContain('PaperConveyor')
+    expect(paycheckWorld).not.toContain('RovingTaxWorker')
+    expect(paycheckWorld).not.toContain('DeskWorker')
+    expect(paycheckWorld).not.toContain('Leo · carrying returns')
+    expect(paycheckWorld).not.toContain('Rae · delivering W-2s')
+    expect(activity).not.toContain('Owen · intake runner')
+    expect(activity).not.toContain('Priya · review helper')
+    expect(activity).not.toContain('PaperConveyor')
   })
 
   it('makes the client choice teach evidence instead of revealing the answer upfront', () => {
@@ -168,10 +171,11 @@ describe('Paycheck Planet full integration', () => {
     expect(objective).not.toContain('if (isPaycheckWorldActive()) return null')
   })
 
-  it('adds visible motion in the in-world district and tactile panel feedback', () => {
-    expect(paycheckWorld).toContain('RovingTaxWorker')
+  it('uses target glow, station animation, and tactile panel feedback without extra workers', () => {
+    expect(paycheckWorld).toContain('InteractionGlow')
     expect(paycheckWorld).toContain('StationProp')
     expect(paycheckWorld).toContain('CelebrationBurst')
+    expect(paycheckWorld).not.toContain('RovingTaxWorker')
     expect(taxCss).toContain('@keyframes taxScanLine')
     expect(taxCss).toContain('@keyframes taxCreditSlide')
     expect(taxCss).toContain('@keyframes taxShake')
