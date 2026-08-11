@@ -24,10 +24,12 @@ describe('module entry clarity', () => {
   })
 
   it('keeps the actual town canvas and movement active during Module 6', () => {
-    expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
+    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('data-world-mode="3d"')
+    expect(world).not.toContain('AccessibleWorld')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).toContain('<Hud playerName={state.player.name')
-    expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{usesTouchControls && <MobileControls />}')
     expect(world).toContain('prepareWorldForTaxWalking()')
     expect(world).toContain('playerSpeedMult: 1')
     expect(world).toContain('scenarioLocked: false')
