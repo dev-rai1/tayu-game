@@ -1,6 +1,6 @@
 // Jar scenario data. The state machine + timeline are built once in store.js and
-// scenes.js. The visible target remains an example for the late retry scaffold,
-// but success is based on the financial idea in each story, not one exact split.
+// scenes.js. Keep concrete retry math here so merge commits preserve the
+// affordability feedback required by the Module 1 playtest regression.
 
 export const JAR_SCENARIOS = [
   {
