@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
-import { TAX_DISTRICT } from './config.js'
+import { INTERACT_RADIUS, TAX_DISTRICT } from './config.js'
 import { CharacterMesh } from './CharacterMesh.jsx'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { PAYCHECK_MODE_EVENT, isPaycheckWorldActive } from './paycheckMode.js'
@@ -10,7 +10,6 @@ import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep, toTaxLocal } from './taxDistrictLayout.js'
 
 export const TAX_ENTRY = TAX_POINTS.guide
-const INTERACT_RADIUS = 3.3
 const local = (point) => toTaxLocal(point)
 
 function closeEnough(point) {
@@ -193,6 +192,7 @@ export function PaycheckPlanetWorld() {
   const selectedClient = TAX_CLIENTS.find((client) => client.caseId === taxCase?.id)
   const currentStation = taxStationForStep(stepNumber)
   const guideAvatar = { gender: 'female', bodyType: 'average', skinTone: 'warm_beige', hairStyle: 'long', hairColor: 'brown', shirtColor: 'teal', pantsColor: 'blue', topStyle: 'tee', bottomStyle: 'pants' }
+  const guideInteractive = active && (phase === 'intro' || phase === 'complete')
 
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
@@ -202,15 +202,17 @@ export function PaycheckPlanetWorld() {
       <RoundedBox args={[5.85, 0.6, 3.4]} radius={0.22} smoothness={4} position={[0, 3.65, 0.25]} castShadow><meshStandardMaterial color="#071748" roughness={0.55} /></RoundedBox>
       <RoundedBox args={[1.45, 2.2, 0.16]} radius={0.12} smoothness={3} position={[0, 1.22, 1.78]} castShadow><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.28 : 0.08} /></RoundedBox>
 
-      {active && (phase === 'intro' || phase === 'complete') && (
-        <InteractiveTaxNpc
-          name="Maya · Tax Guide"
-          point={TAX_POINTS.guide}
-          avatar={guideAvatar}
-          active
-          onActivate={() => useTaxLab.getState().openGuide()}
-        />
-      )}
+      {/* Match the other module hosts: Maya physically stays at her station in
+          the world instead of disappearing when a mode flag is briefly stale or
+          when the learner advances to another tax step. Only her interaction
+          glow/action changes with the active Module 6 phase. */}
+      <InteractiveTaxNpc
+        name="Maya · Tax Guide"
+        point={TAX_POINTS.guide}
+        avatar={guideAvatar}
+        active={guideInteractive}
+        onActivate={() => useTaxLab.getState().openGuide()}
+      />
 
       {active && phase === 'case' && TAX_CLIENTS.map((client, index) => {
         const caseInfo = TAX_CASES.find((item) => item.id === client.caseId)
