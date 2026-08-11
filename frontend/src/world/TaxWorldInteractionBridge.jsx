@@ -1,12 +1,28 @@
 import { useEffect } from 'react'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { INTERACT_RADIUS } from './config.js'
-import { playerPos } from './store.js'
+import { playerPos, joystick, moveTarget } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
 
+const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
+
+function placeAtTaxTownEntrance() {
+  try {
+    if (sessionStorage.getItem(TAX_ORIGIN_KEY) !== 'module-select') return
+    // An explicit Module 6 launch should never strand a player somewhere else
+    // in the town. Put them a few steps in front of Maya so Tax Town is visible
+    // immediately while still letting them walk up and interact normally.
+    playerPos.x = TAX_POINTS.guide[0]
+    playerPos.z = TAX_POINTS.guide[1] + 3.2
+    joystick.x = 0
+    joystick.y = 0
+    moveTarget.x = null
+    moveTarget.z = null
+  } catch { /* storage can be unavailable */ }
+}
 
 function nearbyTaxAction() {
   const state = useTaxLab.getState()
@@ -14,7 +30,7 @@ function nearbyTaxAction() {
 
   if (state.phase === 'intro') {
     if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-      return { kind: 'guide', label: 'Talk to Maya · start Module 6' }
+      return { kind: 'guide', label: 'Talk to Maya · start Module 6 Tax Town' }
     }
     return null
   }
@@ -68,9 +84,6 @@ function runTaxAction(action) {
   return false
 }
 
-// This bridge is mounted only while Module 6 is active, so it deliberately uses
-// the same direct E-key pattern as the other modules instead of depending on a
-// second global-mode flag that can briefly fall out of sync with the visible UI.
 export function runTaxInteraction() {
   const lab = useTaxLab.getState()
   if (lab.panel) return false
@@ -78,9 +91,6 @@ export function runTaxInteraction() {
   const action = nearbyTaxAction()
   if (action) return runTaxAction(action)
 
-  // Keep Module 6 impossible to dead-lock on entry. If the player is in the
-  // Module 6 experience and presses E before proximity has refreshed, Maya still
-  // opens exactly like a normal module host.
   if (lab.phase === 'intro') {
     lab.openGuide()
     return true
@@ -91,6 +101,8 @@ export function runTaxInteraction() {
 
 export function TaxWorldInteractionBridge() {
   useEffect(() => {
+    placeAtTaxTownEntrance()
+
     let lastKey = ''
     const refresh = () => {
       const action = nearbyTaxAction()
