@@ -16,16 +16,19 @@ const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8'
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
 describe('physical module districts', () => {
-  it('renders Paycheck Planet as a playable district inside the main town', () => {
+  it('renders Paycheck Planet as a playable, decluttered district inside the main town', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
     expect(landmarks).toContain('<PaycheckPlanetWorld />')
-    expect(paycheck).toContain("labelTexture('PAYCHECK PLANET · TAX LAB'")
-    expect(paycheck).toContain('TaxStation')
-    expect(paycheck).toContain('TAX_STEP_STATIONS')
+    expect(paycheck).toContain('CurrentTaxStation')
+    expect(paycheck).toContain('taxStationForStep(stepNumber)')
     expect(paycheck).toContain('Maya · Tax Guide')
-    expect(paycheck).toContain('RovingTaxWorker')
-    expect(paycheck).toContain('DeskWorker')
+    expect(paycheck).toContain('InteractionGlow')
     expect(paycheck).toContain('CelebrationBurst')
+    expect(paycheck).not.toContain('labelTexture')
+    expect(paycheck).not.toContain('Billboard')
+    expect(paycheck).not.toContain('RovingTaxWorker')
+    expect(paycheck).not.toContain('DeskWorker')
+    expect(landmarks).not.toContain('TaxDistrictActivity')
     expect(layout).toContain('TAX_POINTS')
     expect(layout).toContain('TAX_CLIENTS')
     expect(overlay).toContain('data-tax-station-panel="true"')
@@ -34,10 +37,10 @@ describe('physical module districts', () => {
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 
-  it('requires walking close to NPCs and stations before interaction', () => {
+  it('requires walking close to NPCs and stations before interaction without spawning far-away text notices', () => {
     expect(paycheck).toContain('INTERACT_RADIUS = 3.3')
     expect(paycheck).toContain('closeEnough(point)')
-    expect(paycheck).toContain('Walk closer to ${label} to interact.')
+    expect(paycheck).not.toContain('Walk closer to ${label} to interact.')
     expect(paycheck).toContain('useTaxLab.getState().openStation(step)')
   })
 
