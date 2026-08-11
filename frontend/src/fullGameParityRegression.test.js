@@ -1,30 +1,30 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(process.cwd(), '..')
 const read = (path) => readFileSync(resolve(root, path), 'utf8')
 
-describe('full Aug. 9 game-test closure and 2D/3D parity', () => {
-  it('keeps Accessible 2D on the same gameplay state/actions as the 3D world', () => {
+describe('full Aug. 9 game-test closure and 3D-only runtime', () => {
+  it('fully removes the old Accessible 2D world implementation', () => {
+    expect(existsSync(resolve(root, 'frontend/src/world/AccessibleWorld.jsx'))).toBe(false)
     const world = read('frontend/src/pages/World.jsx')
-    const accessible = read('frontend/src/world/AccessibleWorld.jsx')
+    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('data-world-mode="3d"')
+    expect(world).not.toContain('AccessibleWorld')
+  })
 
-    expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
-    expect(world).toContain('<Hud playerName={state.player.name || \'friend\'} onContinue={onContinue} />')
+  it('keeps the runtime preference pinned to 3D and repairs stale browser state', () => {
+    const prefs = read('frontend/src/services/worldModePreferences.js')
+    expect(prefs).toContain("localStorage.setItem(STORAGE_KEY, WORLD_MODES.THREE_D)")
+    expect(prefs).toContain('return WORLD_MODES.THREE_D')
+    expect(prefs).toContain('forceThreeDPreference()')
+  })
 
-    for (const action of [
-      'game.openMailbox',
-      "game.openPanel('spend')",
-      'game.openSupplies',
-      'game.openTemplate',
-      'game.enterBudget',
-      'game.enterBank',
-      'game.enterGarden',
-      'tax.openGuide',
-      'tax.previewClient(taxCase)',
-      'tax.openStation(tax.stepNumber)',
-    ]) expect(accessible).toContain(action)
+  it('always lets the real 3D renderer attempt startup even after a failed WebGL probe', () => {
+    const source = read('frontend/src/utils/webgl.js')
+    expect(source).toContain('attempting the 3D renderer anyway')
+    expect(source).toMatch(/return true\s*\n}/)
   })
 
   it('enforces the report cognitive-load rule: one surface and <=25 words before expansion', () => {
@@ -62,14 +62,5 @@ describe('full Aug. 9 game-test closure and 2D/3D parity', () => {
     expect(source).toContain('<planeGeometry args={[3.6, 1.2]} />')
     expect(source).toContain('<Billboard position={[0, 1.52, 0]}>')
     expect(source).toContain('<planeGeometry args={[1.58, 0.72]} />')
-  })
-
-  it('keeps explicit world-mode choice and Accessible 2D fallback', () => {
-    const settings = read('frontend/src/pages/Settings.jsx')
-    const world = read('frontend/src/pages/World.jsx')
-    expect(settings).toContain('Automatic')
-    expect(settings).toContain('Accessible 2D')
-    expect(settings).toContain('3D world')
-    expect(world).toContain('Accessible 2D is active')
   })
 })

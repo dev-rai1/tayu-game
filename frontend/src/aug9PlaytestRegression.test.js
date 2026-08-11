@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -48,53 +48,39 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain('if (!dialog || !document.contains(dialog)) return')
   })
 
-  it('keeps the accessible 2D intro dismissible instead of permanently covering play', () => {
-    const source = read('frontend/src/world/AccessibleWorld.jsx')
-    expect(source).toContain('const [introExpanded, setIntroExpanded] = useState(true)')
-    expect(source).toContain('Got it — show my next step')
-    expect(source).toContain('2D mode info')
-    expect(source).toContain('bg-navy/95')
-  })
-
-  it('replaces shared 3D How-to-Play instructions with a dedicated 2D help dialog', () => {
-    const source = read('frontend/src/world/AccessibleWorld.jsx')
-    expect(source).toContain('const [helpDialogOpen, setHelpDialogOpen] = useState(false)')
-    expect(source).toContain('if (!game.helpOpen) return')
-    expect(source).toContain('game.setHelpOpen(false)')
-    expect(source).toContain('No WASD, right-click camera movement, or 3D arrows are used in this mode.')
-    expect(source).toContain('Use the large buttons under “Your next step.”')
-  })
-
-  it('keeps Module 5 reachable and playable from Accessible 2D', () => {
-    const accessible = read('frontend/src/world/AccessibleWorld.jsx')
+  it('physically removes the old button-based 2D world', () => {
+    expect(existsSync(resolve(root, 'frontend/src/world/AccessibleWorld.jsx'))).toBe(false)
     const world = read('frontend/src/pages/World.jsx')
-    expect(accessible).toContain('export function AccessibleWorld({ taxMode = false })')
-    expect(accessible).toContain('Go to Paycheck Planet — meet Maya at the Tax Help desk')
-    expect(accessible).toContain('tax.previewClient(taxCase)')
-    expect(accessible).toContain('tax.openStation(tax.stepNumber)')
-    expect(accessible).toContain("title = taxMode ? 'Paycheck Planet · Tax Lab'")
-    expect(world).toContain('<AccessibleWorld taxMode={taxMode} />')
-    expect(world).toContain('{taxMode && use3D && <TaxWorldInteractionBridge />}')
-    expect(world).toContain('{taxMode && use3D && <TaxActionPrompt />}')
+    expect(world).not.toContain('AccessibleWorld')
+    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('data-world-mode="3d"')
   })
 
-  it('keeps an explicit player-selectable 2D/3D mode and explains fallback', () => {
+  it('removes the 2D/Automatic world selector from Settings', () => {
     const settings = read('frontend/src/pages/Settings.jsx')
-    const prefs = read('frontend/src/services/worldModePreferences.js')
-    const world = read('frontend/src/pages/World.jsx')
-    expect(settings).toContain('Accessible 2D')
-    expect(settings).toContain('3D world')
-    expect(settings).toContain('3D is not available on this device right now')
-    expect(prefs).toContain("const STORAGE_KEY = 'tayu-world-mode'")
-    expect(world).toContain('const use3D = webglAvailable && worldMode !== WORLD_MODES.TWO_D')
-    expect(world).toContain('Accessible 2D is active')
+    expect(settings).not.toContain('Accessible 2D')
+    expect(settings).not.toContain("title: 'Automatic'")
+    expect(settings).not.toContain("title: '3D world'")
+    expect(settings).toContain('TAYU always uses the full walkable 3D town.')
   })
 
-  it('labels the 3D canvas for screen readers and points to the 2D alternative', () => {
+  it('repairs stale 2D browser preferences back to 3D', () => {
+    const prefs = read('frontend/src/services/worldModePreferences.js')
+    expect(prefs).toContain("const STORAGE_KEY = 'tayu-world-mode'")
+    expect(prefs).toContain('localStorage.setItem(STORAGE_KEY, WORLD_MODES.THREE_D)')
+    expect(prefs).toContain('return WORLD_MODES.THREE_D')
+  })
+
+  it('attempts the actual 3D canvas even when capability probing fails', () => {
+    const source = read('frontend/src/utils/webgl.js')
+    expect(source).toContain('attempting the 3D renderer anyway')
+    expect(source).toMatch(/return true\s*\n}/)
+  })
+
+  it('labels the 3D canvas for screen readers', () => {
     const source = read('frontend/src/world/GameWorld.jsx')
     expect(source).toContain('role="application"')
     expect(source).toContain('Interactive TAYU 3D learning world')
-    expect(source).toContain('Accessible 2D mode is available in Settings.')
   })
 
   it('keeps the jar HUD, Skip Talk, and Admin controls in separate screen anchors', () => {
@@ -165,11 +151,12 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain("['spend', 'save', 'give'].every")
   })
 
-  it('mounts the live plan coach for both 3D and Accessible 2D worlds', () => {
+  it('mounts the live plan coach in the 3D world shell', () => {
     const source = read('frontend/src/pages/World.jsx')
     expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
     expect(source).toContain('{!taxMode && <JarPlanCoach />}')
-    expect(source).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
+    expect(source).toContain('<GameWorld avatar={state.avatar} />')
+    expect(source).not.toContain('AccessibleWorld')
   })
 
   it('keeps jar reward progression behind a successful three-jar financial plan', () => {

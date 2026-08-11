@@ -8,9 +8,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Required checks must also run on the temporary commits created by
-  # GitHub's merge queue. Without this event, queued PRs remain blocked
-  # because the frontend and backend checks are never reported.
   merge_group:
     types: [checks_requested]
 
@@ -30,6 +27,39 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test --if-present
+
+  browser-3d:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Install Playwright runner and Chromium
+        run: |
+          npm install --no-save @playwright/test@1.47.2
+          npx playwright install --with-deps chromium
+      - name: Start Vite and verify the real 3D town renders
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/tayu-vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill $VITE_PID || true' EXIT
+          READY=0
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:4173/3d-smoke.html >/dev/null; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" != "1" ]; then
+            cat /tmp/tayu-vite.log
+            exit 1
+          fi
+          npx playwright test e2e/3d-smoke.spec.js --reporter=line
 
   backend:
     runs-on: ubuntu-latest

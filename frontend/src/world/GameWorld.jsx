@@ -55,12 +55,7 @@ function repairRuntimeState() {
   if (Object.keys(patch).length) useGame.setState(patch)
 }
 
-// Root 3D scene - "soft clay diorama": warm key light, gentle fill, fog for
-// depth, ACES tone mapping. HUD is a sibling DOM layer (pages/World.jsx).
 export function GameWorld({ avatar }) {
-  // Cloud accounts can restore snapshots created by older TAYU builds. Repair
-  // collection/panel fields before the first 3D frame so Player and world
-  // systems never call .some/.length/etc. on stale or missing values.
   repairRuntimeState()
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
@@ -71,7 +66,7 @@ export function GameWorld({ avatar }) {
       <Boundary name="canvas" hard>
         <Canvas
           role="application"
-          aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination. Accessible 2D mode is available in Settings."
+          aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination."
           camera={{ position: [0, 7, 11], fov: 52 }}
           dpr={1}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
@@ -80,6 +75,15 @@ export function GameWorld({ avatar }) {
             powerPreference: 'high-performance',
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: 1.05,
+          }}
+          onCreated={({ gl }) => {
+            try {
+              gl.getContext()
+              if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true'
+            } catch (error) {
+              logTayuError('canvas:webgl-context', error?.message || error)
+              throw error
+            }
           }}
         >
           <CanvasViewportGuard />

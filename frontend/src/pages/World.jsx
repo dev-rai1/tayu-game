@@ -18,7 +18,6 @@ import {
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
 import { setUsageModule } from '../services/usageAnalytics.js'
-import { AccessibleWorld } from '../world/AccessibleWorld.jsx'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
 import { PersistentImprovementCoach } from '../world/PersistentImprovementCoach.jsx'
 import { GuidedCommerceOverlay } from '../world/GuidedCommerceOverlay.jsx'
@@ -29,8 +28,6 @@ import { WorldModuleLearningRecap } from '../components/ModuleLearningRecap.jsx'
 import { LemonadeCompletionCheck } from '../components/LemonadeCompletionCheck.jsx'
 import { AdminPanel } from '../components/AdminPanel.jsx'
 import { useTaxLab } from '../world/taxLabStore.js'
-import { hasWebGL } from '../utils/webgl.js'
-import { getWorldModePreference, subscribeWorldModePreference, WORLD_MODES } from '../services/worldModePreferences.js'
 import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
@@ -113,8 +110,6 @@ function prepareWorldForTaxWalking() {
     weekComplete: false,
     pendingWeekComplete: false,
     scenarioLocked: false,
-    // Old Lemonade/Garden panel phases can freeze Player globally. Tax mode
-    // temporarily parks those phase flags without changing saved progress.
     lemPhase: null,
     mgPhase: state.mg ? 'tax-paused' : state.mgPhase,
     mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg,
@@ -193,14 +188,9 @@ export default function World() {
   const week = useGame((s) => s.week)
   const cards = useGame((s) => s.cards)
   const mg = useGame((s) => s.mg)
-  const [webglAvailable] = useState(() => hasWebGL())
-  const [worldMode, setWorldMode] = useState(() => getWorldModePreference())
-  const use3D = webglAvailable && worldMode !== WORLD_MODES.TWO_D
   const taxMode = paycheckMode || isPaycheckWorldActive()
   const sawBankGardenHandoff = useRef(false)
   const previousTaxMode = useRef(taxMode)
-
-  useEffect(() => subscribeWorldModePreference(setWorldMode), [])
 
   useEffect(() => {
     const sync = (event) => setPaycheckMode(event?.detail?.active ?? isPaycheckWorldActive())
@@ -269,14 +259,12 @@ export default function World() {
         ? {
             ...card,
             __moduleOrderIntegrated: true,
-            text: use3D
-              ? 'Your bank plan is ready. Module 5 is Money Garden. Follow the route to Mr. Sprout and begin Investing Foundations.'
-              : 'Your bank plan is ready. Module 5 is Money Garden. In Accessible 2D, choose the Money Garden destination to begin Investing Foundations.',
+            text: 'Your bank plan is ready. Module 5 is Money Garden. Follow the route to Mr. Sprout and begin Investing Foundations.',
             buttons: (card.buttons || []).map((button) => ({ ...button, label: 'Start Module 5', act: null })),
           }
         : card),
     })
-  }, [cards, use3D])
+  }, [cards])
 
   useEffect(() => {
     const hasHandoff = cards.some((card) => card.id === 'bkhand')
@@ -290,9 +278,6 @@ export default function World() {
   }, [cards, taxMode])
 
   useEffect(() => {
-    // Read the requested public module BEFORE initWorld resets the player. When
-    // Module 6 is selected, preserve the current town coordinates so the
-    // learner stays in the same persistent world while entering Paycheck Planet.
     const jump = localStorage.getItem('tayu-jump-module')
     const preservedTaxPosition = jump === '6'
       ? { x: playerPos.x, y: playerPos.y, z: playerPos.z }
@@ -355,12 +340,12 @@ export default function World() {
     : ''
 
   return (
-    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'} data-world-mode={use3D ? '3d' : '2d'}>
-      {use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}
+    <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'} data-world-mode="3d">
+      <GameWorld avatar={state.avatar} />
 
-      {taxMode && use3D && <TaxWorldInteractionBridge />}
+      {taxMode && <TaxWorldInteractionBridge />}
       {taxMode && <TaxWorkbenchOverlay />}
-      {taxMode && use3D && <TaxActionPrompt />}
+      {taxMode && <TaxActionPrompt />}
 
       <Hud playerName={state.player.name || 'friend'} onContinue={onContinue} />
       {!taxMode && <JarPlanCoach />}
@@ -370,14 +355,6 @@ export default function World() {
       {!taxMode && <GuidedCommerceOverlay />}
       {!taxMode && <OverlayEscapeControls />}
 
-      {!webglAvailable && worldMode !== WORLD_MODES.TWO_D && (
-        <div role="status" className="pointer-events-auto absolute bottom-4 left-4 z-[410] max-w-xs rounded-2xl border border-teal/40 bg-navy/95 px-4 py-3 text-sm font-bold text-white shadow-xl">
-          <div className="text-teal">Accessible 2D is active</div>
-          <div className="mt-1 text-white/80">3D is unavailable on this device. You can choose your world mode in Settings.</div>
-          <button type="button" onClick={() => navigate('/settings')} className="mt-2 rounded-xl bg-teal px-3 py-2 text-xs font-extrabold text-navy">Open Settings</button>
-        </div>
-      )}
-
       {!taxMode && week === 5 && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-[210] w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center shadow-xl backdrop-blur-sm">
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFB27D]">Module {publicModule} · Investing sequence</div>
@@ -386,8 +363,8 @@ export default function World() {
         </div>
       )}
 
-      {use3D && usesTouchControls && <MobileControls />}
-      <FirstTimeMovementTutorial enabled={use3D && !taxMode} />
+      {usesTouchControls && <MobileControls />}
+      <FirstTimeMovementTutorial enabled={!taxMode} />
       {!taxMode && <WorldModuleLearningRecap />}
       {!taxMode && <AdminPanel />}
       <div className="pointer-events-none absolute inset-0 z-[130] bg-black transition-opacity duration-1000" style={{ opacity: faded ? 0 : 1 }} />
