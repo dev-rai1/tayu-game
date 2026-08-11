@@ -31,6 +31,32 @@ jobs:
       - run: npm run build
       - run: npm test --if-present
 
+  browser-3d:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Install Chromium for 3D smoke test
+        run: npx --yes playwright@1.47.2 install --with-deps chromium
+      - name: Start Vite and verify the real 3D town renders
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/tayu-vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill $VITE_PID || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/3d-smoke.html >/dev/null; then break; fi
+            sleep 1
+          done
+          npx --yes @playwright/test@1.47.2 test e2e/3d-smoke.spec.js --reporter=line
+
   backend:
     runs-on: ubuntu-latest
     defaults:
