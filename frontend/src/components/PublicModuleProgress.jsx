@@ -25,9 +25,12 @@ export function PublicModuleProgress() {
   if (pathname !== '/world' || paycheckActive || Number(week) >= 5 || !TITLES[week]) return null
 
   return (
-    <div className="pointer-events-none fixed left-1/2 top-3 z-[215] w-[min(82vw,30rem)] -translate-x-1/2 rounded-2xl border border-white/25 bg-navy/92 px-4 py-2 text-center text-white shadow-xl backdrop-blur-sm">
-      <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-sun">Module {week} of 6</div>
-      <div className="text-sm font-extrabold sm:text-base">{TITLES[week]}</div>
+    <div className="pointer-events-none fixed left-1/2 top-2 z-[215] w-auto max-w-[calc(100vw-7.5rem)] -translate-x-1/2 rounded-xl border border-white/20 bg-navy/90 px-3 py-1.5 text-center text-white shadow-lg backdrop-blur-sm sm:top-3 sm:w-[min(82vw,30rem)] sm:max-w-none sm:rounded-2xl sm:px-4 sm:py-2 sm:shadow-xl">
+      <div className="flex items-center justify-center gap-1.5 whitespace-nowrap text-[11px] font-extrabold sm:block sm:text-[10px] sm:uppercase sm:tracking-[0.18em] sm:text-sun">
+        <span className="text-sun sm:hidden">{week}/6</span>
+        <span className="hidden sm:inline">Module {week} of 6</span>
+        <span className="text-white sm:mt-0.5 sm:block sm:text-sm sm:normal-case sm:tracking-normal sm:text-white md:text-base">{TITLES[week]}</span>
+      </div>
     </div>
   )
 }
