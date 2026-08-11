@@ -48,18 +48,18 @@ export function FirstTimeMovementTutorial({ enabled = true }) {
     }
   }, [enabled, step])
 
-  // Tutorial copy now uses the same message field as every other short guide.
-  // PersistentCoach captures it and shows it in the single guidance lane.
+  // Keep phone guidance deliberately short: one instruction and one action at a time.
+  // PersistentCoach captures this message and owns the single guidance lane.
   useEffect(() => {
     if (!enabled || step < 0 || blocking) return
     if (step === 1 && !near) return
     const mobile = usesTouchControls
     useGame.setState({
       guide: {
-        title: step === 0 ? 'Move around TAYU' : 'Use the action control',
+        title: step === 0 ? (mobile ? 'Move to the glow' : 'Move around TAYU') : (mobile ? 'Tap DO' : 'Use the action control'),
         action: step === 0
-          ? mobile ? 'Use the MOVE pad to walk toward the glowing destination.' : 'Use WASD to walk toward the glowing destination.'
-          : mobile ? 'You made it. Tap the blue action button.' : 'You made it. Press E or click the action button.',
+          ? mobile ? 'Drag the MOVE pad.' : 'Use WASD to walk toward the glowing destination.'
+          : mobile ? 'You made it — tap DO.' : 'You made it. Press E or click the action button.',
       },
     })
   }, [blocking, enabled, near, step])
