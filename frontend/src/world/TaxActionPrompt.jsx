@@ -2,26 +2,25 @@ import { runTaxInteraction } from './TaxWorldInteractionBridge.jsx'
 import { useTaxLab } from './taxLabStore.js'
 import './taxWorkbench.css'
 
-function fallbackForPhase(phase, stepNumber) {
-  if (phase === 'intro') return 'Talk to Maya to begin the Tax Lab'
-  if (phase === 'case') return 'Walk to a glowing taxpayer · press E when you are close'
-  if (phase === 'steps') return `Walk to the glowing station${stepNumber ? ` · step ${stepNumber}` : ''} · press E when you are close`
-  if (phase === 'complete') return 'Return to Maya · press E when you are close'
-  return 'Press E to interact in the Tax Lab'
+function shortLabel(phase, nearbyAction) {
+  if (nearbyAction) return 'Interact'
+  if (phase === 'intro') return 'Start Tax Lab'
+  if (phase === 'case') return 'Walk closer'
+  if (phase === 'steps') return 'Walk closer'
+  if (phase === 'complete') return 'Talk to Maya'
+  return 'Interact'
 }
 
 export function TaxActionPrompt() {
   const nearbyAction = useTaxLab((state) => state.nearbyAction)
   const panel = useTaxLab((state) => state.panel)
   const phase = useTaxLab((state) => state.phase)
-  const stepNumber = useTaxLab((state) => state.stepNumber)
 
-  // Decision panels temporarily replace the world prompt. As soon as the learner
-  // returns to the map, the bottom prompt comes back automatically.
-  if (panel) return null
-
-  const instruction = nearbyAction?.label || fallbackForPhase(phase, stepNumber)
-  const canActivate = Boolean(nearbyAction) || phase === 'intro'
+  // Keep the E affordance visible anywhere in Module 6. It becomes actionable
+  // when the player reaches the current glowing target; during a decision panel
+  // it stays visible but subdued so the control never appears to disappear.
+  const canActivate = !panel && (Boolean(nearbyAction) || phase === 'intro')
+  const label = panel ? 'Finish this step' : shortLabel(phase, nearbyAction)
 
   const activate = () => {
     if (!canActivate) return
@@ -30,30 +29,21 @@ export function TaxActionPrompt() {
 
   return (
     <div
-      key={`${phase}:${stepNumber || 0}:${instruction}`}
       data-tax-action-prompt="true"
-      className="tax-workbench-enter pointer-events-none fixed inset-x-0 bottom-4 z-[900] flex justify-center px-3 sm:bottom-5"
+      className="pointer-events-none fixed inset-x-0 bottom-[max(0.9rem,env(safe-area-inset-bottom))] z-[960] flex justify-center px-3"
       role="status"
       aria-live="polite"
     >
-      <div className="pointer-events-auto flex w-full max-w-[38rem] items-center gap-3 rounded-2xl border-2 border-white/80 bg-navy/95 p-3 text-white shadow-2xl backdrop-blur-md sm:p-4">
-        <button
-          type="button"
-          onClick={activate}
-          disabled={!canActivate}
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-electric text-xl font-black text-white shadow-lg transition hover:scale-105 active:scale-95 disabled:cursor-default disabled:opacity-80 sm:h-14 sm:w-14"
-          aria-label={canActivate ? `Interact: ${instruction}` : 'Press E when you reach the glowing target'}
-        >
-          E
-        </button>
-
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-black uppercase tracking-[0.17em] text-teal">
-            {canActivate ? 'Press E or tap the button' : 'E interaction available in this tax area'}
-          </div>
-          <div className="mt-0.5 text-sm font-black leading-snug sm:text-base">{instruction}</div>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={activate}
+        disabled={!canActivate}
+        className={`tax-workbench-enter pointer-events-auto flex min-h-12 items-center gap-2 rounded-full border-2 border-white/80 bg-navy/95 px-3 py-2 text-white shadow-2xl backdrop-blur-md transition ${canActivate ? 'hover:scale-[1.03] active:scale-[0.98]' : 'cursor-default opacity-75'}`}
+        aria-label={canActivate ? `Press E to ${label}` : 'E interaction is available in the Tax Lab when you reach the active target'}
+      >
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full font-black text-white shadow-md ${canActivate ? 'bg-electric' : 'bg-white/20'}`} aria-hidden="true">E</span>
+        <span className="pr-1 text-xs font-black uppercase tracking-[0.12em] sm:text-sm">{label}</span>
+      </button>
     </div>
   )
 }
