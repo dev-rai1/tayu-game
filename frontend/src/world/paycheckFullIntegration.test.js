@@ -45,7 +45,9 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
-    expect(world).toContain('{use3D ? <GameWorld avatar={state.avatar} /> : <AccessibleWorld taxMode={taxMode} />}')
+    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('data-world-mode="3d"')
+    expect(world).not.toContain('AccessibleWorld')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).not.toContain("navigate('/tax-paycheck'")
     expect(world).toContain("const internal = jump === '5' ? 5 : jump === '7' ? 6 : Number(jump)")
@@ -63,7 +65,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain("mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg")
     expect(world).toContain('playerSpeedMult: 1')
     expect(world).toContain('moveTarget.x = null')
-    expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{usesTouchControls && <MobileControls />}')
   })
 
   it('starts Money Garden from the Start Module 5 handoff before Paycheck Planet', () => {
@@ -127,7 +129,7 @@ describe('Paycheck Planet full integration', () => {
 
   it('keeps the map and movement usable while focused station panels stay compact', () => {
     expect(world).toContain('<Hud playerName={state.player.name')
-    expect(world).toContain('{use3D && usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{usesTouchControls && <MobileControls />}')
     expect(overlay).toContain('data-tax-field-ui="true"')
     expect(overlay).toContain('data-tax-station-panel="true"')
     expect(overlay).toContain('max-h-[72dvh]')
