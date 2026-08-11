@@ -97,6 +97,32 @@
   box-sizing: border-box;
 }
 
+/* Module 6 uses its own top instruction banner. Keep the money readout below it
+   instead of letting the two centered HUD elements cover each other. */
+[data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-16 {
+  top: 6.25rem !important;
+}
+
+/* The generic internal-week chip can say Module 5 while public Module 6 is
+   active. The Tax Lab banner is the authoritative module/status label. */
+[data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-4.hidden {
+  display: none !important;
+}
+
+/* Public numbering: Paycheck Planet / Tax Lab is Module 6. Keep the existing
+   DOM text for backward compatibility but present the correct learner-facing label. */
+[data-tax-mode='true'] [data-tax-field-ui='true'] > div:first-child > div:first-child {
+  font-size: 0 !important;
+}
+
+[data-tax-mode='true'] [data-tax-field-ui='true'] > div:first-child > div:first-child::after {
+  content: 'Module 6 · in-world Tax Lab';
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 [data-tax-station-panel='true'] input {
   outline: none;
 }
@@ -117,6 +143,7 @@
 @media (max-width: 640px) {
   [data-tax-field-ui='true'] > div:last-child { padding: 0.5rem; }
   [data-tax-station-panel='true'] { max-height: 78dvh; border-radius: 1.2rem; }
+  [data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-16 { top: 6.75rem !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
