@@ -11,12 +11,80 @@ import {
   shouldPauseBetweenGardenParts,
 } from '../scenarios/moneyGardenGuidance.js'
 
-const HIDE_OLD_PINNED_LESSON = `
+const MODULE_5_NO_OVERLAY_CSS = `
+/* Module 5 has one rule: instructional/story text lives in the side rail and
+   never covers the playable world or an open Money Garden workspace. */
 .tayu-world-declutter [class*="top-[150px]"][class*="z-[160]"][class*="w-[min(92vw,26rem)]"] {
   display: none !important;
 }
-.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="side-hint"] {
+
+/* The centered Module 5A/5B banner duplicates the side-rail module label and
+   can cover the money readout, so do not render it while Money Garden is active. */
+.tayu-world-declutter:has([data-money-garden-flow]) [class*="top-3"][class*="z-[210]"][class*="w-[min(92vw,32rem)]"] {
   display: none !important;
+}
+
+/* MoneyGardenFlowGuide owns ordinary investing instructions. Hide only the
+   duplicate generated hint; keep dialogue, lessons, feedback, and queued text. */
+.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="side-hint"][data-guidance-kind="guidance"] {
+  display: none !important;
+}
+
+/* Module 5 never uses the centered "important" popup treatment. The same
+   content stays readable/clickable in the established side rail instead. */
+.tayu-world-declutter:has([data-money-garden-flow]) [data-important-message-scrim="true"] {
+  display: none !important;
+}
+
+.tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="important-popup"] {
+  left: auto !important;
+  right: max(1rem, env(safe-area-inset-right, 0px)) !important;
+  top: calc(7.25rem + env(safe-area-inset-top, 0px)) !important;
+  bottom: auto !important;
+  width: min(30vw, 22rem) !important;
+  min-width: 18rem !important;
+  max-height: calc(100dvh - 8.5rem - env(safe-area-inset-bottom, 0px)) !important;
+  transform: none !important;
+}
+
+/* Hud story/result cards (z-320) are also routed to the same side zone instead
+   of appearing as a centered overlay. */
+.tayu-world-declutter:has([data-money-garden-flow]) [class*="z-[320]"] {
+  inset: auto !important;
+  left: auto !important;
+  right: max(1rem, env(safe-area-inset-right, 0px)) !important;
+  top: calc(7.25rem + env(safe-area-inset-top, 0px)) !important;
+  bottom: auto !important;
+  width: min(30vw, 22rem) !important;
+  max-width: 22rem !important;
+  max-height: calc(100dvh - 8.5rem - env(safe-area-inset-bottom, 0px)) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  overflow-y: auto !important;
+}
+
+.tayu-world-declutter:has([data-money-garden-flow]) [class*="z-[320]"] > .pop-in {
+  width: 100% !important;
+  max-width: 22rem !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 899px) {
+  .tayu-world-declutter:has([data-money-garden-flow]) [data-guidance-lane="important-popup"],
+  .tayu-world-declutter:has([data-money-garden-flow]) [class*="z-[320]"] {
+    left: auto !important;
+    right: max(0.65rem, env(safe-area-inset-right, 0px)) !important;
+    top: calc(5.25rem + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    width: min(90vw, 22rem) !important;
+    min-width: 0 !important;
+    max-width: 22rem !important;
+    max-height: min(34dvh, 16rem) !important;
+    transform: none !important;
+  }
 }
 `
 
@@ -88,17 +156,22 @@ export function MoneyGardenFlowGuide() {
 
   if (intermission) {
     return (
-      <div className="pointer-events-auto fixed inset-0 z-[620] grid place-items-center bg-navy/80 p-4 backdrop-blur-sm">
-        <section role="dialog" aria-modal="true" aria-labelledby="garden-intermission-title" className="w-full max-w-2xl rounded-3xl border-4 border-teal bg-white p-7 text-center text-navy shadow-2xl">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module 6A complete</div>
-          <h2 id="garden-intermission-title" className="mt-2 font-display text-3xl font-extrabold">Investing Foundations complete</h2>
-          <p className="mt-3 text-base font-semibold leading-relaxed text-navy/75">You learned what stock ownership means, built a diversified portfolio, researched businesses, and separated business evidence from price alone.</p>
-          <div className="mt-4 rounded-2xl border-2 border-brandpurple/30 bg-brandpurple/10 p-4 text-left">
-            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-brandpurple">Next: Module 6B</div>
-            <div className="mt-1 font-display text-xl font-extrabold text-navy">Markets, Risk &amp; Patience</div>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-navy/70">Continue with the same saved portfolio while you practice time horizon, ready cash, warning signs, hype, patience, and rebalancing.</p>
+      <div className="pointer-events-none fixed inset-0 z-[620]" data-money-garden-flow>
+        <style>{MODULE_5_NO_OVERLAY_CSS}</style>
+        <section
+          role="region"
+          aria-labelledby="garden-intermission-title"
+          className="pointer-events-auto absolute right-[max(1rem,env(safe-area-inset-right,0px))] top-[calc(7.25rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-8.5rem)] w-[min(30vw,22rem)] min-w-[18rem] overflow-y-auto rounded-2xl border-2 border-teal bg-white p-4 text-navy shadow-2xl max-[899px]:right-[max(0.65rem,env(safe-area-inset-right,0px))] max-[899px]:top-[calc(5.25rem+env(safe-area-inset-top,0px))] max-[899px]:max-h-[60dvh] max-[899px]:w-[min(90vw,22rem)] max-[899px]:min-w-0"
+        >
+          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-teal">Module 5A complete</div>
+          <h2 id="garden-intermission-title" className="mt-2 font-display text-2xl font-extrabold">Investing Foundations complete</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/75">You learned what stock ownership means, built a diversified portfolio, researched businesses, and separated business evidence from price alone.</p>
+          <div className="mt-3 rounded-2xl border-2 border-brandpurple/30 bg-brandpurple/10 p-3 text-left">
+            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-brandpurple">Next: Module 5B</div>
+            <div className="mt-1 font-display text-lg font-extrabold text-navy">Markets, Risk &amp; Patience</div>
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-navy/70">Continue with the same saved portfolio while you practice time horizon, ready cash, warning signs, hype, patience, and rebalancing.</p>
           </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2">
             <button
               type="button"
               onClick={() => {
@@ -107,9 +180,9 @@ export function MoneyGardenFlowGuide() {
                 }))
                 persist()
               }}
-              className="min-h-[58px] rounded-2xl bg-brandpurple px-5 text-lg font-extrabold text-white active:scale-95"
+              className="min-h-[52px] rounded-2xl bg-brandpurple px-4 text-base font-extrabold text-white active:scale-95"
             >
-              Start Module 6B →
+              Start Module 5B →
             </button>
             <button
               type="button"
@@ -117,18 +190,25 @@ export function MoneyGardenFlowGuide() {
                 persist()
                 navigate('/modules')
               }}
-              className="min-h-[58px] rounded-2xl bg-navy/10 px-5 text-lg font-extrabold text-navy active:scale-95"
+              className="min-h-[48px] rounded-2xl bg-navy/10 px-4 text-sm font-extrabold text-navy active:scale-95"
             >
               Save &amp; return to modules
             </button>
           </div>
-          <p className="mt-3 text-xs font-bold text-navy/55">Module 6B resumes from this exact saved point.</p>
         </section>
       </div>
     )
   }
 
-  if (!isDecision) return null
+  /* Keep the Module 5 marker and CSS active during results/dialogue/non-decision
+     phases too, so nothing can fall back to a centered text overlay. */
+  if (!isDecision) {
+    return (
+      <div className="pointer-events-none fixed inset-0 z-[1]" data-money-garden-flow aria-hidden="true">
+        <style>{MODULE_5_NO_OVERLAY_CSS}</style>
+      </div>
+    )
+  }
 
   const currentIndex = Math.min(clueIndex, Math.max(0, clueSequence.length - 1))
   const currentClue = clueSequence[currentIndex]
@@ -137,8 +217,7 @@ export function MoneyGardenFlowGuide() {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[410]" data-money-garden-flow>
-      <style>{HIDE_OLD_PINNED_LESSON}</style>
-      {part.part === 2 && <div className="absolute inset-0" style={{ background: 'rgba(120,80,240,0.055)' }} aria-hidden="true" />}
+      <style>{MODULE_5_NO_OVERLAY_CSS}</style>
 
       {canShowClue && (
         <section
