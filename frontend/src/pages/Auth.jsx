@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { currentUser, signUp, signIn } from '../services/auth.js'
 import { recoverAuthenticatedSession } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
-import { loadProfile, loadWallet } from '../services/walletStore.js'
+import { loadProfile } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 
@@ -51,7 +51,11 @@ export default function Auth() {
     if (user.role === 'admin') return nav('/dashboard')
     if (user.role === 'teacher') return nav('/teacher')
     if (!loadProfile()?.assessment?.pre) return nav('/assessment/pre')
-    return nav(loadWallet() ? '/world' : '/modules')
+    // Do not drop players straight into a saved 3D world from the login form.
+    // Older or partially synced world state can be incompatible with the
+    // current build and can crash immediately after login. The module chooser
+    // is a stable post-login home and still offers resume/replay controls.
+    return nav('/modules')
   }
 
   const submit = async (event) => {
