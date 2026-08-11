@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { currentUser, signUp, signIn } from '../services/auth.js'
-import { recoverAuthenticatedSession } from '../services/loginRecovery.js'
+import { recoverLogin } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
@@ -76,9 +76,11 @@ export default function Auth() {
         try {
           user = await signIn(f.email, f.password)
         } catch (error) {
-          // If Firebase accepted the credentials, a later Firestore/profile/progress
-          // request must never turn that successful authentication into a login error.
-          user = currentUser() || await recoverAuthenticatedSession().catch(() => null)
+          // Before showing an error, try both an already-authenticated Firebase
+          // session and the older device-only account credentials. This keeps
+          // login working even when Firestore/profile sync fails or an older
+          // account has not been migrated yet.
+          user = currentUser() || await recoverLogin(f.email, f.password).catch(() => null)
           if (!user) throw error
         }
         setErr(null)
