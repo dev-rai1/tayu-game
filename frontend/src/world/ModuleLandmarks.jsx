@@ -18,6 +18,7 @@ export function ModuleLandmarks() {
   return (
     <>
       <PaycheckPlanetWorld />
+      {/* <TaxDistrictActivity /> intentionally disabled: one Module 6 target at a time. */}
       <MoneyGardenMarker />
     </>
   )
