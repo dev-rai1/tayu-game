@@ -214,7 +214,7 @@ export function TrustMeter() {
         aria-valuemax={TRUST_MAX}
         aria-valuenow={bk.trust}
         aria-valuetext={`${bk.trust} of ${TRUST_MAX} credit-habit practice points. This is not a real credit score.`}
-        className="glass--navy absolute left-4 top-[104px] rounded-2xl px-3 py-2 sm:top-16"
+        className="glass--navy absolute left-4 top-44 z-[155] max-w-[calc(100vw-2rem)] rounded-2xl px-3 py-2 shadow-lg sm:top-28"
       >
         <div className="text-[10px] font-extrabold tracking-wide text-teal">CREDIT HABITS</div>
         <div className="text-[9px] font-bold text-white/70">Practice meter — not a real score</div>
