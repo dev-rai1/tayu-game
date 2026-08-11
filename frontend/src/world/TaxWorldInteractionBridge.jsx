@@ -12,9 +12,6 @@ const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, s
 function placeAtTaxTownEntrance() {
   try {
     if (sessionStorage.getItem(TAX_ORIGIN_KEY) !== 'module-select') return
-    // An explicit Module 6 launch should never strand a player somewhere else
-    // in the town. Put them a few steps in front of Maya so Tax Town is visible
-    // immediately while still letting them walk up and interact normally.
     playerPos.x = TAX_POINTS.guide[0]
     playerPos.z = TAX_POINTS.guide[1] + 3.2
     joystick.x = 0
@@ -45,7 +42,7 @@ function nearbyTaxAction() {
         bestDistance = d
       }
     }
-    return best ? { kind: 'client', caseId: best.caseId, label: `Talk to ${best.name} · inspect this W-2` } : null
+    return best ? { kind: 'client', caseId: best.caseId, label: `Inspect ${best.name}'s W-2` } : null
   }
 
   if (state.phase === 'steps') {
@@ -104,13 +101,28 @@ export function TaxWorldInteractionBridge() {
     placeAtTaxTownEntrance()
 
     let lastKey = ''
+    let lastAutoKey = ''
     const refresh = () => {
+      const lab = useTaxLab.getState()
       const action = nearbyTaxAction()
       const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
       if (key !== lastKey) {
         lastKey = key
-        useTaxLab.getState().setNearbyAction(action)
+        lab.setNearbyAction(action)
       }
+
+      // Module 6 should feel like one guided process, not a sequence of tiny E
+      // prompts. After the initial Maya interaction, walking up to the active
+      // client or station opens that step automatically. E remains available as
+      // a backup and for the clear start/review interactions with Maya.
+      if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
+        lastAutoKey = key
+        if (runTaxAction(action)) {
+          lastKey = ''
+          lab.setNearbyAction(null)
+        }
+      }
+      if (!action) lastAutoKey = ''
     }
 
     const timer = window.setInterval(refresh, 90)

@@ -14,6 +14,7 @@ import { PartyHouse } from './PartyHouse.jsx'
 import { BudgetTown } from './BudgetTown.jsx'
 import { BankDistrict } from './BankDistrict.jsx'
 import { ModuleLandmarks } from './ModuleLandmarks.jsx'
+import { PaycheckPlanetWorld } from './PaycheckPlanetWorld.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
 import { CoinLayer } from './CoinLayer.jsx'
@@ -104,6 +105,7 @@ export function GameWorld({ avatar }) {
             <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
             <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
             <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
+            <SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>
             <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
             <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
             <SceneBoundary name="party"><PartyHouse /></SceneBoundary>

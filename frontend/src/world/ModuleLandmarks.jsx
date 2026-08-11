@@ -1,7 +1,7 @@
 import { Billboard } from '@react-three/drei'
 import { SPROUT } from './config.js'
 import { labelTexture } from './textures.js'
-import { PaycheckPlanetWorld, TAX_ENTRY } from './PaycheckPlanetWorld.jsx'
+import { TAX_ENTRY } from './PaycheckPlanetWorld.jsx'
 
 function MoneyGardenMarker() {
   return (
@@ -15,12 +15,7 @@ function MoneyGardenMarker() {
 }
 
 export function ModuleLandmarks() {
-  return (
-    <>
-      <PaycheckPlanetWorld />
-      <MoneyGardenMarker />
-    </>
-  )
+  return <MoneyGardenMarker />
 }
 
 export { TAX_ENTRY }

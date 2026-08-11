@@ -114,17 +114,18 @@ describe('Paycheck Planet full integration', () => {
     expect(taxStore).toContain('nearbyAction')
   })
 
-  it('keeps a compact E control fixed at the bottom throughout the tax area', () => {
+  it('shows the E control only when a tax interaction is actionable and keeps it clear of open panels', () => {
     expect(actionPrompt).toContain('shortLabel')
-    expect(actionPrompt).toContain("phase === 'case'")
-    expect(actionPrompt).toContain("phase === 'steps'")
+    expect(actionPrompt).toContain("phase === 'intro'")
     expect(actionPrompt).toContain("phase === 'complete'")
-    expect(actionPrompt).toContain('bottom-[max(0.9rem,env(safe-area-inset-bottom))]')
+    expect(actionPrompt).toContain('const canActivate = !panel && (Boolean(nearbyAction) || phase === \'intro\')')
+    expect(actionPrompt).toContain('if (!canActivate) return null')
+    expect(actionPrompt).toContain('bottom-[max(6.5rem,calc(env(safe-area-inset-bottom)+5rem))]')
     expect(actionPrompt).toContain('tax-workbench-enter')
-    expect(actionPrompt).toContain('E interaction is available in the Tax Lab')
-    expect(actionPrompt).toContain("panel ? 'Finish this step'")
-    expect(actionPrompt).not.toContain('if (panel) return null')
-    expect(actionPrompt).not.toContain('if (!action) return null')
+    expect(actionPrompt).toContain('Press E or click here')
+    expect(actionPrompt).toContain('runVisibleTaxAction(nearbyAction)')
+    expect(actionPrompt).toContain("nearbyAction.kind === 'client'")
+    expect(actionPrompt).toContain("nearbyAction.kind === 'station'")
   })
 
   it('keeps the map and movement usable while focused station panels stay compact', () => {
