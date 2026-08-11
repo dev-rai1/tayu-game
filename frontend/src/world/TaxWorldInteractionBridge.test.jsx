@@ -42,8 +42,15 @@ describe('Module 6 Tax Lab start interaction', () => {
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
-  it('clicking the visible start action uses the same working interaction path', () => {
+  it('clicking the visible start action opens Maya', () => {
     mountTaxInteraction()
+    fireEvent.click(screen.getByRole('button', { name: /Start Module 6/i }))
+    expect(useTaxLab.getState().panel).toBe('guide')
+  })
+
+  it('keeps the visible intro E click working even if the global mode flag updates late', () => {
+    mountTaxInteraction()
+    deactivatePaycheckWorld()
     fireEvent.click(screen.getByRole('button', { name: /Start Module 6/i }))
     expect(useTaxLab.getState().panel).toBe('guide')
   })

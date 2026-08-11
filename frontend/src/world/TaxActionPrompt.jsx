@@ -1,4 +1,4 @@
-import { runTaxInteraction } from './TaxWorldInteractionBridge.jsx'
+import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { useTaxLab } from './taxLabStore.js'
 import './taxWorkbench.css'
 
@@ -9,6 +9,40 @@ function shortLabel(phase, nearbyAction) {
   if (phase === 'steps') return 'Walk closer'
   if (phase === 'complete') return 'Talk to Maya'
   return 'Interact'
+}
+
+function runVisibleTaxAction(nearbyAction) {
+  const lab = useTaxLab.getState()
+  if (lab.panel) return false
+
+  // The visible HUD button is already only mounted while Module 6 is active, so
+  // do not make its click path depend on a second global-mode flag. That extra
+  // guard could briefly be stale and made the on-screen E button look clickable
+  // while doing nothing. Intro must always open Maya immediately.
+  if (lab.phase === 'intro') {
+    lab.openGuide()
+    return true
+  }
+
+  if (!nearbyAction) return false
+
+  if (nearbyAction.kind === 'guide') {
+    lab.openGuide()
+    return true
+  }
+
+  if (nearbyAction.kind === 'client') {
+    const taxCase = TAX_CASES.find((item) => item.id === nearbyAction.caseId)
+    if (!taxCase) return false
+    lab.previewClient(taxCase)
+    return true
+  }
+
+  if (nearbyAction.kind === 'station') {
+    return Boolean(lab.openStation(nearbyAction.stepNumber))
+  }
+
+  return false
 }
 
 export function TaxActionPrompt() {
@@ -24,7 +58,7 @@ export function TaxActionPrompt() {
 
   const activate = () => {
     if (!canActivate) return
-    runTaxInteraction()
+    runVisibleTaxAction(nearbyAction)
   }
 
   return (
