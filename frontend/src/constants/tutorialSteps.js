@@ -6,7 +6,7 @@ export const TUTORIAL_STEPS = [
     id: 1,
     emoji: '👋',
     audio: 'Welcome to TAYU, {{name}}!',
-    text: "You're about to learn an amazing skill: managing money!",
+    text: "You're about to learn an amazing skill: managing money! Need help or want to go back and play another module? Click the ? button at any time for help or to return to the module selection screen.",
     button: "Let's go",
   },
   {
