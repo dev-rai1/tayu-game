@@ -4,18 +4,27 @@ import { KNOWLEDGE_QUESTIONS, scoreKnowledgeQuiz } from '../constants/knowledgeQ
 import { currentUser, syncUp } from '../services/auth.js'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 
+const OLDER_ONLY_IDS = new Set(['stock_vs_bond', 'tax_refund'])
+
+function questionsForProfile(profile) {
+  const pathId = profile?.activeLearningPath?.id || ''
+  const elementary = pathId === 'early-elementary' || pathId === 'upper-elementary'
+  return elementary ? KNOWLEDGE_QUESTIONS.filter((question) => !OLDER_ONLY_IDS.has(question.id)) : KNOWLEDGE_QUESTIONS
+}
+
 export default function KnowledgeQuiz() {
   const { phase } = useParams()
   const navigate = useNavigate()
   const profile = loadProfile() || {}
   const existing = profile.assessment?.[phase]
+  const questions = useMemo(() => questionsForProfile(profile), [profile?.activeLearningPath?.id])
   const [answers, setAnswers] = useState({})
   const [busy, setBusy] = useState(false)
   const isPost = phase === 'post'
   const validPhase = phase === 'pre' || isPost
   const complete = useMemo(
-    () => KNOWLEDGE_QUESTIONS.every((question) => Number.isInteger(answers[question.id])),
-    [answers],
+    () => questions.every((question) => Number.isInteger(answers[question.id])),
+    [answers, questions],
   )
 
   if (!currentUser()) return <Navigate to="/login" replace />
@@ -29,7 +38,8 @@ export default function KnowledgeQuiz() {
     const result = {
       answers,
       score: scoreKnowledgeQuiz(answers),
-      total: KNOWLEDGE_QUESTIONS.length,
+      total: questions.length,
+      questionIds: questions.map((question) => question.id),
       completedAt: new Date().toISOString(),
     }
     saveProfile({ assessment: { ...(loadProfile()?.assessment || {}), [phase]: result } })
@@ -48,11 +58,11 @@ export default function KnowledgeQuiz() {
           </div>
         </div>
         <p className="mt-4 text-sm font-semibold text-white/70">
-          Answer these same {KNOWLEDGE_QUESTIONS.length} questions {isPost ? 'one more time' : 'before you begin'}. This is not a grade—it helps us see what TAYU taught, including the new bond and tax concepts.
+          Answer these same {questions.length} questions {isPost ? 'one more time' : 'before you begin'}. This is not a grade—it helps us see what TAYU taught{questions.length > 3 ? ', including bonds and taxes' : ''}.
         </p>
 
         <div className="mt-6 space-y-6">
-          {KNOWLEDGE_QUESTIONS.map((question, index) => (
+          {questions.map((question, index) => (
             <fieldset key={question.id}>
               <legend className="font-display text-base font-extrabold">{index + 1}. {question.prompt}</legend>
               <div className="mt-2 grid gap-2">
