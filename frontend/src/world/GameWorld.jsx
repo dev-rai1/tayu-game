@@ -25,6 +25,7 @@ import { useGame } from './store.js'
 import { BondBudgetRuntimeBridge } from './BondBudgetRuntimeBridge.jsx'
 import { MoneyGardenBondMeadow } from './MoneyGardenBondMeadow.jsx'
 import { SharedThunkBridge } from './SharedThunkBridge.jsx'
+import { TaxCurriculumBridge } from './TaxCurriculumBridge.jsx'
 
 class SceneBoundary extends Component {
   constructor(props) { super(props); this.state = { failed: false } }
@@ -61,6 +62,7 @@ export function GameWorld({ avatar }) {
       <BondBudgetRuntimeBridge />
       <MoneyGardenBondMeadow />
       <SharedThunkBridge />
+      <TaxCurriculumBridge />
       <Boundary name="canvas" hard>
         <Canvas role="application" aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination." camera={{ position: [0, 7, 11], fov: 52 }} dpr={1} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }} gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }} onCreated={({ gl }) => { try { gl.getContext(); if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true' } catch (error) { logTayuError('canvas:webgl-context', error?.message || error); throw error } }}>
           <CanvasViewportGuard />
