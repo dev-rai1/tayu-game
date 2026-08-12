@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { INTERACT_RADIUS } from './config.js'
 import { playerPos, joystick, moveTarget } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
+import { BondStreetGate, hasCompletedBondStreet } from './BondStreetGate.jsx'
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
@@ -27,7 +28,7 @@ function nearbyTaxAction() {
 
   if (state.phase === 'intro') {
     if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-      return { kind: 'guide', label: 'Talk to Maya · start Module 6 Tax Town' }
+      return { kind: 'guide', label: 'Talk to Rex · start the Tax Office' }
     }
     return null
   }
@@ -54,7 +55,7 @@ function nearbyTaxAction() {
   }
 
   if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-    return { kind: 'guide', label: 'Talk to Maya · review what you learned' }
+    return { kind: 'guide', label: 'Talk to Rex · review what you learned' }
   }
 
   return null
@@ -82,6 +83,7 @@ function runTaxAction(action) {
 }
 
 export function runTaxInteraction() {
+  if (!hasCompletedBondStreet()) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
 
@@ -97,7 +99,10 @@ export function runTaxInteraction() {
 }
 
 export function TaxWorldInteractionBridge() {
+  const [bondComplete, setBondComplete] = useState(() => hasCompletedBondStreet())
+
   useEffect(() => {
+    if (!bondComplete) return undefined
     placeAtTaxTownEntrance()
 
     let lastKey = ''
@@ -111,10 +116,8 @@ export function TaxWorldInteractionBridge() {
         lab.setNearbyAction(action)
       }
 
-      // Module 6 should feel like one guided process, not a sequence of tiny E
-      // prompts. After the initial Maya interaction, walking up to the active
-      // client or station opens that step automatically. E remains available as
-      // a backup and for the clear start/review interactions with Maya.
+      // After the initial Rex interaction, walking up to the active client or
+      // station opens that step automatically. E remains available as a backup.
       if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
         lastAutoKey = key
         if (runTaxAction(action)) {
@@ -147,7 +150,11 @@ export function TaxWorldInteractionBridge() {
       window.removeEventListener('tayu-interact', interact)
       useTaxLab.getState().setNearbyAction(null)
     }
-  }, [])
+  }, [bondComplete])
+
+  if (!bondComplete) {
+    return <BondStreetGate onComplete={() => setBondComplete(true)} />
+  }
 
   return null
 }
