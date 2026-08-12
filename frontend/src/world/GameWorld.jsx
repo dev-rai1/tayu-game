@@ -22,6 +22,8 @@ import { CoinLayer } from './CoinLayer.jsx'
 import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
+import { BondBudgetRuntimeBridge } from './BondBudgetRuntimeBridge.jsx'
+import { MoneyGardenBondMeadow } from './MoneyGardenBondMeadow.jsx'
 
 class SceneBoundary extends Component {
   constructor(props) {
@@ -65,6 +67,8 @@ export function GameWorld({ avatar }) {
 
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
+      <BondBudgetRuntimeBridge />
+      <MoneyGardenBondMeadow />
       <Boundary name="canvas" hard>
         <Canvas
           role="application"
