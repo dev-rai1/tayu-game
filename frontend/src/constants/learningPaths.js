@@ -3,17 +3,17 @@ import { loadProfile, saveProfile } from '../services/walletStore.js'
 export const GRADE_PATHS = [
   { id: 'early-elementary', label: 'Grades K–2', title: 'Early Elementary', modules: [1, 2], copy: 'A short 2-stop adventure: everyday money choices, then a first business challenge.' },
   { id: 'upper-elementary', label: 'Grades 3–5', title: 'Upper Elementary', modules: [1, 2, 3], copy: 'A 3-stop adventure: money foundations, a business challenge, and Budget Town.' },
-  { id: 'middle-school', label: 'Grades 6–8', title: 'Middle School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full 6-module adventure: saving, business, budgeting, banking, Money Garden, then Tax Town.' },
-  { id: 'high-school', label: 'Grades 9–12', title: 'High School', modules: [1, 2, 3, 4, 5, 6], copy: 'The full 6-module adventure with deeper banking, investing, and Paycheck Planet · Tax Town decisions.' },
+  { id: 'middle-school', label: 'Grades 6–8', title: 'Middle School', modules: [1, 2, 3, 4, 5, 6, 7], copy: 'The full 7-module adventure: saving, business, budgeting, banking, Money Garden, Bond Street, then the Tax Office.' },
+  { id: 'high-school', label: 'Grades 9–12', title: 'High School', modules: [1, 2, 3, 4, 5, 6, 7], copy: 'The full 7-module adventure with deeper banking, investing, fixed income on Bond Street, and a simplified return at the Tax Office.' },
 ]
 
 export const DEFAULT_GRADE_PATH = 'middle-school'
 export const ACTIVE_PATH_KEY = 'tayu-active-learning-path-v1'
 
-const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden', 6: 'tax' }
+const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden', 6: 'bond', 7: 'tax' }
 
 function normalizeModules(modules) {
-  return [...new Set((modules || []).map(Number).filter((number) => number >= 1 && number <= 6))].sort((a, b) => a - b)
+  return [...new Set((modules || []).map(Number).filter((number) => number >= 1 && number <= 7))].sort((a, b) => a - b)
 }
 
 export function normalizeLearningPath(path) {
@@ -63,7 +63,9 @@ export function milestoneBadges(state = {}) {
   if (state.btStage === 'handoff') badges.push('budget')
   if (Number(state.bkWeek || 0) >= 7) badges.push('bank')
   if (state.mgPhase === 'done' || state.gameComplete) badges.push('garden')
-  if (loadProfile()?.badges?.includes('tax')) badges.push('tax')
+  const profileBadges = loadProfile()?.badges || []
+  if (profileBadges.includes('bond')) badges.push('bond')
+  if (profileBadges.includes('tax')) badges.push('tax')
   return badges
 }
 
