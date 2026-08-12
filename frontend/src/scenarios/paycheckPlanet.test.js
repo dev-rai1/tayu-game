@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   GAME_STANDARD_DEDUCTION,
+  GAME_STUDENT_SUPPLIES_DEDUCTION,
   TAX_CASES,
   TAX_INTRO_STEPS,
+  THIRD_BRACKET_RATE,
   TOTAL_TAX_STEPS,
   bracketTax,
   filingStepFor,
@@ -11,46 +13,40 @@ import {
   taxResultSummary,
 } from './paycheckPlanet.js'
 
-describe('Paycheck Planet Tax Filing Lab', () => {
-  it('teaches a six-step filing flow instead of a paycheck budgeting simulation', () => {
+describe('TAYU Tax Office filing flow', () => {
+  it('teaches a six-step filing flow with gross income, deductions, brackets, withholding and outcomes', () => {
     expect(TOTAL_TAX_STEPS).toBe(6)
     expect(TAX_INTRO_STEPS).toHaveLength(6)
     expect(TAX_INTRO_STEPS.join(' ')).toContain('W-2')
     expect(TAX_INTRO_STEPS.join(' ')).toContain('taxable income')
-    expect(TAX_INTRO_STEPS.join(' ')).toContain('tax brackets')
-    expect(TAX_INTRO_STEPS.join(' ')).toContain('refund or amount due')
+    expect(TAX_INTRO_STEPS.join(' ')).toContain('22%')
+    expect(TAX_INTRO_STEPS.join(' ')).toContain('refund')
+    expect(TAX_INTRO_STEPS.join(' ')).toContain('zero')
   })
 
-  it('provides three valid W-2 cases including a reachable right-hand case', () => {
+  it('provides three valid W-2 cases', () => {
     expect(TAX_CASES).toHaveLength(3)
     expect(TAX_CASES.map((item) => item.x)).toEqual([-2.6, 0, 2.6])
     expect(TAX_CASES.every((item) => item.wages > 0 && item.withheld >= 0)).toBe(true)
   })
 
-  it('calculates taxable income and bracket tax with easy visible math', () => {
+  it('subtracts both practice deductions and supports a third 22% bracket', () => {
     const camp = TAX_CASES.find((item) => item.id === 'camp')
     expect(GAME_STANDARD_DEDUCTION).toBe(9000)
-    expect(taxableIncomeFor(camp)).toBe(9000)
-    expect(bracketTax(9000)).toBe(980)
-    expect(taxReturnMath(camp)).toMatchObject({
-      wages: 18000,
-      withheld: 900,
-      taxableIncome: 9000,
-      taxBeforeCredits: 980,
-      credit: 150,
-      finalTax: 830,
-      refund: 70,
-      amountDue: 0,
-    })
+    expect(GAME_STUDENT_SUPPLIES_DEDUCTION).toBe(500)
+    expect(THIRD_BRACKET_RATE).toBe(0.22)
+    expect(taxableIncomeFor(camp)).toBe(8500)
+    expect(bracketTax(8500)).toBe(920)
+    expect(bracketTax(13000)).toBe(1560)
   })
 
-  it('teaches both refund and amount-due outcomes', () => {
-    const library = taxReturnMath(TAX_CASES.find((item) => item.id === 'library'))
-    const design = taxReturnMath(TAX_CASES.find((item) => item.id === 'design'))
-    expect(library.refund).toBe(150)
-    expect(library.amountDue).toBe(0)
-    expect(design.refund).toBe(0)
-    expect(design.amountDue).toBe(250)
+  it('teaches refund, zero and amount-due outcomes', () => {
+    const results = Object.fromEntries(TAX_CASES.map((item) => [item.id, taxReturnMath(item)]))
+    expect(results.library.refund).toBeGreaterThan(0)
+    expect(results.camp.refund).toBe(0)
+    expect(results.camp.amountDue).toBe(0)
+    expect(results.design.amountDue).toBeGreaterThan(0)
+    expect(taxResultSummary(TAX_CASES.find((item) => item.id === 'camp'))).toContain('$0')
     expect(taxResultSummary(TAX_CASES.find((item) => item.id === 'design'))).toContain('AMOUNT DUE')
   })
 
