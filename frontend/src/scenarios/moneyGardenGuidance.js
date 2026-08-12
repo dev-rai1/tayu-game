@@ -1,4 +1,4 @@
-// Money Garden guidance: Module 5A builds investing foundations and Module 5B
+// Money Garden guidance: Module 6A builds investing foundations and Module 6B
 // adds market risk, patience, ready cash, rebalancing, and fixed-income basics.
 // Bonds are taught as lending rather than ownership so the distinction stays
 // clear without replacing the existing three-company stock simulation.
@@ -25,34 +25,34 @@ export const BOND_MEADOW = {
     id: 'treasury',
     title: 'U.S. Treasury',
     safety: 3,
-    line: 'You lend to the federal government. It is designed as the safest bond example in TAYU, so the interest is lower.',
+    line: 'You lend to the federal government. It is the safest bond example in TAYU, so the interest is lower.',
   },
   muni: {
     id: 'muni',
     title: 'Muni Bond',
     safety: 3,
-    line: 'You lend to a state or local government for projects such as roads and schools. Municipal-bond interest can receive special tax treatment.',
+    line: 'You lend to a state or local government for roads or schools. Muni interest can receive special tax treatment.',
   },
   corporate: {
     id: 'corporate',
     title: 'Corporate Bond',
     safety: 2,
-    line: 'You lend to a company. The promised interest can be higher because the company can be a riskier borrower than a government.',
+    line: 'You lend to a company. It may offer more interest because the borrower can be riskier than a government.',
   },
 }
 
 export const STOCK_BOND_COMPARE = {
-  stock: 'STOCK = ownership. You own a small piece of a company and the price can move a lot.',
+  stock: 'STOCK = ownership. You own a small piece of a company and its price can move a lot.',
   bond: 'BOND = loan. You lend money to a borrower who promises interest and repayment.',
-  seniority: 'If a company fails, bondholders generally have a higher claim than stockholders. That is one reason bonds usually behave more steadily than stocks.',
-  rates: 'Bond prices can still move. When new interest rates rise, older lower-rate bonds can become less attractive, so their market prices may fall.',
+  seniority: 'If a company fails, bondholders generally have a higher claim than stockholders. That helps explain why bonds often move less.',
+  rates: 'When new interest rates rise, older lower-rate bonds can look less attractive, so their market prices may fall.',
 }
 
 export const MONEY_GARDEN_PARTS = [
   {
     part: 1,
     letter: 'A',
-    moduleLabel: 'Module 5A',
+    moduleLabel: 'Module 6A',
     title: 'Investing Foundations',
     weeks: [1, 2, 3, 4, 5],
     goal: 'Build a diversified first portfolio, understand stock ownership, research businesses, and learn how bonds differ from stocks.',
@@ -61,10 +61,10 @@ export const MONEY_GARDEN_PARTS = [
   {
     part: 2,
     letter: 'B',
-    moduleLabel: 'Module 5B',
+    moduleLabel: 'Module 6B',
     title: 'Markets, Risk & Patience',
     weeks: [6, 7, 8, 9, 10],
-    goal: 'Match risk to time horizon, protect emergency money, respond to real evidence, resist hype, understand bond risk, and rebalance.',
+    goal: 'Match risk to time horizon, protect emergency money, respond to evidence, resist hype, understand bond risk, and rebalance.',
     color: '#7850F0',
   },
 ]
@@ -78,7 +78,7 @@ export const MONEY_GARDEN_FLOW = [
 export const MONEY_GARDEN_DECISIONS = {
   1: {
     title: 'First: build a diversified garden',
-    why: 'A stock is a small ownership interest in a company. Diversification means not depending on only one company.',
+    why: 'You start with zero company shares. A stock is ownership, and diversification means not depending on only one company.',
     instruction: 'Use READY TO INVEST cash to buy at least 1 share in 2 different companies.',
   },
   2: {
@@ -94,11 +94,11 @@ export const MONEY_GARDEN_DECISIONS = {
   4: {
     title: 'Stock ownership or bond lending?',
     why: `${STOCK_BOND_COMPARE.stock} ${STOCK_BOND_COMPARE.bond}`,
-    instruction: 'Inspect the PACKED and EMPTY storefronts, then remember: buying these shares means ownership. A bond would make you the lender instead.',
+    instruction: 'Inspect the PACKED and EMPTY storefronts. These shares mean ownership; a bond would make you the lender instead.',
   },
   5: {
     title: 'Compare return with risk',
-    why: 'A lower price can be an opportunity or a warning. Bonds add another tradeoff: a safer borrower usually offers less interest, while a riskier borrower may offer more.',
+    why: 'A lower price can be an opportunity or a warning. With bonds, safer borrowers usually offer less interest than riskier borrowers.',
     instruction: 'Compare the cheaper companies, then compare the Bond Meadow examples: Treasury, Muni, and Corporate.',
   },
   6: {
@@ -108,8 +108,8 @@ export const MONEY_GARDEN_DECISIONS = {
   },
   7: {
     title: 'Bonds can fail too',
-    why: `${STOCK_BOND_COMPARE.seniority} A corporate bond is still only as reliable as the borrower behind it.`,
-    instruction: 'Find the company with the new warning. If you were lending to that company too, the warning would matter to its bonds as well as its stock.',
+    why: `${STOCK_BOND_COMPARE.seniority} A corporate bond is still only as reliable as its borrower.`,
+    instruction: 'Find the company with the new warning. If you lent to that company, the warning would matter to its bonds too.',
   },
   8: {
     title: 'Do not chase hype',
@@ -119,7 +119,7 @@ export const MONEY_GARDEN_DECISIONS = {
   9: {
     title: 'Steady does not mean motionless',
     why: STOCK_BOND_COMPARE.rates,
-    instruction: 'Compare several weeks of evidence. Stocks can move with business news; bond prices can also move when market interest rates change.',
+    instruction: 'Compare several weeks of evidence. Stocks move with business news; bond prices can move when market interest rates change.',
   },
   10: {
     title: 'Rebalance the intended mix',
@@ -168,15 +168,16 @@ export function moneyGardenClues(week, mg = {}) {
       return [`${companyName(fx.dip)} has a price dip on screen.`, 'There is no new warning that the business itself became weaker.']
     case 4:
       return [
-        `${companyName(fx.busy)} is PACKED while ${companyName(fx.dusty)} is EMPTY. That is business evidence.`,
+        `${companyName(fx.busy)} is PACKED — lots of customers are showing up.`,
+        `${companyName(fx.dusty)} is EMPTY — very few customers are showing up.`,
         STOCK_BOND_COMPARE.stock,
         STOCK_BOND_COMPARE.bond,
       ]
     case 5:
       return [
         `${companyName(fx.busy || fx.sale)} is on SALE and PACKED while ${companyName(fx.dusty || fx.sale2)} is cheaper but weak.`,
-        `Bond Meadow: Treasury = ${BOND_MEADOW.treasury.safety} safety stars, Muni = ${BOND_MEADOW.muni.safety}, Corporate = ${BOND_MEADOW.corporate.safety}. Safer borrowers generally pay less interest.`,
-        'Muni bonds are the tax connection: local-government bond interest can receive special tax treatment, which you will revisit in Tax Town.',
+        `Bond Meadow safety: Treasury ${BOND_MEADOW.treasury.safety} stars, Muni ${BOND_MEADOW.muni.safety}, Corporate ${BOND_MEADOW.corporate.safety}.`,
+        'Muni interest can receive special tax treatment. You will revisit that connection in Tax Town.',
       ]
     case 6:
       return [`Pocket money ready right now: ${money(mg?.pocket)}.`, 'A surprise bill can arrive before an investment has time to recover.']
@@ -192,13 +193,13 @@ export function moneyGardenClues(week, mg = {}) {
       return [
         `${companyName(fx.star)} has been steadier across several weeks.`,
         STOCK_BOND_COMPARE.rates,
-        'If you hold a bond until its promised end and the borrower pays as agreed, temporary market-price changes matter less than if you sell early.',
+        'If the borrower pays as promised, holding a bond to its end can reduce the importance of temporary price changes.',
       ]
     case 10: {
       const largest = largestHolding(mg)
       return largest
-        ? [`${companyName(largest.id)} is about ${largest.percent}% of your invested company value.`, 'A balanced long-term plan can mix ready cash, bank savings, bonds, and stocks instead of relying on one type.']
-        : ['No company currently dominates the invested part of your plan.', 'A balanced long-term plan can mix ready cash, bank savings, bonds, and stocks.']
+        ? [`${companyName(largest.id)} is about ${largest.percent}% of your invested company value.`, 'A long-term plan can mix ready cash, bank savings, bonds, and stocks instead of relying on one type.']
+        : ['No company currently dominates the invested part of your plan.', 'A long-term plan can mix ready cash, bank savings, bonds, and stocks.']
     }
     default:
       return ['Use the evidence visible in the world before changing your plan.']
