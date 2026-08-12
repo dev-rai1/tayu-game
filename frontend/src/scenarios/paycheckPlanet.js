@@ -7,6 +7,10 @@ export const FIRST_BRACKET_LIMIT = 5000
 export const FIRST_BRACKET_RATE = 0.10
 export const SECOND_BRACKET_RATE = 0.12
 
+export const TAX_CIVIC_CONNECTION = 'Taxes help pay for shared services such as the school bus, clinic, roads, and other public needs around TAYU.'
+export const WITHHOLDING_LESSON = 'Withholding is tax sent ahead during the year. At filing time, compare what was already withheld with the final tax bill.'
+export const MUNI_BOND_TAX_CALLBACK = 'Municipal-bond interest can receive special tax treatment. That tax advantage is one reason a muni bond may offer less interest than a riskier corporate bond.'
+
 export const TAX_CASES = [
   {
     id: 'library',
@@ -38,12 +42,12 @@ export const TAX_CASES = [
 ]
 
 export const TAX_INTRO_STEPS = [
+  `Start with the big idea: ${TAX_CIVIC_CONNECTION}`,
   'Read a sample W-2 and find wages plus federal tax withheld.',
   'Subtract the game deduction to find taxable income.',
   'Use two simple tax brackets to calculate tax.',
   'Subtract a tax credit from the tax you calculated.',
-  'Compare tax withheld with final tax to find a refund or amount due.',
-  'Review the return and file the finished practice return.',
+  'Compare tax withheld with final tax to find a refund or amount due, then review and file.',
 ]
 
 const dollars = (value) => `$${Math.max(0, Math.round(Number(value || 0))).toLocaleString('en-US')}`
@@ -75,6 +79,7 @@ export function taxReturnMath(taxCase) {
       finalTax: 0,
       refund: 0,
       amountDue: 0,
+      effectiveRate: 0,
     }
   }
 
@@ -85,6 +90,7 @@ export function taxReturnMath(taxCase) {
   const credit = Math.max(0, Math.round(Number(taxCase.credit || 0)))
   const finalTax = Math.max(0, taxBeforeCredits - credit)
   const difference = Math.round(Number(taxCase.withheld || 0) - finalTax)
+  const effectiveRate = taxCase.wages > 0 ? Math.round((finalTax / taxCase.wages) * 1000) / 10 : 0
 
   return {
     wages: Math.round(taxCase.wages),
@@ -98,6 +104,7 @@ export function taxReturnMath(taxCase) {
     finalTax,
     refund: Math.max(0, difference),
     amountDue: Math.max(0, -difference),
+    effectiveRate,
   }
 }
 
@@ -119,9 +126,9 @@ export function filingStepFor(taxCase, stepNumber) {
     return {
       step,
       title: 'Read the W-2',
-      eyebrow: 'Step 1 · income document',
+      eyebrow: 'Step 1 · gross income + withholding',
       prompt: 'Which W-2 numbers belong on this practice return?',
-      explanation: `Box 1 wages are ${dollars(math.wages)}. Box 2 federal income tax withheld is ${dollars(math.withheld)}.`,
+      explanation: `Box 1 wages are ${dollars(math.wages)}. That is the gross-income starting number. Box 2 federal income tax withheld is ${dollars(math.withheld)} — money already sent ahead toward the tax bill.`,
       hint: 'On a W-2, Box 1 is wages and Box 2 is federal income tax withheld.',
       choices: [
         { id: 'swap', label: `${dollars(math.withheld)} wages · ${dollars(math.wages)} withheld`, correct: false },
@@ -137,9 +144,9 @@ export function filingStepFor(taxCase, stepNumber) {
     return {
       step,
       title: 'Find taxable income',
-      eyebrow: 'Step 2 · subtraction',
+      eyebrow: 'Step 2 · deductions',
       prompt: `${dollars(math.wages)} wages − ${dollars(math.deduction)} game deduction = ?`,
-      explanation: `Taxable income is ${dollars(math.wages)} − ${dollars(math.deduction)} = ${dollars(math.taxableIncome)}.`,
+      explanation: `A deduction reduces the amount that gets taxed. Taxable income is ${dollars(math.wages)} − ${dollars(math.deduction)} = ${dollars(math.taxableIncome)}. You do not pay income tax on the full gross-income number in this practice return.`,
       hint: 'Subtract the deduction from wages. Do not subtract withholding here.',
       choices: [
         moneyChoice('wrong-a', wrong[0] ?? math.wages),
@@ -155,12 +162,12 @@ export function filingStepFor(taxCase, stepNumber) {
     return {
       step,
       title: 'Use the tax brackets',
-      eyebrow: 'Step 3 · multiplication + addition',
+      eyebrow: 'Step 3 · marginal rates',
       prompt: math.secondBracketIncome > 0
         ? `${dollars(math.firstBracketIncome)} × 10% + ${dollars(math.secondBracketIncome)} × 12% = ?`
         : `${dollars(math.firstBracketIncome)} × 10% = ?`,
       explanation: math.secondBracketIncome > 0
-        ? `${dollars(firstTax)} + ${dollars(secondTax)} = ${dollars(math.taxBeforeCredits)} tax before credits.`
+        ? `${dollars(firstTax)} + ${dollars(secondTax)} = ${dollars(math.taxBeforeCredits)} tax before credits. Only the dollars that reach the second step use 12%; the whole income is not taxed at 12%.`
         : `${dollars(math.firstBracketIncome)} × 10% = ${dollars(math.taxBeforeCredits)} tax before credits.`,
       hint: 'Only the dollars above the first $5,000 use the 12% practice rate.',
       choices: [
@@ -177,7 +184,7 @@ export function filingStepFor(taxCase, stepNumber) {
       title: 'Apply the tax credit',
       eyebrow: 'Step 4 · subtract a credit',
       prompt: `${dollars(math.taxBeforeCredits)} tax − ${dollars(math.credit)} practice credit = ?`,
-      explanation: `A credit reduces tax directly: ${dollars(math.taxBeforeCredits)} − ${dollars(math.credit)} = ${dollars(math.finalTax)} final tax.`,
+      explanation: `A credit reduces tax directly: ${dollars(math.taxBeforeCredits)} − ${dollars(math.credit)} = ${dollars(math.finalTax)} final tax. That final tax is about ${math.effectiveRate}% of gross wages in this simplified case.`,
       hint: 'A credit comes off the tax itself. Subtract it after calculating bracket tax.',
       choices: [
         moneyChoice('add-credit', math.taxBeforeCredits + math.credit),
@@ -192,14 +199,14 @@ export function filingStepFor(taxCase, stepNumber) {
     return {
       step,
       title: 'Refund or amount due?',
-      eyebrow: 'Step 5 · compare',
+      eyebrow: 'Step 5 · compare withholding',
       prompt: `${dollars(math.withheld)} withheld − ${dollars(math.finalTax)} final tax = ?`,
       explanation: math.refund > 0
-        ? `Withholding is ${dollars(math.refund)} more than final tax, so this practice return gets a ${dollars(math.refund)} refund.`
+        ? `Withholding is ${dollars(math.refund)} more than final tax, so this practice return gets a ${dollars(math.refund)} refund. A refund means more was prepaid than the final bill required.`
         : math.amountDue > 0
-          ? `Final tax is ${dollars(math.amountDue)} more than withholding, so this practice return has ${dollars(math.amountDue)} due.`
-          : 'Withholding exactly matches final tax, so there is no refund and nothing due.',
-      hint: 'If withholding is bigger, the difference is a refund. If final tax is bigger, the difference is due.',
+          ? `Final tax is ${dollars(math.amountDue)} more than withholding, so this practice return has ${dollars(math.amountDue)} due. Owing here means the prepayments were smaller than the final bill.`
+          : 'Withholding exactly matches final tax, so there is no refund and nothing due. The prepayment matched the final bill.',
+      hint: WITHHOLDING_LESSON,
       choices: [
         { id: 'flip', label: math.refund > 0 ? `${dollars(math.refund)} AMOUNT DUE` : `${dollars(math.amountDue)} REFUND`, correct: false },
         { id: 'right', label: correct, correct: true },
@@ -213,7 +220,7 @@ export function filingStepFor(taxCase, stepNumber) {
     title: 'Review and file',
     eyebrow: 'Step 6 · final check',
     prompt: 'Which summary matches the return you just completed?',
-    explanation: `Wages ${dollars(math.wages)} · taxable income ${dollars(math.taxableIncome)} · final tax ${dollars(math.finalTax)} · ${resultLabel(math).toLowerCase()}.`,
+    explanation: `Wages ${dollars(math.wages)} · taxable income ${dollars(math.taxableIncome)} · final tax ${dollars(math.finalTax)} · ${resultLabel(math).toLowerCase()}. ${TAX_CIVIC_CONNECTION} Bond connection: ${MUNI_BOND_TAX_CALLBACK}`,
     hint: 'Check the W-2 numbers, taxable income, final tax, and refund/due before filing.',
     choices: [
       {
