@@ -118,7 +118,7 @@ function resultLabel(math) {
   return '$0 EVEN'
 }
 
-export function filingStepFor(taxCase, stepNumber) {
+export function filingStepFor(taxCase, stepNumber, { investedInMuni = false } = {}) {
   const math = taxReturnMath(taxCase)
   const step = Math.max(1, Math.min(TOTAL_TAX_STEPS, Number(stepNumber || 1)))
 
@@ -215,12 +215,13 @@ export function filingStepFor(taxCase, stepNumber) {
     }
   }
 
+  const muniCallback = investedInMuni ? ` Bond connection: ${MUNI_BOND_TAX_CALLBACK}` : ''
   return {
     step,
     title: 'Review and file',
     eyebrow: 'Step 6 · final check',
     prompt: 'Which summary matches the return you just completed?',
-    explanation: `Wages ${dollars(math.wages)} · taxable income ${dollars(math.taxableIncome)} · final tax ${dollars(math.finalTax)} · ${resultLabel(math).toLowerCase()}. ${TAX_CIVIC_CONNECTION} Bond connection: ${MUNI_BOND_TAX_CALLBACK}`,
+    explanation: `Wages ${dollars(math.wages)} · taxable income ${dollars(math.taxableIncome)} · final tax ${dollars(math.finalTax)} · ${resultLabel(math).toLowerCase()}. ${TAX_CIVIC_CONNECTION}${muniCallback}`,
     hint: 'Check the W-2 numbers, taxable income, final tax, and refund/due before filing.',
     choices: [
       {
