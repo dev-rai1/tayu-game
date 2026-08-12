@@ -47,7 +47,7 @@ describe('bond and tax curriculum integration', () => {
     expect(scoreKnowledgeQuiz(perfect)).toBe(KNOWLEDGE_QUESTIONS.length)
   })
 
-  it('preserves Tax Town math while adding civic, effective-rate, and muni callbacks', () => {
+  it('preserves Tax Town math while making the muni callback conditional', () => {
     for (const taxCase of TAX_CASES) {
       const math = taxReturnMath(taxCase)
       expect(math.taxableIncome).toBeGreaterThanOrEqual(0)
@@ -59,7 +59,12 @@ describe('bond and tax curriculum integration', () => {
     expect(TAX_CIVIC_CONNECTION).toMatch(/school bus/i)
     expect(TAX_CIVIC_CONNECTION).toMatch(/clinic/i)
     expect(MUNI_BOND_TAX_CALLBACK).toMatch(/municipal-bond interest/i)
-    expect(filingStepFor(TAX_CASES[0], 6).explanation).toContain(TAX_CIVIC_CONNECTION)
-    expect(filingStepFor(TAX_CASES[0], 6).explanation).toContain(MUNI_BOND_TAX_CALLBACK)
+
+    const withoutMuni = filingStepFor(TAX_CASES[0], 6)
+    const withMuni = filingStepFor(TAX_CASES[0], 6, { investedInMuni: true })
+    expect(withoutMuni.explanation).toContain(TAX_CIVIC_CONNECTION)
+    expect(withoutMuni.explanation).not.toContain(MUNI_BOND_TAX_CALLBACK)
+    expect(withMuni.explanation).toContain(TAX_CIVIC_CONNECTION)
+    expect(withMuni.explanation).toContain(MUNI_BOND_TAX_CALLBACK)
   })
 })

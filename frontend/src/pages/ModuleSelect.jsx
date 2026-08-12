@@ -22,8 +22,8 @@ const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 
 const PATH_TIME = {
   'early-elementary': 'About 15–22 minutes total',
   'upper-elementary': 'About 22–32 minutes total',
-  'middle-school': 'About 55–75 minutes total',
-  'high-school': 'About 55–75 minutes total',
+  'middle-school': 'About 60–85 minutes total',
+  'high-school': 'About 60–85 minutes total',
 }
 
 function StatusPill({ done, inProgress = false, accessible = true, recommended = false }) {
@@ -125,8 +125,8 @@ export default function ModuleSelect() {
       if (gardenPart === 'B' && gardenPartBComplete) canResume = false
     }
 
-    // Public module numbers are authoritative here. Module 5 is Money Garden;
-    // Module 6 is always Paycheck Planet · Tax Town.
+    // Public Module 6 enters the continuous final sequence. The world first
+    // gates the player through Bond Street, then opens the Tax Office.
     if (!canResume || target.n === 6) localStorage.setItem('tayu-jump-module', String(target.n))
     nav('/world')
   }
@@ -244,15 +244,15 @@ export default function ModuleSelect() {
                 )
               }
 
-              const taxModule = module.n === 6
-              const action = done ? `Replay Module ${module.n}` : taxModule ? 'Explore Module 6 · Tax Town' : isNext ? `Play Module ${module.n} now` : olderOptional ? `Explore Module ${module.n}` : `Play Module ${module.n}`
+              const finalModule = module.n === 6
+              const action = done ? `Replay Module ${module.n}` : finalModule ? 'Start Module 6 · Bond Street' : isNext ? `Play Module ${module.n} now` : olderOptional ? `Explore Module ${module.n}` : `Play Module ${module.n}`
               return (
-                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group overflow-hidden rounded-[2rem] border-2 bg-white text-left text-navy shadow-xl transition ${accessible ? 'hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99]' : 'cursor-not-allowed opacity-55'}`} style={{ borderColor: done || isNext || taxModule ? module.color : '#dbe4f0' }}>
+                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group overflow-hidden rounded-[2rem] border-2 bg-white text-left text-navy shadow-xl transition ${accessible ? 'hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99]' : 'cursor-not-allowed opacity-55'}`} style={{ borderColor: done || isNext || finalModule ? module.color : '#dbe4f0' }}>
                   <div className="p-5 sm:p-6" style={{ background: `linear-gradient(135deg, ${module.color}26 0%, white 52%)` }}>
                     <div className="flex items-center justify-between gap-3"><div className="flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-extrabold text-white shadow" style={{ background: module.color }}>{module.n}</div><StatusPill done={done} accessible={accessible} recommended={isNext} /></div>
-                    <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-navy/55">{taxModule ? 'Final mission · Paycheck Planet' : `Mission ${module.n}`}</div>
+                    <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-navy/55">{finalModule ? 'Final sequence · Bond Street → Tax Office' : `Mission ${module.n}`}</div>
                     <h2 className="mt-1 font-display text-2xl font-extrabold">{module.title}</h2>
-                    {taxModule && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">📍 TAX TOWN · W-2 + TAX FILING</div>}
+                    {finalModule && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">📍 BONDS FIRST · THEN TAX FILING</div>}
                     <div className="mt-3 text-xs font-extrabold uppercase tracking-wide text-navy/55">{module.grades} · {module.minutes}</div>
                     <p className="mt-2 min-h-[3rem] text-sm font-bold leading-relaxed text-navy/75">{module.desc}</p>
                     <div className="mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold text-white shadow" style={{ background: accessible ? module.color : '#64748b' }}>{accessible ? action : `Complete Module ${firstIncompleteRequired} first`} →</div>
@@ -262,7 +262,7 @@ export default function ModuleSelect() {
             })}
           </section>
 
-          <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-center text-sm font-bold text-white">Module 5 is always <strong>Money Garden (5A + 5B)</strong>. Module 6 is always <strong>Paycheck Planet · Tax Town</strong>. Choosing Module 6 takes you directly to the Tax Town entrance in the same 3D world.</div>
+          <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-center text-sm font-bold text-white">Journey: <strong>Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale</strong>. Module 6 keeps Bond Street and the Tax Office continuous so the same saved money and muni choice carry directly into the tax lesson.</div>
         </div>
       </main>
 

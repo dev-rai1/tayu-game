@@ -22,17 +22,23 @@ export const KNOWLEDGE_QUESTIONS = [
     prompt: 'What is the difference between buying a stock and buying a bond?',
     choices: ['A stock is ownership; a bond is a loan', 'A bond always grows faster than a stock', 'They are the same thing'],
     correct: 0,
+    gradeBands: ['middle-school', 'high-school'],
   },
   {
     id: 'tax_refund',
-    prompt: 'Why might you get a tax refund at the end of the year?',
-    choices: ['Your employer withheld more than you actually owe', 'You earned too much money', 'The government made a mistake'],
+    prompt: 'Why might you get a tax REFUND at the end of the year?',
+    choices: ['Your employer withheld MORE than you actually owe', 'You earned too much money', 'The government made a mistake'],
     correct: 0,
+    gradeBands: ['middle-school', 'high-school'],
   },
 ]
 
-export function scoreKnowledgeQuiz(answers) {
-  return KNOWLEDGE_QUESTIONS.reduce(
+export function questionsForGradePath(pathId) {
+  return KNOWLEDGE_QUESTIONS.filter((question) => !question.gradeBands || question.gradeBands.includes(pathId))
+}
+
+export function scoreKnowledgeQuiz(answers, questions = KNOWLEDGE_QUESTIONS) {
+  return questions.reduce(
     (score, question) => score + (answers?.[question.id] === question.correct ? 1 : 0),
     0,
   )
