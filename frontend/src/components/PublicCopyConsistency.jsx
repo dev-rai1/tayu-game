@@ -16,6 +16,18 @@ const PHRASE_REPLACEMENTS = [
   ['Module 6A', 'Module 5A'],
   ['Module 6B', 'Module 5B'],
   [
+    'You saved, you shopped smart, you gave, you ran a business, you invested, you budgeted, and you banked. That makes you a true MONEY GURU.',
+    'You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you filed a practice tax return. That makes you a true MONEY GURU.',
+  ],
+  [
+    'Mastered saving, smart spending, giving, running a business, investing, budgeting, and banking.',
+    'Mastered saving, smart spending, giving, running a business, investing in stocks and bonds, budgeting, banking, and filing a practice tax return.',
+  ],
+  [
+    'I can grow money with patience in the garden.',
+    'I can compare stock ownership with bond lending and understand how taxes affect my money.',
+  ],
+  [
     'Take $1 moves Pocket/Bank money to READY TO INVEST. Tuck $1 or Put in $1 moves READY TO INVEST cash into Pocket/Bank. Sell returns money to READY TO INVEST.',
     'Use Move to Ready to Invest to bring Pocket or Bank Sprout money back for investing. Use Move to Pocket or Move to Bank Sprout to set cash aside. Sell returns money to READY TO INVEST.',
   ],
