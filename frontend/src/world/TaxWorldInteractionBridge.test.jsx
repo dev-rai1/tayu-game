@@ -7,6 +7,7 @@ import { activatePaycheckWorld, deactivatePaycheckWorld } from './paycheckMode.j
 import { playerPos } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_POINTS } from './taxDistrictLayout.js'
+import { saveProfile } from '../services/walletStore.js'
 
 function mountTaxInteraction() {
   return render(
@@ -17,8 +18,9 @@ function mountTaxInteraction() {
   )
 }
 
-describe('Module 6 Tax Lab start interaction', () => {
+describe('Module 6 Tax Lab start interaction after Bond Street', () => {
   beforeEach(() => {
+    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'] })
     activatePaycheckWorld()
     useTaxLab.getState().reset()
     playerPos.x = 999
@@ -36,7 +38,7 @@ describe('Module 6 Tax Lab start interaction', () => {
     expect(screen.getByRole('button', { name: /Start Module 6/i })).toBeInTheDocument()
   })
 
-  it('pressing E opens Maya and starts Module 6 even if proximity has not initialized', () => {
+  it('pressing E opens the tax guide even if proximity has not initialized', () => {
     mountTaxInteraction()
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe('guide')
@@ -49,7 +51,7 @@ describe('Module 6 Tax Lab start interaction', () => {
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
-  it('clicking the visible start action opens Maya', () => {
+  it('clicking the visible start action opens the tax guide', () => {
     mountTaxInteraction()
     fireEvent.click(screen.getByRole('button', { name: /Start Module 6/i }))
     expect(useTaxLab.getState().panel).toBe('guide')
@@ -69,7 +71,7 @@ describe('Module 6 Tax Lab start interaction', () => {
     expect(useTaxLab.getState().panel).toBe(null)
   })
 
-  it('opens Maya normally when the player is physically next to her', () => {
+  it('opens the guide normally when the player is physically next to it', () => {
     playerPos.x = TAX_POINTS.guide[0]
     playerPos.z = TAX_POINTS.guide[1]
     mountTaxInteraction()
