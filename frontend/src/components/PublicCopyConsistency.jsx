@@ -1,44 +1,35 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
-// Keep older static/help copy aligned with the public module numbering. The
-// canonical catalog is Module 5A/5B = Money Garden and Module 6 = Tax Lab.
+// Normalize legacy public copy to the complete seven-module journey from the
+// fixed-income/tax addendum: Money Garden -> Bond Street -> Tax Office -> Finale.
 const PHRASE_REPLACEMENTS = [
-  [
-    'five playable core money modules',
-    'six core money modules, with Money Garden split into 5A and 5B',
-  ],
-  [
-    'six core money modules, with Money Garden split into 6A and 6B',
-    'six core money modules, with Money Garden split into 5A and 5B',
-  ],
+  ['five playable core money modules', 'seven core money modules, with Money Garden split into 5A and 5B'],
+  ['six core money modules, with Money Garden split into 5A and 5B', 'seven core money modules, with Money Garden split into 5A and 5B'],
+  ['six core money modules, with Money Garden split into 6A and 6B', 'seven core money modules, with Money Garden split into 5A and 5B'],
   ['Money Garden — Modules 6A + 6B', 'Money Garden — Modules 5A + 5B'],
   ['Module 6A', 'Module 5A'],
   ['Module 6B', 'Module 5B'],
+  ['Money Garden → Finale', 'Money Garden → Bond Street → Tax Office → Finale'],
+  ['Money Garden → Paycheck Planet → Finale', 'Money Garden → Bond Street → Tax Office → Finale'],
+  ['Paycheck Planet · Tax Town', 'The TAYU Tax Office'],
   [
     'You saved, you shopped smart, you gave, you ran a business, you invested, you budgeted, and you banked. That makes you a true MONEY GURU.',
+    'You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you paid your taxes. That makes you a true MONEY GURU.',
+  ],
+  [
     'You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you filed a practice tax return. That makes you a true MONEY GURU.',
+    'You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you paid your taxes. That makes you a true MONEY GURU.',
   ],
   [
     'Mastered saving, smart spending, giving, running a business, investing, budgeting, and banking.',
+    'Mastered saving, smart spending, giving, running a business, investing in stocks and bonds, budgeting, banking, and filing a tax return.',
+  ],
+  [
     'Mastered saving, smart spending, giving, running a business, investing in stocks and bonds, budgeting, banking, and filing a practice tax return.',
+    'Mastered saving, smart spending, giving, running a business, investing in stocks and bonds, budgeting, banking, and filing a tax return.',
   ],
-  [
-    'I can grow money with patience in the garden.',
-    'I can compare stock ownership with bond lending and understand how taxes affect my money.',
-  ],
-  [
-    'Take $1 moves Pocket/Bank money to READY TO INVEST. Tuck $1 or Put in $1 moves READY TO INVEST cash into Pocket/Bank. Sell returns money to READY TO INVEST.',
-    'Use Move to Ready to Invest to bring Pocket or Bank Sprout money back for investing. Use Move to Pocket or Move to Bank Sprout to set cash aside. Sell returns money to READY TO INVEST.',
-  ],
-  [
-    'If money is in Pocket or Bank Sprout, Take $1 moves it back to READY TO INVEST.',
-    'If money is in Pocket or Bank Sprout, move it back to READY TO INVEST before buying shares.',
-  ],
-  [
-    'Tuck $1 moves READY TO INVEST cash into Pocket; Take $1 brings Pocket money back when you want to invest it.',
-    'Move cash to Pocket when you may need it soon; move it back to READY TO INVEST when you are ready to buy shares.',
-  ],
+  ['I can grow money with patience in the garden.', 'I can compare stock ownership with bond lending and understand how taxes affect my money.'],
   ['ready to plant', 'READY TO INVEST'],
 ]
 
@@ -57,22 +48,25 @@ function normalizeText(root = document.body) {
       changed = true
     })
 
-    // The Tax Lab itself previously shipped as public Module 5. Keep any
-    // remaining station/recap copy in that overlay explicitly on Module 6.
     const parent = node.parentElement
     if (parent?.closest('[data-tax-field-ui="true"], [data-tax-station-panel="true"]')) {
       const next = text
-        .replaceAll('Finish Module 5', 'Finish Module 6')
-        .replaceAll('Module 5 complete', 'Module 6 complete')
-        .replaceAll('Module 5 ·', 'Module 6 ·')
+        .replaceAll('Maya · Tax Guide', 'Rex · Tax Assessor')
+        .replaceAll('Welcome to the Tax Lab', 'Welcome to the TAYU Tax Office')
+        .replaceAll('Tax Lab', 'Tax Office')
+        .replaceAll('Finish Module 5', 'Finish Module 7')
+        .replaceAll('Finish Module 6', 'Finish Module 7')
+        .replaceAll('Module 5 complete', 'Module 7 complete')
+        .replaceAll('Module 6 complete', 'Module 7 complete')
+        .replaceAll('Module 5 ·', 'Module 7 ·')
+        .replaceAll('Module 6 ·', 'Module 7 ·')
       if (next !== text) { text = next; changed = true }
     }
 
-    // Legacy '?' help appended Finale as item 6. Its visible label is corrected
-    // to item 7 while the six learning modules come from MODULE_CATALOG.
-    if (text.trim() === 'Finale Area') {
-      const next = '7. Finale Area'
-      if (next !== text) { text = next; changed = true }
+    // Seven learning modules are followed by the Finale as the eighth stop.
+    if (text.trim() === 'Finale Area' || text.trim() === '7. Finale Area') {
+      text = '8. Finale Area'
+      changed = true
     }
 
     if (changed) node.nodeValue = text
@@ -81,13 +75,11 @@ function normalizeText(root = document.body) {
 
 export function PublicCopyConsistency() {
   const { pathname } = useLocation()
-
   useEffect(() => {
     normalizeText()
     const observer = new MutationObserver(() => normalizeText())
     observer.observe(document.body, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
   }, [pathname])
-
   return null
 }
