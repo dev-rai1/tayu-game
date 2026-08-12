@@ -36,11 +36,12 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('starts Module 6 in the same persistent town without teleporting or swapping scenes', () => {
-    expect(world).toContain("jump === '6'")
-    expect(world).toContain("enterPaycheckPlanet({ restart: true, origin: 'module-select' })")
+  it('starts Modules 6 and 7 in the same persistent town without teleporting or swapping scenes', () => {
+    expect(world).toContain("if (jump === '6' || jump === '7')")
+    expect(world).toContain("if (jump === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
+    expect(world).toContain("enterPaycheckPlanet({ restart: jump === '7', origin: 'module-select' })")
     expect(world).toContain('activatePaycheckWorld()')
-    expect(world).toContain("const preservedTaxPosition = jump === '6'")
+    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
     expect(world).toContain('playerPos.x = preservedTaxPosition.x')
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
@@ -50,7 +51,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).not.toContain('AccessibleWorld')
     expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
     expect(world).not.toContain("navigate('/tax-paycheck'")
-    expect(world).toContain("const internal = jump === '5' ? 5 : jump === '7' ? 6 : Number(jump)")
+    expect(world).toContain("const internal = jump === '5' ? 5 : Number(jump)")
     expect(moduleSelect).toContain("String(target.n)")
     expect(moduleSelect).not.toContain('target.route')
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
@@ -68,7 +69,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain('{usesTouchControls && <MobileControls />}')
   })
 
-  it('starts Money Garden from the Start Module 5 handoff before Paycheck Planet', () => {
+  it('starts Money Garden from the Start Module 5 handoff before Bond Street and Tax Office', () => {
     expect(world).toContain("label: 'Start Module 5', act: null")
     expect(world).toContain('finishBankHandoffIntoGarden()')
     expect(world).toContain('game.startGarden()')
@@ -181,7 +182,7 @@ describe('Paycheck Planet full integration', () => {
     expect(overlay).toContain('reviewMistakes')
   })
 
-  it('routes Module 6 navigation through the real district instead of disabling guidance', () => {
+  it('routes Tax Office navigation through the real district instead of disabling guidance', () => {
     expect(objective).toContain("if (tax.phase === 'intro') return TAX_POINTS.guide")
     expect(objective).toContain("if (tax.phase === 'case') return TAX_POINTS.caseCenter")
     expect(objective).toContain("if (tax.phase === 'steps') return taxStationForStep(tax.stepNumber).point")
@@ -220,12 +221,9 @@ describe('Paycheck Planet full integration', () => {
     expect(overlay).toContain("mode: 'in_world_decision_lab'")
   })
 
-  it('gives admin navigation seven public stops including Paycheck Planet', () => {
-    expect(admin).toContain("5: 'Money Garden'")
-    expect(admin).toContain("6: 'Paycheck Planet'")
-    expect(admin).toContain("7: 'Finale Area'")
-    expect(admin).not.toContain('/tax-paycheck?admin=1')
+  it('keeps admin navigation wired through the shared world jump mechanism', () => {
     expect(admin).toContain("localStorage.setItem('tayu-jump-module', String(step))")
+    expect(admin).not.toContain('/tax-paycheck?admin=1')
   })
 
   it('keeps the shared world coach hierarchy for normal modules', () => {
