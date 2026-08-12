@@ -24,19 +24,13 @@ import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
 import { BondBudgetRuntimeBridge } from './BondBudgetRuntimeBridge.jsx'
 import { MoneyGardenBondMeadow } from './MoneyGardenBondMeadow.jsx'
+import { SharedThunkBridge } from './SharedThunkBridge.jsx'
 
 class SceneBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { failed: false }
-  }
+  constructor(props) { super(props); this.state = { failed: false } }
   static getDerivedStateFromError() { return { failed: true } }
-  componentDidCatch(error) {
-    logTayuError(`scene:${this.props.name || 'part'}`, error?.message || error)
-  }
-  render() {
-    return this.state.failed ? null : this.props.children
-  }
+  componentDidCatch(error) { logTayuError(`scene:${this.props.name || 'part'}`, error?.message || error) }
+  render() { return this.state.failed ? null : this.props.children }
 }
 
 function repairRuntimeState() {
@@ -61,65 +55,18 @@ function repairRuntimeState() {
 
 export function GameWorld({ avatar }) {
   repairRuntimeState()
-  const safeAvatar = avatar && typeof avatar === 'object'
-    ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
-    : {}
-
+  const safeAvatar = avatar && typeof avatar === 'object' ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] } : {}
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
       <BondBudgetRuntimeBridge />
       <MoneyGardenBondMeadow />
+      <SharedThunkBridge />
       <Boundary name="canvas" hard>
-        <Canvas
-          role="application"
-          aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination."
-          camera={{ position: [0, 7, 11], fov: 52 }}
-          dpr={1}
-          style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
-          gl={{
-            antialias: false,
-            powerPreference: 'high-performance',
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.05,
-          }}
-          onCreated={({ gl }) => {
-            try {
-              gl.getContext()
-              if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true'
-            } catch (error) {
-              logTayuError('canvas:webgl-context', error?.message || error)
-              throw error
-            }
-          }}
-        >
+        <Canvas role="application" aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination." camera={{ position: [0, 7, 11], fov: 52 }} dpr={1} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }} gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }} onCreated={({ gl }) => { try { gl.getContext(); if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true' } catch (error) { logTayuError('canvas:webgl-context', error?.message || error); throw error } }}>
           <CanvasViewportGuard />
           <Suspense fallback={null}>
-            <color attach="background" args={['#cfe6f2']} />
-            <fog attach="fog" args={['#d6e9f0', 26, 74]} />
-            <hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} />
-            <ambientLight intensity={0.28} />
-            <directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" />
-            <directionalLight position={[-8, 6, -6]} intensity={0.4} color="#bcd4ff" />
-
-            <SceneBoundary name="environment"><Environment3D /></SceneBoundary>
-            <SceneBoundary name="ambient"><Ambient /></SceneBoundary>
-            <SceneBoundary name="bank"><Bank /></SceneBoundary>
-            <SceneBoundary name="jars"><KitchenTable /></SceneBoundary>
-            <SceneBoundary name="store"><Store /></SceneBoundary>
-            <SceneBoundary name="lemonade"><LemonadeStand /></SceneBoundary>
-            <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
-            <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
-            <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
-            <SceneBoundary name="bond-street"><BondStreetWorld /></SceneBoundary>
-            <SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>
-            <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
-            <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
-            <SceneBoundary name="party"><PartyHouse /></SceneBoundary>
-            <SceneBoundary name="guidance"><GuidanceArrow /></SceneBoundary>
-            <SceneBoundary name="compass"><CompassBeam /></SceneBoundary>
-            <SceneBoundary name="coins"><CoinLayer /></SceneBoundary>
-            <Player avatar={safeAvatar} />
-            <SceneBoundary name="world-boundary"><WorldBoundaryGuard /></SceneBoundary>
+            <color attach="background" args={['#cfe6f2']} /><fog attach="fog" args={['#d6e9f0', 26, 74]} /><hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} /><ambientLight intensity={0.28} /><directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" /><directionalLight position={[-8, 6, -6]} intensity={0.4} color="#bcd4ff" />
+            <SceneBoundary name="environment"><Environment3D /></SceneBoundary><SceneBoundary name="ambient"><Ambient /></SceneBoundary><SceneBoundary name="bank"><Bank /></SceneBoundary><SceneBoundary name="jars"><KitchenTable /></SceneBoundary><SceneBoundary name="store"><Store /></SceneBoundary><SceneBoundary name="lemonade"><LemonadeStand /></SceneBoundary><SceneBoundary name="budget"><BudgetTown /></SceneBoundary><SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary><SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary><SceneBoundary name="bond-street"><BondStreetWorld /></SceneBoundary><SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary><SceneBoundary name="garden"><MoneyGarden /></SceneBoundary><SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary><SceneBoundary name="party"><PartyHouse /></SceneBoundary><SceneBoundary name="guidance"><GuidanceArrow /></SceneBoundary><SceneBoundary name="compass"><CompassBeam /></SceneBoundary><SceneBoundary name="coins"><CoinLayer /></SceneBoundary><Player avatar={safeAvatar} /><SceneBoundary name="world-boundary"><WorldBoundaryGuard /></SceneBoundary>
           </Suspense>
         </Canvas>
       </Boundary>
