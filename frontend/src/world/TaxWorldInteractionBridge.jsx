@@ -26,9 +26,7 @@ function nearbyTaxAction() {
   if (state.panel) return null
 
   if (state.phase === 'intro') {
-    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-      return { kind: 'guide', label: 'Talk to Maya · start Module 6 Tax Town' }
-    }
+    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex · start Module 7 Tax Office' }
     return null
   }
 
@@ -37,26 +35,18 @@ function nearbyTaxAction() {
     let bestDistance = Infinity
     for (const client of TAX_CLIENTS) {
       const d = distanceTo(client.point)
-      if (d <= INTERACT_RADIUS && d < bestDistance) {
-        best = client
-        bestDistance = d
-      }
+      if (d <= INTERACT_RADIUS && d < bestDistance) { best = client; bestDistance = d }
     }
     return best ? { kind: 'client', caseId: best.caseId, label: `Inspect ${best.name}'s W-2` } : null
   }
 
   if (state.phase === 'steps') {
     const station = taxStationForStep(state.stepNumber)
-    if (station && distanceTo(station.point) <= INTERACT_RADIUS) {
-      return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
-    }
+    if (station && distanceTo(station.point) <= INTERACT_RADIUS) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
 
-  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-    return { kind: 'guide', label: 'Talk to Maya · review what you learned' }
-  }
-
+  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex · review what you learned' }
   return null
 }
 
@@ -64,73 +54,45 @@ function runTaxAction(action) {
   if (!action) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
-
-  if (action.kind === 'guide') {
-    lab.openGuide()
-    return true
-  }
+  if (action.kind === 'guide') { lab.openGuide(); return true }
   if (action.kind === 'client') {
     const taxCase = TAX_CASES.find((item) => item.id === action.caseId)
     if (!taxCase) return false
     lab.previewClient(taxCase)
     return true
   }
-  if (action.kind === 'station') {
-    return Boolean(lab.openStation(action.stepNumber))
-  }
+  if (action.kind === 'station') return Boolean(lab.openStation(action.stepNumber))
   return false
 }
 
 export function runTaxInteraction() {
   const lab = useTaxLab.getState()
   if (lab.panel) return false
-
   const action = nearbyTaxAction()
   if (action) return runTaxAction(action)
-
-  if (lab.phase === 'intro') {
-    lab.openGuide()
-    return true
-  }
-
+  if (lab.phase === 'intro') { lab.openGuide(); return true }
   return false
 }
 
 export function TaxWorldInteractionBridge() {
   useEffect(() => {
     placeAtTaxTownEntrance()
-
     let lastKey = ''
     let lastAutoKey = ''
     const refresh = () => {
       const lab = useTaxLab.getState()
       const action = nearbyTaxAction()
       const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
-      if (key !== lastKey) {
-        lastKey = key
-        lab.setNearbyAction(action)
-      }
-
-      // Module 6 should feel like one guided process, not a sequence of tiny E
-      // prompts. After the initial Maya interaction, walking up to the active
-      // client or station opens that step automatically. E remains available as
-      // a backup and for the clear start/review interactions with Maya.
+      if (key !== lastKey) { lastKey = key; lab.setNearbyAction(action) }
       if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
         lastAutoKey = key
-        if (runTaxAction(action)) {
-          lastKey = ''
-          lab.setNearbyAction(null)
-        }
+        if (runTaxAction(action)) { lastKey = ''; lab.setNearbyAction(null) }
       }
       if (!action) lastAutoKey = ''
     }
-
     const timer = window.setInterval(refresh, 90)
     refresh()
-
-    const interact = () => {
-      if (runTaxInteraction()) refresh()
-    }
+    const interact = () => { if (runTaxInteraction()) refresh() }
     const onKeyDown = (event) => {
       if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
       event.preventDefault()
@@ -138,7 +100,6 @@ export function TaxWorldInteractionBridge() {
       runTaxInteraction()
       refresh()
     }
-
     window.addEventListener('keydown', onKeyDown, true)
     window.addEventListener('tayu-interact', interact)
     return () => {
@@ -148,6 +109,5 @@ export function TaxWorldInteractionBridge() {
       useTaxLab.getState().setNearbyAction(null)
     }
   }, [])
-
   return null
 }
