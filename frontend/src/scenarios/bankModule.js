@@ -18,18 +18,18 @@ export const BK = {
     learn: 'banks',
   },
   w2: {
-    bubble: 'These accounts work differently. Checking is easiest to use now. Savings earns a little. A CD earns more, but the money stays locked longer.',
+    bubble: 'These accounts work differently. Checking is easiest to use now. Savings earns a little. A CD earns more, but the money stays locked longer. A CD also introduces the same basic idea as a bond: you let someone use your money for a set time and they pay you interest.',
     dingChecking: 'Checking: use the money anytime; earns $0 here.',
     dingSavings: 'Savings: the money is still easy to reach; earns 50 cents.',
     dingCd: 'CD: the money stays locked for longer; earns $1.',
-    card: 'Choose what matters for each dollar: using it soon or letting it earn more while you wait.',
+    card: 'Choose what matters for each dollar: using it soon or letting it earn more while you wait. Later in the Money Garden, you will compare this with bonds, where governments or companies borrow from investors and promise interest plus repayment.',
     safe: 'Mostly SAVINGS',
     smart: 'Savings plus a CD',
     cash: 'All CHECKING',
     doneSafe: 'Most money stayed easy to reach and still earned something.',
     doneSmart: 'Some money stayed easy to reach. The locked part earned more.',
     doneCash: 'Checking was easy to use, but it earned nothing.',
-    summary: 'Interest is extra money an account can earn. Accounts that make you wait longer may pay more interest.',
+    summary: 'Interest is extra money an account can earn. Accounts that make you wait longer may pay more interest. A CD is a useful bridge to understanding bonds: both trade access now for promised interest over time.',
     learn: 'cd',
   },
   w3: {
@@ -75,7 +75,7 @@ export const DEBT_HELP = 'Trusted nonprofit counselors can explain payment optio
 export const TRUST_NAMED = 'This practice meter shows habits connected to credit, such as paying on time and borrowing carefully. It is not a real credit score.'
 
 export const BK_HANDOFF = (garden) =>
-  `The bank money is protected and growing. The $${garden} set aside for the Money Garden is ready for the next decisions.`
+  `The bank money is protected and growing. The $${garden} set aside for the Money Garden is ready for the next decisions, including the difference between owning a stock and lending through a bond.`
 
 export const BK_OPEN = (bank) =>
   `You placed $${bank} in the bank. Compare the account choices and watch how each decision changes the balance.`

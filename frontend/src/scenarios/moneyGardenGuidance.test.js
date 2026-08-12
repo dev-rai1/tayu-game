@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyStarterInvestingGift,
+  BOND_MEADOW,
   MONEY_GARDEN_DECISIONS,
   MONEY_GARDEN_FLOW,
   MONEY_GARDEN_PARTS,
   MONEY_GARDEN_STARTER_GIFT,
+  STOCK_BOND_COMPARE,
   moneyGardenClues,
   moneyGardenPart,
   shouldPauseBetweenGardenParts,
@@ -68,12 +70,20 @@ describe('Money Garden consolidated flow', () => {
     }
   })
 
-  it('turns busy and empty storefront evidence into separate readable clues', () => {
+  it('turns busy and empty storefront evidence into separate readable clues before the bond comparison', () => {
     const clues = moneyGardenClues(4, { fx: { busy: 'game', dusty: 'snack' } })
-    expect(clues).toEqual([
-      'Game Land is PACKED — lots of customers are showing up.',
-      'Snack Shack is EMPTY — very few customers are showing up.',
-    ])
+    expect(clues[0]).toBe('Game Land is PACKED — lots of customers are showing up.')
+    expect(clues[1]).toBe('Snack Shack is EMPTY — very few customers are showing up.')
+    expect(clues[2]).toBe(STOCK_BOND_COMPARE.stock)
+    expect(clues[3]).toBe(STOCK_BOND_COMPARE.bond)
+  })
+
+  it('adds Treasury, muni, and corporate bond comparisons without replacing stock play', () => {
+    expect(Object.keys(BOND_MEADOW)).toEqual(['treasury', 'muni', 'corporate'])
+    expect(BOND_MEADOW.treasury.safety).toBeGreaterThanOrEqual(BOND_MEADOW.corporate.safety)
+    expect(BOND_MEADOW.muni.line).toMatch(/tax/i)
+    expect(MONEY_GARDEN_DECISIONS[7].why).toMatch(/bondholder/i)
+    expect(MONEY_GARDEN_DECISIONS[9].why).toMatch(/interest rates/i)
   })
 
   it('keeps evidence clues short enough to show one at a time', () => {

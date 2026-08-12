@@ -17,6 +17,18 @@ export const KNOWLEDGE_QUESTIONS = [
     choices: ['$6', '$16', '$4'],
     correct: 2,
   },
+  {
+    id: 'stock_vs_bond',
+    prompt: 'What is the difference between buying a stock and buying a bond?',
+    choices: ['A stock is ownership; a bond is a loan', 'A bond always grows faster than a stock', 'They are the same thing'],
+    correct: 0,
+  },
+  {
+    id: 'tax_refund',
+    prompt: 'Why might you get a tax refund at the end of the year?',
+    choices: ['Your employer withheld more than you actually owe', 'You earned too much money', 'The government made a mistake'],
+    correct: 0,
+  },
 ]
 
 export function scoreKnowledgeQuiz(answers) {

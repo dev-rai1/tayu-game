@@ -149,9 +149,9 @@ async function buildPdf(name, dateStr) {
   doc.setFontSize(34); doc.setTextColor(255, 215, 0)
   doc.text('MONEY GURU', CX, 322, { align: 'center' })
   // achievement line
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(14); doc.setTextColor(60, 68, 90)
-  doc.text('Mastered saving, smart spending, giving, running a business,', CX, 362, { align: 'center' })
-  doc.text('investing, budgeting, and banking.', CX, 382, { align: 'center' })
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(13); doc.setTextColor(60, 68, 90)
+  doc.text('Mastered saving, smart spending, giving, running a business,', CX, 360, { align: 'center' })
+  doc.text('investing in stocks and bonds, budgeting, banking, and filing a practice tax return.', CX, 380, { align: 'center' })
   // date + site + signature
   doc.setFontSize(13); doc.setTextColor(7, 23, 72)
   doc.text(dateStr, 120, 480, { align: 'center' })
@@ -213,7 +213,7 @@ export default function Guru() {
           CONGRATULATIONS, {name.toUpperCase()}!
         </h1>
         <p className="mt-2 text-lg text-white/85 print:hidden">
-          You saved, you shopped smart, you gave, you ran a business, you invested, you budgeted, and you banked. That makes you a true MONEY GURU.
+          You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you filed a practice tax return. That makes you a true MONEY GURU.
         </p>
 
         {/* the live certificate - printable as-is */}
@@ -228,8 +228,8 @@ export default function Guru() {
             <div className="mt-1 text-xs text-navy/60 sm:text-sm">proudly presented to</div>
             <div className="mt-1 font-display text-3xl font-extrabold text-electric sm:text-5xl">{name}</div>
             <div className="mt-1 font-display text-xl font-extrabold sm:text-3xl" style={{ color: '#FFD700', textShadow: '0 1px 0 #b8860b' }}>MONEY GURU</div>
-            <div className="mt-2 max-w-md text-[10px] text-navy/70 sm:text-xs">
-              Mastered saving, smart spending, giving, running a business, investing, budgeting, and banking.
+            <div className="mt-2 max-w-lg text-[10px] text-navy/70 sm:text-xs">
+              Mastered saving, smart spending, giving, running a business, investing in stocks and bonds, budgeting, banking, and filing a practice tax return.
             </div>
             <div className="mt-3 flex w-full justify-between px-6 text-[10px] text-navy/70 sm:px-10 sm:text-xs">
               <span className="border-t border-navy pt-1">{dateStr}</span>
@@ -272,7 +272,7 @@ export default function Guru() {
             <li>I can set a fair price and earn a real profit.</li>
             <li>I can budget my week - needs first, wants after.</li>
             <li>I can use a bank and know what borrowing costs.</li>
-            <li>I can grow money with patience in the garden.</li>
+            <li>I can compare stock ownership with bond lending and understand how taxes affect my money.</li>
           </ul>
           <p className="mt-3 text-center text-xs font-bold text-white/60">
             You finished the whole journey - stopping here is a WIN. Come back any time to replay a favorite part.

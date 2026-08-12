@@ -74,10 +74,15 @@ export const GROCERY_GATE = `Choose at least ${MIN_FOODS} foods without going ov
 export const DAY_SUMMARY = (needs, fun, left) =>
   `Needs cost $${needs}${fun > 0 ? ` and the want cost $${fun}` : '; you skipped the want'}. You have $${left} left. Build a plan that can handle a surprise.`
 
+// The first three cards are the actual Budget Town allocation buckets. The
+// fourth is a forward-looking fixed-income card: it introduces bonds here
+// without changing the persisted three-bucket budget model. The Money Garden
+// later turns this idea into a stock-vs-bond investing decision.
 export const OPTION_CARDS = [
   { id: 'pocket', title: 'POCKET', line: 'Ready for surprises. It stays steady.', color: '#9aa6b8', anim: 'flat' },
   { id: 'bank', title: 'BANK', line: 'Safer growth. It remains available later.', color: '#1464F0', anim: 'slope' },
-  { id: 'garden', title: 'MONEY GARDEN', line: 'More growth potential, with more risk.', color: '#00b37f', anim: 'wiggle' },
+  { id: 'bond', title: 'BONDS', line: 'You lend to a government or company. They promise interest and repayment, usually with less price wiggle than stocks.', color: '#f0822e', anim: 'slope', educationOnly: true },
+  { id: 'garden', title: 'MONEY GARDEN', line: 'More growth potential through ownership, with more market risk.', color: '#00b37f', anim: 'wiggle' },
 ]
 
 export function sliceLine(id, pct) {
@@ -87,17 +92,17 @@ export function sliceLine(id, pct) {
 }
 
 export function splitNudge(split, total) {
-  if (split.pocket >= total) return 'Everything is ready now, but nothing is growing. Compare the other two financial accounts.'
-  if (split.garden >= total) return 'Everything is taking market risk. What would pay for a surprise today?'
-  if (split.bank >= total) return 'Everything is in one safer financial account. Compare access now with growth and risk.'
-  if (split.bank === 0 && split.garden === 0) return 'Nothing is growing yet. Compare the Bank and Money Garden accounts.'
+  if (split.pocket >= total) return 'Everything is ready now, but nothing is growing. Compare Bank, bonds, and the Money Garden.'
+  if (split.garden >= total) return 'Everything is taking stock-market risk. What would pay for a surprise today, and where could steadier investments fit later?'
+  if (split.bank >= total) return 'Everything is in one safer financial account. Compare access now with bonds and higher-growth stock ownership.'
+  if (split.bank === 0 && split.garden === 0) return 'Nothing is growing yet. Compare the Bank, bond idea, and Money Garden.'
   if (split.pocket === 0) return 'No money is ready for a surprise. Revise the plan before testing it.'
   if (split.pocket < Math.min(2, total)) return 'The ready-cash cushion may not cover the surprise. Check the amount again.'
-  if (split.garden > Math.round(total * 0.7)) return 'Most of the plan depends on the market. Is that risk balanced?'
-  return 'This plan includes ready cash, safer growth, and higher-risk growth.'
+  if (split.garden > Math.round(total * 0.7)) return 'Most of the plan depends on the stock market. Is that risk balanced?'
+  return 'This plan includes ready cash, safer bank growth, and higher-risk stock growth. In the Money Garden, you will also compare bonds as a middle-ground investment.'
 }
 
-export const SPLIT_PROMPT = 'Divide the money among three financial accounts: Pocket, Bank, and Money Garden. Use the live feedback, then test whether the plan survives a surprise.'
+export const SPLIT_PROMPT = 'Divide the money among the three accounts used in this budget: Pocket, Bank, and Money Garden. The bond card previews a fourth investing idea you will use later. Use the live feedback, then test whether the plan survives a surprise.'
 export const SPLIT_CONFIRM = 'Check the tradeoffs in your plan, then test it.'
 
 export const CARRY_PROMPT = 'Send each part of the plan to its financial account.'
@@ -110,7 +115,7 @@ export const EMERGENCY_PRAISE = 'Ready cash covered the surprise, so the growing
 export const EMERGENCY_REPLAY = 'The plan did not cover the $2 surprise. Return to the controls and revise the ready-cash amount.'
 
 export const HANDOFF = (bank, garden) =>
-  `Your revised plan kept emergency cash ready, placed $${bank} in the Bank account, and placed $${garden} in the Money Garden account.`
+  `Your revised plan kept emergency cash ready, placed $${bank} in the Bank account, and placed $${garden} in the Money Garden account. Next, compare stock ownership with lending through bonds.`
 
 export function defaultSplit(total) {
   const pocket = Math.max(2, Math.round(total * 0.2))

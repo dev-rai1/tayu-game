@@ -1,6 +1,7 @@
 // BUDGET TOWN v3 PANELS (Round 8, Part 2). Two decision panels only:
-// Beat 1 - the three-options intro (tap each card, watch its 2s animation).
-// Beat 2 - the three +/- sliders and the LIVE PIE with per-slice feedback.
+// Beat 1 - the account/investment intro (tap each card, watch its 2s animation).
+// Beat 2 - the three actual budget +/- sliders and the LIVE PIE with per-slice feedback.
+// The bond card is education-only and previews the later investing module.
 // Beats 3 and 4 play as cards + OFF-SCREEN world animation - no panel.
 import { useState } from 'react'
 import { useGame } from './store.js'
@@ -31,12 +32,13 @@ function OptionsPanel() {
   const btOptionsDone = useGame((s) => s.btOptionsDone)
   const [playing, setPlaying] = useState(null)
   const allTried = OPTION_CARDS.every((c) => bt.tried[c.id])
+  const triedCount = OPTION_CARDS.filter((c) => bt.tried[c.id]).length
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
-      <div role="dialog" aria-modal="true" aria-labelledby="budget-options-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
-        <h2 id="budget-options-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Three homes for money</h2>
-        <div className="mt-1 text-sm font-bold text-navy/70">Tap each one to see what it does. ({OPTION_CARDS.filter((c) => bt.tried[c.id]).length}/3 tried)</div>
-        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div role="dialog" aria-modal="true" aria-labelledby="budget-options-title" className="pop-in w-full max-w-2xl rounded-3xl bg-white p-5 shadow-2xl">
+        <h2 id="budget-options-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Budget Town - Four ways money can work</h2>
+        <div className="mt-1 text-sm font-bold text-navy/70">Tap each one to see what it does. ({triedCount}/{OPTION_CARDS.length} tried)</div>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {OPTION_CARDS.map((c) => (
             <button key={c.id} aria-pressed={!!bt.tried[c.id]}
               onClick={() => { setPlaying(c.id); btTryOption(c.id); setTimeout(() => setPlaying((p) => (p === c.id ? null : p)), 2100) }}
@@ -44,13 +46,14 @@ function OptionsPanel() {
               <div className="font-display text-sm font-extrabold" style={{ color: c.color }}>{c.title}</div>
               <div style={{ color: c.color }}><Spark kind={c.anim} playing={playing === c.id} /></div>
               <div className="mt-1 text-xs font-bold leading-snug text-navy/75">{c.line}</div>
+              {c.educationOnly && <div className="mt-1 text-[10px] font-extrabold uppercase text-[#b85e17]">Preview for Money Garden</div>}
               {bt.tried[c.id] && <div className="mt-1 text-[10px] font-extrabold uppercase text-teal">Seen!</div>}
             </button>
           ))}
         </div>
         <button disabled={!allTried} onClick={btOptionsDone}
           className="btn-primary mt-4 min-h-[52px] w-full px-5 disabled:opacity-40">
-          {allTried ? "Got it - let's split my money!" : 'Tap all three first'}
+          {allTried ? "Got it - let's split my budget money!" : `Tap all ${OPTION_CARDS.length} first`}
         </button>
       </div>
     </div>
@@ -94,6 +97,7 @@ function SplitPanel() {
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
       <div role="dialog" aria-modal="true" aria-labelledby="budget-split-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
         <h2 id="budget-split-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Split your ${fmt(total)}</h2>
+        <p className="mt-1 text-xs font-bold leading-snug text-navy/60">This budget uses Pocket, Bank, and Money Garden. Bonds were the preview card; you will compare them directly with stocks in the investing lesson.</p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             {['pocket', 'bank', 'garden'].map((id) => (

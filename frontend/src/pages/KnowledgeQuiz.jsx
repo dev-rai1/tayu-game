@@ -48,7 +48,7 @@ export default function KnowledgeQuiz() {
           </div>
         </div>
         <p className="mt-4 text-sm font-semibold text-white/70">
-          Answer these same three questions {isPost ? 'one more time' : 'before you begin'}. This is not a grade—it helps us see what TAYU taught.
+          Answer these same {KNOWLEDGE_QUESTIONS.length} questions {isPost ? 'one more time' : 'before you begin'}. This is not a grade—it helps us see what TAYU taught, including the new bond and tax concepts.
         </p>
 
         <div className="mt-6 space-y-6">
