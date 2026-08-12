@@ -1,15 +1,13 @@
-// BUDGET TOWN v3 PANELS (Round 8, Part 2). Two decision panels only:
-// Beat 1 - the account/investment intro (tap each card, watch its 2s animation).
-// Beat 2 - the three actual budget +/- sliders and the LIVE PIE with per-slice feedback.
-// The bond card is education-only and previews the later investing module.
-// Beats 3 and 4 play as cards + OFF-SCREEN world animation - no panel.
+// BUDGET TOWN: the learner compares all four money homes, then makes a real
+// four-way allocation across Pocket, Bank, Bonds, and Money Garden.
 import { useState } from 'react'
 import { useGame } from './store.js'
 import { OPTION_CARDS, sliceLine, splitNudge, GROCERY_ITEMS, FOOD_BUDGET, MIN_FOODS, GROCERY_GATE } from '../scenarios/budgetTown.js'
 
 const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })
-const COLORS = { pocket: '#9aa6b8', bank: '#1464F0', garden: '#00b37f' }
-const NAMES = { pocket: 'Pocket', bank: 'Bank', garden: 'Money Garden' }
+const COLORS = { pocket: '#9aa6b8', bank: '#1464F0', bond: '#f0822e', garden: '#00b37f' }
+const NAMES = { pocket: 'Pocket', bank: 'Bank', bond: 'Bonds', garden: 'Money Garden' }
+const IDS = ['pocket', 'bank', 'bond', 'garden']
 
 function Spark({ kind, playing }) {
   const paths = {
@@ -46,14 +44,13 @@ function OptionsPanel() {
               <div className="font-display text-sm font-extrabold" style={{ color: c.color }}>{c.title}</div>
               <div style={{ color: c.color }}><Spark kind={c.anim} playing={playing === c.id} /></div>
               <div className="mt-1 text-xs font-bold leading-snug text-navy/75">{c.line}</div>
-              {c.educationOnly && <div className="mt-1 text-[10px] font-extrabold uppercase text-[#b85e17]">Preview for Money Garden</div>}
               {bt.tried[c.id] && <div className="mt-1 text-[10px] font-extrabold uppercase text-teal">Seen!</div>}
             </button>
           ))}
         </div>
         <button disabled={!allTried} onClick={btOptionsDone}
           className="btn-primary mt-4 min-h-[52px] w-full px-5 disabled:opacity-40">
-          {allTried ? "Got it - let's split my budget money!" : `Tap all ${OPTION_CARDS.length} first`}
+          {allTried ? "Got it - let's build my four-part plan!" : `Tap all ${OPTION_CARDS.length} first`}
         </button>
       </div>
     </div>
@@ -61,9 +58,8 @@ function OptionsPanel() {
 }
 
 function SplitPie({ split, total, onPick, picked }) {
-  const ids = ['pocket', 'bank', 'garden']
   let acc = 0
-  const segs = ids.map((id) => {
+  const segs = IDS.map((id) => {
     const frac = (split[id] || 0) / Math.max(1, total)
     const seg = { id, from: acc, to: acc + frac }
     acc = seg.to
@@ -74,7 +70,7 @@ function SplitPie({ split, total, onPick, picked }) {
     <div className="grid place-items-center">
       <div className="h-32 w-32 rounded-full shadow-inner transition-all duration-500" style={{ background: `conic-gradient(${grad})` }} />
       <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-        {ids.map((id) => (
+        {IDS.map((id) => (
           <button key={id} onClick={() => onPick(id)} onMouseEnter={() => onPick(id)}
             className={`rounded-xl px-2.5 py-1.5 text-[11px] font-extrabold text-white transition active:scale-95 ${picked === id ? 'ring-2 ring-navy' : ''}`}
             style={{ background: COLORS[id] }}>
@@ -95,12 +91,12 @@ function SplitPanel() {
   const nudge = splitNudge(bt.split, total)
   return (
     <div className="pointer-events-auto absolute inset-0 z-[300] flex items-center justify-center bg-navy/60 p-3 backdrop-blur-sm">
-      <div role="dialog" aria-modal="true" aria-labelledby="budget-split-title" className="pop-in w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
-        <h2 id="budget-split-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Split your ${fmt(total)}</h2>
-        <p className="mt-1 text-xs font-bold leading-snug text-navy/60">This budget uses Pocket, Bank, and Money Garden. Bonds were the preview card; you will compare them directly with stocks in the investing lesson.</p>
+      <div role="dialog" aria-modal="true" aria-labelledby="budget-split-title" className="pop-in w-full max-w-2xl rounded-3xl bg-white p-5 shadow-2xl">
+        <h2 id="budget-split-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Split your ${fmt(total)} four ways</h2>
+        <p className="mt-1 text-xs font-bold leading-snug text-navy/60">Pocket is ready cash. Bank is safer storage. Bonds are lending for interest. Money Garden is stock ownership with more market movement.</p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
-            {['pocket', 'bank', 'garden'].map((id) => (
+            {IDS.map((id) => (
               <div key={id} className="flex items-center justify-between rounded-2xl bg-navy/5 px-3 py-2">
                 <div className="text-sm font-extrabold" style={{ color: COLORS[id] }}>{NAMES[id]}</div>
                 <div className="flex items-center gap-1.5">
@@ -121,7 +117,7 @@ function SplitPanel() {
             : 'Tap a slice to hear what your plan means.'}
         </div>
         {nudge && <div className="mt-2 rounded-2xl bg-sun/20 px-3 py-2 text-sm font-bold text-navy/80">{nudge}</div>}
-        <button onClick={btConfirmSplit} className="btn-primary mt-3 min-h-[52px] w-full px-5">This is my plan!</button>
+        <button onClick={btConfirmSplit} className="btn-primary mt-3 min-h-[52px] w-full px-5">This is my four-part plan!</button>
       </div>
     </div>
   )
