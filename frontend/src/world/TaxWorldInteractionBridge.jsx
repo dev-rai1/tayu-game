@@ -29,7 +29,7 @@ function nearbyTaxAction() {
 
   if (state.phase === 'intro') {
     if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-      return { kind: 'guide', label: 'Talk to Rex · start the Tax Office' }
+      return { kind: 'guide', label: 'Start the Tax Office filing stations' }
     }
     return null
   }
@@ -56,7 +56,7 @@ function nearbyTaxAction() {
   }
 
   if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-    return { kind: 'guide', label: 'Talk to Rex · review what you learned' }
+    return { kind: 'guide', label: 'Review the completed Tax Office return' }
   }
 
   return null
@@ -99,13 +99,34 @@ export function runTaxInteraction() {
   return false
 }
 
+function RexTaxIntro({ onDone }) {
+  const profile = loadProfile() || {}
+  const hasMuni = Boolean(profile.muniBondInvested || profile.bondStreet?.investedInMuni)
+  return (
+    <div className="fixed inset-0 z-[1100] grid place-items-center overflow-y-auto bg-navy/85 p-4 backdrop-blur-sm">
+      <section className="w-full max-w-2xl rounded-[2rem] border-4 border-sun bg-[#fffdf8] p-5 text-navy shadow-2xl sm:p-7" role="dialog" aria-modal="true" aria-labelledby="rex-tax-intro-title">
+        <div className="text-xs font-black uppercase tracking-[0.2em] text-electric">Module 7 · Tax Office · Rex the Assessor</div>
+        <h2 id="rex-tax-intro-title" className="mt-2 font-display text-3xl font-black">Taxes fund things you already used</h2>
+        <p className="mt-3 font-semibold leading-relaxed">“Welcome! I’m Rex. Taxes can sound scary, but look around TAYU. The school bus, the clinic, and the ring road all depend on shared public money. A small share of income helps pay for those services.”</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl bg-electric/10 p-4"><div className="text-xs font-black uppercase tracking-wide text-electric">What you will do</div><p className="mt-1 font-semibold">Start with gross income, subtract deductions, use marginal tax brackets, compare withholding, and find a refund or amount due.</p></div>
+          <div className="rounded-2xl bg-teal/10 p-4"><div className="text-xs font-black uppercase tracking-wide text-[#08785e]">Rex’s reminder</div><p className="mt-1 font-semibold">A refund means more was prepaid than the final tax bill. Owing means the prepayments were smaller than the final bill.</p></div>
+        </div>
+        {hasMuni && <div className="mt-4 rounded-2xl border-2 border-teal bg-teal/10 p-4 font-semibold">Rex notices the muni bond from Bond Street, but he will explain its special tax treatment only after you finish the return.</div>}
+        <div className="mt-4 rounded-2xl bg-navy p-4 text-sm font-semibold text-white"><strong>Rex’s desk notes:</strong> Taxes help support roads, schools, and public services. April is tax-filing season. And if you chose a muni bond, Rex has one more connection waiting for you.</div>
+        <button type="button" onClick={onDone} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Start the Tax Office →</button>
+      </section>
+    </div>
+  )
+}
+
 function RexPaidReview({ onDone }) {
   const profile = loadProfile() || {}
   const hasMuni = Boolean(profile.muniBondInvested || profile.bondStreet?.investedInMuni)
   return (
     <div className="fixed inset-0 z-[1100] grid place-items-center overflow-y-auto bg-navy/85 p-4 backdrop-blur-sm">
       <section className="w-full max-w-2xl rounded-[2rem] border-4 border-sun bg-[#fffdf8] p-5 text-navy shadow-2xl sm:p-7" role="dialog" aria-modal="true" aria-labelledby="rex-paid-title">
-        <div className="text-xs font-black uppercase tracking-[0.2em] text-electric">Rex · Tax Office</div>
+        <div className="text-xs font-black uppercase tracking-[0.2em] text-electric">Module 7 · Rex · Tax Office</div>
         <h2 id="rex-paid-title" className="mt-2 font-display text-3xl font-black">Review, stamp, and connect the dots</h2>
         <p className="mt-3 font-semibold leading-relaxed">You worked from gross income to taxable income, used marginal brackets, accounted for withholding, and found the refund or amount due. Taxes help pay for the school bus, clinic, roads, and other shared services you already used around TAYU.</p>
         {hasMuni && <div className="mt-4 rounded-2xl border-2 border-teal bg-teal/10 p-4"><div className="font-display text-xl font-black">TAX-FREE MUNI CALLBACK ✓</div><p className="mt-1 font-semibold">Remember the municipal bond you chose on Bond Street? Municipal-bond interest can receive special tax treatment. That is one reason munis may pay less stated interest than riskier corporate bonds while still being attractive to investors.</p></div>}
@@ -120,10 +141,11 @@ function RexPaidReview({ onDone }) {
 export function TaxWorldInteractionBridge() {
   const [bondComplete, setBondComplete] = useState(() => hasCompletedBondStreet())
   const phase = useTaxLab((state) => state.phase)
+  const [rexIntroSeen, setRexIntroSeen] = useState(() => Boolean(loadProfile()?.rexTaxIntroSeen))
   const [rexReviewSeen, setRexReviewSeen] = useState(() => Boolean(loadProfile()?.rexTaxReviewSeen))
 
   useEffect(() => {
-    if (!bondComplete) return undefined
+    if (!bondComplete || !rexIntroSeen) return undefined
     placeAtTaxTownEntrance()
 
     let lastKey = ''
@@ -169,10 +191,14 @@ export function TaxWorldInteractionBridge() {
       window.removeEventListener('tayu-interact', interact)
       useTaxLab.getState().setNearbyAction(null)
     }
-  }, [bondComplete])
+  }, [bondComplete, rexIntroSeen])
 
   if (!bondComplete) {
     return <BondStreetGate onComplete={() => setBondComplete(true)} />
+  }
+
+  if (!rexIntroSeen) {
+    return <RexTaxIntro onDone={() => { saveProfile({ rexTaxIntroSeen: true }); setRexIntroSeen(true) }} />
   }
 
   if (phase === 'complete' && !rexReviewSeen) {
