@@ -20,7 +20,7 @@ function mountTaxInteraction() {
 
 describe('Module 6 Tax Lab start interaction after Bond Street', () => {
   beforeEach(() => {
-    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'] })
+    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'], rexTaxIntroSeen: true })
     activatePaycheckWorld()
     useTaxLab.getState().reset()
     playerPos.x = 999
