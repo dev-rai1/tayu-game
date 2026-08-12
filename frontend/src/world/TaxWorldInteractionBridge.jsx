@@ -6,8 +6,10 @@ import { playerPos, joystick, moveTarget } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
 import { BondStreetGate, hasCompletedBondStreet } from './BondStreetGate.jsx'
+import { deactivatePaycheckWorld } from './paycheckMode.js'
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
+const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 
@@ -26,39 +28,25 @@ function placeAtTaxTownEntrance() {
 function nearbyTaxAction() {
   const state = useTaxLab.getState()
   if (state.panel) return null
-
   if (state.phase === 'intro') {
-    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-      return { kind: 'guide', label: 'Start the Tax Office filing stations' }
-    }
+    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Start the Tax Office filing stations' }
     return null
   }
-
   if (state.phase === 'case') {
     let best = null
     let bestDistance = Infinity
     for (const client of TAX_CLIENTS) {
       const d = distanceTo(client.point)
-      if (d <= INTERACT_RADIUS && d < bestDistance) {
-        best = client
-        bestDistance = d
-      }
+      if (d <= INTERACT_RADIUS && d < bestDistance) { best = client; bestDistance = d }
     }
     return best ? { kind: 'client', caseId: best.caseId, label: `Inspect ${best.name}'s W-2` } : null
   }
-
   if (state.phase === 'steps') {
     const station = taxStationForStep(state.stepNumber)
-    if (station && distanceTo(station.point) <= INTERACT_RADIUS) {
-      return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
-    }
+    if (station && distanceTo(station.point) <= INTERACT_RADIUS) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
-
-  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) {
-    return { kind: 'guide', label: 'Review the completed Tax Office return' }
-  }
-
+  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Review the completed Tax Office return' }
   return null
 }
 
@@ -66,20 +54,13 @@ function runTaxAction(action) {
   if (!action) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
-
-  if (action.kind === 'guide') {
-    lab.openGuide()
-    return true
-  }
+  if (action.kind === 'guide') { lab.openGuide(); return true }
   if (action.kind === 'client') {
     const taxCase = TAX_CASES.find((item) => item.id === action.caseId)
     if (!taxCase) return false
-    lab.previewClient(taxCase)
-    return true
+    lab.previewClient(taxCase); return true
   }
-  if (action.kind === 'station') {
-    return Boolean(lab.openStation(action.stepNumber))
-  }
+  if (action.kind === 'station') return Boolean(lab.openStation(action.stepNumber))
   return false
 }
 
@@ -87,15 +68,9 @@ export function runTaxInteraction() {
   if (!hasCompletedBondStreet()) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
-
   const action = nearbyTaxAction()
   if (action) return runTaxAction(action)
-
-  if (lab.phase === 'intro') {
-    lab.openGuide()
-    return true
-  }
-
+  if (lab.phase === 'intro') { lab.openGuide(); return true }
   return false
 }
 
@@ -147,63 +122,37 @@ export function TaxWorldInteractionBridge() {
   useEffect(() => {
     if (!bondComplete || !rexIntroSeen) return undefined
     placeAtTaxTownEntrance()
-
     let lastKey = ''
     let lastAutoKey = ''
     const refresh = () => {
-      const lab = useTaxLab.getState()
-      const action = nearbyTaxAction()
-      const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
-      if (key !== lastKey) {
-        lastKey = key
-        lab.setNearbyAction(action)
-      }
-
+      const lab = useTaxLab.getState(); const action = nearbyTaxAction(); const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
+      if (key !== lastKey) { lastKey = key; lab.setNearbyAction(action) }
       if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
         lastAutoKey = key
-        if (runTaxAction(action)) {
-          lastKey = ''
-          lab.setNearbyAction(null)
-        }
+        if (runTaxAction(action)) { lastKey = ''; lab.setNearbyAction(null) }
       }
       if (!action) lastAutoKey = ''
     }
-
-    const timer = window.setInterval(refresh, 90)
-    refresh()
-
-    const interact = () => {
-      if (runTaxInteraction()) refresh()
-    }
+    const timer = window.setInterval(refresh, 90); refresh()
+    const interact = () => { if (runTaxInteraction()) refresh() }
     const onKeyDown = (event) => {
       if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
-      event.preventDefault()
-      event.stopImmediatePropagation()
-      runTaxInteraction()
-      refresh()
+      event.preventDefault(); event.stopImmediatePropagation(); runTaxInteraction(); refresh()
     }
-
-    window.addEventListener('keydown', onKeyDown, true)
-    window.addEventListener('tayu-interact', interact)
-    return () => {
-      window.clearInterval(timer)
-      window.removeEventListener('keydown', onKeyDown, true)
-      window.removeEventListener('tayu-interact', interact)
-      useTaxLab.getState().setNearbyAction(null)
-    }
+    window.addEventListener('keydown', onKeyDown, true); window.addEventListener('tayu-interact', interact)
+    return () => { window.clearInterval(timer); window.removeEventListener('keydown', onKeyDown, true); window.removeEventListener('tayu-interact', interact); useTaxLab.getState().setNearbyAction(null) }
   }, [bondComplete, rexIntroSeen])
 
   if (!bondComplete) {
-    return <BondStreetGate onComplete={() => setBondComplete(true)} />
+    return <BondStreetGate onComplete={() => {
+      let bondOnly = false
+      try { bondOnly = sessionStorage.getItem(BOND_ONLY_KEY) === '1'; if (bondOnly) sessionStorage.removeItem(BOND_ONLY_KEY) } catch { /* storage can be unavailable */ }
+      if (bondOnly) { deactivatePaycheckWorld(); return }
+      setBondComplete(true)
+    }} />
   }
 
-  if (!rexIntroSeen) {
-    return <RexTaxIntro onDone={() => { saveProfile({ rexTaxIntroSeen: true }); setRexIntroSeen(true) }} />
-  }
-
-  if (phase === 'complete' && !rexReviewSeen) {
-    return <RexPaidReview onDone={() => { saveProfile({ rexTaxReviewSeen: true }); setRexReviewSeen(true) }} />
-  }
-
+  if (!rexIntroSeen) return <RexTaxIntro onDone={() => { saveProfile({ rexTaxIntroSeen: true }); setRexIntroSeen(true) }} />
+  if (phase === 'complete' && !rexReviewSeen) return <RexPaidReview onDone={() => { saveProfile({ rexTaxReviewSeen: true }); setRexReviewSeen(true) }} />
   return null
 }
