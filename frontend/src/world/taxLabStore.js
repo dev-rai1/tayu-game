@@ -70,8 +70,8 @@ export const useTaxLab = create((set, get) => ({
       feedback: null,
       nearbyAction: null,
       worldNotice: restoredPhase === 'steps'
-        ? `Walk through the town to the ${taxStationForStep(restoredStep).label}.`
-        : 'Meet one of the three taxpayers waiting outside the Tax Lab.',
+        ? `Continue the return at the ${taxStationForStep(restoredStep).label}.`
+        : 'Meet one of the three taxpayers waiting inside the Tax Center.',
       work: emptyTaxWork(),
     })
   },
@@ -86,7 +86,7 @@ export const useTaxLab = create((set, get) => ({
     panel: null,
     feedback: null,
     nearbyAction: null,
-    worldNotice: 'Walk up to Ari, Sam, or Jordan. Talk to one taxpayer and decide what the W-2 actually proves.',
+    worldNotice: 'Walk up to Ari, Sam, or Jordan inside the Tax Center. Talk to one taxpayer and decide what the W-2 actually proves.',
     work: emptyTaxWork(),
   }),
 
@@ -103,10 +103,10 @@ export const useTaxLab = create((set, get) => ({
     taxCase,
     candidateCase: null,
     stepNumber: 1,
-    panel: null,
+    panel: taxStationForStep(1).key,
     feedback: null,
     nearbyAction: null,
-    worldNotice: `Case accepted. Walk to the ${taxStationForStep(1).label} in this same district.`,
+    worldNotice: `Case accepted. Continue directly at the ${taxStationForStep(1).label}.`,
     work: { ...emptyTaxWork(), prediction: get().work.prediction, predictionCorrect: get().work.predictionCorrect, predictionMistakes: get().work.predictionMistakes },
   }),
 
@@ -115,7 +115,7 @@ export const useTaxLab = create((set, get) => ({
     const requested = boundedStep(stepNumber)
     if (state.phase !== 'steps') return false
     if (requested !== state.stepNumber) {
-      set({ worldNotice: `That station is not next. Walk to the ${taxStationForStep(state.stepNumber).label}.` })
+      set({ worldNotice: `That station is not next. Continue at the ${taxStationForStep(state.stepNumber).label}.` })
       return false
     }
     set({ panel: taxStationForStep(requested).key, feedback: null, nearbyAction: null })
@@ -149,15 +149,27 @@ export const useTaxLab = create((set, get) => ({
   })),
 
   advanceStep: () => set((state) => {
-    const next = Math.min(6, state.stepNumber + 1)
+    if (state.stepNumber >= 6) {
+      return {
+        stepNumber: 6,
+        panel: null,
+        feedback: null,
+        nearbyAction: null,
+        worldNotice: 'Return reviewed. Finish filing at the E-FILE DESK.',
+      }
+    }
+
+    const next = state.stepNumber + 1
+    const nextStation = taxStationForStep(next)
     return {
       stepNumber: next,
-      panel: null,
+      // Keep Module 6 flowing like the bank sequence: once the learner has
+      // entered the tax workflow, the next station opens automatically rather
+      // than requiring another walk-up + E press for every step.
+      panel: nextStation.key,
       feedback: null,
       nearbyAction: null,
-      worldNotice: state.stepNumber >= 6
-        ? 'Return reviewed. Stay in the district and finish filing at the E-FILE DESK.'
-        : `Good work. Walk to the ${taxStationForStep(next).label}.`,
+      worldNotice: `Good work. Continuing directly at the ${nextStation.label}.`,
     }
   }),
 
