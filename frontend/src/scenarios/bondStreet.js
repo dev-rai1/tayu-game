@@ -1,4 +1,5 @@
 const roundMoney = (value) => Math.round(Number(value || 0) * 100) / 100
+const wholeDollars = (value) => Math.max(0, Math.floor(Number(value || 0)))
 
 export const BOND_STREET_SCRIPT = {
   arrival: 'BOND STREET is open! Meet Beau and turn part of your Money Garden harvest into loans that earn interest.',
@@ -63,14 +64,14 @@ export function gardenProfitStake(wallet = {}) {
   const mg = wallet?.mg || {}
   const harvest = gardenHarvestValue(wallet)
   const start = Math.max(0, Number(mg.startTotal || 0))
-  const gain = roundMoney(Math.max(0, harvest - start))
+  const gain = wholeDollars(Math.max(0, harvest - start))
   if (gain > 0) return gain
 
   // Do not mint a fresh starting balance. If this playthrough finished flat or
-  // down, use money that already exists in the player's garden/liquid plan.
-  const existing = roundMoney(Math.max(0, Number(mg.cash || 0) + Number(mg.pocket || 0) + Number(mg.bank || 0)))
+  // down, use whole dollars that already exist in the player's saved plan.
+  const existing = wholeDollars(Math.max(0, Number(mg.cash || 0) + Number(mg.pocket || 0) + Number(mg.bank || 0)))
   if (existing > 0) return existing
-  return roundMoney(Math.max(0, Number(wallet?.lemCum || 0)))
+  return wholeDollars(Math.max(0, Number(wallet?.lemCum || 0)))
 }
 
 export function allocationTotal(allocation = {}) {
