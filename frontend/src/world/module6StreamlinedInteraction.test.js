@@ -8,8 +8,8 @@ const gameWorld = fs.readFileSync(path.join(here, 'GameWorld.jsx'), 'utf8')
 const taxPrompt = fs.readFileSync(path.join(here, 'TaxActionPrompt.jsx'), 'utf8')
 const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx'), 'utf8')
 
-describe('Module 6 streamlined interaction regression', () => {
-  it('keeps Tax Town mounted in its own 3D scene boundary', () => {
+describe('Module 6/7 streamlined interaction regression', () => {
+  it('keeps the Tax Office mounted in its own 3D scene boundary', () => {
     expect(gameWorld).toContain('name="tax-town"')
     expect(gameWorld).toContain('<PaycheckPlanetWorld />')
   })
@@ -20,9 +20,10 @@ describe('Module 6 streamlined interaction regression', () => {
     expect(taxPrompt).toContain('min-h-[76px]')
   })
 
-  it('auto-opens active client and station steps after the initial Maya start', () => {
+  it('auto-opens active client and station steps after the Bond Street and Rex introductions', () => {
     expect(taxBridge).toContain("lab.phase === 'case' || lab.phase === 'steps'")
     expect(taxBridge).toContain('runTaxAction(action)')
-    expect(taxBridge).toContain('Module 6 should feel like one guided process')
+    expect(taxBridge).toContain('BondStreetGate')
+    expect(taxBridge).toContain('RexTaxIntro')
   })
 })
