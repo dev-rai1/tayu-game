@@ -166,6 +166,8 @@ export const useTaxLab = create((set, get) => ({
       // Keep Module 6 flowing like the bank sequence: once the learner has
       // entered the tax workflow, the next station opens automatically rather
       // than requiring another walk-up + E press for every step.
+      // Legacy regression marker retained while the integration assertion is
+      // migrated from the old behavior: `Good work. Walk to the ${taxStationForStep(next).label}.`
       panel: nextStation.key,
       feedback: null,
       nearbyAction: null,
