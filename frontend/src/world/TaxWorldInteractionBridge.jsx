@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
+import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { INTERACT_RADIUS } from './config.js'
 import { playerPos, joystick, moveTarget } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
@@ -98,8 +99,28 @@ export function runTaxInteraction() {
   return false
 }
 
+function RexPaidReview({ onDone }) {
+  const profile = loadProfile() || {}
+  const hasMuni = Boolean(profile.muniBondInvested || profile.bondStreet?.investedInMuni)
+  return (
+    <div className="fixed inset-0 z-[1100] grid place-items-center overflow-y-auto bg-navy/85 p-4 backdrop-blur-sm">
+      <section className="w-full max-w-2xl rounded-[2rem] border-4 border-sun bg-[#fffdf8] p-5 text-navy shadow-2xl sm:p-7" role="dialog" aria-modal="true" aria-labelledby="rex-paid-title">
+        <div className="text-xs font-black uppercase tracking-[0.2em] text-electric">Rex · Tax Office</div>
+        <h2 id="rex-paid-title" className="mt-2 font-display text-3xl font-black">Review, stamp, and connect the dots</h2>
+        <p className="mt-3 font-semibold leading-relaxed">You worked from gross income to taxable income, used marginal brackets, accounted for withholding, and found the refund or amount due. Taxes help pay for the school bus, clinic, roads, and other shared services you already used around TAYU.</p>
+        {hasMuni && <div className="mt-4 rounded-2xl border-2 border-teal bg-teal/10 p-4"><div className="font-display text-xl font-black">TAX-FREE MUNI CALLBACK ✓</div><p className="mt-1 font-semibold">Remember the municipal bond you chose on Bond Street? Municipal-bond interest can receive special tax treatment. That is one reason munis may pay less stated interest than riskier corporate bonds while still being attractive to investors.</p></div>}
+        <div className="mt-5 rotate-[-2deg] rounded-2xl border-8 border-[#c9302c] bg-white p-5 text-center text-[#c9302c] shadow-inner"><div className="text-sm font-black uppercase tracking-[0.28em]">THUNK</div><div className="font-display text-5xl font-black sm:text-6xl">PAID</div><div className="mt-1 font-black">Practice tax return completed</div></div>
+        <p className="mt-4 rounded-2xl bg-navy p-4 font-semibold text-white">“The money you sent? It helped build the road you walked, pay for the school bus, and stock the clinic. Every dollar had a job.”</p>
+        <button type="button" onClick={onDone} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">To the Finale →</button>
+      </section>
+    </div>
+  )
+}
+
 export function TaxWorldInteractionBridge() {
   const [bondComplete, setBondComplete] = useState(() => hasCompletedBondStreet())
+  const phase = useTaxLab((state) => state.phase)
+  const [rexReviewSeen, setRexReviewSeen] = useState(() => Boolean(loadProfile()?.rexTaxReviewSeen))
 
   useEffect(() => {
     if (!bondComplete) return undefined
@@ -116,8 +137,6 @@ export function TaxWorldInteractionBridge() {
         lab.setNearbyAction(action)
       }
 
-      // After the initial Rex interaction, walking up to the active client or
-      // station opens that step automatically. E remains available as a backup.
       if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
         lastAutoKey = key
         if (runTaxAction(action)) {
@@ -154,6 +173,10 @@ export function TaxWorldInteractionBridge() {
 
   if (!bondComplete) {
     return <BondStreetGate onComplete={() => setBondComplete(true)} />
+  }
+
+  if (phase === 'complete' && !rexReviewSeen) {
+    return <RexPaidReview onDone={() => { saveProfile({ rexTaxReviewSeen: true }); setRexReviewSeen(true) }} />
   }
 
   return null
