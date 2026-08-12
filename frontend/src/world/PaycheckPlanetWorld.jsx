@@ -158,6 +158,68 @@ function CurrentTaxStation({ step, station }) {
   )
 }
 
+function TaxCenterBuilding({ active }) {
+  return (
+    <group>
+      {/* Open-roof shell keeps the room visible from the game's elevated camera
+          while making it unmistakable that every Module 6 interaction happens
+          inside one Tax Center building. */}
+      <RoundedBox args={[14.8, 0.18, 12.8]} radius={0.16} smoothness={3} position={[0, 0.08, 1.55]} receiveShadow>
+        <meshStandardMaterial color="#f8f1e8" roughness={0.94} />
+      </RoundedBox>
+
+      <RoundedBox args={[14.8, 4.9, 0.34]} radius={0.12} smoothness={3} position={[0, 2.45, -4.72]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#ffb36f" roughness={0.62} clearcoat={0.18} />
+      </RoundedBox>
+      <RoundedBox args={[0.34, 4.9, 12.8]} radius={0.12} smoothness={3} position={[-7.23, 2.45, 1.55]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#ffc58f" roughness={0.62} clearcoat={0.15} />
+      </RoundedBox>
+      <RoundedBox args={[0.34, 4.9, 12.8]} radius={0.12} smoothness={3} position={[7.23, 2.45, 1.55]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#ffc58f" roughness={0.62} clearcoat={0.15} />
+      </RoundedBox>
+
+      {/* Front facade leaves a wide, obvious walk-through entrance. */}
+      <RoundedBox args={[5.15, 4.9, 0.34]} radius={0.12} smoothness={3} position={[-4.83, 2.45, 7.82]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#ffb36f" roughness={0.6} clearcoat={0.18} />
+      </RoundedBox>
+      <RoundedBox args={[5.15, 4.9, 0.34]} radius={0.12} smoothness={3} position={[4.83, 2.45, 7.82]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#ffb36f" roughness={0.6} clearcoat={0.18} />
+      </RoundedBox>
+      <RoundedBox args={[4.5, 0.52, 0.46]} radius={0.16} smoothness={3} position={[0, 4.56, 7.78]} castShadow>
+        <meshStandardMaterial color="#071748" roughness={0.5} />
+      </RoundedBox>
+
+      {/* Door frames + welcome mat make the entrance read as a real building
+          instead of a freestanding platform. */}
+      <RoundedBox args={[0.18, 3.6, 0.18]} radius={0.06} smoothness={2} position={[-2.16, 1.8, 7.58]} castShadow>
+        <meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.22 : 0.06} />
+      </RoundedBox>
+      <RoundedBox args={[0.18, 3.6, 0.18]} radius={0.06} smoothness={2} position={[2.16, 1.8, 7.58]} castShadow>
+        <meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.22 : 0.06} />
+      </RoundedBox>
+      <RoundedBox args={[3.5, 0.08, 1.15]} radius={0.08} smoothness={2} position={[0, 0.13, 7.15]} receiveShadow>
+        <meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.16 : 0.04} />
+      </RoundedBox>
+
+      {/* Interior service counter behind Maya. */}
+      <RoundedBox args={[5.2, 1.05, 0.75]} radius={0.16} smoothness={3} position={[0, 0.55, 5.45]} castShadow receiveShadow>
+        <meshStandardMaterial color="#071748" roughness={0.7} />
+      </RoundedBox>
+      <RoundedBox args={[4.6, 0.12, 0.92]} radius={0.08} smoothness={2} position={[0, 1.09, 5.45]} castShadow>
+        <meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.2 : 0.05} />
+      </RoundedBox>
+
+      {/* Simple interior lane markers visually connect the six tax stations. */}
+      {[-4.6, -2.3, 0, 2.3, 4.6].map((x) => (
+        <mesh key={x} position={[x, 0.185, 0.75]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.06, 7.6]} />
+          <meshStandardMaterial color="#e5c7a7" transparent opacity={0.55} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 function CelebrationBurst({ active }) {
   const group = useRef()
   useFrame((_, delta) => {
@@ -196,16 +258,10 @@ export function PaycheckPlanetWorld() {
 
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
-      <mesh position={[0, 0.02, 0.6]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><circleGeometry args={[7.35, 40]} /><meshStandardMaterial color="#fff0dc" roughness={1} /></mesh>
-      <mesh position={[0, 0.03, 0.6]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[7.35, 7.75, 40]} /><meshStandardMaterial color="#ff8a3d" roughness={1} /></mesh>
-      <RoundedBox args={[5.4, 3.35, 3]} radius={0.28} smoothness={4} position={[0, 1.72, 0.25]} castShadow><meshPhysicalMaterial color="#ffb36f" roughness={0.52} clearcoat={0.28} /></RoundedBox>
-      <RoundedBox args={[5.85, 0.6, 3.4]} radius={0.22} smoothness={4} position={[0, 3.65, 0.25]} castShadow><meshStandardMaterial color="#071748" roughness={0.55} /></RoundedBox>
-      <RoundedBox args={[1.45, 2.2, 0.16]} radius={0.12} smoothness={3} position={[0, 1.22, 1.78]} castShadow><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.28 : 0.08} /></RoundedBox>
+      <TaxCenterBuilding active={active} />
 
-      {/* Match the other module hosts: Maya physically stays at her station in
-          the world instead of disappearing when a mode flag is briefly stale or
-          when the learner advances to another tax step. Only her interaction
-          glow/action changes with the active Module 6 phase. */}
+      {/* Maya physically stays at her station inside the building. Only her
+          interaction glow/action changes with the active Module 6 phase. */}
       <InteractiveTaxNpc
         name="Maya · Tax Guide"
         point={TAX_POINTS.guide}
