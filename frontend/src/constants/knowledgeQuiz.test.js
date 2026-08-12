@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { KNOWLEDGE_QUESTIONS, knowledgeChange, scoreKnowledgeQuiz } from './knowledgeQuiz.js'
 
 describe('knowledge quiz scoring', () => {
-  it('scores the three fixed questions', () => {
+  it('scores every fixed pre/post question', () => {
     const answers = Object.fromEntries(KNOWLEDGE_QUESTIONS.map((question) => [question.id, question.correct]))
-    expect(scoreKnowledgeQuiz(answers)).toBe(3)
-    expect(scoreKnowledgeQuiz({ ...answers, profit: 0 })).toBe(2)
+    expect(scoreKnowledgeQuiz(answers)).toBe(KNOWLEDGE_QUESTIONS.length)
+    expect(scoreKnowledgeQuiz({ ...answers, profit: 0 })).toBe(KNOWLEDGE_QUESTIONS.length - 1)
   })
 
-  it('uses all three answer positions in the main pre/post quiz', () => {
-    expect(KNOWLEDGE_QUESTIONS.map((question) => question.correct)).toEqual([0, 1, 2])
+  it('still uses all three answer positions in the expanded pre/post quiz', () => {
+    expect(new Set(KNOWLEDGE_QUESTIONS.map((question) => question.correct))).toEqual(new Set([0, 1, 2]))
   })
 
   it('keeps each correct index within its choices', () => {
