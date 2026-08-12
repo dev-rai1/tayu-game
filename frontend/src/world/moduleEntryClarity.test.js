@@ -12,18 +12,19 @@ const taxCss = read('src/world/taxWorkbench.css')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 
 describe('module entry clarity', () => {
-  it('starts Module 6 Explore from the beginning without teleporting the player', () => {
-    expect(world).toContain("if (jump === '6')")
-    expect(world).toContain("enterPaycheckPlanet({ restart: true, origin: 'module-select' })")
+  it('starts Module 6 at Bond Street and Module 7 at a fresh Tax Office without teleporting the player', () => {
+    expect(world).toContain("if (jump === '6' || jump === '7')")
+    expect(world).toContain("if (jump === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
+    expect(world).toContain("enterPaycheckPlanet({ restart: jump === '7', origin: 'module-select' })")
     expect(world).toContain('saveProfile({ taxLabProgress: null, taxLab: null })')
-    expect(world).toContain("const preservedTaxPosition = jump === '6'")
+    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
     expect(world).toContain('playerPos.x = preservedTaxPosition.x')
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
   })
 
-  it('keeps the actual town canvas and movement active during Module 6', () => {
+  it('keeps the actual town canvas and movement active during the final modules', () => {
     expect(world).toContain('<GameWorld avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
@@ -55,7 +56,7 @@ describe('module entry clarity', () => {
     expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('makes Maya, taxpayers, and E/action interactions clear without crowding the start experience', () => {
+  it('makes the tax guide, taxpayers, and E/action interactions clear without crowding the start experience', () => {
     expect(paycheck).toContain('Maya · Tax Guide')
     expect(paycheck).toContain('TAX_CLIENTS.map')
     expect(paycheck).toContain('InteractionGlow')

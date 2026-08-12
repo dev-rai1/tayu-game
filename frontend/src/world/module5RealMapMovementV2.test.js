@@ -13,7 +13,7 @@ const taxStore = read('src/world/taxLabStore.js')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 const keyboard = read('src/world/useKeyboardControls.js')
 
-describe('Module 6 real-map movement v2', () => {
+describe('final-module real-map movement v2', () => {
   it('has exactly one persistent town scene and isolates Tax Town in its own scene boundary', () => {
     expect(world).toContain('<GameWorld avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
@@ -25,8 +25,8 @@ describe('Module 6 real-map movement v2', () => {
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 
-  it('preserves the exact player coordinates when Explore launches Module 6', () => {
-    expect(world).toContain("const preservedTaxPosition = jump === '6'")
+  it('preserves the exact player coordinates when Explore launches Module 6 or Module 7', () => {
+    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
     expect(world).toContain('x: playerPos.x, y: playerPos.y, z: playerPos.z')
     expect(world).toContain('playerPos.x = preservedTaxPosition.x')
     expect(world).toContain('playerPos.z = preservedTaxPosition.z')
@@ -45,14 +45,14 @@ describe('Module 6 real-map movement v2', () => {
     expect(world).toContain('moveTarget.x = null')
   })
 
-  it('hands off from the Bank into Money Garden as Module 5 before tax', () => {
+  it('hands off from the Bank into Money Garden as Module 5 before Bond Street and tax', () => {
     expect(world).toContain("label: 'Start Module 5', act: null")
     expect(world).toContain('finishBankHandoffIntoGarden()')
     expect(world).toContain('game.startGarden()')
     expect(world).toContain("enterPaycheckPlanet({ origin: 'garden-handoff' })")
   })
 
-  it('lets the player walk up and use Maya, taxpayers, and stations with E or the action control', () => {
+  it('lets the player walk up and use the tax guide, taxpayers, and stations with E or the action control', () => {
     expect(world).toContain('<TaxWorldInteractionBridge />')
     expect(world).toContain('<TaxActionPrompt />')
     expect(bridge).toContain("event.code !== 'KeyE'")
