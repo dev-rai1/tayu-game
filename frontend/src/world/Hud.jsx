@@ -274,7 +274,7 @@ function DockedControls() {
   const startTheWeek = useGame((s) => s.startTheWeek)
   if (week !== 5 || !mg || mg.phase !== 'adjust' || cards.length > 0 || dialog || panelPortfolio) return null
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-5 z-[180] flex justify-center gap-3">
+    <div className="pointer-events-auto absolute inset-x-0 bottom-[calc(7rem+env(safe-area-inset-bottom,0px))] z-[180] flex flex-wrap justify-center gap-2 px-3 sm:gap-3">
       <button onClick={openPortfolio} className="tayu-action-pulse min-h-[64px] rounded-2xl bg-white px-6 text-lg font-extrabold text-navy shadow-2xl transition active:scale-95">
         My Portfolio
       </button>
