@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { TaxActionPrompt } from './TaxActionPrompt.jsx'
 import { TaxWorldInteractionBridge } from './TaxWorldInteractionBridge.jsx'
-import { activatePaycheckWorld, deactivatePaycheckWorld } from './paycheckMode.js'
+import { activatePaycheckWorld, deactivatePaycheckWorld, isPaycheckWorldActive } from './paycheckMode.js'
 import { playerPos } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_POINTS } from './taxDistrictLayout.js'
@@ -23,7 +23,7 @@ function mountTaxInteraction() {
 
 describe('Module 7 Tax Office interactions', () => {
   beforeEach(() => {
-    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'], rexTaxIntroSeen: true })
+    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'], rexTaxIntroSeen: true, rexTaxReviewSeen: false })
     sessionStorage.removeItem(TAX_ORIGIN_KEY)
     sessionStorage.removeItem(BOND_ONLY_KEY)
     activatePaycheckWorld()
@@ -71,6 +71,15 @@ describe('Module 7 Tax Office interactions', () => {
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
+  it('starts the playable guide immediately from Rex first-time intro instead of requiring a second click', () => {
+    saveProfile({ rexTaxIntroSeen: false })
+    mountTaxInteraction()
+
+    fireEvent.click(screen.getByRole('button', { name: /Start the Tax Office/i }))
+
+    expect(useTaxLab.getState().panel).toBe('guide')
+  })
+
   it('allows a direct Module 7 selection without requiring Bond Street completion', () => {
     saveProfile({ bondStreet: null, badges: [], rexTaxIntroSeen: true })
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
@@ -107,5 +116,14 @@ describe('Module 7 Tax Office interactions', () => {
     mountTaxInteraction()
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe('guide')
+  })
+
+  it('finishes Module 7 from Rex review instead of revealing another required finish click', () => {
+    useTaxLab.getState().complete()
+    mountTaxInteraction()
+
+    fireEvent.click(screen.getByRole('button', { name: /Finish Module 7/i }))
+
+    expect(isPaycheckWorldActive()).toBe(false)
   })
 })
