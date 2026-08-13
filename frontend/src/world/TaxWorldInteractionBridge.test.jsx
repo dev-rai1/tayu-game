@@ -18,8 +18,9 @@ function mountTaxInteraction() {
   )
 }
 
-describe('Module 6 Tax Lab start interaction after Bond Street', () => {
+describe('Module 7 Tax Lab start interaction after Bond Street', () => {
   beforeEach(() => {
+    sessionStorage.clear()
     saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'], rexTaxIntroSeen: true })
     activatePaycheckWorld()
     useTaxLab.getState().reset()
@@ -29,13 +30,14 @@ describe('Module 6 Tax Lab start interaction after Bond Street', () => {
 
   afterEach(() => {
     cleanup()
+    sessionStorage.clear()
     deactivatePaycheckWorld()
     useTaxLab.getState().reset()
   })
 
   it('always shows a start action during the intro even when the player is not yet in proximity', () => {
     mountTaxInteraction()
-    expect(screen.getByRole('button', { name: /Start Module 6/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Start Module 7/i })).toBeInTheDocument()
   })
 
   it('pressing E opens the tax guide even if proximity has not initialized', () => {
@@ -53,14 +55,14 @@ describe('Module 6 Tax Lab start interaction after Bond Street', () => {
 
   it('clicking the visible start action opens the tax guide', () => {
     mountTaxInteraction()
-    fireEvent.click(screen.getByRole('button', { name: /Start Module 6/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Start Module 7/i }))
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
   it('keeps the visible intro E click working even if the global mode flag updates late', () => {
     mountTaxInteraction()
     deactivatePaycheckWorld()
-    fireEvent.click(screen.getByRole('button', { name: /Start Module 6/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Start Module 7/i }))
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
