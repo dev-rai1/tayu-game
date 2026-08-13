@@ -37,12 +37,21 @@ class SceneBoundary extends Component {
   }
 }
 
-function repairRuntimeState() {
+export function repairRuntimeState() {
   const state = useGame.getState()
   const patch = {}
   if (!Array.isArray(state.cards)) patch.cards = []
   if (!Array.isArray(state.lessons)) patch.lessons = []
-  if (!Array.isArray(state.allocations)) patch.allocations = []
+  const allocations = state.allocations
+  if (!allocations || typeof allocations !== 'object' || Array.isArray(allocations)) {
+    patch.allocations = { spend: 0, save: 0, give: 0 }
+  } else if (![allocations.spend, allocations.save, allocations.give].every((value) => Number.isFinite(Number(value)))) {
+    patch.allocations = {
+      spend: Number.isFinite(Number(allocations.spend)) ? Number(allocations.spend) : 0,
+      save: Number.isFinite(Number(allocations.save)) ? Number(allocations.save) : 0,
+      give: Number.isFinite(Number(allocations.give)) ? Number(allocations.give) : 0,
+    }
+  }
   if (state.btPanel === undefined) patch.btPanel = null
   if (state.bkPanel === undefined) patch.bkPanel = null
   if (state.panelJar === undefined) patch.panelJar = null

@@ -9,8 +9,10 @@ import { GameStateProvider } from '../hooks/useGameState.jsx'
 import { Boundary } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
 import World from '../pages/World.jsx'
+import { repairRuntimeState } from './GameWorld.jsx'
 
-vi.mock('./GameWorld.jsx', () => ({
+vi.mock('./GameWorld.jsx', async (importOriginal) => ({
+  ...(await importOriginal()),
   GameWorld: () => <div data-testid="game-world" />,
 }))
 
@@ -82,6 +84,26 @@ describe('Module 1 to Module 2 transition', () => {
     expect(source).toContain("lemonadeHost={n.id === 'penny' && week === 2}")
     expect(source).toContain('<group visible={lemonadeHost}>')
     expect(source).not.toContain("avatar={{ ...n.avatar, accessories:")
+  })
+
+  it('keeps the real Module 1 money allocation intact before starting Module 2', () => {
+    const allocation = { spend: 0, save: 17, give: 7 }
+    act(() => useGame.setState({ allocations: allocation }))
+
+    repairRuntimeState()
+    expect(useGame.getState().allocations).toEqual(allocation)
+
+    act(() => useGame.getState().startWeek2())
+    expect(useGame.getState().week).toBe(2)
+    expect(useGame.getState().allocations).toEqual({ spend: 0, save: 17, give: 7 })
+  })
+
+  it('repairs malformed saved allocations to the required money object shape', () => {
+    act(() => useGame.setState({ allocations: [] }))
+
+    repairRuntimeState()
+
+    expect(useGame.getState().allocations).toEqual({ spend: 0, save: 0, give: 0 })
   })
 
   it('starts every persistent-world module with valid transition state', () => {
