@@ -1,20 +1,27 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
-// Keep older static/help copy aligned with the public module numbering. The
-// canonical catalog is Module 5A/5B = Money Garden and Module 6 = Tax Lab.
+// Keep older static/help copy aligned with the public seven-module journey.
+// Money Garden is Module 5A/5B, Bond Street is Module 6, and Tax Office is Module 7.
 const PHRASE_REPLACEMENTS = [
   [
     'five playable core money modules',
+    'seven core money modules, with Money Garden split into 5A and 5B',
+  ],
+  [
     'six core money modules, with Money Garden split into 5A and 5B',
+    'seven core money modules, with Money Garden split into 5A and 5B',
   ],
   [
     'six core money modules, with Money Garden split into 6A and 6B',
-    'six core money modules, with Money Garden split into 5A and 5B',
+    'seven core money modules, with Money Garden split into 5A and 5B',
   ],
   ['Money Garden — Modules 6A + 6B', 'Money Garden — Modules 5A + 5B'],
   ['Module 6A', 'Module 5A'],
   ['Module 6B', 'Module 5B'],
+  ['Money Garden → Finale', 'Money Garden → Bond Street → Tax Office → Finale'],
+  ['Money Garden → Paycheck Planet → Finale', 'Money Garden → Bond Street → Tax Office → Finale'],
+  ['Paycheck Planet · Tax Town', 'The TAYU Tax Office'],
   [
     'You saved, you shopped smart, you gave, you ran a business, you invested, you budgeted, and you banked. That makes you a true MONEY GURU.',
     'You saved, you shopped smart, you gave, you ran a business, you invested in stocks and bonds, you budgeted, you banked, and you filed a practice tax return. That makes you a true MONEY GURU.',
@@ -57,22 +64,27 @@ function normalizeText(root = document.body) {
       changed = true
     })
 
-    // The Tax Lab itself previously shipped as public Module 5. Keep any
-    // remaining station/recap copy in that overlay explicitly on Module 6.
+    // Some Tax Office station components still contain legacy Module 5/6 and
+    // Maya strings. Normalize only inside Module 7 field UI so other modules
+    // keep their own numbering and NPC names.
     const parent = node.parentElement
     if (parent?.closest('[data-tax-field-ui="true"], [data-tax-station-panel="true"]')) {
       const next = text
-        .replaceAll('Finish Module 5', 'Finish Module 6')
-        .replaceAll('Module 5 complete', 'Module 6 complete')
-        .replaceAll('Module 5 ·', 'Module 6 ·')
+        .replaceAll('Maya · Tax Guide', 'Rex · Tax Assessor')
+        .replaceAll('Welcome to the Tax Lab', 'Welcome to the TAYU Tax Office')
+        .replaceAll('Finish Module 5', 'Finish Module 7')
+        .replaceAll('Finish Module 6', 'Finish Module 7')
+        .replaceAll('Module 5 complete', 'Module 7 complete')
+        .replaceAll('Module 6 complete', 'Module 7 complete')
+        .replaceAll('Module 5 ·', 'Module 7 ·')
+        .replaceAll('Module 6 ·', 'Module 7 ·')
       if (next !== text) { text = next; changed = true }
     }
 
-    // Legacy '?' help appended Finale as item 6. Its visible label is corrected
-    // to item 7 while the six learning modules come from MODULE_CATALOG.
-    if (text.trim() === 'Finale Area') {
-      const next = '7. Finale Area'
-      if (next !== text) { text = next; changed = true }
+    // Seven learning modules are followed by the Finale as the eighth stop.
+    if (text.trim() === 'Finale Area' || text.trim() === '7. Finale Area') {
+      text = '8. Finale Area'
+      changed = true
     }
 
     if (changed) node.nodeValue = text
