@@ -13,6 +13,21 @@ const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 
+function moduleSelectEntryMode() {
+  try {
+    const fromModuleSelect = sessionStorage.getItem(TAX_ORIGIN_KEY) === 'module-select'
+    const bondOnly = sessionStorage.getItem(BOND_ONLY_KEY) === '1'
+    return { bondOnly, taxOnly: fromModuleSelect && !bondOnly }
+  } catch {
+    return { bondOnly: false, taxOnly: false }
+  }
+}
+
+function canUseTaxOffice() {
+  if (hasCompletedBondStreet()) return true
+  return moduleSelectEntryMode().taxOnly
+}
+
 function placeAtTaxTownEntrance() {
   try {
     if (sessionStorage.getItem(TAX_ORIGIN_KEY) !== 'module-select') return
@@ -65,7 +80,7 @@ function runTaxAction(action) {
 }
 
 export function runTaxInteraction() {
-  if (!hasCompletedBondStreet()) return false
+  if (!canUseTaxOffice()) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
   const action = nearbyTaxAction()
@@ -107,31 +122,30 @@ function RexPaidReview({ onDone }) {
         {hasMuni && <div className="mt-4 rounded-2xl border-2 border-teal bg-teal/10 p-4"><div className="font-display text-xl font-black">TAX-FREE MUNI CALLBACK ✓</div><p className="mt-1 font-semibold">Remember the municipal bond you chose on Bond Street? Municipal-bond interest can receive special tax treatment. That is one reason munis may pay less stated interest than riskier corporate bonds while still being attractive to investors.</p></div>}
         <div className="mt-5 rotate-[-2deg] rounded-2xl border-8 border-[#c9302c] bg-white p-5 text-center text-[#c9302c] shadow-inner"><div className="text-sm font-black uppercase tracking-[0.28em]">THUNK</div><div className="font-display text-5xl font-black sm:text-6xl">PAID</div><div className="mt-1 font-black">Practice tax return completed</div></div>
         <p className="mt-4 rounded-2xl bg-navy p-4 font-semibold text-white">“The money you sent? It helped build the road you walked, pay for the school bus, and stock the clinic. Every dollar had a job.”</p>
-        <button type="button" onClick={onDone} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">To the Finale →</button>
+        <button type="button" onClick={onDone} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Continue →</button>
       </section>
     </div>
   )
 }
 
 export function TaxWorldInteractionBridge() {
-  const [bondComplete, setBondComplete] = useState(() => hasCompletedBondStreet())
+  const [entryMode] = useState(() => moduleSelectEntryMode())
+  // Direct Module 6 should replay Bond Street even if it was completed before.
+  // Direct Module 7 should start the Tax Office without forcing Module 6 first.
+  const [bondComplete, setBondComplete] = useState(() => entryMode.bondOnly ? false : (entryMode.taxOnly ? true : hasCompletedBondStreet()))
   const phase = useTaxLab((state) => state.phase)
-  const [rexIntroSeen, setRexIntroSeen] = useState(() => Boolean(loadProfile()?.rexTaxIntroSeen))
-  const [rexReviewSeen, setRexReviewSeen] = useState(() => Boolean(loadProfile()?.rexTaxReviewSeen))
+  const [rexIntroSeen, setRexIntroSeen] = useState(() => entryMode.taxOnly ? false : Boolean(loadProfile()?.rexTaxIntroSeen))
+  const [rexReviewSeen, setRexReviewSeen] = useState(() => entryMode.taxOnly ? false : Boolean(loadProfile()?.rexTaxReviewSeen))
 
   useEffect(() => {
     if (!bondComplete || !rexIntroSeen) return undefined
     placeAtTaxTownEntrance()
     let lastKey = ''
-    let lastAutoKey = ''
     const refresh = () => {
-      const lab = useTaxLab.getState(); const action = nearbyTaxAction(); const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
+      const lab = useTaxLab.getState()
+      const action = nearbyTaxAction()
+      const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
       if (key !== lastKey) { lastKey = key; lab.setNearbyAction(action) }
-      if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
-        lastAutoKey = key
-        if (runTaxAction(action)) { lastKey = ''; lab.setNearbyAction(null) }
-      }
-      if (!action) lastAutoKey = ''
     }
     const timer = window.setInterval(refresh, 90); refresh()
     const interact = () => { if (runTaxInteraction()) refresh() }
@@ -152,7 +166,7 @@ export function TaxWorldInteractionBridge() {
     }} />
   }
 
-  if (!rexIntroSeen) return <RexTaxIntro onDone={() => { saveProfile({ rexTaxIntroSeen: true }); setRexIntroSeen(true) }} />
+  if (!rexIntroSeen) return <RexTaxIntro onDone={() => { saveProfile({ rexTaxIntroSeen: true, rexTaxReviewSeen: false }); setRexIntroSeen(true); setRexReviewSeen(false) }} />
   if (phase === 'complete' && !rexReviewSeen) return <RexPaidReview onDone={() => { saveProfile({ rexTaxReviewSeen: true }); setRexReviewSeen(true) }} />
   return null
 }
