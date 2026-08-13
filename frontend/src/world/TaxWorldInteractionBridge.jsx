@@ -13,17 +13,19 @@ const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 
-function isDirectModule7Entry() {
+function moduleSelectEntryMode() {
   try {
-    return sessionStorage.getItem(TAX_ORIGIN_KEY) === 'module-select'
-      && sessionStorage.getItem(BOND_ONLY_KEY) !== '1'
+    const fromModuleSelect = sessionStorage.getItem(TAX_ORIGIN_KEY) === 'module-select'
+    const bondOnly = sessionStorage.getItem(BOND_ONLY_KEY) === '1'
+    return { bondOnly, taxOnly: fromModuleSelect && !bondOnly }
   } catch {
-    return false
+    return { bondOnly: false, taxOnly: false }
   }
 }
 
-function taxOfficeUnlocked() {
-  return hasCompletedBondStreet() || isDirectModule7Entry()
+function canUseTaxOffice() {
+  if (hasCompletedBondStreet()) return true
+  return moduleSelectEntryMode().taxOnly
 }
 
 function placeAtTaxTownEntrance() {
@@ -78,7 +80,7 @@ function runTaxAction(action) {
 }
 
 export function runTaxInteraction() {
-  if (!taxOfficeUnlocked()) return false
+  if (!canUseTaxOffice()) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
   const action = nearbyTaxAction()
@@ -127,10 +129,11 @@ function RexPaidReview({ onDone }) {
 }
 
 export function TaxWorldInteractionBridge() {
-  const [bondComplete, setBondComplete] = useState(() => taxOfficeUnlocked())
+  const [entryMode] = useState(() => moduleSelectEntryMode())
+  const [bondComplete, setBondComplete] = useState(() => entryMode.bondOnly ? false : (entryMode.taxOnly ? true : hasCompletedBondStreet()))
   const phase = useTaxLab((state) => state.phase)
-  const [rexIntroSeen, setRexIntroSeen] = useState(() => Boolean(loadProfile()?.rexTaxIntroSeen))
-  const [rexReviewSeen, setRexReviewSeen] = useState(() => Boolean(loadProfile()?.rexTaxReviewSeen))
+  const [rexIntroSeen, setRexIntroSeen] = useState(() => entryMode.taxOnly ? false : Boolean(loadProfile()?.rexTaxIntroSeen))
+  const [rexReviewSeen, setRexReviewSeen] = useState(() => entryMode.taxOnly ? false : Boolean(loadProfile()?.rexTaxReviewSeen))
 
   useEffect(() => {
     if (!bondComplete) return
@@ -140,15 +143,11 @@ export function TaxWorldInteractionBridge() {
   useEffect(() => {
     if (!bondComplete || !rexIntroSeen) return undefined
     let lastKey = ''
-    let lastAutoKey = ''
     const refresh = () => {
-      const lab = useTaxLab.getState(); const action = nearbyTaxAction(); const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
+      const lab = useTaxLab.getState()
+      const action = nearbyTaxAction()
+      const key = action ? `${action.kind}:${action.caseId || action.stepNumber || ''}:${action.label}` : ''
       if (key !== lastKey) { lastKey = key; lab.setNearbyAction(action) }
-      if (action && (lab.phase === 'case' || lab.phase === 'steps') && key !== lastAutoKey) {
-        lastAutoKey = key
-        if (runTaxAction(action)) { lastKey = ''; lab.setNearbyAction(null) }
-      }
-      if (!action) lastAutoKey = ''
     }
     const timer = window.setInterval(refresh, 90); refresh()
     const interact = () => { if (runTaxInteraction()) refresh() }
@@ -170,8 +169,9 @@ export function TaxWorldInteractionBridge() {
   }
 
   if (!rexIntroSeen) return <RexTaxIntro onDone={() => {
-    saveProfile({ rexTaxIntroSeen: true })
+    saveProfile({ rexTaxIntroSeen: true, rexTaxReviewSeen: false })
     setRexIntroSeen(true)
+    setRexReviewSeen(false)
     useTaxLab.getState().openGuide()
   }} />
   if (phase === 'complete' && !rexReviewSeen) return <RexPaidReview onDone={() => {

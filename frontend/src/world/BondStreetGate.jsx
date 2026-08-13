@@ -2,8 +2,14 @@ import { useMemo, useState } from 'react'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { BOND_STREET_SCRIPT, BOND_TYPES, allocationTotal, bondOutcome, gardenProfitStake } from '../scenarios/bondStreet.js'
 
+const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const money = (value) => `$${Number(value || 0).toFixed(2).replace(/\.00$/, '')}`
 const stars = (count) => '★'.repeat(count) + '☆'.repeat(Math.max(0, 3 - count))
+const cents = (value) => Math.round(Number(value || 0) * 100) / 100
+
+function isStandaloneBondEntry() {
+  try { return sessionStorage.getItem(BOND_ONLY_KEY) === '1' } catch { return false }
+}
 
 function saveBondCompletion(outcome) {
   const profile = loadProfile() || {}
@@ -26,17 +32,38 @@ function saveBondCompletion(outcome) {
 
 export function BondStreetGate({ onComplete }) {
   const wallet = loadWallet() || {}
-  const stake = useMemo(() => gardenProfitStake(wallet), [wallet])
+  const savedStake = gardenProfitStake(wallet)
+  const standaloneEntry = isStandaloneBondEntry()
+  const stake = savedStake > 0 ? savedStake : standaloneEntry ? 100 : savedStake
   const [step, setStep] = useState(0)
   const [allocation, setAllocation] = useState({ treasury: 0, muni: 0, corporate: 0 })
   const total = allocationTotal(allocation)
-  const remaining = Math.max(0, Math.round((stake - total) * 100) / 100)
+  const remaining = Math.max(0, cents(stake - total))
   const outcome = useMemo(() => bondOutcome(allocation), [allocation])
 
   const setBond = (id, raw) => {
-    const next = Math.max(0, Math.round(Number(raw || 0) * 100) / 100)
-    const others = Object.entries(allocation).reduce((sum, [key, value]) => key === id ? sum : sum + Number(value || 0), 0)
-    setAllocation((current) => ({ ...current, [id]: Math.min(next, Math.max(0, stake - others)) }))
+    const next = Math.max(0, cents(raw))
+    setAllocation((current) => {
+      const others = Object.entries(current).reduce((sum, [key, value]) => key === id ? sum : sum + Number(value || 0), 0)
+      return { ...current, [id]: Math.min(next, Math.max(0, cents(stake - others))) }
+    })
+  }
+
+  const splitEvenly = () => {
+    const totalCents = Math.max(0, Math.round(stake * 100))
+    const base = Math.floor(totalCents / 3)
+    const extra = totalCents - (base * 3)
+    setAllocation({ treasury: (base + extra) / 100, muni: base / 100, corporate: base / 100 })
+  }
+
+  const putAllInTreasury = () => setAllocation({ treasury: cents(stake), muni: 0, corporate: 0 })
+
+  const runOutcomes = () => {
+    if (stake <= 0 || total <= 0.009) return
+    if (remaining > 0.009) {
+      setAllocation((current) => ({ ...current, treasury: cents(Number(current.treasury || 0) + remaining) }))
+    }
+    setStep(3)
   }
 
   const finish = () => {
@@ -51,7 +78,7 @@ export function BondStreetGate({ onComplete }) {
           <div className="text-xs font-black uppercase tracking-[0.22em] text-sun">Module 6 · Bond Street</div>
           <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
             <div><h1 className="font-display text-3xl font-black sm:text-5xl">Bond Street</h1><p className="mt-2 max-w-3xl font-bold text-white/80">{BOND_STREET_SCRIPT.arrival}</p></div>
-            <div className="rounded-2xl bg-white px-4 py-3 text-right text-navy"><div className="text-[10px] font-black uppercase tracking-wide text-navy/55">Money Garden stake</div><div className="font-display text-2xl font-black">{money(stake)}</div></div>
+            <div className="rounded-2xl bg-white px-4 py-3 text-right text-navy"><div className="text-[10px] font-black uppercase tracking-wide text-navy/55">{savedStake > 0 ? 'Money Garden stake' : 'Practice Bond Street stake'}</div><div className="font-display text-2xl font-black">{money(stake)}</div></div>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full bg-teal transition-all" style={{ width: `${Math.min(100, ((step + 1) / 5) * 100)}%` }} /></div>
         </header>
@@ -75,10 +102,14 @@ export function BondStreetGate({ onComplete }) {
 
           {step === 2 && <>
             <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="text-xs font-black uppercase tracking-[0.18em] text-electric">BN · Allocation</div><h2 className="mt-2 font-display text-3xl font-black">Lend every dollar</h2></div><div className={`rounded-xl px-4 py-2 font-black ${remaining === 0 ? 'bg-teal/15 text-[#08785e]' : 'bg-sun/25'}`}>{money(remaining)} left to allocate</div></div>
-            <p className="mt-2 font-semibold text-navy/70">Your stake comes from money already carried forward from the Money Garden. Nothing resets between modules.</p>
-            <div className="mt-5 space-y-4">{BOND_TYPES.map((bond) => <label key={bond.id} className="block rounded-2xl border border-navy/10 bg-white p-4"><div className="flex items-center justify-between gap-3"><div><strong>{bond.title}</strong><div className="text-xs font-bold text-navy/55">{stars(bond.safety)} · {Math.round(bond.rate * 100)}% practice interest</div></div><div className="font-display text-2xl font-black">{money(allocation[bond.id])}</div></div><input aria-label={`${bond.title} allocation`} type="range" min="0" max={stake} step="1" value={allocation[bond.id]} onChange={(event) => setBond(bond.id, event.target.value)} className="mt-3 w-full" /></label>)}</div>
-            {stake <= 0 && <div className="mt-4 rounded-2xl border border-[#e46a3a]/40 bg-[#fff0e8] p-4 font-bold text-[#9b3d1d]">This saved playthrough has no positive Garden or carried-forward balance available for Bond Street. Replay Money Garden to create a stake; Bond Street intentionally does not mint replacement money.</div>}
-            <button type="button" disabled={stake <= 0 || remaining > 0.009} onClick={() => setStep(3)} className="mt-6 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white disabled:cursor-not-allowed disabled:opacity-35">Run the bond outcomes →</button>
+            <p className="mt-2 font-semibold text-navy/70">{savedStake > 0 ? 'Your stake comes from money already carried forward from the Money Garden. Nothing resets between modules.' : 'Because you opened Module 6 directly, TAYU supplied a $100 practice stake so every Bond Street control can be used without completing another module first.'}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={splitEvenly} className="min-h-[46px] rounded-xl border-2 border-electric bg-electric/10 px-4 font-black text-electric">Split evenly</button>
+              <button type="button" onClick={putAllInTreasury} className="min-h-[46px] rounded-xl border-2 border-navy/15 bg-white px-4 font-black text-navy">Put all in Treasury</button>
+            </div>
+            <div className="mt-5 space-y-4">{BOND_TYPES.map((bond) => <label key={bond.id} className="block rounded-2xl border border-navy/10 bg-white p-4"><div className="flex items-center justify-between gap-3"><div><strong>{bond.title}</strong><div className="text-xs font-bold text-navy/55">{stars(bond.safety)} · {Math.round(bond.rate * 100)}% practice interest</div></div><div className="font-display text-2xl font-black">{money(allocation[bond.id])}</div></div><input aria-label={`${bond.title} allocation`} type="range" min="0" max={stake} step="0.01" value={allocation[bond.id]} onChange={(event) => setBond(bond.id, event.target.value)} className="mt-3 w-full" /></label>)}</div>
+            {stake <= 0 && <div className="mt-4 rounded-2xl border border-[#e46a3a]/40 bg-[#fff0e8] p-4 font-bold text-[#9b3d1d]">This saved playthrough has no positive Garden or carried-forward balance available for Bond Street. Return to Money Garden, or launch Module 6 directly from Module Select to use the standalone practice stake.</div>}
+            <button type="button" disabled={stake <= 0 || total <= 0.009} onClick={runOutcomes} className="mt-6 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white disabled:cursor-not-allowed disabled:opacity-35">{remaining > 0.009 && total > 0.009 ? `Run outcomes · put the remaining ${money(remaining)} in Treasury →` : 'Run the bond outcomes →'}</button>
           </>}
 
           {step === 3 && <>
