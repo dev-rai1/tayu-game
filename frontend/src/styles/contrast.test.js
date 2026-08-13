@@ -25,16 +25,29 @@ describe('global text contrast guard', () => {
     expect(contrastSource).toContain('var(--tayu-muted-on-light) !important')
   })
 
-  it('gives glass HUD panels a strong backing over moving scenery', () => {
-    expect(contrastSource).toContain('background: rgba(7, 23, 72, 0.88)')
+  it('gives world HUD panels a strong opaque backing instead of depending on blur', () => {
+    expect(contrastSource).toContain('background: rgba(7, 23, 72, 0.92)')
     expect(contrastSource).toContain('.tayu-world-declutter .glass--navy')
     expect(contrastSource).toContain('background: var(--tayu-world-panel-strong)')
+    expect(contrastSource).toContain('backdrop-filter: none')
   })
 
-  it('adds extra world-scene legibility and a higher-contrast preference', () => {
-    expect(contrastSource).toContain('text-shadow: 0 1px 2px rgba(7, 23, 72, 0.92)')
+  it('keeps world text sharp instead of adding fuzzy text shadows', () => {
+    expect(contrastSource).toContain('.text-legible,')
+    expect(contrastSource).toContain('text-shadow: none !important')
     expect(contrastSource).toContain('.tayu-world-declutter .text-electric')
     expect(contrastSource).toContain('.tayu-world-declutter .text-brandpurple')
+  })
+
+  it('gives Bond Street an opaque visual background and sharp lesson surfaces', () => {
+    expect(contrastSource).toContain('[data-bond-street="true"]')
+    expect(contrastSource).toContain('linear-gradient(145deg, #071748 0%, #0b2863 48%, #071737 100%)')
+    expect(contrastSource).toContain('[data-bond-street="true"] header')
+    expect(contrastSource).toContain('[data-bond-street="true"] header *')
+    expect(contrastSource).toContain('[data-bond-street="true"] > main > section')
+  })
+
+  it('keeps the explicit higher-contrast preference', () => {
     expect(contrastSource).toContain('@media (prefers-contrast: more)')
   })
 })
