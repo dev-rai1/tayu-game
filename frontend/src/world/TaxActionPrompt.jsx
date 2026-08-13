@@ -60,11 +60,11 @@ export function TaxActionPrompt() {
         type="button"
         onClick={() => runVisibleTaxAction(nearbyAction)}
         className="tax-workbench-enter pointer-events-auto flex min-h-[76px] max-w-[min(92vw,34rem)] items-center gap-4 rounded-2xl border-4 border-white bg-navy/95 px-5 py-3 text-white shadow-2xl backdrop-blur-md transition hover:scale-[1.03] active:scale-[0.98]"
-        aria-label={`Press E or tap here to ${label}`}
+        aria-label={`Press E or click here; tap on mobile to ${label}`}
       >
         <span className="grid h-14 min-w-14 shrink-0 place-items-center rounded-xl border-2 border-white bg-electric px-4 font-display text-3xl font-black text-white shadow-lg" aria-hidden="true">E</span>
         <span className="min-w-0 text-left leading-tight">
-          <span className="block text-xs font-black uppercase tracking-[0.14em] text-white/75">Press E or tap here</span>
+          <span className="block text-xs font-black uppercase tracking-[0.14em] text-white/75">Press E or click here · tap on mobile</span>
           <span className="mt-0.5 block text-lg font-black sm:text-xl">{label}</span>
         </span>
       </button>
