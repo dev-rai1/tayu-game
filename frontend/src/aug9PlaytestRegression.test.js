@@ -151,10 +151,10 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain("['spend', 'save', 'give'].every")
   })
 
-  it('mounts the live plan coach in the 3D world shell', () => {
+  it('mounts the live plan coach in the 3D world shell after the arrival gate is dismissed', () => {
     const source = read('frontend/src/pages/World.jsx')
     expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
-    expect(source).toContain('{!taxMode && <JarPlanCoach />}')
+    expect(source).toContain('{!moduleEntry && !taxMode && <JarPlanCoach />}')
     expect(source).toContain('<GameWorld avatar={state.avatar} />')
     expect(source).not.toContain('AccessibleWorld')
   })
