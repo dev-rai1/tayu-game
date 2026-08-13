@@ -123,11 +123,21 @@ export default function ModuleSelect() {
       localStorage.setItem('tayu-garden-entry-part', gardenPart)
       if (gardenPart === 'A' && gardenPartAComplete) canResume = false
       if (gardenPart === 'B' && gardenPartBComplete) canResume = false
+    } else {
+      localStorage.removeItem('tayu-garden-entry-part')
     }
 
-    // Public Module 6 enters the continuous final sequence. The world first
-    // gates the player through Bond Street, then opens the Tax Office.
-    if (!canResume || target.n === 6) localStorage.setItem('tayu-jump-module', String(target.n))
+    // Record the selection itself separately from restart state. This lets World
+    // show the teleport-first start gate for both fresh starts and saved resumes
+    // without changing normal direct /world resume behavior.
+    const restart = !canResume || target.n === 6
+    localStorage.setItem('tayu-module-entry-intent', JSON.stringify({
+      moduleId: String(target.n),
+      gardenEntryPart: gardenPart,
+      resume: !restart,
+    }))
+    if (restart) localStorage.setItem('tayu-jump-module', String(target.n))
+    else localStorage.removeItem('tayu-jump-module')
     nav('/world')
   }
 
