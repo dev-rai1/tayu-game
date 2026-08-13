@@ -13,6 +13,19 @@ const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const distanceTo = (point) => Math.hypot(playerPos.x - point[0], playerPos.z - point[1])
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 
+function isDirectModule7Entry() {
+  try {
+    return sessionStorage.getItem(TAX_ORIGIN_KEY) === 'module-select'
+      && sessionStorage.getItem(BOND_ONLY_KEY) !== '1'
+  } catch {
+    return false
+  }
+}
+
+function taxOfficeUnlocked() {
+  return hasCompletedBondStreet() || isDirectModule7Entry()
+}
+
 function placeAtTaxTownEntrance() {
   try {
     if (sessionStorage.getItem(TAX_ORIGIN_KEY) !== 'module-select') return
@@ -29,7 +42,7 @@ function nearbyTaxAction() {
   const state = useTaxLab.getState()
   if (state.panel) return null
   if (state.phase === 'intro') {
-    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Start the Tax Office filing stations' }
+    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Start the Module 7 Tax Office' }
     return null
   }
   if (state.phase === 'case') {
@@ -46,7 +59,7 @@ function nearbyTaxAction() {
     if (station && distanceTo(station.point) <= INTERACT_RADIUS) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
-  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Review the completed Tax Office return' }
+  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Review the completed Module 7 return' }
   return null
 }
 
@@ -65,7 +78,7 @@ function runTaxAction(action) {
 }
 
 export function runTaxInteraction() {
-  if (!hasCompletedBondStreet()) return false
+  if (!taxOfficeUnlocked()) return false
   const lab = useTaxLab.getState()
   if (lab.panel) return false
   const action = nearbyTaxAction()
@@ -114,14 +127,18 @@ function RexPaidReview({ onDone }) {
 }
 
 export function TaxWorldInteractionBridge() {
-  const [bondComplete, setBondComplete] = useState(() => hasCompletedBondStreet())
+  const [bondComplete, setBondComplete] = useState(() => taxOfficeUnlocked())
   const phase = useTaxLab((state) => state.phase)
   const [rexIntroSeen, setRexIntroSeen] = useState(() => Boolean(loadProfile()?.rexTaxIntroSeen))
   const [rexReviewSeen, setRexReviewSeen] = useState(() => Boolean(loadProfile()?.rexTaxReviewSeen))
 
   useEffect(() => {
-    if (!bondComplete || !rexIntroSeen) return undefined
+    if (!bondComplete) return
     placeAtTaxTownEntrance()
+  }, [bondComplete])
+
+  useEffect(() => {
+    if (!bondComplete || !rexIntroSeen) return undefined
     let lastKey = ''
     let lastAutoKey = ''
     const refresh = () => {
