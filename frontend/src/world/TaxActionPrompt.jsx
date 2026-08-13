@@ -4,7 +4,7 @@ import './taxWorkbench.css'
 
 function shortLabel(phase, nearbyAction) {
   if (nearbyAction) return nearbyAction.label || 'Interact'
-  if (phase === 'intro') return 'Talk to Maya · start Module 6'
+  if (phase === 'intro') return 'Talk to Maya · start Module 7'
   if (phase === 'complete') return 'Talk to Maya · review what you learned'
   return 'Interact'
 }
