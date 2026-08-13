@@ -27,7 +27,7 @@ describe('module entry clarity', () => {
   })
 
   it('keeps the actual town canvas visible while module UI waits behind the start gate', () => {
-    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
     expect(world).toContain('{!moduleEntry && taxMode && <TaxWorkbenchOverlay />}')
