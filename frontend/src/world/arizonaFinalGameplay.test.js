@@ -48,7 +48,7 @@ describe('University of Arizona final gameplay feedback', () => {
     expect(hudSource).toContain('top-[92px]')
     expect(hudSource).toContain('max-h-[calc(100vh-108px)]')
     expect(hudSource).toContain('overflow-y-auto')
-    expect(hudSource).toContain('bottom-5')
+    expect(hudSource).toContain('bottom-[calc(7rem+env(safe-area-inset-bottom,0px))]')
     expect(hudSource).toContain('My Portfolio')
   })
 })
