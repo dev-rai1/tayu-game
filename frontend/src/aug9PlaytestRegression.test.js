@@ -52,7 +52,7 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(existsSync(resolve(root, 'frontend/src/world/AccessibleWorld.jsx'))).toBe(false)
     const world = read('frontend/src/pages/World.jsx')
     expect(world).not.toContain('AccessibleWorld')
-    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
   })
 
@@ -151,11 +151,18 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(source).toContain("['spend', 'save', 'give'].every")
   })
 
+  it('remounts the 3D scene after every module launch so reset actors cannot crash a live canvas', () => {
+    const source = read('frontend/src/pages/World.jsx')
+    expect(source).toContain('const [worldSession, setWorldSession] = useState(0)')
+    expect(source).toContain('setWorldSession((session) => session + 1)')
+    expect(source).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
+  })
+
   it('mounts the live plan coach in the 3D world shell after the arrival gate is dismissed', () => {
     const source = read('frontend/src/pages/World.jsx')
     expect(source).toContain("import { JarPlanCoach } from '../world/JarPlanCoach.jsx'")
     expect(source).toContain('{!moduleEntry && !taxMode && <JarPlanCoach />}')
-    expect(source).toContain('<GameWorld avatar={state.avatar} />')
+    expect(source).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(source).not.toContain('AccessibleWorld')
   })
 

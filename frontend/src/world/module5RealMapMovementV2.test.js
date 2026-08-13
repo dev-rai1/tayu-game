@@ -15,7 +15,7 @@ const keyboard = read('src/world/useKeyboardControls.js')
 
 describe('final-module real-map movement v2', () => {
   it('has exactly one persistent town scene and isolates Tax Town in its own scene boundary', () => {
-    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
     expect(world).not.toContain('TaxLabWorld')
