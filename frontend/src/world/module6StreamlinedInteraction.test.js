@@ -7,6 +7,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const gameWorld = fs.readFileSync(path.join(here, 'GameWorld.jsx'), 'utf8')
 const taxPrompt = fs.readFileSync(path.join(here, 'TaxActionPrompt.jsx'), 'utf8')
 const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx'), 'utf8')
+const taxStore = fs.readFileSync(path.join(here, 'taxLabStore.js'), 'utf8')
 
 describe('Module 6/7 streamlined interaction regression', () => {
   it('keeps the Tax Office mounted in its own 3D scene boundary', () => {
@@ -20,10 +21,15 @@ describe('Module 6/7 streamlined interaction regression', () => {
     expect(taxPrompt).toContain('min-h-[76px]')
   })
 
-  it('auto-opens active client and station steps after the Bond Street and Rex introductions', () => {
-    expect(taxBridge).toContain("lab.phase === 'case' || lab.phase === 'steps'")
-    expect(taxBridge).toContain('runTaxAction(action)')
+  it('keeps manual Tax Office actions reliable without trapping learners in reopened panels', () => {
+    expect(taxBridge).toContain('lab.setNearbyAction(action)')
+    expect(taxBridge).toContain('if (runTaxInteraction()) refresh()')
+    expect(taxBridge).toContain("window.addEventListener('keydown', onKeyDown, true)")
     expect(taxBridge).toContain('BondStreetGate')
     expect(taxBridge).toContain('RexTaxIntro')
+
+    // Completing a station still flows directly into the next station, so
+    // removing proximity auto-open does not add extra walking or E presses.
+    expect(taxStore).toContain('panel: nextStation.key')
   })
 })
