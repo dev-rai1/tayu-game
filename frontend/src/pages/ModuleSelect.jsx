@@ -18,7 +18,7 @@ import {
 } from '../constants/learningPaths.js'
 
 export const MODULE_CARDS = MODULE_CATALOG
-const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5, 6], allowSkip: false } }
+const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5, 6, 7], allowSkip: false } }
 const PATH_TIME = {
   'early-elementary': 'About 15–22 minutes total',
   'upper-elementary': 'About 22–32 minutes total',
@@ -130,7 +130,7 @@ export default function ModuleSelect() {
     // Record the selection itself separately from restart state. This lets World
     // show the teleport-first start gate for both fresh starts and saved resumes
     // without changing normal direct /world resume behavior.
-    const restart = !canResume || target.n === 6
+    const restart = !canResume || target.n === 6 || target.n === 7
     localStorage.setItem('tayu-module-entry-intent', JSON.stringify({
       moduleId: String(target.n),
       gardenEntryPart: gardenPart,
@@ -254,15 +254,27 @@ export default function ModuleSelect() {
                 )
               }
 
-              const finalModule = module.n === 6
-              const action = done ? `Replay Module ${module.n}` : finalModule ? 'Start Module 6 · Bond Street' : isNext ? `Play Module ${module.n} now` : olderOptional ? `Explore Module ${module.n}` : `Play Module ${module.n}`
+              const physicalDestination = Boolean(module.physicalDestination)
+              const finalModule = module.n === 7
+              const action = done
+                ? `Replay Module ${module.n}`
+                : module.n === 6
+                  ? 'Start Module 6 · Bond Street'
+                  : module.n === 7
+                    ? 'Start Module 7 · Tax Office'
+                    : isNext
+                      ? `Play Module ${module.n} now`
+                      : olderOptional
+                        ? `Explore Module ${module.n}`
+                        : `Play Module ${module.n}`
               return (
-                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group overflow-hidden rounded-[2rem] border-2 bg-white text-left text-navy shadow-xl transition ${accessible ? 'hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99]' : 'cursor-not-allowed opacity-55'}`} style={{ borderColor: done || isNext || finalModule ? module.color : '#dbe4f0' }}>
+                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group overflow-hidden rounded-[2rem] border-2 bg-white text-left text-navy shadow-xl transition ${accessible ? 'hover:-translate-y-1 hover:shadow-2xl active:scale-[0.99]' : 'cursor-not-allowed opacity-55'}`} style={{ borderColor: done || isNext || physicalDestination ? module.color : '#dbe4f0' }}>
                   <div className="p-5 sm:p-6" style={{ background: `linear-gradient(135deg, ${module.color}26 0%, white 52%)` }}>
                     <div className="flex items-center justify-between gap-3"><div className="flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-extrabold text-white shadow" style={{ background: module.color }}>{module.n}</div><StatusPill done={done} accessible={accessible} recommended={isNext} /></div>
-                    <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-navy/55">{finalModule ? 'Final sequence · Bond Street → Tax Office' : `Mission ${module.n}`}</div>
+                    <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-navy/55">{physicalDestination ? `Mission ${module.n} · Separate 3D destination` : `Mission ${module.n}`}</div>
                     <h2 className="mt-1 font-display text-2xl font-extrabold">{module.title}</h2>
-                    {finalModule && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">📍 BONDS FIRST · THEN TAX FILING</div>}
+                    {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">📍 WALK-IN WORLD LOCATION · BIG BUILDING LABEL</div>}
+                    {finalModule && <div className="mt-2 inline-flex rounded-full bg-teal/20 px-3 py-1 text-xs font-extrabold text-[#08785e]">FINAL MODULE · TAX OFFICE</div>}
                     <div className="mt-3 text-xs font-extrabold uppercase tracking-wide text-navy/55">{module.grades} · {module.minutes}</div>
                     <p className="mt-2 min-h-[3rem] text-sm font-bold leading-relaxed text-navy/75">{module.desc}</p>
                     <div className="mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold text-white shadow" style={{ background: accessible ? module.color : '#64748b' }}>{accessible ? action : `Complete Module ${firstIncompleteRequired} first`} →</div>
@@ -272,7 +284,7 @@ export default function ModuleSelect() {
             })}
           </section>
 
-          <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-center text-sm font-bold text-white">Journey: <strong>Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale</strong>. Module 6 keeps Bond Street and the Tax Office continuous so the same saved money and muni choice carry directly into the tax lesson.</div>
+          <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-center text-sm font-bold text-white">Journey: <strong>Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale</strong>. Modules 6 and 7 are now separate labeled 3D destinations. Your money and municipal-bond choice still carry from Bond Street into the Tax Office.</div>
         </div>
       </main>
 
