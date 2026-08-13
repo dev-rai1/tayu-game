@@ -178,6 +178,9 @@ function entryMeta(entry) {
 export default function World() {
   const navigate = useNavigate(); const { state, dispatch } = useGameState(); const [faded, setFaded] = useState(false)
   const [moduleEntry, setModuleEntry] = useState(() => readModuleEntryIntent())
+  // Module jumps reset mutable 3D scene registries. Remount the Canvas after
+  // every selected-module start so no frame can read actors from the old scene.
+  const [worldSession, setWorldSession] = useState(0)
   const initialModuleEntry = useRef(moduleEntry)
   const [paycheckMode, setPaycheckMode] = useState(() => moduleEntry ? false : isPaycheckWorldActive())
   const initWorld = useGame((s) => s.initWorld); const enterParty = useGame((s) => s.enterParty); const week = useGame((s) => s.week)
@@ -306,6 +309,7 @@ export default function World() {
         if (moduleId === '5' && gardenEntryPart === 'B') setTimeout(enterGardenPartB, 80)
       } catch (error) { console.error(error) }
     }
+    setWorldSession((session) => session + 1)
     setModuleEntry(null)
   }
 
@@ -317,7 +321,7 @@ export default function World() {
 
   return (
     <div className="tayu-fixed-viewport tayu-world-declutter bg-navy" data-tax-mode={taxMode ? 'true' : 'false'} data-world-mode="3d">
-      <GameWorld avatar={state.avatar} />
+      <GameWorld key={worldSession} avatar={state.avatar} />
       {!moduleEntry && taxMode && <TaxWorldInteractionBridge />}
       {!moduleEntry && taxMode && <TaxWorkbenchOverlay />}
       {!moduleEntry && taxMode && <TaxActionPrompt />}
