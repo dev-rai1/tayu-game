@@ -14,6 +14,7 @@ import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
+import WorldUtilityDock from './components/WorldUtilityDock.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser, isCloud } from './services/auth.js'
@@ -177,6 +178,7 @@ export default function App() {
           </Suspense>
         </Boundary>
       </div>
+      <WorldUtilityDock />
       <UsageTracker />
       <SiteViewTracker />
       <CertificateMusicTrigger />
