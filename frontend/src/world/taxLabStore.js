@@ -30,6 +30,7 @@ export const emptyTaxWork = () => ({
   reviewCorrection: '',
   reviewCorrected: false,
   reviewMistakes: 0,
+  signatureText: '',
   signed: false,
 })
 
@@ -43,7 +44,7 @@ export const useTaxLab = create((set, get) => ({
   panel: null,
   feedback: null,
   nearbyAction: null,
-  worldNotice: 'Stay in the town and walk to Paycheck Planet. Maya is waiting at the Tax Help desk.',
+  worldNotice: 'You are at the TAYU Tax Office. Talk to Rex the Assessor to start Module 7.',
   work: emptyTaxWork(),
 
   reset: () => set({
@@ -54,7 +55,7 @@ export const useTaxLab = create((set, get) => ({
     panel: null,
     feedback: null,
     nearbyAction: null,
-    worldNotice: 'Stay in the town and walk to Paycheck Planet. Maya is waiting at the Tax Help desk.',
+    worldNotice: 'You are at the TAYU Tax Office. Talk to Rex the Assessor to start Module 7.',
     work: emptyTaxWork(),
   }),
 
@@ -70,8 +71,8 @@ export const useTaxLab = create((set, get) => ({
       feedback: null,
       nearbyAction: null,
       worldNotice: restoredPhase === 'steps'
-        ? `Continue the return at the ${taxStationForStep(restoredStep).label}.`
-        : 'Meet one of the three taxpayers waiting inside the Tax Center.',
+        ? `Continue the Module 7 return at the ${taxStationForStep(restoredStep).label}.`
+        : 'Meet one of the three taxpayers waiting inside the Tax Office.',
       work: emptyTaxWork(),
     })
   },
@@ -86,7 +87,7 @@ export const useTaxLab = create((set, get) => ({
     panel: null,
     feedback: null,
     nearbyAction: null,
-    worldNotice: 'Walk up to Ari, Sam, or Jordan inside the Tax Center. Talk to one taxpayer and decide what the W-2 actually proves.',
+    worldNotice: 'Walk up to Ari, Sam, or Jordan inside the Tax Office. Talk to one taxpayer and decide what the W-2 actually proves.',
     work: emptyTaxWork(),
   }),
 
@@ -163,11 +164,9 @@ export const useTaxLab = create((set, get) => ({
     const nextStation = taxStationForStep(next)
     return {
       stepNumber: next,
-      // Keep Module 6 flowing like the bank sequence: once the learner has
+      // Keep Module 7 flowing like the bank sequence: once the learner has
       // entered the tax workflow, the next station opens automatically rather
       // than requiring another walk-up + E press for every step.
-      // Legacy regression marker retained while the integration assertion is
-      // migrated from the old behavior: `Good work. Walk to the ${taxStationForStep(next).label}.`
       panel: nextStation.key,
       feedback: null,
       nearbyAction: null,
@@ -182,6 +181,6 @@ export const useTaxLab = create((set, get) => ({
     panel: 'complete',
     feedback: null,
     nearbyAction: null,
-    worldNotice: 'Practice return filed. Talk to Maya or finish Module 5.',
+    worldNotice: 'Practice return filed. Review it with Rex, then finish Module 7.',
   }),
 }))
