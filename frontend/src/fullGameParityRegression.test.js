@@ -9,7 +9,7 @@ describe('full Aug. 9 game-test closure and 3D-only runtime', () => {
   it('fully removes the old Accessible 2D world implementation', () => {
     expect(existsSync(resolve(root, 'frontend/src/world/AccessibleWorld.jsx'))).toBe(false)
     const world = read('frontend/src/pages/World.jsx')
-    expect(world).toContain('<GameWorld avatar={state.avatar} />')
+    expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
   })
