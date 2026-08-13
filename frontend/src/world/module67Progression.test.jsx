@@ -35,6 +35,20 @@ describe('Modules 6 and 7 progression', () => {
     expect(screen.getByRole('button', { name: /Run the bond outcomes/i })).toBeEnabled()
   })
 
+  it('does not strand Module 6 at $0 when a saved route loses its entry flag', () => {
+    localStorage.setItem('tayu-wallet-v1', JSON.stringify({ spend: 0, save: 20, give: 0, week: 6, mg: null }))
+    render(<BondStreetGate />)
+    expect(screen.getByText(/Practice Bond Street stake/i)).toBeInTheDocument()
+    expect(screen.getByText('$100')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Meet the three borrowers/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Split my Bond Street stake/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Split evenly/i }))
+    expect(screen.getByLabelText(/U\.S\. Treasury allocation/i)).toHaveValue('33.34')
+    expect(screen.getByLabelText(/Muni Bond allocation/i)).toHaveValue('33.33')
+    expect(screen.getByLabelText(/Corporate Bond allocation/i)).toHaveValue('33.33')
+    expect(screen.getByRole('button', { name: /Run the bond outcomes/i })).toBeEnabled()
+  })
+
   it('replays Module 6 even when Bond Street was completed before', () => {
     localStorage.setItem('tayu-profile-v1', JSON.stringify({ badges: ['bond'], bondStreet: { completed: true }, rexTaxIntroSeen: true }))
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
