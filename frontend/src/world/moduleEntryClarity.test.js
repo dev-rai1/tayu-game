@@ -12,30 +12,34 @@ const taxCss = read('src/world/taxWorkbench.css')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 
 describe('module entry clarity', () => {
-  it('starts Module 6 at Bond Street and Module 7 at a fresh Tax Office without teleporting the player', () => {
-    expect(world).toContain("if (jump === '6' || jump === '7')")
-    expect(world).toContain("if (jump === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
-    expect(world).toContain("enterPaycheckPlanet({ restart: jump === '7', origin: 'module-select' })")
+  it('teleports to the selected module before any module state or UI starts', () => {
+    expect(world).toContain('readModuleEntryIntent()')
+    expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
+    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
+    expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
+    expect(world).toContain("if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
+    expect(world).toContain("enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })")
     expect(world).toContain('saveProfile({ taxLabProgress: null, taxLab: null })')
-    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
-    expect(world).toContain('playerPos.x = preservedTaxPosition.x')
-    expect(world).toContain('playerPos.z = preservedTaxPosition.z')
+    expect(world).toContain('Nothing in the module starts or appears until you choose')
+    expect(world).toContain('{moduleEntry.resume ? `Resume ${arrival.label}` : `Start ${arrival.label}`} →')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
   })
 
-  it('keeps the actual town canvas and movement active during the final modules', () => {
+  it('keeps the actual town canvas visible while module UI waits behind the start gate', () => {
     expect(world).toContain('<GameWorld avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
-    expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
-    expect(world).toContain('<Hud playerName={state.player.name')
-    expect(world).toContain('{usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{!moduleEntry && taxMode && <TaxWorkbenchOverlay />}')
+    expect(world).toContain('{!moduleEntry && <Hud playerName={state.player.name')
+    expect(world).toContain('{!moduleEntry && usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{moduleEntry && (')
+    expect(world).toContain("window.addEventListener('keydown', blockKeyInteraction, true)")
+    expect(world).toContain("window.addEventListener('tayu-interact', blockWorldInteraction, true)")
     expect(world).toContain('prepareWorldForTaxWalking()')
     expect(world).toContain('playerSpeedMult: 1')
     expect(world).toContain('scenarioLocked: false')
     expect(world).not.toContain('? <TaxLabWorld />')
-    expect(world).not.toContain('{!taxMode && <Hud')
   })
 
   it('guides the player to the real tax district and exact next station', () => {

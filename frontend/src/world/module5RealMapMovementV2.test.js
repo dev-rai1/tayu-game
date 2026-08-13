@@ -25,12 +25,12 @@ describe('final-module real-map movement v2', () => {
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 
-  it('preserves the exact player coordinates when Explore launches Module 6 or Module 7', () => {
-    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
-    expect(world).toContain('x: playerPos.x, y: playerPos.y, z: playerPos.z')
-    expect(world).toContain('playerPos.x = preservedTaxPosition.x')
-    expect(world).toContain('playerPos.z = preservedTaxPosition.z')
-    expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
+  it('teleports Explore launches for Module 6 or Module 7 to the district before module UI starts', () => {
+    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
+    expect(world).toContain('function teleportToModuleArrival(moduleId)')
+    expect(world).toContain('const point = moduleArrivalPoint(moduleId)')
+    expect(world).toContain('const arrivalTimer = setTimeout(() => teleportToModuleArrival(entry.moduleId), 60)')
+    expect(world).toContain('{!moduleEntry && taxMode && <TaxWorldInteractionBridge />}')
   })
 
   it('actively removes every legacy movement freeze while tax mode is running', () => {
