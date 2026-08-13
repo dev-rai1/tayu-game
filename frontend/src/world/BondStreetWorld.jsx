@@ -5,7 +5,7 @@ import { TAX_DISTRICT } from './config.js'
 import { labelTexture } from './textures.js'
 import { joystick, moveTarget, playerPos } from './store.js'
 
-export const BOND_DISTRICT = [TAX_DISTRICT[0] + 18, TAX_DISTRICT[1] + 1.5]
+export const BOND_DISTRICT = [TAX_DISTRICT[0] - 1, TAX_DISTRICT[1] + 18]
 export const BOND_ENTRY = [BOND_DISTRICT[0] - 9.4, BOND_DISTRICT[1] + 0.2]
 export const BOND_WORLD_EVENT = 'tayu-bond-world-action'
 
