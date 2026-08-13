@@ -15,7 +15,7 @@ import {
   deactivatePaycheckWorld,
   isPaycheckWorldActive,
 } from '../world/paycheckMode.js'
-import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
+import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { crossfadeTo } from '../services/audio.js'
 import { setUsageModule } from '../services/usageAnalytics.js'
 import { PersistentCoach } from '../world/PersistentCoach.jsx'
@@ -37,6 +37,7 @@ const MODULE_BY_WEEK = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'g
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const MODULE_JUMP_KEY = 'tayu-jump-module'
+const MODULE_ENTRY_KEY = 'tayu-module-entry-intent'
 const GARDEN_ENTRY_KEY = 'tayu-garden-entry-part'
 let taxWorldSnapshot = null
 
@@ -117,18 +118,25 @@ function readModuleEntryIntent() {
   try {
     const explicitModule = localStorage.getItem(MODULE_JUMP_KEY)
     const gardenEntryPart = localStorage.getItem(GARDEN_ENTRY_KEY)
-    if (explicitModule) return { moduleId: explicitModule, gardenEntryPart, resume: false }
+    const rawIntent = localStorage.getItem(MODULE_ENTRY_KEY)
 
-    // ModuleSelect deliberately omits tayu-jump-module when the selected module
-    // already has saved progress. Infer that one resume case from the saved week
-    // so it still gets the same teleport-first, click-to-start entry flow.
-    const wallet = loadWallet()
-    const moduleNumber = Number(wallet?.week || 0)
-    const target = MODULE_CATALOG.find((module) => module.n === moduleNumber)
-    const badges = loadProfile()?.badges || []
-    if (target && !badges.includes(target.badge)) {
-      return { moduleId: String(moduleNumber), gardenEntryPart, resume: true }
+    if (rawIntent) {
+      try {
+        const intent = JSON.parse(rawIntent)
+        const moduleId = String(intent?.moduleId || explicitModule || '')
+        if (moduleId) {
+          return {
+            moduleId,
+            gardenEntryPart: intent?.gardenEntryPart || gardenEntryPart || null,
+            resume: Boolean(intent?.resume),
+          }
+        }
+      } catch { /* ignore malformed selection intent */ }
     }
+
+    // Keep admin/deep-link jump behavior working even when it did not originate
+    // from the visual module selector.
+    if (explicitModule) return { moduleId: explicitModule, gardenEntryPart, resume: false }
   } catch { /* storage can be unavailable */ }
   return null
 }
@@ -251,6 +259,7 @@ export default function World() {
 
     if (entry) {
       try {
+        localStorage.removeItem(MODULE_ENTRY_KEY)
         localStorage.removeItem(MODULE_JUMP_KEY)
         localStorage.removeItem(GARDEN_ENTRY_KEY)
       } catch { /* storage can be unavailable */ }
