@@ -21,6 +21,7 @@ import { CoinLayer } from './CoinLayer.jsx'
 import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
+import { isPaycheckWorldActive } from './paycheckMode.js'
 
 class SceneBoundary extends Component {
   constructor(props) {
@@ -58,14 +59,22 @@ function repairRuntimeState() {
 
 export function GameWorld({ avatar }) {
   repairRuntimeState()
+  const week = useGame((state) => state.week)
+  // Each public module starts with a clean Canvas lifecycle. React Three Fiber
+  // otherwise has to reconcile an entire module's live scene mutations inside
+  // the previous frame, so one bad transition can poison every later module.
+  // The keyed boundary also clears a prior Canvas error instead of leaving the
+  // player trapped on the retry screen.
+  const sceneKey = isPaycheckWorldActive() ? `paycheck-${week}` : `week-${week}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
 
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
-      <Boundary name="canvas" hard>
+      <Boundary key={sceneKey} name="canvas" hard>
         <Canvas
+          key={sceneKey}
           role="application"
           aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination."
           camera={{ position: [0, 7, 11], fov: 52 }}
