@@ -20,10 +20,11 @@ describe('Module 6/7 streamlined interaction regression', () => {
     expect(taxPrompt).toContain('min-h-[76px]')
   })
 
-  it('auto-opens active client and station steps after the Bond Street and Rex introductions', () => {
-    expect(taxBridge).toContain("lab.phase === 'case' || lab.phase === 'steps'")
-    expect(taxBridge).toContain('runTaxAction(action)')
+  it('keeps client and station steps explicit after the Bond Street and Rex introductions', () => {
+    expect(taxBridge).toContain('const action = nearbyTaxAction()')
+    expect(taxBridge).toContain('runTaxInteraction()')
     expect(taxBridge).toContain('BondStreetGate')
     expect(taxBridge).toContain('RexTaxIntro')
+    expect(taxBridge).not.toContain("lab.phase === 'case' || lab.phase === 'steps'")
   })
 })
