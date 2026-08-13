@@ -34,7 +34,7 @@ const NPCS = [
 
 const PROP_COLOR = { water: '#7fd0ff', gift: '#ff5fa2', giftBox: '#c9c9c9' }
 
-function StageNpc({ id, name, accent, avatar }) {
+function StageNpc({ id, name, accent, avatar, lemonadeHost = false }) {
   const root = useRef()
   const mesh = useRef()
   const prop = useRef()
@@ -136,6 +136,27 @@ function StageNpc({ id, name, accent, avatar }) {
   return (
     <group ref={root} position={[a0.x, 0, a0.z]}>
       <CharacterMesh ref={mesh} avatar={avatar} />
+      {/* Keep Penny's base CharacterMesh stable when Module 2 begins. Replacing
+          the avatar tree during an active Canvas frame could tear down and
+          rebuild its geometries, which tripped the canvas error boundary on
+          the Module 1 -> 2 handoff. The uniform is a permanently mounted,
+          visibility-only overlay instead. */}
+      <group visible={lemonadeHost}>
+        <mesh position={[0, 1.32, 0.2]} scale={[1, 1, 0.55]} castShadow>
+          <capsuleGeometry args={[0.27, 0.42, 6, 16]} />
+          <meshStandardMaterial color="#FFD54A" roughness={0.82} />
+        </mesh>
+        <group position={[0, 2.18, 0]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.25, 0.28, 0.12, 20]} />
+            <meshStandardMaterial color="#FFD54A" roughness={0.72} />
+          </mesh>
+          <mesh position={[0, -0.045, 0.14]}>
+            <cylinderGeometry args={[0.34, 0.34, 0.035, 20]} />
+            <meshStandardMaterial color="#FFD54A" roughness={0.72} />
+          </mesh>
+        </group>
+      </group>
       <mesh ref={prop} position={[0.42, 1.05, 0.25]} visible={false} castShadow>
         <boxGeometry args={[0.22, 0.3, 0.22]} />
         <meshStandardMaterial color="#ffffff" roughness={0.5} />
@@ -433,11 +454,9 @@ export function ConsequenceStage() {
   return (
     <group>
       {NPCS.map((n) => {
-        // E9: the Module 2 host tends the stand in an apron-and-visor look
-        if (n.id === 'penny' && week === 2) {
-          return <StageNpc key={n.id} {...n} avatar={{ ...n.avatar, accessories: [...(n.avatar.accessories || []), 'hat'], shirtColor: 'yellow' }} />
-        }
-        return <StageNpc key={n.id} {...n} />
+        // E9: toggle a lightweight overlay; never rebuild Penny's character
+        // geometry while the live Canvas is processing the module transition.
+        return <StageNpc key={n.id} {...n} lemonadeHost={n.id === 'penny' && week === 2} />
       })}
       <ScoopBall />
       <ToyProp />
