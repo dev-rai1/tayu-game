@@ -2,14 +2,9 @@ import { useMemo, useState } from 'react'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { BOND_STREET_SCRIPT, BOND_TYPES, allocationTotal, bondOutcome, gardenProfitStake } from '../scenarios/bondStreet.js'
 
-const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const money = (value) => `$${Number(value || 0).toFixed(2).replace(/\.00$/, '')}`
 const stars = (count) => '★'.repeat(count) + '☆'.repeat(Math.max(0, 3 - count))
 const cents = (value) => Math.round(Number(value || 0) * 100) / 100
-
-function isStandaloneBondEntry() {
-  try { return sessionStorage.getItem(BOND_ONLY_KEY) === '1' } catch { return false }
-}
 
 function saveBondCompletion(outcome) {
   const profile = loadProfile() || {}
@@ -33,8 +28,11 @@ function saveBondCompletion(outcome) {
 export function BondStreetGate({ onComplete }) {
   const wallet = loadWallet() || {}
   const savedStake = gardenProfitStake(wallet)
-  const standaloneEntry = isStandaloneBondEntry()
-  const stake = savedStake > 0 ? savedStake : standaloneEntry ? 100 : savedStake
+  // A stale/incomplete save can reach Bond Street without the module-select
+  // session flag or a usable Money Garden balance. Never strand the learner
+  // with three $0 sliders; use the same clearly labelled practice stake that a
+  // direct Module 6 launch receives.
+  const stake = savedStake > 0 ? savedStake : 100
   const [step, setStep] = useState(0)
   const [allocation, setAllocation] = useState({ treasury: 0, muni: 0, corporate: 0 })
   const total = allocationTotal(allocation)
@@ -108,7 +106,6 @@ export function BondStreetGate({ onComplete }) {
               <button type="button" onClick={putAllInTreasury} className="min-h-[46px] rounded-xl border-2 border-navy/15 bg-white px-4 font-black text-navy">Put all in Treasury</button>
             </div>
             <div className="mt-5 space-y-4">{BOND_TYPES.map((bond) => <label key={bond.id} className="block rounded-2xl border border-navy/10 bg-white p-4"><div className="flex items-center justify-between gap-3"><div><strong>{bond.title}</strong><div className="text-xs font-bold text-navy/55">{stars(bond.safety)} · {Math.round(bond.rate * 100)}% practice interest</div></div><div className="font-display text-2xl font-black">{money(allocation[bond.id])}</div></div><input aria-label={`${bond.title} allocation`} type="range" min="0" max={stake} step="0.01" value={allocation[bond.id]} onChange={(event) => setBond(bond.id, event.target.value)} className="mt-3 w-full" /></label>)}</div>
-            {stake <= 0 && <div className="mt-4 rounded-2xl border border-[#e46a3a]/40 bg-[#fff0e8] p-4 font-bold text-[#9b3d1d]">This saved playthrough has no positive Garden or carried-forward balance available for Bond Street. Return to Money Garden, or launch Module 6 directly from Module Select to use the standalone practice stake.</div>}
             <button type="button" disabled={stake <= 0 || total <= 0.009} onClick={runOutcomes} className="mt-6 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white disabled:cursor-not-allowed disabled:opacity-35">{remaining > 0.009 && total > 0.009 ? `Run outcomes · put the remaining ${money(remaining)} in Treasury →` : 'Run the bond outcomes →'}</button>
           </>}
 
