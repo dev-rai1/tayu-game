@@ -36,28 +36,28 @@ describe('Paycheck Planet full integration', () => {
     expect(keyboard).not.toContain("ArrowRight: 'right'")
   })
 
-  it('starts Modules 6 and 7 in the same persistent town without teleporting or swapping scenes', () => {
-    expect(world).toContain("if (jump === '6' || jump === '7')")
-    expect(world).toContain("if (jump === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
-    expect(world).toContain("enterPaycheckPlanet({ restart: jump === '7', origin: 'module-select' })")
+  it('arrives at Modules 6 and 7 before activating their persistent-town tax experience', () => {
+    expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
+    expect(world).toContain("if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
+    expect(world).toContain("enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })")
     expect(world).toContain('activatePaycheckWorld()')
-    expect(world).toContain("const preservedTaxPosition = ['6', '7'].includes(jump)")
-    expect(world).toContain('playerPos.x = preservedTaxPosition.x')
-    expect(world).toContain('playerPos.z = preservedTaxPosition.z')
+    expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
+    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
+    expect(world).toContain('Nothing in the module starts or appears until you choose')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
     expect(world).not.toContain('TaxLabWorld')
     expect(world).toContain('<GameWorld avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
     expect(world).not.toContain('AccessibleWorld')
-    expect(world).toContain('{taxMode && <TaxWorkbenchOverlay />}')
+    expect(world).toContain('{!moduleEntry && taxMode && <TaxWorkbenchOverlay />}')
     expect(world).not.toContain("navigate('/tax-paycheck'")
-    expect(world).toContain("const internal = jump === '5' ? 5 : Number(jump)")
+    expect(world).toContain("const internal = moduleId === '5' ? 5 : Number(moduleId)")
     expect(moduleSelect).toContain("String(target.n)")
     expect(moduleSelect).not.toContain('target.route')
     expect(paycheckMode).toContain('tayu-paycheck-world-mode')
   })
 
-  it('clears legacy freezes so normal movement remains available in tax mode', () => {
+  it('clears legacy freezes so normal movement remains available in tax mode after start', () => {
     expect(world).toContain('prepareWorldForTaxWalking()')
     expect(world).toContain('scenarioLocked: false')
     expect(world).toContain('weekComplete: false')
@@ -66,7 +66,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain("mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg")
     expect(world).toContain('playerSpeedMult: 1')
     expect(world).toContain('moveTarget.x = null')
-    expect(world).toContain('{usesTouchControls && <MobileControls />}')
+    expect(world).toContain('{!moduleEntry && usesTouchControls && <MobileControls />}')
   })
 
   it('starts Money Garden from the Start Module 5 handoff before Bond Street and Tax Office', () => {
@@ -129,9 +129,9 @@ describe('Paycheck Planet full integration', () => {
     expect(actionPrompt).toContain("nearbyAction.kind === 'station'")
   })
 
-  it('keeps the map and movement usable while focused station panels stay compact', () => {
-    expect(world).toContain('<Hud playerName={state.player.name')
-    expect(world).toContain('{usesTouchControls && <MobileControls />}')
+  it('keeps the map and movement usable while focused station panels stay compact after start', () => {
+    expect(world).toContain('{!moduleEntry && <Hud playerName={state.player.name')
+    expect(world).toContain('{!moduleEntry && usesTouchControls && <MobileControls />}')
     expect(overlay).toContain('data-tax-field-ui="true"')
     expect(overlay).toContain('data-tax-station-panel="true"')
     expect(overlay).toContain('max-h-[72dvh]')
@@ -226,10 +226,10 @@ describe('Paycheck Planet full integration', () => {
     expect(admin).not.toContain('/tax-paycheck?admin=1')
   })
 
-  it('keeps the shared world coach hierarchy for normal modules', () => {
+  it('keeps the shared world coach hierarchy for normal modules after start', () => {
     expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coach).toContain('data-important-message-scrim="true"')
     expect(coach).toContain('pointer-events-none fixed')
-    expect(world).toContain('{!taxMode && <PersistentCoach key="world-coach" />}')
+    expect(world).toContain('{!moduleEntry && !taxMode && <PersistentCoach key="world-coach" />}')
   })
 })
