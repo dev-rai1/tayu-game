@@ -151,6 +151,19 @@ function BondExchangeBuilding({ effect }) {
 
 export function BondStreetWorld() {
   const [effect, setEffect] = useState('idle')
+  const [selectedBondArrival] = useState(() => {
+    try { return typeof localStorage !== 'undefined' && localStorage.getItem('tayu-jump-module') === '6' }
+    catch { return false }
+  })
+
+  useEffect(() => {
+    if (!selectedBondArrival) return undefined
+    // World.jsx uses one shared Module 6/7 arrival point. Correct Module 6 to
+    // the Bond Street door immediately after that shared arrival timer fires,
+    // while the start gate is still blocking all gameplay interactions.
+    const arrivalTimer = window.setTimeout(() => placeAtBondStreetEntrance(), 75)
+    return () => window.clearTimeout(arrivalTimer)
+  }, [selectedBondArrival])
 
   useEffect(() => {
     let timer = null
