@@ -155,10 +155,20 @@ export default function PathCompletionWatcher() {
         return
       }
 
+      const path = loadActiveLearningPath()
+      const pathComplete = Boolean(path && isLearningPathComplete(path.modules, badges))
+
+      // A stale saved enterParty/gameComplete flag must never hijack a replay or
+      // a newly selected module and throw the learner into the Money Guru
+      // certificate. Runtime completion is valid only when the active learning
+      // path is actually complete right now.
+      if ((enterParty || gameComplete) && !pathComplete) {
+        useGame.setState({ enterParty: false, gameComplete: false })
+      }
+
       // Module completion stays inside the game. Do not interrupt gameplay by
       // navigating to the old per-module quiz/check pages.
-      const path = loadActiveLearningPath()
-      if (!path || !isLearningPathComplete(path.modules, badges)) return
+      if (!path || !pathComplete) return
 
       if (profile.pathCompletion?.pathId !== path.id) {
         saveProfile({
