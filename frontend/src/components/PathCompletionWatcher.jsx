@@ -45,6 +45,45 @@ function handOffGardenToModule6(badges) {
   return badgeSet.has('garden') && !badgeSet.has('bond')
 }
 
+function startModule6FromGarden() {
+  const game = useGame.getState()
+  const profile = loadProfile() || {}
+  const badges = [...new Set([...(profile.badges || []), 'garden'])]
+
+  try {
+    sessionStorage.setItem(TAX_ORIGIN_KEY, 'garden-handoff')
+    sessionStorage.removeItem(BOND_ONLY_KEY)
+  } catch { /* storage can be unavailable */ }
+
+  if (typeof game.awardBadge === 'function') game.awardBadge('garden', 'MONEY GARDENER')
+  const total = typeof game.mgTotal === 'function' ? game.mgTotal() : Number(game.allocations?.save || 0)
+  if (typeof game.adminClearUi === 'function') game.adminClearUi()
+
+  useGame.setState((state) => ({
+    allocations: {
+      ...state.allocations,
+      save: Number.isFinite(total) ? total : Number(state.allocations?.save || 0),
+      spend: 0,
+    },
+    cards: [],
+    lessons: [],
+    gameComplete: false,
+    enterParty: false,
+    objective: 'tax',
+    weekComplete: false,
+    pendingWeekComplete: false,
+    banner: null,
+    guide: null,
+    actorCaption: null,
+    toast: 'Module 5 complete! Next: Module 6 · Bond Street.',
+  }))
+
+  const nextGame = useGame.getState()
+  if (typeof nextGame.persist === 'function') nextGame.persist()
+  saveProfile({ guru: false, badges })
+  activatePaycheckWorld()
+}
+
 export default function PathCompletionWatcher() {
   const syncing = useRef(false)
 
@@ -56,6 +95,28 @@ export default function PathCompletionWatcher() {
   const gameComplete = useGame((state) => state.gameComplete)
   const enterParty = useGame((state) => state.enterParty)
   const cards = useGame((state) => state.cards)
+
+  // The store still contains a legacy mg.bridge -> unlockParty path. Replace
+  // that action while this app-level watcher is mounted so pressing the final
+  // Money Garden button routes synchronously to Module 6 before the old portal
+  // can be opened for even one frame.
+  useEffect(() => {
+    const originalMgAct = useGame.getState().mgAct
+    if (typeof originalMgAct !== 'function') return undefined
+
+    const directMgAct = (act) => {
+      if (act === 'mg.bridge' && useGame.getState().week === 5) {
+        startModule6FromGarden()
+        return
+      }
+      return originalMgAct(act)
+    }
+
+    useGame.setState({ mgAct: directMgAct })
+    return () => {
+      if (useGame.getState().mgAct === directMgAct) useGame.setState({ mgAct: originalMgAct })
+    }
+  }, [])
 
   // Normalize the legacy Money Garden bridge before the browser paints it, so
   // a learner never sees the obsolete "Finale" wording even for one frame.
@@ -86,31 +147,11 @@ export default function PathCompletionWatcher() {
         })
       }
 
-      // The legacy Money Garden bridge raises enterParty as soon as its final
-      // button is pressed. Catch that exact transition before the old Finale
-      // portal can open, and route directly into Module 6 instead.
+      // Fallback for old saved sessions that already reached the stale party
+      // state before this direct bridge interception was installed.
       const gardenFinished = handOffGardenToModule6(badges) || (week === 5 && mgPhase === 'done' && !badges.includes('bond'))
       if (week === 5 && (enterParty || gameComplete) && gardenFinished) {
-        try {
-          sessionStorage.setItem(TAX_ORIGIN_KEY, 'garden-handoff')
-          sessionStorage.removeItem(BOND_ONLY_KEY)
-        } catch { /* storage can be unavailable */ }
-
-        const game = useGame.getState()
-        if (typeof game.adminClearUi === 'function') game.adminClearUi()
-        useGame.setState({
-          gameComplete: false,
-          enterParty: false,
-          objective: 'tax',
-          weekComplete: false,
-          pendingWeekComplete: false,
-          banner: null,
-          guide: null,
-          actorCaption: null,
-          toast: 'Module 5 complete! Next: Module 6 · Bond Street.',
-        })
-        saveProfile({ guru: false, badges: [...new Set([...badges, 'garden'])] })
-        activatePaycheckWorld()
+        startModule6FromGarden()
         return
       }
 
@@ -144,4 +185,4 @@ export default function PathCompletionWatcher() {
   return null
 }
 
-export { MODULE_6_HANDOFF_TEXT, fixModule5BridgeCard, handOffGardenToModule6 }
+export { MODULE_6_HANDOFF_TEXT, fixModule5BridgeCard, handOffGardenToModule6, startModule6FromGarden }
