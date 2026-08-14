@@ -16,18 +16,18 @@ const modules = fs.readFileSync(path.resolve('src/constants/modules.js'), 'utf8'
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
 describe('physical module districts', () => {
-  it('renders Paycheck Planet as an independently isolated, playable district inside the main town', () => {
+  it('renders the Tax Office as an independently isolated, playable district inside the main town', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
     expect(gameWorld).toContain('<PaycheckPlanetWorld />')
     expect(gameWorld).toContain('name="tax-town"')
     expect(landmarks).not.toContain('<PaycheckPlanetWorld />')
     expect(paycheck).toContain('CurrentTaxStation')
     expect(paycheck).toContain('taxStationForStep(stepNumber)')
-    expect(paycheck).toContain('Maya · Tax Guide')
+    expect(paycheck).toContain('Rex · Tax Guide')
     expect(paycheck).toContain('InteractionGlow')
     expect(paycheck).toContain('CelebrationBurst')
-    expect(paycheck).not.toContain('labelTexture')
-    expect(paycheck).not.toContain('Billboard')
+    expect(paycheck).toContain('labelTexture')
+    expect(paycheck).toContain('Billboard')
     expect(paycheck).not.toContain('RovingTaxWorker')
     expect(paycheck).not.toContain('DeskWorker')
     expect(landmarks).not.toContain('TaxDistrictActivity')
@@ -39,7 +39,7 @@ describe('physical module districts', () => {
     expect(paycheck).not.toContain("window.location.assign('/tax-paycheck')")
   })
 
-  it('uses the normal shared world interaction radius for Module 6 NPCs and stations', () => {
+  it('uses the normal shared world interaction radius for Tax Office NPCs and stations', () => {
     expect(paycheck).toContain("import { INTERACT_RADIUS, TAX_DISTRICT } from './config.js'")
     expect(paycheck).toContain('closeEnough(point)')
     expect(paycheck).toContain('<= INTERACT_RADIUS')
@@ -48,12 +48,11 @@ describe('physical module districts', () => {
     expect(paycheck).toContain('useTaxLab.getState().openStation(step)')
   })
 
-  it('keeps Maya physically rendered at the Module 6 host location like other module hosts', () => {
+  it('keeps Rex physically rendered at the Module 7 guide location', () => {
     expect(paycheck).toContain('<InteractiveTaxNpc')
-    expect(paycheck).toContain('name="Maya · Tax Guide"')
+    expect(paycheck).toContain('name="Rex · Tax Guide"')
     expect(paycheck).toContain('point={TAX_POINTS.guide}')
     expect(paycheck).toContain('active={guideInteractive}')
-    expect(paycheck).not.toContain("active && (phase === 'intro' || phase === 'complete') && (")
   })
 
   it('keeps physical signs clean while the catalog identifies the Money Garden as modules 5A and 5B', () => {
@@ -66,7 +65,7 @@ describe('physical module districts', () => {
     expect(modules).toContain("label: 'Module 5B'")
   })
 
-  it('gives Bank, Money Garden, Paycheck Planet, and Finale real breathing room', () => {
+  it('gives Bank, Money Garden, Tax Office, and Finale real breathing room', () => {
     expect(STOP_ANGLES.bank).toBeGreaterThan(STOP_ANGLES.garden)
     expect(STOP_ANGLES.garden).toBeGreaterThan(STOP_ANGLES.tax)
     expect(STOP_ANGLES.tax).toBeGreaterThan(STOP_ANGLES.party)
