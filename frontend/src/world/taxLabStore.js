@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import { taxStationForStep } from './taxDistrictLayout.js'
 
+export const TAX_WORLD_EVENT = 'tayu-tax-world-action'
+
+export function emitTaxWorld(kind, detail = {}) {
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(TAX_WORLD_EVENT, { detail: { kind, ...detail } }))
+    }
+  } catch { /* custom events can be unavailable in tests */ }
+}
+
 export const emptyTaxWork = () => ({
   prediction: null,
   predictionCorrect: false,
@@ -44,7 +54,7 @@ export const useTaxLab = create((set, get) => ({
   panel: null,
   feedback: null,
   nearbyAction: null,
-  worldNotice: 'You are at the TAYU Tax Office. Talk to Rex the Assessor to start Module 7.',
+  worldNotice: 'Walk inside Module 7 · TAYU Tax Office and talk to Rex to begin.',
   work: emptyTaxWork(),
 
   reset: () => set({
@@ -55,7 +65,7 @@ export const useTaxLab = create((set, get) => ({
     panel: null,
     feedback: null,
     nearbyAction: null,
-    worldNotice: 'You are at the TAYU Tax Office. Talk to Rex the Assessor to start Module 7.',
+    worldNotice: 'Walk inside Module 7 · TAYU Tax Office and talk to Rex to begin.',
     work: emptyTaxWork(),
   }),
 
@@ -71,25 +81,28 @@ export const useTaxLab = create((set, get) => ({
       feedback: null,
       nearbyAction: null,
       worldNotice: restoredPhase === 'steps'
-        ? `Continue the Module 7 return at the ${taxStationForStep(restoredStep).label}.`
-        : 'Meet one of the three taxpayers waiting inside the Tax Office.',
+        ? `Continue Module 7 inside the Tax Office at ${taxStationForStep(restoredStep).label}.`
+        : 'Meet Ari, Sam, or Jordan inside the Tax Office and choose a taxpayer.',
       work: emptyTaxWork(),
     })
   },
 
   openGuide: () => set({ panel: 'guide', feedback: null, nearbyAction: null }),
 
-  startCaseSelection: () => set({
-    phase: 'case',
-    taxCase: null,
-    candidateCase: null,
-    stepNumber: 1,
-    panel: null,
-    feedback: null,
-    nearbyAction: null,
-    worldNotice: 'Walk up to Ari, Sam, or Jordan inside the Tax Office. Talk to one taxpayer and decide what the W-2 actually proves.',
-    work: emptyTaxWork(),
-  }),
+  startCaseSelection: () => {
+    emitTaxWorld('guide-finished')
+    set({
+      phase: 'case',
+      taxCase: null,
+      candidateCase: null,
+      stepNumber: 1,
+      panel: null,
+      feedback: null,
+      nearbyAction: null,
+      worldNotice: 'Walk to Ari, Sam, or Jordan inside the Tax Office. Talk to one taxpayer and inspect the W-2.',
+      work: emptyTaxWork(),
+    })
+  },
 
   previewClient: (taxCase) => set({
     candidateCase: taxCase,
@@ -99,27 +112,27 @@ export const useTaxLab = create((set, get) => ({
     work: { ...get().work, prediction: null, predictionCorrect: false },
   }),
 
-  chooseCase: (taxCase) => set({
-    phase: 'steps',
-    taxCase,
-    candidateCase: null,
-    stepNumber: 1,
-    // Return to the 3D office after the learner makes the client decision.
-    // The W-2 desk animates in the room and the learner walks to it instead of
-    // being thrown straight into another full-screen question panel.
-    panel: null,
-    feedback: null,
-    nearbyAction: null,
-    worldNotice: `Case accepted. Watch the W-2 desk react, then walk over to ${taxStationForStep(1).label}.`,
-    work: { ...emptyTaxWork(), prediction: get().work.prediction, predictionCorrect: get().work.predictionCorrect, predictionMistakes: get().work.predictionMistakes },
-  }),
+  chooseCase: (taxCase) => {
+    emitTaxWorld('client-selected', { caseId: taxCase?.id, stepNumber: 1 })
+    set({
+      phase: 'steps',
+      taxCase,
+      candidateCase: null,
+      stepNumber: 1,
+      panel: null,
+      feedback: null,
+      nearbyAction: null,
+      worldNotice: `Case accepted. Watch the taxpayer and W-2 desk react, then walk to ${taxStationForStep(1).label}.`,
+      work: { ...emptyTaxWork(), prediction: get().work.prediction, predictionCorrect: get().work.predictionCorrect, predictionMistakes: get().work.predictionMistakes },
+    })
+  },
 
   openStation: (stepNumber) => {
     const state = get()
     const requested = boundedStep(stepNumber)
     if (state.phase !== 'steps') return false
     if (requested !== state.stepNumber) {
-      set({ worldNotice: `That station is not next. Continue at the ${taxStationForStep(state.stepNumber).label}.` })
+      set({ worldNotice: `That station is not next. Continue at ${taxStationForStep(state.stepNumber).label}.` })
       return false
     }
     set({ panel: taxStationForStep(requested).key, feedback: null, nearbyAction: null })
@@ -127,9 +140,9 @@ export const useTaxLab = create((set, get) => ({
   },
 
   closePanel: () => set({ panel: null, feedback: null }),
-
   setFeedback: (feedback) => set({ feedback }),
   setNearbyAction: (nearbyAction) => set({ nearbyAction }),
+  setWorldNotice: (worldNotice) => set({ worldNotice }),
 
   setWorkValue: (key, value) => set((state) => ({
     work: { ...state.work, [key]: value },
@@ -159,7 +172,7 @@ export const useTaxLab = create((set, get) => ({
         panel: null,
         feedback: null,
         nearbyAction: null,
-        worldNotice: 'Return reviewed. Watch the filing area react, then finish at the E-FILE DESK.',
+        worldNotice: 'Return reviewed. Watch Rex and the E-FILE desk react, then finish the filing.',
       }
     }
 
@@ -167,23 +180,23 @@ export const useTaxLab = create((set, get) => ({
     const nextStation = taxStationForStep(next)
     return {
       stepNumber: next,
-      // Every completed decision hands control back to the physical Tax Office.
-      // The next station's prop/glow is animated in-world so Module 7 plays as a
-      // building sequence rather than a chain of question screens.
       panel: null,
       feedback: null,
       nearbyAction: null,
-      worldNotice: `Good work. Watch the office react, then walk to the ${nextStation.label}.`,
+      worldNotice: `Nice work. The office reacted to your decision. Now walk to ${nextStation.label}.`,
     }
   }),
 
   sign: () => set((state) => ({ work: { ...state.work, signed: true } })),
 
-  complete: () => set({
-    phase: 'complete',
-    panel: 'complete',
-    feedback: null,
-    nearbyAction: null,
-    worldNotice: 'Practice return filed. Review it with Rex, then finish Module 7.',
-  }),
+  complete: () => {
+    emitTaxWorld('filed', { stepNumber: 6 })
+    set({
+      phase: 'complete',
+      panel: null,
+      feedback: null,
+      nearbyAction: null,
+      worldNotice: 'Practice return filed! Watch the Tax Office celebrate, then walk back to Rex to finish Module 7.',
+    })
+  },
 }))
