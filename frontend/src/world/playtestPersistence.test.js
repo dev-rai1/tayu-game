@@ -20,8 +20,8 @@ describe('playtest persistence wiring', () => {
 
   it('lets individual users choose any module while preserving grade recommendations', () => {
     expect(moduleSelect).toContain('if (context?.plain) return true')
-    expect(moduleSelect).toContain('Your recommended timeline')
-    expect(moduleSelect).toContain('★ PLAY NEXT')
+    expect(moduleSelect).toContain('Recommended path')
+    expect(moduleSelect).toContain('★ Play next')
     expect(moduleSelect).toContain('Explore Module ${module.n}')
   })
 
