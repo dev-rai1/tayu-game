@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Billboard, RoundedBox } from '@react-three/drei'
 import { TAX_DISTRICT } from './config.js'
 import { labelTexture } from './textures.js'
+import { CharacterMesh } from './CharacterMesh.jsx'
 import { joystick, moveTarget, playerPos } from './store.js'
 
 export const BOND_DISTRICT = [TAX_DISTRICT[0] - 1, TAX_DISTRICT[1] + 18]
@@ -19,32 +20,36 @@ export function placeAtBondStreetEntrance() {
   moveTarget.z = null
 }
 
-function BorrowerBooth({ x, z, title, accent, active }) {
+function ReactiveNpc({ position, avatar, reacting = false, name }) {
+  const root = useRef()
+  const body = useRef()
+  const clock = useRef(Math.random() * 10)
+  useFrame((_, delta) => {
+    clock.current += delta
+    if (!root.current) return
+    root.current.position.y = reacting ? Math.abs(Math.sin(clock.current * 7)) * 0.28 : Math.sin(clock.current * 2.1) * 0.025
+    if (body.current) {
+      body.current.rotation.y = reacting ? Math.sin(clock.current * 7) * 0.38 : Math.sin(clock.current * 0.7) * 0.12
+      body.current.rotation.z = reacting ? Math.sin(clock.current * 9) * 0.07 : 0
+    }
+  })
+  return <group ref={root} position={position} aria-label={name}><CharacterMesh ref={body} avatar={avatar} /></group>
+}
+
+function BorrowerBooth({ x, z, title, accent, active, reacting, npcName, avatar }) {
   const glow = useRef()
   useFrame((state) => {
     if (!glow.current) return
-    const pulse = active ? 0.38 + Math.sin(state.clock.elapsedTime * 6 + x) * 0.22 : 0.08
+    const pulse = active ? 0.45 + Math.sin(state.clock.elapsedTime * 6 + x) * 0.28 : 0.08
     glow.current.emissiveIntensity = Math.max(0.05, pulse)
   })
-
   return (
     <group position={[x, 0, z]}>
-      <RoundedBox args={[3.7, 2.35, 2.2]} radius={0.22} smoothness={3} position={[0, 1.18, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#fffaf0" roughness={0.72} />
-      </RoundedBox>
-      <RoundedBox args={[3.25, 0.26, 0.34]} radius={0.08} smoothness={2} position={[0, 2.18, -1.02]}>
-        <meshStandardMaterial ref={glow} color={accent} emissive={accent} emissiveIntensity={0.08} />
-      </RoundedBox>
-      <Billboard position={[0, 2.95, -0.05]}>
-        <mesh>
-          <planeGeometry args={[3.2, 0.92]} />
-          <meshBasicMaterial map={labelTexture(title, { bg: '#ffffff', color: '#071748', accent })} transparent toneMapped={false} depthTest={false} />
-        </mesh>
-      </Billboard>
-      <mesh position={[0, 0.38, -1.22]}>
-        <cylinderGeometry args={[0.38, 0.38, 0.12, 24]} />
-        <meshStandardMaterial color={accent} metalness={0.35} roughness={0.35} />
-      </mesh>
+      <RoundedBox args={[3.7, 2.35, 2.2]} radius={0.22} smoothness={3} position={[0, 1.18, 0]} castShadow receiveShadow><meshStandardMaterial color="#fffaf0" roughness={0.72} /></RoundedBox>
+      <RoundedBox args={[3.25, 0.26, 0.34]} radius={0.08} smoothness={2} position={[0, 2.18, -1.02]}><meshStandardMaterial ref={glow} color={accent} emissive={accent} emissiveIntensity={0.08} /></RoundedBox>
+      <Billboard position={[0, 2.95, -0.05]}><mesh><planeGeometry args={[3.2, 0.92]} /><meshBasicMaterial map={labelTexture(title, { bg: '#ffffff', color: '#071748', accent })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+      <ReactiveNpc position={[0, 0.12, 0.22]} avatar={avatar} reacting={reacting} name={npcName} />
+      <mesh position={[0, 0.38, -1.22]}><cylinderGeometry args={[0.38, 0.38, 0.12, 24]} /><meshStandardMaterial color={accent} metalness={0.35} roughness={0.35} /></mesh>
     </group>
   )
 }
@@ -53,138 +58,71 @@ function InterestAnimation({ active }) {
   const root = useRef()
   useFrame((state, delta) => {
     if (!root.current) return
-    root.current.rotation.y += delta * (active ? 1.5 : 0.25)
+    root.current.rotation.y += delta * (active ? 1.8 : 0.25)
     root.current.position.y = 0.15 + (active ? Math.abs(Math.sin(state.clock.elapsedTime * 4)) * 1.15 : Math.sin(state.clock.elapsedTime * 1.6) * 0.08)
   })
-
-  return (
-    <group ref={root} position={[0, 0.15, 0]}>
-      {Array.from({ length: 8 }, (_, i) => {
-        const angle = (i / 8) * Math.PI * 2
-        return (
-          <mesh key={i} position={[Math.cos(angle) * 2.4, 1.1 + (i % 2) * 0.55, Math.sin(angle) * 2.4]} rotation={[Math.PI / 2, 0, angle]}>
-            <cylinderGeometry args={[0.22, 0.22, 0.07, 18]} />
-            <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={active ? 0.65 : 0.12} metalness={0.65} roughness={0.28} />
-          </mesh>
-        )
-      })}
-    </group>
-  )
+  return <group ref={root} position={[0, 0.15, 0]}>{Array.from({ length: 10 }, (_, i) => { const angle = (i / 10) * Math.PI * 2; return <mesh key={i} position={[Math.cos(angle) * 2.4, 1.1 + (i % 2) * 0.55, Math.sin(angle) * 2.4]} rotation={[Math.PI / 2, 0, angle]}><cylinderGeometry args={[0.22, 0.22, 0.07, 18]} /><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={active ? 0.75 : 0.12} metalness={0.65} roughness={0.28} /></mesh> })}</group>
 }
 
 function RateSeesaw({ active }) {
   const beam = useRef()
-  useFrame((state) => {
-    if (!beam.current) return
-    beam.current.rotation.z = active ? Math.sin(state.clock.elapsedTime * 3.8) * 0.35 : Math.sin(state.clock.elapsedTime * 1.1) * 0.06
-  })
-  return (
-    <group position={[4.9, 0.15, 4.35]}>
-      <mesh position={[0, 0.75, 0]}>
-        <cylinderGeometry args={[0.16, 0.32, 1.35, 12]} />
-        <meshStandardMaterial color="#071748" />
-      </mesh>
-      <group ref={beam} position={[0, 1.42, 0]}>
-        <RoundedBox args={[3.3, 0.18, 0.32]} radius={0.06} smoothness={2}>
-          <meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.45 : 0.1} />
-        </RoundedBox>
-        <mesh position={[-1.32, 0.32, 0]}><boxGeometry args={[0.55, 0.55, 0.22]} /><meshStandardMaterial color="#00dca0" /></mesh>
-        <mesh position={[1.32, 0.32, 0]}><boxGeometry args={[0.55, 0.55, 0.22]} /><meshStandardMaterial color="#ff8a3d" /></mesh>
-      </group>
-    </group>
-  )
+  useFrame((state) => { if (beam.current) beam.current.rotation.z = active ? Math.sin(state.clock.elapsedTime * 3.8) * 0.35 : Math.sin(state.clock.elapsedTime * 1.1) * 0.06 })
+  return <group position={[4.9, 0.15, 4.35]}><mesh position={[0, 0.75, 0]}><cylinderGeometry args={[0.16, 0.32, 1.35, 12]} /><meshStandardMaterial color="#071748" /></mesh><group ref={beam} position={[0, 1.42, 0]}><RoundedBox args={[3.3, 0.18, 0.32]} radius={0.06} smoothness={2}><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.45 : 0.1} /></RoundedBox><mesh position={[-1.32, 0.32, 0]}><boxGeometry args={[0.55, 0.55, 0.22]} /><meshStandardMaterial color="#00dca0" /></mesh><mesh position={[1.32, 0.32, 0]}><boxGeometry args={[0.55, 0.55, 0.22]} /><meshStandardMaterial color="#ff8a3d" /></mesh></group></group>
 }
 
 function BondExchangeBuilding({ effect }) {
-  const allocationActive = effect === 'allocation' || effect === 'borrowers'
-  const interestActive = effect === 'interest' || effect === 'handoff'
-  const rateActive = effect === 'rate'
+  const kind = effect?.kind || 'idle'
+  const bondId = effect?.bondId || null
+  const allocationActive = kind === 'allocation' || kind === 'borrowers'
+  const interestActive = kind === 'interest' || kind === 'handoff'
+  const rateActive = kind === 'rate'
+  const beauReacting = kind !== 'idle' && kind !== 'arrival'
+  const treasuryAvatar = { gender: 'female', bodyType: 'average', skinTone: 'warm_beige', hairStyle: 'short', hairColor: 'brown', shirtColor: 'blue', pantsColor: 'gray', topStyle: 'tee', bottomStyle: 'pants' }
+  const muniAvatar = { gender: 'male', bodyType: 'average', skinTone: 'medium_brown', hairStyle: 'short', hairColor: 'black', shirtColor: 'green', pantsColor: 'blue', topStyle: 'tee', bottomStyle: 'pants' }
+  const corporateAvatar = { gender: 'female', bodyType: 'athletic', skinTone: 'light_tan', hairStyle: 'long', hairColor: 'black', shirtColor: 'purple', pantsColor: 'black', topStyle: 'tee', bottomStyle: 'pants' }
+  const beauAvatar = { gender: 'male', bodyType: 'average', skinTone: 'cream', hairStyle: 'short', hairColor: 'brown', shirtColor: 'teal', pantsColor: 'blue', topStyle: 'hoodie', bottomStyle: 'pants' }
 
   return (
     <group>
-      <RoundedBox args={[15.8, 0.18, 14.4]} radius={0.18} smoothness={3} position={[0, 0.08, 0]} receiveShadow>
-        <meshStandardMaterial color="#edf3e6" roughness={0.96} />
-      </RoundedBox>
-
-      <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, -7.05]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} />
-      </RoundedBox>
-      <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, 7.05]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#8bb36d" roughness={0.62} clearcoat={0.12} />
-      </RoundedBox>
-      <RoundedBox args={[0.36, 5.1, 14.4]} radius={0.14} smoothness={3} position={[7.72, 2.55, 0]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#8bb36d" roughness={0.62} clearcoat={0.12} />
-      </RoundedBox>
-
-      {/* West facade is split around a wide walk-through entrance facing the module avenue. */}
-      <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, -5.1]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} />
-      </RoundedBox>
-      <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, 5.1]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} />
-      </RoundedBox>
-      <RoundedBox args={[0.48, 0.5, 5.65]} radius={0.14} smoothness={3} position={[-7.58, 4.58, 0]} castShadow>
-        <meshStandardMaterial color="#071748" />
-      </RoundedBox>
-
-      <Billboard position={[-7.82, 6.55, 0]}>
-        <mesh>
-          <planeGeometry args={[8.2, 2.15]} />
-          <meshBasicMaterial map={labelTexture('MODULE 6 · BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} />
-        </mesh>
-      </Billboard>
-
-      <RoundedBox args={[1.5, 0.08, 5.4]} radius={0.08} smoothness={2} position={[-7.05, 0.13, 0]} receiveShadow>
-        <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.12} />
-      </RoundedBox>
-
-      <BorrowerBooth x={-2.8} z={-3.25} title="TREASURY" accent="#1464f0" active={allocationActive} />
-      <BorrowerBooth x={2.1} z={-3.25} title="MUNICIPAL" accent="#00b37f" active={allocationActive} />
-      <BorrowerBooth x={-0.35} z={3.0} title="CORPORATE" accent="#ff8a3d" active={allocationActive} />
-
-      <group position={[1.35, 0, 1.25]}>
-        <InterestAnimation active={interestActive} />
-      </group>
+      <RoundedBox args={[15.8, 0.18, 14.4]} radius={0.18} smoothness={3} position={[0, 0.08, 0]} receiveShadow><meshStandardMaterial color="#edf3e6" roughness={0.96} /></RoundedBox>
+      <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, -7.05]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
+      <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, 7.05]} castShadow receiveShadow><meshPhysicalMaterial color="#8bb36d" roughness={0.62} clearcoat={0.12} /></RoundedBox>
+      <RoundedBox args={[0.36, 5.1, 14.4]} radius={0.14} smoothness={3} position={[7.72, 2.55, 0]} castShadow receiveShadow><meshPhysicalMaterial color="#8bb36d" roughness={0.62} clearcoat={0.12} /></RoundedBox>
+      <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, -5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
+      <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, 5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
+      <RoundedBox args={[0.48, 0.5, 5.65]} radius={0.14} smoothness={3} position={[-7.58, 4.58, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
+      <Billboard position={[-7.82, 6.55, 0]}><mesh><planeGeometry args={[8.2, 2.15]} /><meshBasicMaterial map={labelTexture('MODULE 6 · BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+      <RoundedBox args={[1.5, 0.08, 5.4]} radius={0.08} smoothness={2} position={[-7.05, 0.13, 0]} receiveShadow><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.12} /></RoundedBox>
+      <ReactiveNpc position={[-5.65, 0.1, 0]} avatar={beauAvatar} reacting={beauReacting} name="Beau · Bond Guide" />
+      <Billboard position={[-5.65, 3.35, 0]}><mesh><planeGeometry args={[2.8, 0.72]} /><meshBasicMaterial map={labelTexture('BEAU · BOND GUIDE', { bg: '#ffffff', color: '#071748', accent: '#00dca0' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+      <BorrowerBooth x={-2.8} z={-3.25} title="TREASURY" accent="#1464f0" active={allocationActive} reacting={kind === 'borrowers' || (kind === 'allocation' && (!bondId || bondId === 'treasury'))} npcName="Taylor · Treasury borrower" avatar={treasuryAvatar} />
+      <BorrowerBooth x={2.1} z={-3.25} title="MUNICIPAL" accent="#00b37f" active={allocationActive} reacting={kind === 'borrowers' || (kind === 'allocation' && (!bondId || bondId === 'muni'))} npcName="Mina · Municipal borrower" avatar={muniAvatar} />
+      <BorrowerBooth x={-0.35} z={3.0} title="CORPORATE" accent="#ff8a3d" active={allocationActive} reacting={kind === 'borrowers' || (kind === 'allocation' && (!bondId || bondId === 'corporate'))} npcName="Cora · Corporate borrower" avatar={corporateAvatar} />
+      <group position={[1.35, 0, 1.25]}><InterestAnimation active={interestActive} /></group>
       <RateSeesaw active={rateActive} />
     </group>
   )
 }
 
 export function BondStreetWorld() {
-  const [effect, setEffect] = useState('idle')
+  const [effect, setEffect] = useState({ kind: 'idle' })
   const [selectedBondArrival] = useState(() => {
     try {
       if (typeof localStorage !== 'undefined' && localStorage.getItem('tayu-jump-module') === '6') return true
       return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(BOND_ONLY_KEY) === '1'
     } catch { return false }
   })
-
-  useEffect(() => {
-    if (!selectedBondArrival) return
-    // Module 6 has its own physical building. Place the player at that door
-    // immediately on both the selector arrival and the post-Start world remount
-    // so there is never a blank/shared Tax Office frame between states.
-    placeAtBondStreetEntrance()
-  }, [selectedBondArrival])
-
+  useEffect(() => { if (selectedBondArrival) placeAtBondStreetEntrance() }, [selectedBondArrival])
   useEffect(() => {
     let timer = null
     const onAction = (event) => {
-      const next = event?.detail?.kind || 'arrival'
+      const next = event?.detail || { kind: 'arrival' }
       setEffect(next)
       if (timer) window.clearTimeout(timer)
-      timer = window.setTimeout(() => setEffect('idle'), next === 'handoff' ? 2600 : 1900)
+      timer = window.setTimeout(() => setEffect({ kind: 'idle' }), next.kind === 'handoff' ? 2600 : 1900)
     }
     window.addEventListener(BOND_WORLD_EVENT, onAction)
-    return () => {
-      window.removeEventListener(BOND_WORLD_EVENT, onAction)
-      if (timer) window.clearTimeout(timer)
-    }
+    return () => { window.removeEventListener(BOND_WORLD_EVENT, onAction); if (timer) window.clearTimeout(timer) }
   }, [])
-
-  return (
-    <group position={[BOND_DISTRICT[0], 0, BOND_DISTRICT[1]]}>
-      <BondExchangeBuilding effect={effect} />
-    </group>
-  )
+  return <group position={[BOND_DISTRICT[0], 0, BOND_DISTRICT[1]]}><BondExchangeBuilding effect={effect} /></group>
 }
