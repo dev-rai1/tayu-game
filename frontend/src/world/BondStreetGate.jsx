@@ -1,122 +1,194 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { BOND_STREET_SCRIPT, BOND_TYPES, allocationTotal, bondOutcome, gardenProfitStake } from '../scenarios/bondStreet.js'
-import { BOND_WORLD_EVENT, placeAtBondStreetEntrance } from './BondStreetWorld.jsx'
+import { BOND_INTERACT_EVENT, BOND_POINTS, BOND_WORLD_EVENT, placeAtBondStreetEntrance } from './BondStreetWorld.jsx'
+import { INTERACT_RADIUS } from './config.js'
+import { playerPos } from './store.js'
 
 const money = (value) => `$${Number(value || 0).toFixed(2).replace(/\.00$/, '')}`
-const stars = (count) => '★'.repeat(count) + '☆'.repeat(Math.max(0, 3 - count))
 const cents = (value) => Math.round(Number(value || 0) * 100) / 100
+const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 
-function emitBondWorld(kind, detail = {}) {
-  try { window.dispatchEvent(new CustomEvent(BOND_WORLD_EVENT, { detail: { kind, ...detail } })) } catch { /* tests */ }
+function emitBondWorld(kind, progress) {
+  try { window.dispatchEvent(new CustomEvent(BOND_WORLD_EVENT, { detail: { kind, progress } })) } catch { /* browser-only */ }
 }
 
 function saveBondCompletion(outcome) {
   const profile = loadProfile() || {}
-  const badges = [...new Set([...(profile.badges || []), 'bond'])]
   saveProfile({
-    badges,
-    bondStreet: { completed: true, completedAt: new Date().toISOString(), principal: outcome.principal, interest: outcome.interest, ending: outcome.ending, allocations: Object.fromEntries(outcome.rows.map((row) => [row.id, row.principal])), investedInMuni: outcome.investedInMuni },
+    badges: [...new Set([...(profile.badges || []), 'bond'])],
+    bondStreet: {
+      completed: true,
+      completedAt: new Date().toISOString(),
+      principal: outcome.principal,
+      interest: outcome.interest,
+      ending: outcome.ending,
+      allocations: Object.fromEntries(outcome.rows.map((row) => [row.id, row.principal])),
+      investedInMuni: outcome.investedInMuni,
+    },
     muniBondInvested: outcome.investedInMuni,
   })
   window.dispatchEvent(new Event('tayu-bond-street-complete'))
 }
 
-function CompactShell({ eyebrow, title, children }) {
-  return (
-    <section className="pointer-events-auto max-h-[48dvh] w-full max-w-xl overflow-y-auto rounded-[1.75rem] border-2 border-white/70 bg-[#fffdf8]/97 p-4 text-navy shadow-2xl backdrop-blur-sm sm:p-5">
-      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-electric">{eyebrow}</div>
-      <h2 className="mt-1 font-display text-2xl font-black sm:text-3xl">{title}</h2>
-      {children}
-    </section>
-  )
+function nearestExpected(stage) {
+  const candidates = stage === 0
+    ? [['guide', BOND_POINTS.guide]]
+    : stage === 1 || stage === 2
+      ? [['treasury', BOND_POINTS.treasury], ['muni', BOND_POINTS.muni], ['corporate', BOND_POINTS.corporate]]
+      : stage === 3
+        ? [['interest', BOND_POINTS.interest]]
+        : stage === 4
+          ? [['rate', BOND_POINTS.rate]]
+          : []
+  let best = null
+  let distance = Infinity
+  for (const [kind, point] of candidates) {
+    const d = Math.hypot(point[0] - playerPos.x, point[1] - playerPos.z)
+    if (d < distance) { best = kind; distance = d }
+  }
+  return distance <= INTERACT_RADIUS + 0.8 ? best : null
 }
 
 export function BondStreetGate({ onComplete }) {
   const wallet = loadWallet() || {}
   const savedStake = gardenProfitStake(wallet)
-  const stake = savedStake > 0 ? savedStake : 100
-  const [step, setStep] = useState(0)
+  const stake = savedStake > 0 ? savedStake : 90
+  const [stage, setStage] = useState(0)
+  const [visited, setVisited] = useState([])
+  const [selectedBond, setSelectedBond] = useState(null)
+  const [card, setCard] = useState(null)
   const [allocation, setAllocation] = useState({ treasury: 0, muni: 0, corporate: 0 })
-  const [watching, setWatching] = useState(null)
-  const timerRef = useRef(null)
   const total = allocationTotal(allocation)
   const remaining = Math.max(0, cents(stake - total))
   const outcome = useMemo(() => bondOutcome(allocation), [allocation])
+  const progress = { stage, visited }
+
+  useEffect(() => { placeAtBondStreetEntrance(); emitBondWorld('arrival', progress) }, [])
+  useEffect(() => { emitBondWorld('progress', progress) }, [stage, visited.join('|')])
+
+  const describeBooth = (bondId) => {
+    const bond = BOND_TYPES.find((item) => item.id === bondId)
+    if (!bond) return
+    setVisited((current) => current.includes(bondId) ? current : [...current, bondId])
+    setSelectedBond(bondId)
+    setCard({ title: bond.title, text: `${bond.borrower}: ${bond.summary} Practice interest: ${Math.round(bond.rate * 100)}%.` })
+    emitBondWorld('borrowers', { ...progress, visited: [...new Set([...visited, bondId])] })
+  }
+
+  const interact = (kind, bondId = null) => {
+    if (kind === 'guide' && stage === 0) {
+      setStage(1)
+      setCard({ title: 'Beau · Bond Guide', text: BOND_STREET_SCRIPT.beauIntro })
+      emitBondWorld('borrowers', { stage: 1, visited })
+      return
+    }
+    if (kind === 'booth' && (stage === 1 || stage === 2)) {
+      describeBooth(bondId)
+      if (stage === 1 && new Set([...visited, bondId]).size === 3) setStage(2)
+      return
+    }
+    if (kind === 'interest' && stage === 3) {
+      emitBondWorld('interest', progress)
+      setStage(4)
+      setCard({ title: 'Interest arrives', text: `Your ${money(outcome.principal)} of lending produced ${money(outcome.interest)} in practice interest. Walk to the blue rate-risk seesaw next.` })
+      return
+    }
+    if (kind === 'rate' && stage === 4) {
+      emitBondWorld('rate', progress)
+      setStage(5)
+      setCard({ title: 'Rates and bond prices', text: `${BOND_STREET_SCRIPT.rateLesson} ${BOND_STREET_SCRIPT.seniorityLesson}` })
+    }
+  }
 
   useEffect(() => {
-    placeAtBondStreetEntrance()
-    emitBondWorld('arrival')
-    return () => { if (timerRef.current) window.clearTimeout(timerRef.current) }
-  }, [])
+    const onWorldInteract = (event) => interact(event?.detail?.kind, event?.detail?.bondId)
+    const keyboard = (event) => {
+      if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
+      const target = nearestExpected(stage)
+      if (!target) return
+      event.preventDefault(); event.stopImmediatePropagation()
+      interact(target === 'guide' || target === 'interest' || target === 'rate' ? target : 'booth', target === 'treasury' || target === 'muni' || target === 'corporate' ? target : null)
+    }
+    window.addEventListener(BOND_INTERACT_EVENT, onWorldInteract)
+    window.addEventListener('keydown', keyboard, true)
+    return () => { window.removeEventListener(BOND_INTERACT_EVENT, onWorldInteract); window.removeEventListener('keydown', keyboard, true) }
+  }, [stage, visited, total, remaining, outcome])
 
-  const watchThen = (label, effect, nextStep, detail = {}, ms = 1450) => {
-    if (timerRef.current) window.clearTimeout(timerRef.current)
-    setWatching(label)
-    emitBondWorld(effect, detail)
-    timerRef.current = window.setTimeout(() => {
-      setWatching(null)
-      if (typeof nextStep === 'number') setStep(nextStep)
-    }, ms)
-  }
-
-  const setBond = (id, raw) => {
-    const next = Math.max(0, cents(raw))
+  const allocate = (bondId, amount) => {
     setAllocation((current) => {
-      const others = Object.entries(current).reduce((sum, [key, value]) => key === id ? sum : sum + Number(value || 0), 0)
-      return { ...current, [id]: Math.min(next, Math.max(0, cents(stake - others))) }
+      const otherTotal = Object.entries(current).reduce((sum, [id, value]) => id === bondId ? sum : sum + Number(value || 0), 0)
+      return { ...current, [bondId]: Math.min(cents(amount), cents(stake - otherTotal)) }
     })
-    emitBondWorld('allocation', { bondId: id })
+    emitBondWorld('allocation', progress)
   }
 
-  const splitEvenly = () => {
-    const totalCents = Math.max(0, Math.round(stake * 100))
-    const base = Math.floor(totalCents / 3)
-    const extra = totalCents - (base * 3)
-    setAllocation({ treasury: (base + extra) / 100, muni: base / 100, corporate: base / 100 })
-    watchThen('The three borrowers react to your split.', 'allocation', 2, { preset: 'even' }, 1100)
+  const addChunk = (bondId) => {
+    const chunk = Math.max(10, cents(stake / 3))
+    allocate(bondId, Number(allocation[bondId] || 0) + Math.min(chunk, remaining))
   }
 
-  const putAllInTreasury = () => {
-    setAllocation({ treasury: cents(stake), muni: 0, corporate: 0 })
-    watchThen('The Treasury borrower reacts to your choice.', 'allocation', 2, { preset: 'treasury', bondId: 'treasury' }, 1100)
-  }
-
-  const runOutcomes = () => {
-    if (stake <= 0 || total <= 0.009) return
+  const finishAllocation = () => {
     if (remaining > 0.009) setAllocation((current) => ({ ...current, treasury: cents(Number(current.treasury || 0) + remaining) }))
-    watchThen('Watch interest coins move through Bond Street.', 'interest', 3, {}, 1800)
+    setCard(null)
+    setStage(3)
+    emitBondWorld('allocation', { stage: 3, visited })
   }
 
   const finish = () => {
     saveBondCompletion(outcome)
-    setWatching('Beau waves you toward the separate Module 7 Tax Office.')
-    emitBondWorld('handoff')
-    timerRef.current = window.setTimeout(() => onComplete?.(outcome), 1500)
+    emitBondWorld('handoff', progress)
+    onComplete?.(outcome)
   }
 
-  if (watching) {
-    return (
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[1000] flex justify-center px-3">
-        <div className="rounded-2xl border-2 border-teal/60 bg-navy/92 px-5 py-3 text-center text-white shadow-xl backdrop-blur-sm">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-teal">Module 6 · Watch the building</div>
-          <div className="mt-1 font-display text-lg font-black">{watching}</div>
-        </div>
-      </div>
-    )
-  }
+  const objective = stage === 0
+    ? 'Walk inside and talk to Beau.'
+    : stage === 1
+      ? `Visit all three borrower booths (${visited.length}/3).`
+      : stage === 2
+        ? `Choose where to lend your ${money(stake)} stake by interacting with the booths.`
+        : stage === 3
+          ? 'Walk to the glowing coin table and interact to collect interest.'
+          : stage === 4
+            ? 'Walk to the blue rate-risk seesaw and interact.'
+            : 'Talk with Beau’s lesson complete. Finish Module 6.'
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[1000] flex justify-end p-3 sm:p-5" data-bond-street="true">
-      {step === 0 && <CompactShell eyebrow="Module 6 · Bond Street · Beau" title="Walk into the exchange and meet Beau"><p className="mt-2 text-sm font-semibold leading-relaxed text-navy/70">{BOND_STREET_SCRIPT.beauIntro}</p><div className="mt-3 grid grid-cols-2 gap-2 text-sm font-bold"><div className="rounded-xl bg-teal/10 p-3">Stock = ownership</div><div className="rounded-xl bg-electric/10 p-3">Bond = lending</div></div><button type="button" onClick={() => watchThen('Beau introduces the three borrower NPCs.', 'borrowers', 1)} className="mt-4 min-h-[48px] w-full rounded-2xl bg-electric px-4 font-black text-white">Talk to Beau → watch the borrowers react</button></CompactShell>}
+    <div className="pointer-events-none fixed inset-0 z-[1000] text-navy" data-bond-street="true">
+      <div className="absolute left-3 top-3 w-[min(92vw,28rem)] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Module 6 · Bond Street</div>
+        <div className="mt-1 font-display text-xl font-black">{objective}</div>
+        <div className="mt-2 text-xs font-bold text-navy/60">Move normally. Get close, then click the person/object or press E.</div>
+      </div>
 
-      {step === 1 && <CompactShell eyebrow="Module 6 · Borrower booths" title="Who should get your loan?"><p className="mt-2 text-sm font-semibold text-navy/70">{BOND_STREET_SCRIPT.allocation}</p><div className="mt-3 grid gap-2 sm:grid-cols-3">{BOND_TYPES.map((bond) => <button key={bond.id} type="button" onClick={() => watchThen(`${bond.borrower} reacts as you inspect the booth.`, 'borrowers', 2, { bondId: bond.id }, 1100)} className="rounded-xl border-2 border-navy/10 bg-white p-3 text-left transition hover:border-electric"><div className="text-sm text-sun">{stars(bond.safety)}</div><div className="font-black">{bond.title}</div><div className="text-[10px] font-bold uppercase text-electric">{bond.borrower}</div><div className="mt-1 text-xs font-semibold text-navy/60">{Math.round(bond.rate * 100)}% practice interest</div></button>)}</div><button type="button" onClick={() => watchThen('All three borrower desks light up for your allocation decision.', 'allocation', 2)} className="mt-4 min-h-[48px] w-full rounded-2xl bg-electric px-4 font-black text-white">Go to the allocation counter →</button></CompactShell>}
+      {card && (
+        <section className="pointer-events-auto absolute bottom-4 left-1/2 w-[min(94vw,34rem)] -translate-x-1/2 rounded-3xl border border-slate-200 bg-white/97 p-4 shadow-2xl backdrop-blur-md sm:p-5">
+          <div className="font-display text-2xl font-black">{card.title}</div>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/75">{card.text}</p>
+          {stage === 2 && selectedBond && (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-3">
+              <div className="flex items-center justify-between gap-3"><strong>{BOND_TYPES.find((item) => item.id === selectedBond)?.title}</strong><span className="font-display text-xl font-black">{money(allocation[selectedBond])}</span></div>
+              <div className="mt-3 flex gap-2">
+                <button type="button" onClick={() => addChunk(selectedBond)} disabled={remaining <= 0.009} className="min-h-[44px] flex-1 rounded-xl bg-electric px-3 font-black text-white disabled:opacity-35">Lend more here</button>
+                <button type="button" onClick={() => allocate(selectedBond, 0)} className="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 font-black">Reset</button>
+              </div>
+              <div className="mt-2 text-xs font-bold text-navy/60">{money(remaining)} left to place.</div>
+            </div>
+          )}
+          <div className="mt-4 flex gap-2">
+            <button type="button" onClick={() => setCard(null)} className="min-h-[44px] flex-1 rounded-xl border border-slate-300 bg-white px-4 font-black">Back to the building</button>
+            {stage === 2 && total > 0.009 && <button type="button" onClick={finishAllocation} className="min-h-[44px] flex-1 rounded-xl bg-[#5d8b3d] px-4 font-black text-white">Lock in lending</button>}
+            {stage === 5 && <button type="button" onClick={finish} className="min-h-[44px] flex-1 rounded-xl bg-teal px-4 font-black text-navy">Finish Module 6</button>}
+          </div>
+        </section>
+      )}
 
-      {step === 2 && <CompactShell eyebrow="Module 6 · Allocation counter" title={`Lend your ${money(stake)} stake`}><div className="mt-2 flex items-center justify-between rounded-xl bg-navy/5 p-3 text-sm font-bold"><span>Still unallocated</span><strong>{money(remaining)}</strong></div><div className="mt-3 grid grid-cols-2 gap-2"><button type="button" onClick={splitEvenly} className="min-h-[44px] rounded-xl border-2 border-electric bg-electric/10 px-3 font-black text-electric">Split evenly</button><button type="button" onClick={putAllInTreasury} className="min-h-[44px] rounded-xl border-2 border-navy/15 bg-white px-3 font-black">All Treasury</button></div><div className="mt-3 space-y-2">{BOND_TYPES.map((bond) => <label key={bond.id} className="block rounded-xl border border-navy/10 bg-white p-3"><div className="flex justify-between gap-3 text-sm"><strong>{bond.title}</strong><strong>{money(allocation[bond.id])}</strong></div><input aria-label={`${bond.title} allocation`} type="range" min="0" max={stake} step="0.01" value={allocation[bond.id]} onChange={(event) => setBond(bond.id, event.target.value)} className="mt-2 w-full" /></label>)}</div><button type="button" disabled={stake <= 0 || total <= 0.009} onClick={runOutcomes} className="mt-4 min-h-[48px] w-full rounded-2xl bg-electric px-4 font-black text-white disabled:opacity-35">Lock decision → watch interest animation</button></CompactShell>}
-
-      {step === 3 && <CompactShell eyebrow="Module 6 · Interest result" title="Your lending produced interest"><div className="mt-3 grid gap-2 sm:grid-cols-3">{outcome.rows.map((row) => <div key={row.id} className="rounded-xl bg-teal/10 p-3 text-sm"><strong className="block">{row.title}</strong><span>{money(row.principal)} → +{money(row.interest)}</span></div>)}</div><div className="mt-3 rounded-xl bg-navy p-3 text-white"><strong>{money(outcome.principal)} → {money(outcome.ending)}</strong><div className="text-xs text-white/70">Practice interest earned: {money(outcome.interest)}</div></div><button type="button" onClick={() => watchThen('Beau demonstrates rate risk on the seesaw.', 'rate', 4, {}, 1700)} className="mt-4 min-h-[48px] w-full rounded-2xl bg-electric px-4 font-black text-white">Make the rate-risk decision → watch the seesaw</button></CompactShell>}
-
-      {step === 4 && <CompactShell eyebrow="Module 6 · Beau" title="Bonds are steadier, not risk-free"><p className="mt-2 text-sm font-semibold text-navy/70">{BOND_STREET_SCRIPT.rateLesson}</p><div className="mt-3 rounded-xl bg-sun/20 p-3 text-sm font-semibold">{BOND_STREET_SCRIPT.seniorityLesson}</div><button type="button" onClick={finish} className="mt-4 min-h-[50px] w-full rounded-2xl bg-teal px-4 font-black text-navy">Finish Module 6 → walk to Module 7 Tax Office</button></CompactShell>}
+      {stage === 2 && !card && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-navy/92 px-4 py-2 text-sm font-black text-white shadow-xl">{money(total)} lent · {money(remaining)} left</div>
+      )}
+      {stage === 5 && !card && (
+        <button type="button" onClick={finish} className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[50px] -translate-x-1/2 rounded-2xl bg-teal px-6 font-black text-navy shadow-2xl">Finish Module 6</button>
+      )}
     </div>
   )
 }
