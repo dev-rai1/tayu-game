@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { currentUser } from '../services/auth.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { recordLearningEvent } from '../services/usageAnalytics.js'
@@ -56,10 +56,9 @@ export default function PathCompletionWatcher() {
   const gameComplete = useGame((state) => state.gameComplete)
   const cards = useGame((state) => state.cards)
 
-  // The legacy Money Garden bridge still says "Finale" even though Modules 6
-  // and 7 now follow it. Normalize that card as soon as it appears so the
-  // learner is explicitly sent to Module 6 instead of the party portal.
-  useEffect(() => {
+  // Normalize the legacy Money Garden bridge before the browser paints it, so
+  // a learner never sees the obsolete "Finale" wording even for one frame.
+  useLayoutEffect(() => {
     if (week !== 5 || !cards?.some((card) => card?.id === 'bridge')) return
     const nextCards = fixModule5BridgeCard(cards)
     if (nextCards !== cards) useGame.setState({ cards: nextCards })
