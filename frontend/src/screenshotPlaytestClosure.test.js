@@ -38,7 +38,7 @@ describe('screenshot playtest fixes stay closed', () => {
     expect(party).toContain("cardTexture('FINALE AREA', 'Come in, Money Guru!'")
     expect(party).not.toContain("cardTexture('FINALE AREA', 'Finish the journey... the party is waiting!'")
     expect(watcher).toContain('useLayoutEffect')
-    expect(watcher).toContain("label: /finale/i.test(String(button?.label || '')) ? 'Start Module 6 →'")
+    expect(watcher).toContain("label: /finale/i.test(String(button?.label || '')) ? 'Start Module 6: Bond Street →'")
     expect(watcher).toContain("sessionStorage.setItem(TAX_ORIGIN_KEY, 'garden-handoff')")
   })
 })
