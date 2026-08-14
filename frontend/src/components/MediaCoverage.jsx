@@ -3,6 +3,8 @@ const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-wr
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
 const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
+const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
+const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 
 export function MediaCoverage({ compact = false, about = false }) {
   const sectionClass = about && !compact
@@ -21,6 +23,10 @@ export function MediaCoverage({ compact = false, about = false }) {
             FOX 5 DC
           </a>
           <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
+            White House Letter
+          </a>
+          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
             WTOP News
           </a>
@@ -35,6 +41,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
           <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
             Vision Times (Chinese)
+          </a>
+          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
+            NJ Coalition for Financial Education
           </a>
         </div>
       </section>
