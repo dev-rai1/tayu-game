@@ -41,7 +41,7 @@ describe('Module 5 to Module 6 handoff', () => {
     const cards = [{ id: 'bridge', text: 'Follow the path to the finale.', buttons: [{ label: 'To the Finale!', act: 'mg.bridge' }] }]
     const fixed = fixModule5BridgeCard(cards)
     expect(fixed[0].text).toBe(MODULE_6_HANDOFF_TEXT)
-    expect(fixed[0].buttons[0].label).toBe('Start Module 6 →')
+    expect(fixed[0].buttons[0].label).toBe('Start Module 6: Bond Street →')
   })
 
   it('only hands off to Module 6 while the bond badge is still missing', () => {
