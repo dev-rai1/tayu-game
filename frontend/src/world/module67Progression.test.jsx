@@ -1,12 +1,26 @@
 import React from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BondStreetGate } from './BondStreetGate.jsx'
+import { BOND_INTERACT_EVENT } from './BondStreetWorld.jsx'
 import { TaxWorldInteractionBridge } from './TaxWorldInteractionBridge.jsx'
 import { useTaxLab } from './taxLabStore.js'
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
+
+function bondInteract(kind, bondId = null) {
+  act(() => {
+    window.dispatchEvent(new CustomEvent(BOND_INTERACT_EVENT, { detail: { kind, bondId } }))
+  })
+}
+
+function reachBondAllocation() {
+  bondInteract('guide')
+  bondInteract('booth', 'treasury')
+  bondInteract('booth', 'muni')
+  bondInteract('booth', 'corporate')
+}
 
 describe('Modules 6 and 7 progression', () => {
   beforeEach(() => {
@@ -22,31 +36,34 @@ describe('Modules 6 and 7 progression', () => {
     useTaxLab.getState().reset()
   })
 
-  it('lets standalone Module 6 progress even without a Money Garden balance', () => {
+  it('lets standalone Module 6 progress through physical interactions without a Money Garden balance', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     render(<BondStreetGate />)
-    expect(screen.getByText(/Practice Bond Street stake/i)).toBeInTheDocument()
-    expect(screen.getByText('$100')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Meet the three borrowers/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Split my Bond Street stake/i }))
-    expect(screen.getByRole('button', { name: /Run the bond outcomes/i })).toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: /Split evenly/i }))
-    expect(screen.getByRole('button', { name: /Run the bond outcomes/i })).toBeEnabled()
+
+    expect(screen.getByText(/Walk inside and talk to Beau/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Practice Bond Street stake/i)).not.toBeInTheDocument()
+
+    reachBondAllocation()
+
+    expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
+    expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
+    expect(screen.getByText(/\$60 left to place/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Lock in lending/i })).toBeEnabled()
   })
 
-  it('does not strand Module 6 at $0 when a saved route loses its entry flag', () => {
+  it('does not strand Module 6 when a saved route has no usable Money Garden stake', () => {
     localStorage.setItem('tayu-wallet-v1', JSON.stringify({ spend: 0, save: 20, give: 0, week: 6, mg: null }))
     render(<BondStreetGate />)
-    expect(screen.getByText(/Practice Bond Street stake/i)).toBeInTheDocument()
-    expect(screen.getByText('$100')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Meet the three borrowers/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Split my Bond Street stake/i }))
-    fireEvent.click(screen.getByRole('button', { name: /Split evenly/i }))
-    expect(screen.getByLabelText(/U\.S\. Treasury allocation/i)).toHaveValue('33.34')
-    expect(screen.getByLabelText(/Muni Bond allocation/i)).toHaveValue('33.33')
-    expect(screen.getByLabelText(/Corporate Bond allocation/i)).toHaveValue('33.33')
-    expect(screen.getByRole('button', { name: /Run the bond outcomes/i })).toBeEnabled()
+
+    reachBondAllocation()
+
+    expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
+    expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
+    expect(screen.getByText(/\$60 left to place/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Lock in lending/i })).toBeEnabled()
   })
 
   it('replays Module 6 even when Bond Street was completed before', () => {
