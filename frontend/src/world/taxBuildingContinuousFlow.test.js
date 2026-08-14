@@ -17,22 +17,26 @@ describe('Tax Center building and continuous flow', () => {
     expect(paycheckWorld).toContain('Interior service counter behind Maya')
   })
 
-  it('opens station 1 immediately after a taxpayer case is accepted', () => {
+  it('returns to the Tax Office after a taxpayer case is accepted', () => {
     const taxCase = TAX_CASES[0]
     useTaxLab.getState().chooseCase(taxCase)
     const state = useTaxLab.getState()
     expect(state.phase).toBe('steps')
     expect(state.stepNumber).toBe(1)
-    expect(state.panel).toBe(taxStationForStep(1).key)
+    expect(state.panel).toBeNull()
+    expect(state.worldNotice).toContain(taxStationForStep(1).label)
   })
 
-  it('continues directly from station to station without another E interaction', () => {
+  it('returns to the building between stations so the next station can animate in-world', () => {
     useTaxLab.getState().chooseCase(TAX_CASES[0])
     for (let step = 1; step < 6; step += 1) {
+      expect(useTaxLab.getState().panel).toBeNull()
+      expect(useTaxLab.getState().openStation(step)).toBe(true)
       expect(useTaxLab.getState().panel).toBe(taxStationForStep(step).key)
       useTaxLab.getState().advanceStep()
       expect(useTaxLab.getState().stepNumber).toBe(step + 1)
-      expect(useTaxLab.getState().panel).toBe(taxStationForStep(step + 1).key)
+      expect(useTaxLab.getState().panel).toBeNull()
+      expect(useTaxLab.getState().worldNotice).toContain(taxStationForStep(step + 1).label)
     }
   })
 })

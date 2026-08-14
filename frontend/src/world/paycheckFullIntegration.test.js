@@ -93,17 +93,17 @@ describe('Paycheck Planet full integration', () => {
     expect(overlay).not.toContain('There are no A/B/C quiz answers.')
   })
 
-  it('automatically opens the next active tax station panel after each completed step', () => {
+  it('returns to the Tax Office between completed steps so the next station can animate in-world', () => {
     expect(taxStore).toContain('panel: null')
     expect(taxStore).toContain('openStation: (stepNumber)')
     expect(taxStore).toContain('advanceStep: () => set')
     expect(taxStore).toContain('const nextStation = taxStationForStep(next)')
-    expect(taxStore).toContain('panel: nextStation.key')
-    expect(taxStore).toContain('`Good work. Continuing directly at the ${nextStation.label}.`')
+    expect(taxStore).toContain('Every completed decision hands control back to the physical Tax Office.')
+    expect(taxStore).toContain('panel: null')
+    expect(taxStore).toContain('`Good work. Watch the office react, then walk to the ${nextStation.label}.`')
     expect(taxLayout).toContain('TAX_STEP_STATIONS')
     expect(paycheckWorld).toContain('CurrentTaxStation')
     expect(paycheckWorld).toContain("phase === 'steps' && currentStation")
-    expect(paycheckWorld).not.toContain('NEXT · WALK HERE')
     expect(objective).toContain('taxStationForStep(tax.stepNumber).point')
   })
 

@@ -8,6 +8,7 @@ import { joystick, moveTarget, playerPos } from './store.js'
 export const BOND_DISTRICT = [TAX_DISTRICT[0] - 1, TAX_DISTRICT[1] + 18]
 export const BOND_ENTRY = [BOND_DISTRICT[0] - 9.4, BOND_DISTRICT[1] + 0.2]
 export const BOND_WORLD_EVENT = 'tayu-bond-world-action'
+const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 
 export function placeAtBondStreetEntrance() {
   playerPos.x = BOND_ENTRY[0]
@@ -152,17 +153,18 @@ function BondExchangeBuilding({ effect }) {
 export function BondStreetWorld() {
   const [effect, setEffect] = useState('idle')
   const [selectedBondArrival] = useState(() => {
-    try { return typeof localStorage !== 'undefined' && localStorage.getItem('tayu-jump-module') === '6' }
-    catch { return false }
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('tayu-jump-module') === '6') return true
+      return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(BOND_ONLY_KEY) === '1'
+    } catch { return false }
   })
 
   useEffect(() => {
-    if (!selectedBondArrival) return undefined
-    // World.jsx uses one shared Module 6/7 arrival point. Correct Module 6 to
-    // the Bond Street door immediately after that shared arrival timer fires,
-    // while the start gate is still blocking all gameplay interactions.
-    const arrivalTimer = window.setTimeout(() => placeAtBondStreetEntrance(), 75)
-    return () => window.clearTimeout(arrivalTimer)
+    if (!selectedBondArrival) return
+    // Module 6 has its own physical building. Place the player at that door
+    // immediately on both the selector arrival and the post-Start world remount
+    // so there is never a blank/shared Tax Office frame between states.
+    placeAtBondStreetEntrance()
   }, [selectedBondArrival])
 
   useEffect(() => {

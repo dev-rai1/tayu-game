@@ -104,10 +104,13 @@ export const useTaxLab = create((set, get) => ({
     taxCase,
     candidateCase: null,
     stepNumber: 1,
-    panel: taxStationForStep(1).key,
+    // Return to the 3D office after the learner makes the client decision.
+    // The W-2 desk animates in the room and the learner walks to it instead of
+    // being thrown straight into another full-screen question panel.
+    panel: null,
     feedback: null,
     nearbyAction: null,
-    worldNotice: `Case accepted. Continue directly at the ${taxStationForStep(1).label}.`,
+    worldNotice: `Case accepted. Watch the W-2 desk react, then walk over to ${taxStationForStep(1).label}.`,
     work: { ...emptyTaxWork(), prediction: get().work.prediction, predictionCorrect: get().work.predictionCorrect, predictionMistakes: get().work.predictionMistakes },
   }),
 
@@ -156,7 +159,7 @@ export const useTaxLab = create((set, get) => ({
         panel: null,
         feedback: null,
         nearbyAction: null,
-        worldNotice: 'Return reviewed. Finish filing at the E-FILE DESK.',
+        worldNotice: 'Return reviewed. Watch the filing area react, then finish at the E-FILE DESK.',
       }
     }
 
@@ -164,13 +167,13 @@ export const useTaxLab = create((set, get) => ({
     const nextStation = taxStationForStep(next)
     return {
       stepNumber: next,
-      // Keep Module 7 flowing like the bank sequence: once the learner has
-      // entered the tax workflow, the next station opens automatically rather
-      // than requiring another walk-up + E press for every step.
-      panel: nextStation.key,
+      // Every completed decision hands control back to the physical Tax Office.
+      // The next station's prop/glow is animated in-world so Module 7 plays as a
+      // building sequence rather than a chain of question screens.
+      panel: null,
       feedback: null,
       nearbyAction: null,
-      worldNotice: `Good work. Continuing directly at the ${nextStation.label}.`,
+      worldNotice: `Good work. Watch the office react, then walk to the ${nextStation.label}.`,
     }
   }),
 
