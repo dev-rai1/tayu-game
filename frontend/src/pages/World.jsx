@@ -134,8 +134,6 @@ function readModuleEntryIntent() {
       } catch { /* ignore malformed selection intent */ }
     }
 
-    // Keep admin/deep-link jump behavior working even when it did not originate
-    // from the visual module selector.
     if (explicitModule) return { moduleId: explicitModule, gardenEntryPart, resume: false }
   } catch { /* storage can be unavailable */ }
   return null
@@ -178,8 +176,6 @@ function entryMeta(entry) {
 export default function World() {
   const navigate = useNavigate(); const { state, dispatch } = useGameState(); const [faded, setFaded] = useState(false)
   const [moduleEntry, setModuleEntry] = useState(() => readModuleEntryIntent())
-  // Module jumps reset mutable 3D scene registries. Remount the Canvas after
-  // every selected-module start so no frame can read actors from the old scene.
   const [worldSession, setWorldSession] = useState(0)
   const initialModuleEntry = useRef(moduleEntry)
   const [paycheckMode, setPaycheckMode] = useState(() => moduleEntry ? false : isPaycheckWorldActive())
@@ -228,10 +224,23 @@ export default function World() {
   useEffect(() => {
     if (moduleEntry || !enterParty) return
     useGame.setState({ enterParty: false })
+
+    // Module 5 is no longer the end of the game. Its completion previously
+    // reused the old party/finale handoff, which sent players to the portal and
+    // then looped them back to town. Route that legacy completion signal into
+    // the real next public module instead.
+    if (week === 5) {
+      deactivatePaycheckWorld()
+      clearWorldMessages()
+      teleportToModuleArrival('6')
+      setModuleEntry({ moduleId: '6', gardenEntryPart: null, resume: false })
+      return
+    }
+
     const taxComplete = (loadProfile()?.badges || []).includes('tax')
     if (!taxComplete) { enterPaycheckPlanet({ origin: 'garden-handoff' }); return }
     navigate(loadProfile()?.assessment?.post ? '/guru' : '/assessment/post')
-  }, [enterParty, moduleEntry, navigate])
+  }, [enterParty, moduleEntry, navigate, week])
 
   useEffect(() => {
     if (state.player.name) return
