@@ -97,6 +97,15 @@
   box-sizing: border-box;
 }
 
+/* Bond Street is Module 6's own experience. When its gate is active, suppress
+   the Tax Lab field/banner layer so clicking Module 6 cannot land on an
+   unrelated tax dashboard behind the three-borrower activity. */
+@supports selector(.tayu-world-declutter:has([data-bond-street='true'])) {
+  .tayu-world-declutter:has([data-bond-street='true']) [data-tax-field-ui='true'] {
+    display: none !important;
+  }
+}
+
 /* Module 6 uses its own top instruction banner. Keep the money readout below it
    instead of letting the two centered HUD elements cover each other. */
 [data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-16 {

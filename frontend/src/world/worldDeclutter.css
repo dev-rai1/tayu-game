@@ -219,6 +219,34 @@
   overflow-wrap: anywhere;
 }
 
+/* Playtest fix: all three jar choices keep the same dark card treatment.
+   Save can keep its green accent border/text, but it must never turn into a
+   solid green tile on hover/focus while Spend and Give stay dark. */
+.tayu-world-declutter button[aria-label^="Choose SAVE jar"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+.tayu-world-declutter button[aria-label^="Choose SAVE jar"]:hover,
+.tayu-world-declutter button[aria-label^="Choose SAVE jar"]:focus,
+.tayu-world-declutter button[aria-label^="Choose SAVE jar"]:focus-visible,
+.tayu-world-declutter button[aria-label^="Choose SAVE jar"]:active {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Module 6 split screen must remain vertically scrollable even though the 3D
+   world itself deliberately locks body scrolling. This is especially important
+   on iOS Safari and smaller-height phones. */
+.tayu-world-declutter [data-bond-street="true"] {
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+.tayu-world-declutter [data-bond-street="true"] > main {
+  min-height: max-content;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
 @media (max-width: 640px) {
   .tayu-world-declutter .absolute.left-4.top-4 {
     max-width: calc(100% - 6.5rem);
