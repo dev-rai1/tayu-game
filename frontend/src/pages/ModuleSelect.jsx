@@ -7,6 +7,7 @@ import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { ModuleGlossary } from '../components/ModuleGlossary.jsx'
 import { TownBackground } from '../components/TownBackground.jsx'
+import { preparePhysicalModuleLaunch } from '../world/physicalModuleLaunch.js'
 import {
   clearActiveLearningPath,
   completedRequiredModules,
@@ -154,6 +155,15 @@ export default function ModuleSelect() {
   const launchModule = (moduleNumber, gardenPart = null) => {
     const target = MODULE_CARDS.find((module) => module.n === moduleNumber)
     if (!target) return
+
+    // Modules 6 and 7 are real walk-in destinations. Enter the 3D district
+    // immediately; the lesson does not start until the player reaches the
+    // building guide and presses E.
+    if (preparePhysicalModuleLaunch(target.n)) {
+      nav('/world')
+      return
+    }
+
     const internalWorldModule = target.worldModule || target.n
     let canResume = Boolean(wallet && internalWorldModule === Number(wallet.week || 1) && !badges.includes(target.badge))
 
@@ -165,7 +175,7 @@ export default function ModuleSelect() {
       localStorage.removeItem('tayu-garden-entry-part')
     }
 
-    const restart = !canResume || target.n === 6 || target.n === 7
+    const restart = !canResume
     localStorage.setItem('tayu-module-entry-intent', JSON.stringify({
       moduleId: String(target.n),
       gardenEntryPart: gardenPart,
@@ -216,7 +226,7 @@ export default function ModuleSelect() {
               <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-16 w-16 rounded-2xl shadow-md" />
               <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.2em] text-slate-500">TAYU module menu</p>
               <h1 className="mt-2 font-display text-4xl font-extrabold text-slate-950 sm:text-5xl">Choose your grade level</h1>
-              <p className="mt-3 max-w-2xl text-base font-semibold leading-relaxed text-slate-700">Pick the pathway that matches you. The screen stays simple, and the module names use your grade-level color.</p>
+              <p className="mt-3 max-w-2xl text-base font-semibold leading-relaxed text-slate-700">Pick the pathway that matches you. The screen stays simple, and every module title has its own color.</p>
             </div>
             <div className="mt-7 grid gap-4 sm:grid-cols-2">
               {GRADE_PATHS.map((path) => <GradeCard key={path.id} path={path} onChoose={chooseGradePath} />)}
@@ -279,10 +289,10 @@ export default function ModuleSelect() {
 
               if (module.parts?.length) {
                 return (
-                  <article key={module.n} className="rounded-[2rem] border border-slate-200 bg-white p-5 text-slate-950 shadow-lg lg:col-span-2 sm:p-6">
+                  <article key={module.n} className="rounded-[2rem] border bg-white p-5 text-slate-950 shadow-lg lg:col-span-2 sm:p-6" style={{ borderColor: module.color }}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Module 5 · Investing</div>
+                        <div className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: module.color }}>Module 5 · Investing</div>
                         <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>Money Garden</h2>
                         <p className="mt-1 max-w-2xl text-sm font-semibold leading-relaxed text-slate-700">Two connected parts. Finish 5A, then 5B unlocks using the same portfolio.</p>
                       </div>
@@ -295,9 +305,9 @@ export default function ModuleSelect() {
                         const partAccessible = accessible && (part.id === 'A' || gardenPartAComplete)
                         const action = !partAccessible ? 'Finish Module 5A first' : partDone ? `Replay ${part.label}` : partInProgress ? `Resume ${part.label}` : `Play ${part.label}`
                         return (
-                          <button key={part.id} type="button" disabled={!partAccessible} onClick={() => playGardenPart(part.id)} className={`rounded-2xl border border-slate-200 p-4 text-left transition ${partAccessible ? 'bg-white hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]' : 'cursor-not-allowed bg-slate-50 opacity-60'}`}>
-                            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold text-slate-950">{part.label}</span><StatusPill done={partDone} inProgress={partInProgress} accessible={partAccessible} /></div>
-                            <div className="mt-2 font-display text-xl font-extrabold text-slate-950">{part.title}</div>
+                          <button key={part.id} type="button" disabled={!partAccessible} onClick={() => playGardenPart(part.id)} className={`rounded-2xl border p-4 text-left transition ${partAccessible ? 'bg-white hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]' : 'cursor-not-allowed bg-slate-50 opacity-60'}`} style={{ borderColor: part.color }}>
+                            <div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-extrabold" style={{ color: part.color }}>{part.label}</span><StatusPill done={partDone} inProgress={partInProgress} accessible={partAccessible} /></div>
+                            <div className="mt-2 font-display text-xl font-extrabold" style={{ color: part.color }}>{part.title}</div>
                             <div className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">{part.minutes}</div>
                             <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-700">{part.desc}</p>
                             <div className={`mt-4 rounded-xl px-4 py-3 text-center text-sm font-extrabold ${partAccessible ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-500'}`}>{action} →</div>
@@ -314,23 +324,23 @@ export default function ModuleSelect() {
               const action = done
                 ? `Replay Module ${module.n}`
                 : module.n === 6
-                  ? 'Start Module 6 · Bond Street'
+                  ? 'Go to Module 6 · Bond Street'
                   : module.n === 7
-                    ? 'Start Module 7 · Tax Office'
+                    ? 'Go to Module 7 · Tax Office'
                     : isNext
                       ? `Play Module ${module.n} now`
                       : olderOptional
                         ? `Explore Module ${module.n}`
                         : `Play Module ${module.n}`
               return (
-                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`} style={{ borderColor: physicalDestination ? module.color : '#e2e8f0' }}>
+                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`} style={{ borderColor: module.color }}>
                   <div className="flex items-center justify-between gap-3">
-                    <div className="grid h-11 w-11 place-items-center rounded-2xl text-lg font-extrabold text-white" style={{ backgroundColor: physicalDestination ? module.color : '#020617' }}>{module.n}</div>
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl text-lg font-extrabold text-white shadow-sm" style={{ backgroundColor: module.color }}>{module.n}</div>
                     <StatusPill done={done} accessible={accessible} recommended={isNext} />
                   </div>
-                  <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">{physicalDestination ? `Module ${module.n} · Separate 3D destination` : `Module ${module.n}`}</div>
+                  <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: module.color }}>{physicalDestination ? `Module ${module.n} · Separate 3D destination` : `Module ${module.n}`}</div>
                   <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>{module.title}</h2>
-                  {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Walk-in world location · big building label</div>}
+                  {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Teleport to entrance · walk inside · press E to start</div>}
                   {finalModule && <div className="mt-2 ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-700">Final module · Tax Office</div>}
                   <div className="mt-2 text-xs font-bold text-slate-500">{module.grades} · {module.minutes}</div>
                   <p className="mt-3 min-h-[3rem] text-sm font-semibold leading-relaxed text-slate-700">{module.desc}</p>
@@ -341,7 +351,7 @@ export default function ModuleSelect() {
           </section>
 
           <div className="mt-5 rounded-2xl border border-white/80 bg-white/95 p-4 text-center text-sm font-semibold text-slate-700 shadow-md backdrop-blur-md">
-            <strong className="text-slate-950">Journey:</strong> Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale. Modules 6 and 7 are separate labeled 3D destinations.
+            <strong className="text-slate-950">Journey:</strong> Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale. Modules 6 and 7 teleport you to separate labeled 3D buildings, where you press E to begin.
           </div>
         </div>
       </main>
