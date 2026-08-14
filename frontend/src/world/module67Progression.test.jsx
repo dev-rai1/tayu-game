@@ -1,17 +1,25 @@
 import React from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BondStreetGate } from './BondStreetGate.jsx'
+import { BOND_INTERACT_EVENT } from './BondStreetWorld.jsx'
 import { TaxWorldInteractionBridge } from './TaxWorldInteractionBridge.jsx'
 import { useTaxLab } from './taxLabStore.js'
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 
-function advanceBondAnimation(ms = 2000) {
+function bondInteract(kind, bondId = null) {
   act(() => {
-    vi.advanceTimersByTime(ms)
+    window.dispatchEvent(new CustomEvent(BOND_INTERACT_EVENT, { detail: { kind, bondId } }))
   })
+}
+
+function reachBondAllocation() {
+  bondInteract('guide')
+  bondInteract('booth', 'treasury')
+  bondInteract('booth', 'muni')
+  bondInteract('booth', 'corporate')
 }
 
 describe('Modules 6 and 7 progression', () => {
@@ -22,48 +30,40 @@ describe('Modules 6 and 7 progression', () => {
   })
 
   afterEach(() => {
-    vi.useRealTimers()
     cleanup()
     localStorage.clear()
     sessionStorage.clear()
     useTaxLab.getState().reset()
   })
 
-  it('lets standalone Module 6 progress through the rebuilt Bond Street flow without a Money Garden balance', () => {
-    vi.useFakeTimers()
+  it('lets standalone Module 6 progress through physical interactions without a Money Garden balance', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     render(<BondStreetGate />)
 
-    expect(screen.getByText(/Walk into the exchange and meet Beau/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Talk to Beau/i }))
-    advanceBondAnimation()
+    expect(screen.getByText(/Walk inside and talk to Beau/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Practice Bond Street stake/i)).not.toBeInTheDocument()
 
-    expect(screen.getByText(/Who should get your loan/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Go to the allocation counter/i }))
-    advanceBondAnimation()
+    reachBondAllocation()
 
-    expect(screen.getByText(/Lend your \$100 stake/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Lock decision/i })).toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: /Split evenly/i }))
-    advanceBondAnimation(1200)
-    expect(screen.getByRole('button', { name: /Lock decision/i })).toBeEnabled()
+    expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
+    expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
+    expect(screen.getByText(/\$60 left to place/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Lock in lending/i })).toBeEnabled()
   })
 
   it('does not strand Module 6 when a saved route has no usable Money Garden stake', () => {
-    vi.useFakeTimers()
     localStorage.setItem('tayu-wallet-v1', JSON.stringify({ spend: 0, save: 20, give: 0, week: 6, mg: null }))
     render(<BondStreetGate />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Talk to Beau/i }))
-    advanceBondAnimation()
-    fireEvent.click(screen.getByRole('button', { name: /Go to the allocation counter/i }))
-    advanceBondAnimation()
+    reachBondAllocation()
 
-    expect(screen.getByText(/Lend your \$100 stake/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Split evenly/i }))
-    advanceBondAnimation(1200)
-    expect(screen.getByRole('button', { name: /Lock decision/i })).toBeEnabled()
+    expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
+    expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
+    expect(screen.getByText(/\$60 left to place/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Lock in lending/i })).toBeEnabled()
   })
 
   it('replays Module 6 even when Bond Street was completed before', () => {
