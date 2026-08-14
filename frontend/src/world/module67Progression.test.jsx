@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BondStreetGate } from './BondStreetGate.jsx'
 import { BOND_INTERACT_EVENT } from './BondStreetWorld.jsx'
 import { TaxWorldInteractionBridge } from './TaxWorldInteractionBridge.jsx'
+import { playerPos } from './store.js'
+import { TAX_POINTS } from './taxDistrictLayout.js'
 import { useTaxLab } from './taxLabStore.js'
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
@@ -43,9 +45,7 @@ describe('Modules 6 and 7 progression', () => {
 
     expect(screen.getByText(/Walk inside and talk to Beau/i)).toBeInTheDocument()
     expect(screen.queryByText(/Practice Bond Street stake/i)).not.toBeInTheDocument()
-
     reachBondAllocation()
-
     expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
     expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
@@ -56,9 +56,7 @@ describe('Modules 6 and 7 progression', () => {
   it('does not strand Module 6 when a saved route has no usable Money Garden stake', () => {
     localStorage.setItem('tayu-wallet-v1', JSON.stringify({ spend: 0, save: 20, give: 0, week: 6, mg: null }))
     render(<BondStreetGate />)
-
     reachBondAllocation()
-
     expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
     expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
@@ -67,7 +65,7 @@ describe('Modules 6 and 7 progression', () => {
   })
 
   it('replays Module 6 even when Bond Street was completed before', () => {
-    localStorage.setItem('tayu-profile-v1', JSON.stringify({ badges: ['bond'], bondStreet: { completed: true }, rexTaxIntroSeen: true }))
+    localStorage.setItem('tayu-profile-v1', JSON.stringify({ badges: ['bond'], bondStreet: { completed: true } }))
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     render(<TaxWorldInteractionBridge />)
@@ -78,13 +76,16 @@ describe('Modules 6 and 7 progression', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     render(<TaxWorldInteractionBridge />)
     expect(screen.queryByText(/Module 6 · Bond Street/i)).not.toBeInTheDocument()
-    expect(screen.getByText(/Module 7 · Tax Office · Rex the Assessor/i)).toBeInTheDocument()
+    expect(playerPos.x).toBe(TAX_POINTS.guide[0])
+    expect(playerPos.z).toBeCloseTo(TAX_POINTS.guide[1] + 4.2)
+    expect(useTaxLab.getState().phase).toBe('intro')
   })
 
-  it('keeps keyboard E working in a direct Module 7 launch without a bond badge', () => {
+  it('keeps keyboard E working after walking to Rex in a direct Module 7 launch without a bond badge', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     render(<TaxWorldInteractionBridge />)
-    fireEvent.click(screen.getByRole('button', { name: /Start the Tax Office/i }))
+    playerPos.x = TAX_POINTS.guide[0]
+    playerPos.z = TAX_POINTS.guide[1]
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe('guide')
   })

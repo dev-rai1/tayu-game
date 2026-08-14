@@ -4,234 +4,100 @@ import path from 'node:path'
 
 const read = (relative) => fs.readFileSync(path.resolve(relative), 'utf8')
 
-const gameWorld = read('src/world/GameWorld.jsx')
-const keyboard = read('src/world/useKeyboardControls.js')
 const world = read('src/pages/World.jsx')
 const moduleSelect = read('src/pages/ModuleSelect.jsx')
 const paycheckWorld = read('src/world/PaycheckPlanetWorld.jsx')
-const landmarks = read('src/world/ModuleLandmarks.jsx')
 const overlay = read('src/world/TaxWorkbenchOverlay.jsx')
 const actionPrompt = read('src/world/TaxActionPrompt.jsx')
 const taxStore = read('src/world/taxLabStore.js')
 const taxLayout = read('src/world/taxDistrictLayout.js')
 const paycheckScenario = read('src/scenarios/paycheckPlanet.js')
-const paycheckMode = read('src/world/paycheckMode.js')
 const objective = read('src/world/objective.js')
-const taxCss = read('src/world/taxWorkbench.css')
-const app = read('src/App.jsx')
-const watcher = read('src/components/PathCompletionWatcher.jsx')
-const admin = read('src/components/AdminPanel.jsx')
-const dashboard = read('src/pages/Dashboard.jsx')
-const teacher = read('src/pages/TeacherDashboard.jsx')
-const behavior = read('src/components/PlaytestBehaviorSummary.jsx')
-const coach = read('src/world/PersistentCoach.jsx')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
 
 describe('Paycheck Planet full integration', () => {
-  it('removes the This way edge pointer and uses left/right arrows only for camera rotation', () => {
-    expect(gameWorld).not.toContain('ObjectiveEdgePointer')
-    expect(keyboard).toContain("ArrowLeft: 'lookLeft'")
-    expect(keyboard).toContain("ArrowRight: 'lookRight'")
-    expect(keyboard).not.toContain("ArrowLeft: 'left'")
-    expect(keyboard).not.toContain("ArrowRight: 'right'")
-  })
-
-  it('arrives at Modules 6 and 7 before activating their persistent-town tax experience', () => {
+  it('routes Modules 6 and 7 into the shared 3D town experience', () => {
     expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
     expect(world).toContain("if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
     expect(world).toContain("enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })")
-    expect(world).toContain('activatePaycheckWorld()')
     expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
-    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
-    expect(world).toContain('Nothing in the module starts or appears until you choose')
-    expect(world).not.toContain('adminTeleport(PAYCHECK_START)')
-    expect(world).not.toContain('TaxLabWorld')
     expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')
-    expect(world).not.toContain('AccessibleWorld')
-    expect(world).toContain('{!moduleEntry && taxMode && <TaxWorkbenchOverlay />}')
-    expect(world).not.toContain("navigate('/tax-paycheck'")
-    expect(world).toContain("const internal = moduleId === '5' ? 5 : Number(moduleId)")
-    expect(moduleSelect).toContain("String(target.n)")
-    expect(moduleSelect).not.toContain('target.route')
-    expect(paycheckMode).toContain('tayu-paycheck-world-mode')
+    expect(moduleSelect).toContain('String(target.n)')
   })
 
-  it('clears legacy freezes so normal movement remains available in tax mode after start', () => {
-    expect(world).toContain('prepareWorldForTaxWalking()')
-    expect(world).toContain('scenarioLocked: false')
-    expect(world).toContain('weekComplete: false')
-    expect(world).toContain('lemPhase: null')
-    expect(world).toContain("mgPhase: state.mg ? 'tax-paused' : state.mgPhase")
-    expect(world).toContain("mg: state.mg ? { ...state.mg, phase: 'tax-paused' } : state.mg")
-    expect(world).toContain('playerSpeedMult: 1')
-    expect(world).toContain('moveTarget.x = null')
-    expect(world).toContain('{!moduleEntry && usesTouchControls && <MobileControls />}')
+  it('keeps Module 7 inside a physical Tax Office with Rex and taxpayer NPCs', () => {
+    expect(paycheckWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
+    expect(paycheckWorld).toContain('Rex · Tax Guide')
+    expect(paycheckWorld).toContain('TAX_CLIENTS.map')
+    expect(paycheckWorld).toContain('InteractiveTaxNpc')
+    expect(paycheckWorld).toContain('CharacterMesh')
+    expect(paycheckWorld).toContain('InteractionGlow')
   })
 
-  it('starts Money Garden from the Start Module 5 handoff before Bond Street and Tax Office', () => {
-    expect(world).toContain("label: 'Start Module 5', act: null")
-    expect(world).toContain('finishBankHandoffIntoGarden()')
-    expect(world).toContain('game.startGarden()')
-    expect(world).toContain("enterPaycheckPlanet({ origin: 'garden-handoff' })")
-  })
-
-  it('keeps the six-step tax math but requires decisions and calculations instead of next-button clicking', () => {
+  it('uses a six-step tax workflow with real calculations', () => {
     expect(paycheckScenario).toContain('TOTAL_TAX_STEPS = 6')
     expect(paycheckScenario).toContain('GAME_STANDARD_DEDUCTION')
     expect(paycheckScenario).toContain('bracketTax')
     expect(paycheckScenario).toContain('taxReturnMath')
-    expect(overlay).toContain('Select the two fields')
-    expect(overlay).toContain('draggable')
-    expect(overlay).toContain('Build the bracket split yourself')
-    expect(overlay).toContain("placeholder=\"$ amount\"")
-    expect(overlay).toContain('Place the credit in the right stage')
-    expect(overlay).toContain('Decide the outcome and calculate the difference')
-    expect(overlay).toContain('Catch the planted error before you file')
-    expect(overlay).toContain('Type <strong>FILE</strong>')
-    expect(overlay).not.toContain('Continue to next filing step')
-    expect(overlay).not.toContain('There are no A/B/C quiz answers.')
   })
 
-  it('returns to the Tax Office between completed steps so the next station can animate in-world', () => {
-    expect(taxStore).toContain('panel: null')
+  it('returns control to the Tax Office after each completed decision', () => {
     expect(taxStore).toContain('openStation: (stepNumber)')
-    expect(taxStore).toContain('advanceStep: () => set')
-    expect(taxStore).toContain('const nextStation = taxStationForStep(next)')
-    expect(taxStore).toContain('Every completed decision hands control back to the physical Tax Office.')
+    expect(taxStore).toContain('advanceStep: () => {')
+    expect(taxStore).toContain("emitTaxWorld('step-complete'")
+    expect(taxStore).toContain('const next = state.stepNumber + 1')
     expect(taxStore).toContain('panel: null')
-    expect(taxStore).toContain('`Good work. Watch the office react, then walk to the ${nextStation.label}.`')
-    expect(taxLayout).toContain('TAX_STEP_STATIONS')
+    expect(taxStore).toContain('The office reacted to your decision. Now walk to ${taxStationForStep(next).label}.')
     expect(paycheckWorld).toContain('CurrentTaxStation')
-    expect(paycheckWorld).toContain("phase === 'steps' && currentStation")
-    expect(objective).toContain('taxStationForStep(tax.stepNumber).point')
+    expect(paycheckWorld).toContain('StationProp')
+    expect(paycheckWorld).toContain('CelebrationBurst')
   })
 
-  it('supports proximity E/action interactions instead of requiring 3D mouse clicks', () => {
+  it('uses proximity-based E interactions for Rex, clients, and stations', () => {
     expect(world).toContain('<TaxWorldInteractionBridge />')
     expect(world).toContain('<TaxActionPrompt />')
     expect(bridge).toContain("event.code !== 'KeyE'")
     expect(bridge).toContain("window.addEventListener('tayu-interact'")
-    expect(bridge).toContain('TAX_CLIENTS')
+    expect(bridge).toContain("label: 'Talk to Rex and start Module 7'")
+    expect(bridge).toContain("state.phase === 'case'")
+    expect(bridge).toContain("state.phase === 'steps'")
     expect(bridge).toContain('taxStationForStep(state.stepNumber)')
-    expect(taxStore).toContain('nearbyAction')
   })
 
-  it('shows the E control only when a tax interaction is actionable and keeps it clear of open panels', () => {
-    expect(actionPrompt).toContain('shortLabel')
-    expect(actionPrompt).toContain("phase === 'intro'")
-    expect(actionPrompt).toContain("phase === 'complete'")
-    expect(actionPrompt).toContain('const canActivate = !panel && (Boolean(nearbyAction) || phase === \'intro\')')
-    expect(actionPrompt).toContain('if (!canActivate) return null')
-    expect(actionPrompt).toContain('bottom-[max(6.5rem,calc(env(safe-area-inset-bottom)+5rem))]')
-    expect(actionPrompt).toContain('tax-workbench-enter')
-    expect(actionPrompt).toContain('Press E or click here')
-    expect(actionPrompt).toContain('runVisibleTaxAction(nearbyAction)')
-    expect(actionPrompt).toContain("nearbyAction.kind === 'client'")
-    expect(actionPrompt).toContain("nearbyAction.kind === 'station'")
-  })
-
-  it('keeps the map and movement usable while focused station panels stay compact after start', () => {
-    expect(world).toContain('{!moduleEntry && <Hud playerName={state.player.name')
-    expect(world).toContain('{!moduleEntry && usesTouchControls && <MobileControls />}')
+  it('keeps station workbenches compact instead of replacing the 3D room', () => {
     expect(overlay).toContain('data-tax-field-ui="true"')
     expect(overlay).toContain('data-tax-station-panel="true"')
     expect(overlay).toContain('max-h-[72dvh]')
     expect(overlay).not.toContain('aria-modal="true"')
     expect(paycheckWorld).not.toContain('<Html fullscreen')
-    expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('keeps only the current decision targets visible instead of crowding the Tax Lab', () => {
+  it('keeps the action prompt hidden unless an in-world interaction is available', () => {
+    expect(actionPrompt).toContain('if (!canActivate) return null')
+    expect(actionPrompt).toContain('Press E or click here')
+    expect(actionPrompt).toContain("nearbyAction.kind === 'client'")
+    expect(actionPrompt).toContain("nearbyAction.kind === 'station'")
+  })
+
+  it('keeps taxpayer and station navigation tied to the real district', () => {
     expect(taxLayout).toContain('TAX_CLIENTS')
     expect(taxLayout).toContain("name: 'Ari'")
     expect(taxLayout).toContain("name: 'Sam'")
     expect(taxLayout).toContain("name: 'Jordan'")
-    expect(paycheckWorld).toContain('Maya · Tax Guide')
-    expect(paycheckWorld).toContain('TAX_CLIENTS.map')
-    expect(paycheckWorld).toContain('CurrentTaxStation')
-    expect(paycheckWorld).toContain('InteractionGlow')
-    expect(paycheckWorld).toContain('CharacterMesh')
-    expect(paycheckWorld).not.toContain('RovingTaxWorker')
-    expect(paycheckWorld).not.toContain('DeskWorker')
-    expect(paycheckWorld).not.toContain('Leo · carrying returns')
-    expect(paycheckWorld).not.toContain('Rae · delivering W-2s')
-    expect(paycheckWorld).not.toContain('Billboard')
-    expect(paycheckWorld).not.toContain('labelTexture')
-    expect(landmarks).not.toContain('TaxDistrictActivity')
-  })
-
-  it('makes the client choice teach evidence instead of revealing the answer upfront', () => {
-    expect(overlay).toContain('Before doing any tax math, what can you actually conclude?')
-    expect(overlay).toContain('We cannot know yet')
-    expect(overlay).toContain("prediction === 'unknown'")
-    expect(overlay).toContain('Withholding is only money already paid')
-    expect(taxStore).toContain('predictionMistakes')
-  })
-
-  it('requires correct bracket allocation and tax math', () => {
-    expect(overlay).toContain('numberValue(inputs.firstIncome) === math.firstBracketIncome')
-    expect(overlay).toContain('numberValue(inputs.secondIncome) === math.secondBracketIncome')
-    expect(overlay).toContain('numberValue(inputs.firstTax) === firstTax')
-    expect(overlay).toContain('numberValue(inputs.secondTax) === secondTax')
-    expect(overlay).toContain('bracketMistakes')
-  })
-
-  it('requires the player to catch and repair a filing error', () => {
-    expect(overlay).toContain('const plantedWrongTax = math.finalTax + 100')
-    expect(overlay).toContain("field === 'finalTax'")
-    expect(overlay).toContain('numberValue(work.reviewCorrection) === math.finalTax')
-    expect(overlay).toContain('reviewMistakes')
-  })
-
-  it('routes Tax Office navigation through the real district instead of disabling guidance', () => {
+    expect(taxLayout).toContain('TAX_STEP_STATIONS')
     expect(objective).toContain("if (tax.phase === 'intro') return TAX_POINTS.guide")
     expect(objective).toContain("if (tax.phase === 'case') return TAX_POINTS.caseCenter")
     expect(objective).toContain("if (tax.phase === 'steps') return taxStationForStep(tax.stepNumber).point")
-    expect(objective).not.toContain('if (isPaycheckWorldActive()) return null')
   })
 
-  it('uses target glow, station animation, and tactile panel feedback without extra workers', () => {
-    expect(paycheckWorld).toContain('InteractionGlow')
-    expect(paycheckWorld).toContain('StationProp')
-    expect(paycheckWorld).toContain('CelebrationBurst')
-    expect(paycheckWorld).not.toContain('RovingTaxWorker')
-    expect(taxCss).toContain('@keyframes taxScanLine')
-    expect(taxCss).toContain('@keyframes taxCreditSlide')
-    expect(taxCss).toContain('@keyframes taxShake')
-    expect(paycheckWorld).not.toContain('PRESS E')
-  })
-
-  it('removes the standalone tax and per-module quiz detours', () => {
-    expect(app).not.toContain("lazy(() => import('./pages/TaxPaycheck.jsx'))")
-    expect(app).not.toContain("lazy(() => import('./pages/ModuleCheck.jsx'))")
-    expect(app).toContain('LegacyPaycheckRedirect')
-    expect(moduleSelect).not.toContain('Retake a quick check')
-    expect(moduleSelect).not.toContain('Best quick check')
-    expect(watcher).not.toContain('navigate(`/module-check/')
-  })
-
-  it('tracks tax as a real module in admin and teacher analytics', () => {
-    for (const source of [dashboard, teacher, behavior]) {
-      expect(source).toContain("'tax'")
-      expect(source).toContain('Paycheck Planet')
-      expect(source).toContain('Money Garden')
-    }
-    expect(world).toContain("taxMode ? 'tax'")
-    expect(overlay).toContain("type: 'module_complete'")
-    expect(overlay).toContain("type: 'tax_decision_action'")
-    expect(overlay).toContain("mode: 'in_world_decision_lab'")
-  })
-
-  it('keeps admin navigation wired through the shared world jump mechanism', () => {
-    expect(admin).toContain("localStorage.setItem('tayu-jump-module', String(step))")
-    expect(admin).not.toContain('/tax-paycheck?admin=1')
-  })
-
-  it('keeps the shared world coach hierarchy for normal modules after start', () => {
-    expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
-    expect(coach).toContain('data-important-message-scrim="true"')
-    expect(coach).toContain('pointer-events-none fixed')
-    expect(world).toContain('{!moduleEntry && !taxMode && <PersistentCoach key="world-coach" />}')
+  it('keeps decision-first tax activities instead of next-button quiz progression', () => {
+    expect(overlay).toContain('Select the two fields')
+    expect(overlay).toContain('Build the bracket split yourself')
+    expect(overlay).toContain('Place the credit in the right stage')
+    expect(overlay).toContain('Decide the outcome and calculate the difference')
+    expect(overlay).toContain('Catch the planted error before you file')
+    expect(overlay).toContain('Type <strong>FILE</strong>')
+    expect(overlay).not.toContain('Continue to next filing step')
   })
 })

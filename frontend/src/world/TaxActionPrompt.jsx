@@ -11,14 +11,7 @@ function shortLabel(phase, nearbyAction) {
 
 function runVisibleTaxAction(nearbyAction) {
   const lab = useTaxLab.getState()
-  if (lab.panel) return false
-
-  if (lab.phase === 'intro') {
-    lab.openGuide()
-    return true
-  }
-
-  if (!nearbyAction) return false
+  if (lab.panel || !nearbyAction) return false
 
   if (nearbyAction.kind === 'guide') {
     lab.openGuide()
@@ -44,7 +37,7 @@ export function TaxActionPrompt() {
   const panel = useTaxLab((state) => state.panel)
   const phase = useTaxLab((state) => state.phase)
 
-  const canActivate = !panel && (Boolean(nearbyAction) || phase === 'intro')
+  const canActivate = !panel && Boolean(nearbyAction)
   if (!canActivate) return null
 
   const label = shortLabel(phase, nearbyAction)
