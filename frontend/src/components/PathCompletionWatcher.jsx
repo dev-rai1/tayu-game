@@ -18,7 +18,7 @@ const MODULE_BY_BADGE = {
 
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
-const MODULE_6_HANDOFF_TEXT = 'You earned, budgeted, banked, and invested the same money. Next is Module 6: Bond Street. Continue to enter Module 6.'
+const MODULE_6_HANDOFF_TEXT = 'You finished Money Garden. Next is Module 6: Bond Street. Leave the garden and continue to the Bond Street building.'
 
 function fixModule5BridgeCard(cards) {
   let changed = false
@@ -33,7 +33,7 @@ function fixModule5BridgeCard(cards) {
       text: MODULE_6_HANDOFF_TEXT,
       buttons: (card.buttons || []).map((button) => ({
         ...button,
-        label: /finale/i.test(String(button?.label || '')) ? 'Start Module 6 →' : button.label,
+        label: /finale/i.test(String(button?.label || '')) ? 'Start Module 6: Bond Street →' : button.label,
       })),
     }
   })
@@ -54,6 +54,7 @@ export default function PathCompletionWatcher() {
   const bkWeek = useGame((state) => state.bk?.week || 0)
   const mgPhase = useGame((state) => state.mgPhase)
   const gameComplete = useGame((state) => state.gameComplete)
+  const enterParty = useGame((state) => state.enterParty)
   const cards = useGame((state) => state.cards)
 
   // Normalize the legacy Money Garden bridge before the browser paints it, so
@@ -85,12 +86,13 @@ export default function PathCompletionWatcher() {
         })
       }
 
-      // Older Money Garden completion code marks the party/finale open before
-      // the newer Module 6 Bond Street and Module 7 Tax Office sequence. Catch
-      // that stale state immediately, close the premature finale, and enter the
-      // real Module 6 route. Using garden-handoff preserves the existing logic
-      // that unlocks the true finale only after the tax sequence is finished.
-      if (week === 5 && gameComplete && handOffGardenToModule6(badges)) {
+      // Money Garden still has a legacy mg.bridge action that raises enterParty
+      // before the old finale. Catch that exact state immediately (not only the
+      // later gameComplete state seen after entering the portal) and replace it
+      // with the real Module 5 -> Module 6 handoff. This prevents even a brief
+      // visit to the old Finale/certificate portal.
+      const gardenFinished = handOffGardenToModule6(badges) || (week === 5 && mgPhase === 'done' && !badges.includes('bond'))
+      if (week === 5 && (enterParty || gameComplete) && gardenFinished) {
         try {
           sessionStorage.setItem(TAX_ORIGIN_KEY, 'garden-handoff')
           sessionStorage.removeItem(BOND_ONLY_KEY)
@@ -107,9 +109,9 @@ export default function PathCompletionWatcher() {
           banner: null,
           guide: null,
           actorCaption: null,
-          toast: null,
+          toast: 'Module 5 complete! Next: Module 6 · Bond Street.',
         })
-        saveProfile({ guru: false })
+        saveProfile({ guru: false, badges: [...new Set([...badges, 'garden'])] })
         activatePaycheckWorld()
         return
       }
@@ -133,7 +135,7 @@ export default function PathCompletionWatcher() {
     } finally {
       syncing.current = false
     }
-  }, [bkWeek, btStage, gameComplete, mgPhase, week, weekComplete])
+  }, [bkWeek, btStage, enterParty, gameComplete, mgPhase, week, weekComplete])
 
   useEffect(() => {
     syncAndCheck()
