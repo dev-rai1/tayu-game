@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BondStreetGate } from './BondStreetGate.jsx'
 import { BOND_INTERACT_EVENT } from './BondStreetWorld.jsx'
@@ -10,7 +10,9 @@ const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 
 function bondInteract(kind, bondId = null) {
-  window.dispatchEvent(new CustomEvent(BOND_INTERACT_EVENT, { detail: { kind, bondId } }))
+  act(() => {
+    window.dispatchEvent(new CustomEvent(BOND_INTERACT_EVENT, { detail: { kind, bondId } }))
+  })
 }
 
 function reachBondAllocation() {
@@ -47,6 +49,7 @@ describe('Modules 6 and 7 progression', () => {
     expect(screen.getByText(/Choose where to lend your \$90 stake/i)).toBeInTheDocument()
     expect(screen.getByText(/\$90 left to place/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Lend more here/i }))
+    expect(screen.getByText(/\$60 left to place/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Lock in lending/i })).toBeEnabled()
   })
 
