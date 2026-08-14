@@ -206,23 +206,15 @@ export default function About() {
             </div>
             {/* R13 11.4: media coverage, embedded inline */}
             <div className="mt-6 rounded-3xl border border-navy/10 bg-white/95 p-5 shadow-md">
-              <h3 className="font-display text-lg font-extrabold text-navy">Recognized by the White House and NJCFE · Featured in FOX 5 DC, WTOP, Vienna Ledger, Connection Newspapers &amp; Vision Times</h3>
+              <h3 className="font-display text-lg font-extrabold text-navy">White House Letter · Featured in FOX 5 DC, WTOP, Vienna Ledger, Connection Newspapers &amp; Vision Times · New Jersey Coalition for Financial Education</h3>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/20 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
+                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/20 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md md:col-span-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Recognition</span>
-                    <span className="text-sm font-extrabold text-navy">View recognition →</span>
+                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Letter</span>
+                    <span className="text-sm font-extrabold text-navy">View letter →</span>
                   </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Recognition from the White House</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House recognition of our financial-literacy work and community impact.</p>
-                </a>
-                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">NJCFE Recognition</span>
-                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">National Jump$tart Coalition financial-education recognition</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read NJCFE&rsquo;s feature on our book, elementary-school outreach, and financial-literacy mission.</p>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Letter from the White House recognizing our financial-literacy work</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House letter recognizing our work in financial literacy and community impact.</p>
                 </a>
                 <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
                   <div className="flex items-center justify-between gap-3">
@@ -255,6 +247,14 @@ export default function About() {
                   </div>
                   <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax County students create a financial-literacy picture book for elementary students</h4>
                   <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the international Chinese-language feature on our 274-book, 17-school outreach and the next step with a financial-literacy game.</p>
+                </a>
+                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md md:col-span-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">New Jersey Coalition for Financial Education</span>
+                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">NJCFE features our financial-literacy book and elementary-school outreach</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the New Jersey Coalition for Financial Education feature on our book, classroom outreach, and financial-literacy mission.</p>
                 </a>
               </div>
               <div className="mt-5 rounded-2xl border border-navy/10 bg-navy/5 p-4 shadow-sm">
