@@ -61,7 +61,7 @@ describe('module entry clarity', () => {
   })
 
   it('makes Rex, taxpayers, and E/action interactions clear without crowding the start experience', () => {
-    expect(paycheck).toContain("name=\"Rex\"")
+    expect(paycheck).toContain('Rex · Tax Guide')
     expect(paycheck).toContain('TAX_CLIENTS.map')
     expect(paycheck).toContain('InteractionGlow')
     expect(paycheck).toContain('CurrentTaxStation')
