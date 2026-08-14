@@ -283,7 +283,7 @@ export default function ModuleSelect() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Module 5 · Investing</div>
-                        <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: pathAccent }}>Money Garden</h2>
+                        <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>Money Garden</h2>
                         <p className="mt-1 max-w-2xl text-sm font-semibold leading-relaxed text-slate-700">Two connected parts. Finish 5A, then 5B unlocks using the same portfolio.</p>
                       </div>
                       <StatusPill done={done} inProgress={gardenPartAInProgress || gardenPartBInProgress} accessible={accessible} recommended={isNext} />
@@ -329,7 +329,7 @@ export default function ModuleSelect() {
                     <StatusPill done={done} accessible={accessible} recommended={isNext} />
                   </div>
                   <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">{physicalDestination ? `Module ${module.n} · Separate 3D destination` : `Module ${module.n}`}</div>
-                  <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: physicalDestination ? module.color : pathAccent }}>{module.title}</h2>
+                  <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>{module.title}</h2>
                   {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Walk-in world location · big building label</div>}
                   {finalModule && <div className="mt-2 ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-700">Final module · Tax Office</div>}
                   <div className="mt-2 text-xs font-bold text-slate-500">{module.grades} · {module.minutes}</div>
