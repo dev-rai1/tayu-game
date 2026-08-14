@@ -49,6 +49,30 @@ describe('Module 5 to Module 6 handoff', () => {
     expect(handOffGardenToModule6(['jars', 'lemonade', 'budget', 'bank', 'garden', 'bond'])).toBe(false)
   })
 
+  it('intercepts the actual mg.bridge action before legacy unlockParty can open the portal', async () => {
+    const unlockParty = vi.fn()
+    const awardBadge = vi.fn()
+    const persist = vi.fn()
+    useGame.setState({
+      unlockParty,
+      awardBadge,
+      persist,
+      mgTotal: () => 42,
+      allocations: { spend: 7, save: 35, give: 0 },
+    })
+
+    render(<PathCompletionWatcher />)
+    useGame.getState().mgAct('mg.bridge')
+
+    await waitFor(() => expect(isPaycheckWorldActive()).toBe(true))
+    expect(unlockParty).not.toHaveBeenCalled()
+    expect(awardBadge).toHaveBeenCalledWith('garden', 'MONEY GARDENER')
+    expect(useGame.getState().enterParty).toBe(false)
+    expect(useGame.getState().objective).toBe('tax')
+    expect(useGame.getState().allocations.save).toBe(42)
+    expect(sessionStorage.getItem('tayu-tax-entry-origin')).toBe('garden-handoff')
+  })
+
   it('closes a premature finale and activates the Module 6 route', async () => {
     localStorage.setItem('tayu-profile-v1', JSON.stringify({ badges: ['jars', 'lemonade', 'budget', 'bank', 'garden'], guru: true }))
     useGame.setState({
