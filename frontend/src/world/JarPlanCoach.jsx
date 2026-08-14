@@ -35,7 +35,7 @@ export function JarPlanCoach() {
   return (
     <aside
       aria-label="Live jar plan goals"
-      className="pointer-events-auto fixed left-1/2 top-[15.25rem] z-[176] w-[min(94vw,30rem)] -translate-x-1/2 rounded-2xl border-2 border-white/20 bg-navy/95 p-3 text-white shadow-xl sm:top-[13.25rem]"
+      className="pointer-events-auto fixed left-1/2 top-[17rem] z-[176] w-[min(94vw,30rem)] -translate-x-1/2 rounded-2xl border-2 border-white/20 bg-navy/95 p-3 text-white shadow-xl sm:top-[15rem]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
