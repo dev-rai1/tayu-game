@@ -7,6 +7,14 @@
  * later overrides intentionally restore one full-screen workspace.
  */
 
+/* Selecting a module should enter its 3D destination directly. World.jsx still
+   renders its short-lived launch dialog so existing start/resume logic remains
+   intact, but DialogAccessibility immediately triggers that action. Keep this
+   transition completely invisible so the player never sees a popup flash. */
+.tayu-world-declutter > div:has([role="dialog"][aria-labelledby="module-entry-title"]) {
+  display: none !important;
+}
+
 @supports selector(.tayu-world-declutter:has([data-guidance-lane="side-hint"])) {
   .tayu-world-declutter:has([data-guidance-lane="side-hint"])
     div.pointer-events-auto.absolute.inset-0:has(> [role="dialog"][aria-modal="true"]:not([aria-label="Game help"])) {
