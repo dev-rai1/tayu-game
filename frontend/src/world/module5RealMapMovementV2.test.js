@@ -73,15 +73,15 @@ describe('final-module real-map movement v2', () => {
   })
 
   it('declutters the live tax district and shows only the current decision targets', () => {
-    expect(paycheckWorld).toContain('Maya · Tax Guide')
+    expect(paycheckWorld).toContain('Rex · Tax Guide')
     expect(paycheckWorld).toContain('TAX_CLIENTS.map')
     expect(paycheckWorld).toContain('CurrentTaxStation')
     expect(paycheckWorld).toContain('InteractionGlow')
     expect(paycheckWorld).not.toContain('Leo · carrying returns')
     expect(paycheckWorld).not.toContain('Rae · delivering W-2s')
     expect(paycheckWorld).not.toContain('Nia · checking math')
-    expect(paycheckWorld).not.toContain('Billboard')
-    expect(paycheckWorld).not.toContain('labelTexture')
+    expect(paycheckWorld).toContain('Billboard')
+    expect(paycheckWorld).toContain('labelTexture')
     expect(landmarks).not.toContain('TaxDistrictActivity')
   })
 
