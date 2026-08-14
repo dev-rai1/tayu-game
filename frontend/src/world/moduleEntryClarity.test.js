@@ -60,14 +60,15 @@ describe('module entry clarity', () => {
     expect(taxCss).toContain("[data-tax-field-ui='true']")
   })
 
-  it('makes the tax guide, taxpayers, and E/action interactions clear without crowding the start experience', () => {
-    expect(paycheck).toContain('Maya · Tax Guide')
+  it('makes Rex, taxpayers, and E/action interactions clear without crowding the start experience', () => {
+    expect(paycheck).toContain("name=\"Rex\"")
     expect(paycheck).toContain('TAX_CLIENTS.map')
     expect(paycheck).toContain('InteractionGlow')
     expect(paycheck).toContain('CurrentTaxStation')
     expect(paycheck).not.toContain('RovingTaxWorker')
     expect(paycheck).not.toContain('DeskWorker')
     expect(paycheck).toContain('closeEnough(point)')
+    expect(bridge).toContain("label: 'Talk to Rex and start Module 7'")
     expect(bridge).toContain("event.code !== 'KeyE'")
     expect(bridge).toContain("window.addEventListener('tayu-interact'")
   })
