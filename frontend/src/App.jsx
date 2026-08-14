@@ -18,7 +18,9 @@ import WorldUtilityDock from './components/WorldUtilityDock.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser, isCloud } from './services/auth.js'
-import { loadProfile } from './services/walletStore.js'
+import { loadProfile, saveProfile } from './services/walletStore.js'
+import { activatePaycheckWorld } from './world/paycheckMode.js'
+import { useTaxLab } from './world/taxLabStore.js'
 import { installViewportSync } from './utils/viewport.js'
 import './styles/viewport.css'
 
@@ -43,8 +45,6 @@ function useAuthGateReady() {
     if (ready) return undefined
     const finish = () => setReady(true)
     window.addEventListener('tayu-auth-changed', finish, { once: true })
-    // Firebase restores an existing browser session asynchronously. Give that
-    // callback a short window before deciding a deep link really is logged out.
     const timer = window.setTimeout(finish, 1500)
     return () => {
       window.clearTimeout(timer)
@@ -73,11 +73,31 @@ function TeacherGate({ children }) {
   return children
 }
 
-// Keep old bookmarks harmless without keeping the old standalone Module 5 UI.
-// The legacy URL now launches public Module 5 inside /world.
 function LegacyPaycheckRedirect() {
   try { localStorage.setItem('tayu-jump-module', '5') } catch { /* ignore */ }
   return <Navigate to="/world" replace />
+}
+
+function DirectModule67World() {
+  try {
+    const raw = localStorage.getItem('tayu-module-entry-intent')
+    const intent = raw ? JSON.parse(raw) : null
+    const moduleId = String(intent?.moduleId || localStorage.getItem('tayu-jump-module') || '')
+    if (moduleId === '6' || moduleId === '7') {
+      localStorage.removeItem('tayu-module-entry-intent')
+      localStorage.removeItem('tayu-jump-module')
+      localStorage.removeItem('tayu-garden-entry-part')
+      sessionStorage.setItem('tayu-tax-entry-origin', 'module-select')
+      if (moduleId === '6') sessionStorage.setItem('tayu-bond-only-entry', '1')
+      else {
+        sessionStorage.removeItem('tayu-bond-only-entry')
+        saveProfile({ taxLabProgress: null, taxLab: null })
+        useTaxLab.getState().reset()
+      }
+      activatePaycheckWorld()
+    }
+  } catch { /* storage can be unavailable */ }
+  return <World />
 }
 
 function AccountMusicControl() {
@@ -161,7 +181,7 @@ export default function App() {
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/avatar" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Getting the dress-up room ready..." />}><AvatarCreate /></Suspense></PreQuizGate>} />
-              <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><World /></Suspense></PreQuizGate>} />
+              <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><DirectModule67World /></Suspense></PreQuizGate>} />
               <Route path="/tax-paycheck" element={<PreQuizGate><LegacyPaycheckRedirect /></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
               <Route path="/guru" element={<Guru />} />

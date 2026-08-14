@@ -18,5 +18,14 @@ export function activatePaycheckWorld() {
 }
 
 export function deactivatePaycheckWorld() {
+  let returnToModules = false
+  try {
+    returnToModules = sessionStorage.getItem('tayu-bond-only-entry') === '1' && sessionStorage.getItem('tayu-tax-entry-origin') === 'module-select'
+    if (returnToModules) {
+      sessionStorage.removeItem('tayu-bond-only-entry')
+      sessionStorage.removeItem('tayu-tax-entry-origin')
+    }
+  } catch { /* storage can be unavailable */ }
   setPaycheckWorldActive(false)
+  if (returnToModules && typeof window !== 'undefined') window.location.assign('/modules')
 }
