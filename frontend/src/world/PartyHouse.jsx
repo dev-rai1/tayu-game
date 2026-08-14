@@ -115,7 +115,7 @@ export function PartyHouse() {
   })
   const sign = gameComplete
     ? cardTexture('FINALE AREA', 'Come in, Money Guru!', { bg: '#071748', color: '#ffffff', accent: '#FFD700' })
-    : cardTexture('FINALE AREA', 'Finish the journey... the party is waiting!', { bg: '#071748', color: '#ffffff', accent: '#7850F0' })
+    : cardTexture('MODULE 6', 'Bond Street is next — keep going!', { bg: '#071748', color: '#ffffff', accent: '#7850F0' })
   return (
     <group position={[hx, 0, hz]} rotation={[0, faceRoad, 0]}>
       {/* the house - deep party purple with a starry roof */}
