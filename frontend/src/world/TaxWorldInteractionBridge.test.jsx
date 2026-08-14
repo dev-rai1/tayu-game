@@ -2,8 +2,9 @@ import React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { TaxActionPrompt } from './TaxActionPrompt.jsx'
+import { TaxWorkbenchOverlay } from './TaxWorkbenchOverlay.jsx'
 import { TaxWorldInteractionBridge } from './TaxWorldInteractionBridge.jsx'
-import { activatePaycheckWorld, deactivatePaycheckWorld, isPaycheckWorldActive } from './paycheckMode.js'
+import { activatePaycheckWorld, deactivatePaycheckWorld } from './paycheckMode.js'
 import { playerPos } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_POINTS } from './taxDistrictLayout.js'
@@ -12,18 +13,19 @@ import { saveProfile } from '../services/walletStore.js'
 const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 
-function mountTaxInteraction() {
+function mountTaxInteraction({ workbench = false } = {}) {
   return render(
     <>
       <TaxWorldInteractionBridge />
       <TaxActionPrompt />
+      {workbench && <TaxWorkbenchOverlay />}
     </>,
   )
 }
 
 describe('Module 7 Tax Office interactions', () => {
   beforeEach(() => {
-    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'], rexTaxIntroSeen: true, rexTaxReviewSeen: false })
+    saveProfile({ bondStreet: { completed: true, investedInMuni: false }, badges: ['bond'] })
     sessionStorage.removeItem(TAX_ORIGIN_KEY)
     sessionStorage.removeItem(BOND_ONLY_KEY)
     activatePaycheckWorld()
@@ -40,61 +42,50 @@ describe('Module 7 Tax Office interactions', () => {
     sessionStorage.removeItem(BOND_ONLY_KEY)
   })
 
-  it('always shows a Module 7 start action during the intro even before proximity initializes', () => {
+  it('does not show the old full-screen Module 7 start quiz when the player is far away', () => {
     mountTaxInteraction()
-    expect(screen.getByRole('button', { name: /start Module 7 Tax Office/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /start Module 7 Tax Office/i })).not.toBeInTheDocument()
+    expect(useTaxLab.getState().panel).toBe(null)
   })
 
-  it('pressing E opens the tax guide even if proximity has not initialized', () => {
+  it('does not let a global E press open the guide from across the map', () => {
+    mountTaxInteraction()
+    fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
+    expect(useTaxLab.getState().panel).toBe(null)
+  })
+
+  it('opens the guide when the player physically walks next to Rex and presses E', () => {
+    playerPos.x = TAX_POINTS.guide[0]
+    playerPos.z = TAX_POINTS.guide[1]
     mountTaxInteraction()
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe('guide')
   })
 
-  it('keeps keyboard E working even if the global mode flag updates late', () => {
-    mountTaxInteraction()
-    deactivatePaycheckWorld()
+  it('starts the taxpayer walk from the compact Rex workbench instead of a blank quiz screen', () => {
+    playerPos.x = TAX_POINTS.guide[0]
+    playerPos.z = TAX_POINTS.guide[1]
+    mountTaxInteraction({ workbench: true })
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
-    expect(useTaxLab.getState().panel).toBe('guide')
+    fireEvent.click(screen.getByRole('button', { name: /let me walk to a taxpayer/i }))
+    expect(useTaxLab.getState().phase).toBe('case')
+    expect(useTaxLab.getState().panel).toBe(null)
   })
 
-  it('clicking the visible Module 7 start action opens the tax guide', () => {
-    mountTaxInteraction()
-    fireEvent.click(screen.getByRole('button', { name: /start Module 7 Tax Office/i }))
-    expect(useTaxLab.getState().panel).toBe('guide')
-  })
-
-  it('keeps the visible intro action working even if the global mode flag updates late', () => {
-    mountTaxInteraction()
-    deactivatePaycheckWorld()
-    fireEvent.click(screen.getByRole('button', { name: /start Module 7 Tax Office/i }))
-    expect(useTaxLab.getState().panel).toBe('guide')
-  })
-
-  it('starts the playable guide immediately from Rex first-time intro instead of requiring a second click', () => {
-    saveProfile({ rexTaxIntroSeen: false })
-    mountTaxInteraction()
-
-    fireEvent.click(screen.getByRole('button', { name: /Start the Tax Office/i }))
-
-    expect(useTaxLab.getState().panel).toBe('guide')
-  })
-
-  it('allows a direct Module 7 selection without requiring Bond Street completion', () => {
-    saveProfile({ bondStreet: null, badges: [], rexTaxIntroSeen: true })
+  it('allows a direct Module 7 selection without requiring Bond Street completion and places the player at its own entrance', () => {
+    saveProfile({ bondStreet: null, badges: [] })
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.removeItem(BOND_ONLY_KEY)
 
     mountTaxInteraction()
 
-    fireEvent.click(screen.getByRole('button', { name: /start Module 7 Tax Office/i }))
-    expect(useTaxLab.getState().panel).toBe('guide')
     expect(playerPos.x).toBe(TAX_POINTS.guide[0])
-    expect(playerPos.z).toBeCloseTo(TAX_POINTS.guide[1] + 3.2)
+    expect(playerPos.z).toBeCloseTo(TAX_POINTS.guide[1] + 4.2)
+    expect(useTaxLab.getState().panel).toBe(null)
   })
 
-  it('still preserves the Bond Street gate for an explicit Module 6 launch', () => {
-    saveProfile({ bondStreet: null, badges: [], rexTaxIntroSeen: true })
+  it('preserves the separate Bond Street building flow for an explicit Module 6 launch', () => {
+    saveProfile({ bondStreet: null, badges: [] })
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
 
@@ -103,27 +94,24 @@ describe('Module 7 Tax Office interactions', () => {
     expect(screen.getByText('Module 6 · Bond Street')).toBeInTheDocument()
   })
 
-  it('still requires proximity after the intro instead of making every later E press global', () => {
+  it('requires proximity to the next physical station after Rex starts the case flow', () => {
     mountTaxInteraction()
     useTaxLab.getState().startCaseSelection()
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe(null)
   })
 
-  it('opens the guide normally when the player is physically next to Rex', () => {
-    playerPos.x = TAX_POINTS.guide[0]
-    playerPos.z = TAX_POINTS.guide[1]
-    mountTaxInteraction()
-    fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
-    expect(useTaxLab.getState().panel).toBe('guide')
-  })
-
-  it('finishes Module 7 from Rex review instead of revealing another required finish click', () => {
+  it('requires the learner to return to Rex after filing rather than showing an automatic full-screen finish modal', () => {
     useTaxLab.getState().complete()
     mountTaxInteraction()
 
-    fireEvent.click(screen.getByRole('button', { name: /Finish Module 7/i }))
+    expect(screen.queryByRole('button', { name: /Finish Module 7/i })).not.toBeInTheDocument()
+    fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
+    expect(useTaxLab.getState().panel).toBe(null)
 
-    expect(isPaycheckWorldActive()).toBe(false)
+    playerPos.x = TAX_POINTS.guide[0]
+    playerPos.z = TAX_POINTS.guide[1]
+    fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
+    expect(useTaxLab.getState().panel).toBe('guide')
   })
 })
