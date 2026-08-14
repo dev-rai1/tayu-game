@@ -93,10 +93,10 @@ export function BondStreetGate({ onComplete }) {
     <div className="pointer-events-none fixed inset-0 z-[1000] overflow-y-auto p-3 text-white sm:p-5" data-bond-street="true">
       <main className="pointer-events-auto ml-auto w-full max-w-2xl">
         <header className="rounded-[2rem] border-2 border-white/25 bg-[#071737]/92 p-4 shadow-2xl backdrop-blur-md sm:p-5">
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-sun">Module 6 · Bond Street · 3D district</div>
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-sun">Module 6 · Bond Street</div>
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div><h1 className="font-display text-3xl font-black sm:text-4xl">Bond Street</h1><p className="mt-2 max-w-xl text-sm font-bold text-white/80">Make a choice here, then watch the Bond Street building react behind this panel.</p></div>
-            <div className="rounded-2xl bg-white px-4 py-3 text-right text-navy"><div className="text-[10px] font-black uppercase tracking-wide text-navy/55">{savedStake > 0 ? 'Money Garden stake' : 'Practice stake'}</div><div className="font-display text-2xl font-black">{money(stake)}</div></div>
+            <div className="rounded-2xl bg-white px-4 py-3 text-right text-navy"><div className="text-[10px] font-black uppercase tracking-wide text-navy/55">{savedStake > 0 ? 'Money Garden stake' : 'Practice Bond Street stake'}</div><div className="font-display text-2xl font-black">{money(stake)}</div></div>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full bg-teal transition-all" style={{ width: `${Math.min(100, ((step + 1) / 5) * 100)}%` }} /></div>
         </header>
@@ -107,7 +107,7 @@ export function BondStreetGate({ onComplete }) {
             <h2 className="mt-2 font-display text-3xl font-black">Owner or lender?</h2>
             <p className="mt-3 font-semibold leading-relaxed">{BOND_STREET_SCRIPT.beauIntro}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl bg-teal/10 p-4"><div className="font-display text-xl font-black">STOCK = ownership</div><p className="mt-1 text-sm font-semibold">You own a small piece of a company. Its price can move a lot.</p></div><div className="rounded-2xl bg-electric/10 p-4"><div className="font-display text-xl font-black">BOND = loan</div><p className="mt-1 text-sm font-semibold">You lend money. The borrower promises interest and repayment.</p></div></div>
-            <button type="button" onClick={() => advance(1, 'borrowers')} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Open the three borrower booths →</button>
+            <button type="button" onClick={() => advance(1, 'borrowers')} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Meet the three borrowers →</button>
           </>}
 
           {step === 1 && <>
@@ -115,7 +115,7 @@ export function BondStreetGate({ onComplete }) {
             <h2 className="mt-2 font-display text-3xl font-black">Safety and interest trade off</h2>
             <p className="mt-2 font-semibold text-navy/70">{BOND_STREET_SCRIPT.allocation}</p>
             <div className="mt-4 grid gap-3 md:grid-cols-3">{BOND_TYPES.map((bond) => <article key={bond.id} className="rounded-2xl border-2 border-navy/10 bg-white p-3 shadow"><div className="text-lg text-sun" aria-label={`${bond.safety} of 3 safety stars`}>{stars(bond.safety)}</div><h3 className="mt-1 font-display text-lg font-black">{bond.title}</h3><div className="text-[10px] font-black uppercase tracking-wide text-electric">{bond.borrower}</div><p className="mt-2 text-xs font-semibold leading-relaxed text-navy/70">{bond.summary}</p><div className="mt-2 rounded-xl bg-navy/5 p-2 text-xs font-black">Practice interest: {Math.round(bond.rate * 100)}%</div></article>)}</div>
-            <button type="button" onClick={() => advance(2, 'allocation')} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Walk to the allocation counter →</button>
+            <button type="button" onClick={() => advance(2, 'allocation')} className="mt-5 min-h-[54px] w-full rounded-2xl bg-electric px-5 font-black text-white">Split my Bond Street stake →</button>
           </>}
 
           {step === 2 && <>
