@@ -65,7 +65,6 @@ const STATS = [
   },
 ]
 
-// Photo with graceful initials fallback (drop the real files in /assets/team/).
 function TeamPhoto({ file, name }) {
   const [broken, setBroken] = useState(false)
   if (broken) {
@@ -106,7 +105,6 @@ function BookCover() {
 export default function About() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-white text-navy">
-      {/* A6: greeting NPCs behind a soft white scrim so text stays readable */}
       <div className="fixed inset-0">
         <TownBackground theme="greet" scrim={0.84} />
       </div>
@@ -126,7 +124,6 @@ export default function About() {
         </header>
 
         <main className="mx-auto flex max-w-3xl flex-col gap-12 px-6 pb-16 pt-4">
-          {/* A3 - Who We Are, with the statistics and psychology of starting early */}
           <section>
             <h1 className="font-display text-3xl font-extrabold text-navy">Who we are</h1>
             <p className="mt-3 text-lg leading-relaxed text-navy/80">
@@ -155,7 +152,6 @@ export default function About() {
             </p>
           </section>
 
-          {/* A2 - Meet the Team */}
           <section>
             <h2 className="font-display text-2xl font-extrabold text-navy">Meet the team</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -172,15 +168,95 @@ export default function About() {
             </div>
           </section>
 
-          {/* A4 - ONE track-record story, book front and center */}
           <section className="rounded-3xl bg-white p-6 shadow-md">
             <h2 className="font-display text-2xl font-extrabold text-navy">Our track record</h2>
-            {/* C2: the championship lives with the proof, not the mission */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-display text-lg font-extrabold text-navy shadow-md" style={{ background: 'linear-gradient(120deg,#FFD700,#ffe98a)', border: '2px solid #b8860b' }}>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-navy text-base text-[#FFD700]">1</span>
-              State Champions - 2026 Virginia DECA State Leadership Conference
+
+            <div className="mt-4 rounded-3xl border border-navy/10 bg-white/95 p-5 shadow-md">
+              <h3 className="font-display text-lg font-extrabold text-navy">Featured &amp; recognized</h3>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="group rounded-2xl border-2 border-[#d71920]/20 bg-[#d71920]/5 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
+                    <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-extrabold text-[#d71920]">Open feature →</a>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Watch our FOX 5 DC feature</h4>
+                  <div className="mt-3 overflow-hidden rounded-xl shadow-sm" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                    <iframe
+                      src="https://www.youtube.com/embed/HjfuUGCowW4"
+                      title="TAYU on FOX 5 DC"
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+
+                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Letter</span>
+                    <span className="text-sm font-extrabold text-navy">View letter →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Letter from the White House</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House letter recognizing our financial-literacy work and community impact.</p>
+                </a>
+
+                <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">WTOP News</span>
+                    <span className="text-sm font-extrabold text-electric">Read article →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax students teach financial literacy</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read WTOP&rsquo;s feature about our book, classroom outreach, and mission.</p>
+                </a>
+
+                <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-brandpurple/20 bg-brandpurple/5 p-5 transition hover:-translate-y-1 hover:bg-brandpurple/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-brandpurple px-3 py-1 font-display text-sm font-extrabold text-white">Vienna Ledger</span>
+                    <span className="text-sm font-extrabold text-brandpurple">Read article →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Book reaches 12 Fairfax County schools and four countries</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read Vienna Ledger&rsquo;s feature about our book distribution, classroom impact, and expansion through TAYU.</p>
+                </a>
+
+                <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">Connection Newspapers</span>
+                    <span className="text-sm font-extrabold text-navy">Read article →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Oakton High Trio Plant the Seeds of Wealth in Global Book Launch</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read The Connection&rsquo;s feature on our classroom results, global book launch, Virginia DECA win, and next phase with TAYU.</p>
+                </a>
+
+                <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">Vision Times · Chinese</span>
+                    <span className="text-sm font-extrabold text-navy">Read article →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax County students create a financial-literacy picture book for elementary students</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the international Chinese-language feature on our 274-book, 17-school outreach and the next step with a financial-literacy game.</p>
+                </a>
+
+                <div className="rounded-2xl border-2 border-[#b8860b]/25 bg-[#FFD700]/10 p-5 transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-[#FFD700] px-3 py-1 font-display text-sm font-extrabold text-navy">Virginia DECA</span>
+                    <span className="text-sm font-extrabold text-navy">2026</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">State Champions</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">1st Place at the 2026 Virginia DECA State Leadership Conference for our financial-literacy project.</p>
+                </div>
+
+                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">New Jersey Coalition for Financial Education</span>
+                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Financial-education feature</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the New Jersey Coalition for Financial Education feature on our book, classroom outreach, and financial-literacy mission.</p>
+                </a>
+              </div>
             </div>
-            <div className="mt-4 flex flex-col gap-5 sm:flex-row">
+
+            <div className="mt-6 flex flex-col gap-5 sm:flex-row">
               <BookCover />
               <div>
                 <p className="text-lg leading-relaxed text-navy/85">
@@ -204,84 +280,8 @@ export default function About() {
                 </p>
               </div>
             </div>
-            {/* R13 11.4: media coverage, embedded inline */}
-            <div className="mt-6 rounded-3xl border border-navy/10 bg-white/95 p-5 shadow-md">
-              <h3 className="font-display text-lg font-extrabold text-navy">White House Letter · Featured in FOX 5 DC, WTOP, Vienna Ledger, Connection Newspapers &amp; Vision Times · New Jersey Coalition for Financial Education</h3>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/20 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md md:col-span-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Letter</span>
-                    <span className="text-sm font-extrabold text-navy">View letter →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Letter from the White House recognizing our financial-literacy work</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House letter recognizing our work in financial literacy and community impact.</p>
-                </a>
-                <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">WTOP News</span>
-                    <span className="text-sm font-extrabold text-electric">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax students teach financial literacy</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read WTOP&rsquo;s feature about our book, classroom outreach, and mission.</p>
-                </a>
-                <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-brandpurple/20 bg-brandpurple/5 p-5 transition hover:-translate-y-1 hover:bg-brandpurple/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-brandpurple px-3 py-1 font-display text-sm font-extrabold text-white">Vienna Ledger</span>
-                    <span className="text-sm font-extrabold text-brandpurple">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Book reaches 12 Fairfax County schools and four countries</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read Vienna Ledger&rsquo;s feature about our book distribution, classroom impact, and expansion through TAYU.</p>
-                </a>
-                <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">Connection Newspapers</span>
-                    <span className="text-sm font-extrabold text-navy">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Oakton High Trio Plant the Seeds of Wealth in Global Book Launch</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read The Connection&rsquo;s feature on our classroom results, global book launch, Virginia DECA win, and next phase with TAYU.</p>
-                </a>
-                <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">Vision Times · Chinese</span>
-                    <span className="text-sm font-extrabold text-navy">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax County students create a financial-literacy picture book for elementary students</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the international Chinese-language feature on our 274-book, 17-school outreach and the next step with a financial-literacy game.</p>
-                </a>
-                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md md:col-span-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">New Jersey Coalition for Financial Education</span>
-                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">NJCFE features our financial-literacy book and elementary-school outreach</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the New Jersey Coalition for Financial Education feature on our book, classroom outreach, and financial-literacy mission.</p>
-                </a>
-              </div>
-              <div className="mt-5 rounded-2xl border border-navy/10 bg-navy/5 p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-display text-xs font-extrabold uppercase tracking-[0.16em] text-navy/60">FOX 5 DC video</p>
-                    <h4 className="font-display text-lg font-extrabold text-navy">Watch the feature</h4>
-                  </div>
-                  <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920] px-4 py-2 text-sm font-extrabold text-white hover:opacity-90">
-                    Open FOX 5 page
-                  </a>
-                </div>
-                <div className="overflow-hidden rounded-2xl shadow-md" style={{ position: 'relative', paddingTop: '56.25%' }}>
-                  <iframe
-                    src="https://www.youtube.com/embed/HjfuUGCowW4"
-                    title="TAYU on FOX 5 DC"
-                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            </div>
           </section>
 
-          {/* A5 - Community Partners call to action */}
-          {/* R10 v8 6.4: the teacher-facing map of what each module teaches */}
           <section className="rounded-3xl bg-white p-6 shadow-md">
             <h2 className="font-display text-2xl font-extrabold text-navy">For teachers and classrooms</h2>
             <p className="mt-2 text-navy/75">
@@ -325,8 +325,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* C1: follow CTAs - a small friendly card, distinct from the footer's plain links */}
-          {/* R12 2.4: new accounts land here first - the clear door into play */}
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
             <h2 className="font-display text-xl font-extrabold text-navy">Ready when you are</h2>
             <p className="mt-2 text-navy/70">TAYU is a free K-12 teacher resource, beginning with five playable core money modules and expanding for middle and high school.</p>
@@ -338,7 +336,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* R13 11.5: corporate sponsors - anyone contributing over $200 can be listed */}
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
             <h2 className="font-display text-2xl font-extrabold text-navy">Our sponsors</h2>
             <p className="mx-auto mt-2 max-w-xl text-navy/70">
@@ -377,11 +374,9 @@ export default function About() {
           </section>
         </main>
 
-        {/* A1/A7 - THE one canonical link row */}
         <footer className="py-6">
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-6">
             <img src={LOGO} alt="TAYU" className="h-8 w-8 rounded-xl" />
-            {/* A3: plain borderless link row - no box, no pills */}
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
               {CONTACTS.map((l) => (
                 <a key={l.label} href={l.href} target="_blank" rel="noopener" className="text-sm font-bold text-electric underline-offset-4 hover:underline">
