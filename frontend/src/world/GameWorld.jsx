@@ -14,6 +14,7 @@ import { PartyHouse } from './PartyHouse.jsx'
 import { BudgetTown } from './BudgetTown.jsx'
 import { BankDistrict } from './BankDistrict.jsx'
 import { ModuleLandmarks } from './ModuleLandmarks.jsx'
+import { BondStreetWorld } from './BondStreetWorld.jsx'
 import { PaycheckPlanetWorld } from './PaycheckPlanetWorld.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
@@ -69,11 +70,6 @@ export function repairRuntimeState() {
 export function GameWorld({ avatar }) {
   repairRuntimeState()
   const week = useGame((state) => state.week)
-  // Each public module starts with a clean Canvas lifecycle. React Three Fiber
-  // otherwise has to reconcile an entire module's live scene mutations inside
-  // the previous frame, so one bad transition can poison every later module.
-  // The keyed boundary also clears a prior Canvas error instead of leaving the
-  // player trapped on the retry screen.
   const sceneKey = isPaycheckWorldActive() ? `paycheck-${week}` : `week-${week}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
@@ -89,12 +85,7 @@ export function GameWorld({ avatar }) {
           camera={{ position: [0, 7, 11], fov: 52 }}
           dpr={1}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
-          gl={{
-            antialias: false,
-            powerPreference: 'high-performance',
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.05,
-          }}
+          gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
           onCreated={({ gl }) => {
             try {
               gl.getContext()
@@ -123,6 +114,7 @@ export function GameWorld({ avatar }) {
             <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
             <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
             <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
+            <SceneBoundary name="bond-street"><BondStreetWorld /></SceneBoundary>
             <SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>
             <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
             <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
