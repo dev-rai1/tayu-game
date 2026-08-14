@@ -19,7 +19,7 @@ import {
 } from '../constants/learningPaths.js'
 
 export const MODULE_CARDS = MODULE_CATALOG
-const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5, 6], allowSkip: false } }
+const DEFAULT_CONTEXT = { plain: true, settings: { enabledModules: [1, 2, 3, 4, 5, 6, 7], allowSkip: false } }
 const PATH_TIME = {
   'early-elementary': 'About 15–22 minutes total',
   'upper-elementary': 'About 22–32 minutes total',
@@ -165,7 +165,7 @@ export default function ModuleSelect() {
       localStorage.removeItem('tayu-garden-entry-part')
     }
 
-    const restart = !canResume || target.n === 6
+    const restart = !canResume || target.n === 6 || target.n === 7
     localStorage.setItem('tayu-module-entry-intent', JSON.stringify({
       moduleId: String(target.n),
       gardenEntryPart: gardenPart,
@@ -309,15 +309,29 @@ export default function ModuleSelect() {
                 )
               }
 
-              const action = done ? `Replay Module ${module.n}` : isNext ? `Play Module ${module.n} now` : olderOptional ? `Explore Module ${module.n}` : `Play Module ${module.n}`
+              const physicalDestination = Boolean(module.physicalDestination)
+              const finalModule = module.n === 7
+              const action = done
+                ? `Replay Module ${module.n}`
+                : module.n === 6
+                  ? 'Start Module 6 · Bond Street'
+                  : module.n === 7
+                    ? 'Start Module 7 · Tax Office'
+                    : isNext
+                      ? `Play Module ${module.n} now`
+                      : olderOptional
+                        ? `Explore Module ${module.n}`
+                        : `Play Module ${module.n}`
               return (
-                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border border-slate-200 bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`}>
+                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`} style={{ borderColor: physicalDestination ? module.color : '#e2e8f0' }}>
                   <div className="flex items-center justify-between gap-3">
-                    <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-lg font-extrabold text-white">{module.n}</div>
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl text-lg font-extrabold text-white" style={{ backgroundColor: physicalDestination ? module.color : '#020617' }}>{module.n}</div>
                     <StatusPill done={done} accessible={accessible} recommended={isNext} />
                   </div>
-                  <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Module {module.n}</div>
-                  <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: pathAccent }}>{module.title}</h2>
+                  <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">{physicalDestination ? `Module ${module.n} · Separate 3D destination` : `Module ${module.n}`}</div>
+                  <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: physicalDestination ? module.color : pathAccent }}>{module.title}</h2>
+                  {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Walk-in world location · big building label</div>}
+                  {finalModule && <div className="mt-2 ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-700">Final module · Tax Office</div>}
                   <div className="mt-2 text-xs font-bold text-slate-500">{module.grades} · {module.minutes}</div>
                   <p className="mt-3 min-h-[3rem] text-sm font-semibold leading-relaxed text-slate-700">{module.desc}</p>
                   <div className={`mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold ${accessible ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-500'}`}>{accessible ? action : `Complete Module ${firstIncompleteRequired} first`} →</div>
@@ -325,6 +339,10 @@ export default function ModuleSelect() {
               )
             })}
           </section>
+
+          <div className="mt-5 rounded-2xl border border-white/80 bg-white/95 p-4 text-center text-sm font-semibold text-slate-700 shadow-md backdrop-blur-md">
+            <strong className="text-slate-950">Journey:</strong> Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale. Modules 6 and 7 are separate labeled 3D destinations.
+          </div>
         </div>
       </main>
 
