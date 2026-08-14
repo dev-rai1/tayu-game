@@ -97,9 +97,6 @@
   box-sizing: border-box;
 }
 
-/* Bond Street is Module 6's own experience. When its gate is active, suppress
-   every Tax Office layer so clicking Module 6 cannot expose Module 7 UI behind
-   the three-borrower or split-allocation activity. */
 @supports selector(.tayu-world-declutter:has([data-bond-street='true'])) {
   .tayu-world-declutter:has([data-bond-street='true']) [data-tax-field-ui='true'],
   .tayu-world-declutter:has([data-bond-street='true']) [data-tax-action-prompt='true'] {
@@ -107,20 +104,14 @@
   }
 }
 
-/* The Tax Office uses a top instruction banner. Keep the money readout below it
-   instead of letting the two centered HUD elements cover each other. */
 [data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-16 {
   top: 6.25rem !important;
 }
 
-/* The generic internal-week chip can show an older internal number while the
-   public Tax Office is active. The Tax Office banner is authoritative. */
 [data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-4.hidden {
   display: none !important;
 }
 
-/* Public numbering: the Tax Office is Module 7. Keep the existing DOM text for
-   backward compatibility but present the correct learner-facing label. */
 [data-tax-mode='true'] [data-tax-field-ui='true'] > div:first-child > div:first-child {
   font-size: 0 !important;
 }
@@ -133,26 +124,31 @@
   text-transform: uppercase;
 }
 
-[data-tax-station-panel='true'] input {
-  outline: none;
+[data-tax-mode='true'] [data-tax-station-panel='true'] {
+  max-height: 54dvh !important;
+  max-width: 42rem !important;
 }
 
-[data-tax-station-panel='true'] input:focus {
-  border-color: #1464f0;
-  box-shadow: 0 0 0 3px rgba(20, 100, 240, 0.12);
+[data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='You filed the practice return'] button:last-child,
+[data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='Practice return filed'] button:last-child {
+  font-size: 0 !important;
 }
 
-[data-tax-station-panel='true'] [draggable='true'] {
-  cursor: grab;
+[data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='You filed the practice return'] button:last-child::after,
+[data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='Practice return filed'] button:last-child::after {
+  content: 'Finish Module 7';
+  font-size: 16px;
+  font-weight: 900;
 }
 
-[data-tax-station-panel='true'] [draggable='true']:active {
-  cursor: grabbing;
-}
+[data-tax-station-panel='true'] input { outline: none; }
+[data-tax-station-panel='true'] input:focus { border-color: #1464f0; box-shadow: 0 0 0 3px rgba(20, 100, 240, 0.12); }
+[data-tax-station-panel='true'] [draggable='true'] { cursor: grab; }
+[data-tax-station-panel='true'] [draggable='true']:active { cursor: grabbing; }
 
 @media (max-width: 640px) {
   [data-tax-field-ui='true'] > div:last-child { padding: 0.5rem; }
-  [data-tax-station-panel='true'] { max-height: 78dvh; border-radius: 1.2rem; }
+  [data-tax-mode='true'] [data-tax-station-panel='true'] { max-height: 58dvh !important; border-radius: 1.2rem; }
   [data-tax-mode='true'] .glass--navy.absolute.left-1\/2.top-16 { top: 6.75rem !important; }
 }
 
@@ -168,7 +164,5 @@
   .tax-balance-right,
   .tax-envelope,
   .tax-envelope-fly,
-  .tax-complete-pulse {
-    animation: none !important;
-  }
+  .tax-complete-pulse { animation: none !important; }
 }
