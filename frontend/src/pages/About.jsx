@@ -16,6 +16,8 @@ const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-wr
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
 const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
+const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
+const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -204,8 +206,24 @@ export default function About() {
             </div>
             {/* R13 11.4: media coverage, embedded inline */}
             <div className="mt-6 rounded-3xl border border-navy/10 bg-white/95 p-5 shadow-md">
-              <h3 className="font-display text-lg font-extrabold text-navy">Featured in FOX 5 DC, WTOP, Vienna Ledger, Connection Newspapers &amp; Vision Times</h3>
+              <h3 className="font-display text-lg font-extrabold text-navy">Recognized by the White House and NJCFE · Featured in FOX 5 DC, WTOP, Vienna Ledger, Connection Newspapers &amp; Vision Times</h3>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/20 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Recognition</span>
+                    <span className="text-sm font-extrabold text-navy">View recognition →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Recognition from the White House</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House recognition of our financial-literacy work and community impact.</p>
+                </a>
+                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">NJCFE Recognition</span>
+                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
+                  </div>
+                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">National Jump$tart Coalition financial-education recognition</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read NJCFE&rsquo;s feature on our book, elementary-school outreach, and financial-literacy mission.</p>
+                </a>
                 <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">WTOP News</span>
