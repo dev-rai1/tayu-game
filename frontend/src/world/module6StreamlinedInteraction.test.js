@@ -24,7 +24,7 @@ describe('Module 6/7 streamlined interaction regression', () => {
     expect(taxBridge).toContain('const action = nearbyTaxAction()')
     expect(taxBridge).toContain('runTaxInteraction()')
     expect(taxBridge).toContain('BondStreetGate')
-    expect(taxBridge).toContain("label: 'Talk to Rex and start Module 7'")
+    expect(taxBridge).toContain("label: 'Talk to Rex and start the Tax Office'")
     expect(taxBridge).toContain("state.phase === 'case'")
     expect(taxBridge).toContain("state.phase === 'steps'")
     expect(taxBridge).not.toContain('RexTaxIntro')
