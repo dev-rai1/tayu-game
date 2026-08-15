@@ -41,7 +41,8 @@ describe('Module 6 and 7 physical launch flow', () => {
   it('routes Bond Street and the Tax Office independently without numbered in-world labels', () => {
     expect(launch).toContain("if (id === 6) sessionStorage.setItem(BOND_ONLY_KEY, '1')")
     expect(launch).toContain('else sessionStorage.removeItem(BOND_ONLY_KEY)')
-    expect(bondWorld).toContain('BOND STREET · UNDER CONSTRUCTION')
+    expect(bondWorld).toContain("labelTexture('BOND STREET'")
+    expect(bondWorld).not.toContain('BOND STREET · UNDER CONSTRUCTION')
     expect(bondWorld).not.toContain('MODULE 6 · BOND STREET')
     expect(physicalSigns).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
     expect(taxBridge).not.toContain('start Module 7')
@@ -49,8 +50,8 @@ describe('Module 6 and 7 physical launch flow', () => {
 
   it('keeps public order 1 through 7 and puts the Finale after the Tax Office', () => {
     expect(MODULE_CATALOG.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6, 7])
-    expect(MODULE_CATALOG[5].title).toContain('Bond Street')
-    expect(MODULE_CATALOG[5].underConstruction).toBe(true)
+    expect(MODULE_CATALOG[5].title).toBe('Bond Street')
+    expect(MODULE_CATALOG[5].underConstruction).not.toBe(true)
     expect(MODULE_CATALOG[6].title).toContain('TAYU Tax Office')
     expect(MODULE_CATALOG[6].underConstruction).toBe(true)
     expect(MODULE_CATALOG[6].leadsToFinale).toBe(true)
@@ -62,19 +63,19 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(partyHouse).not.toContain("cardTexture('MODULE 6'")
   })
 
-  it('spawns Module 6 inside its real building and re-applies physical placement after Canvas creation', () => {
+  it('spawns Module 6 outside in front of the Bond Street entrance', () => {
     expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_ENTRY')
     expect(launch).toContain("typeof game.adminTeleport === 'function'")
-    expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 4.7, BOND_DISTRICT[1] + 1.35]')
+    expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]')
+    expect(bondWorld).toContain('arrive in front of Bond Street')
     expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
-    expect(gameWorld).toContain('Boolean(physicalModule) || isPaycheckWorldActive()')
-    expect(gameWorld).toContain('window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))')
-    expect(gameWorld).toContain('2100')
   })
 
-  it('keeps Bond Street before and separate from the Tax Office', () => {
-    expect(bondWorld).toContain('TAX_DISTRICT[0] - 21')
-    expect(bondWorld).toContain('TAX_DISTRICT[1] - 12')
+  it('keeps Bond Street before the Tax Office with a landscaped route buffer', () => {
+    expect(bondWorld).toContain('TAX_DISTRICT[0] - 8.9')
+    expect(bondWorld).toContain('TAX_DISTRICT[1] - 8.0')
+    expect(bondWorld).toContain('BondApproachAndLandscaping')
+    expect(bondWorld).toContain('bond-planter-')
     expect(taxWorld).toContain('TaxCenterBuilding')
   })
 
@@ -91,12 +92,13 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(gameWorld).toContain("paycheckWorld ? '#e9e3d6' : '#d6e9f0'")
   })
 
-  it('restores a persistent question-mark help control with instructions and learning resources', () => {
+  it('keeps a persistent question-mark help control with Bond-specific instructions', () => {
     expect(gameWorld).toContain('<WorldQuestionHelp />')
     expect(questionHelp).toContain('Open instructions and learning resources')
     expect(questionHelp).toContain('Instructions')
     expect(questionHelp).toContain('Learning resources')
-    expect(questionHelp).toContain('Bond Street — Under Construction')
+    expect(questionHelp).toContain("? 'Bond Street'")
+    expect(questionHelp).toContain('You arrive in front of Bond Street.')
     expect(questionHelp).toContain('TAYU Tax Office — Under Construction')
   })
 
