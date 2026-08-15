@@ -35,12 +35,12 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain('window.setTimeout(() => placePhysicalModuleArrival(id), 180)')
   })
 
-  it('shows Module 6 as a brief animated arrival before normal in-world interaction', () => {
+  it('shows Module 6 as a brief animated arrival over live in-world interaction', () => {
     expect(bondGate).toContain('function BondArrivalIntro()')
     expect(bondGate).toContain('Welcome to Bond Street')
     expect(bondGate).toContain('animate-bounce')
     expect(bondGate).toContain('setShowArrivalIntro(false), 1900')
-    expect(bondGate).toContain('showArrivalIntro ? <BondArrivalIntro />')
+    expect(bondGate).toContain('showArrivalIntro && <BondArrivalIntro />')
     expect(bondGate).toContain('Walk around the building. Get close, then click or press E to interact.')
   })
 
