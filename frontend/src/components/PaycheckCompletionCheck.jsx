@@ -99,7 +99,7 @@ export function PaycheckCompletionCheck() {
     return (
       <div className="pointer-events-auto fixed inset-0 z-[820] grid place-items-center bg-navy/80 p-4 backdrop-blur-sm">
         <section role="dialog" aria-modal="true" aria-labelledby="paycheck-check-recap-title" className="w-full max-w-lg rounded-3xl bg-white p-6 text-center text-navy shadow-2xl sm:p-7">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 6 · tax filing check complete</div>
+          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 7 · tax filing check complete</div>
           <h2 id="paycheck-check-recap-title" className="mt-1 font-display text-3xl font-extrabold">Tax Filing Lab check complete</h2>
           <div className="mx-auto mt-5 max-w-xs rounded-2xl border-2 border-[#FF8A3D]/30 bg-[#FF8A3D]/10 p-4">
             <div className="text-xs font-extrabold uppercase tracking-wide text-[#C45B16]">Your score</div>
@@ -110,7 +110,7 @@ export function PaycheckCompletionCheck() {
             <p className="mt-1 text-base font-extrabold leading-snug">Read the W-2, find taxable income, calculate the bracket tax, apply credits, then compare final tax with withholding to find a refund or amount due.</p>
           </div>
           <button type="button" className="btn-primary mt-5 min-h-[58px] w-full text-lg" onClick={() => setVisible(false)}>
-            Continue to filing recap →
+            Continue to Finale →
           </button>
         </section>
       </div>
@@ -122,7 +122,7 @@ export function PaycheckCompletionCheck() {
       <section role="dialog" aria-modal="true" aria-labelledby="paycheck-check-title" className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 text-navy shadow-2xl sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 6 · After the Tax Filing Lab</div>
+            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF8A3D]">Module 7 · After the Tax Filing Lab</div>
             <h2 id="paycheck-check-title" className="mt-1 font-display text-2xl font-extrabold">Show what you learned</h2>
           </div>
           <div className="rounded-full bg-navy/10 px-3 py-1 text-xs font-extrabold text-navy/65">{questionIndex + 1} of {CHECK.questions.length}</div>
@@ -152,7 +152,7 @@ export function PaycheckCompletionCheck() {
             <div className="font-display text-xl font-extrabold">{correct ? 'Exactly!' : 'Good try — here is the key.'}</div>
             <p className="mt-1 font-bold leading-relaxed text-navy/75">{question.trick}</p>
             <button type="button" className="btn-primary mt-4 min-h-[54px] w-full" onClick={advance}>
-              {questionIndex === CHECK.questions.length - 1 ? 'Finish Module 6 Check' : 'Next question'}
+              {questionIndex === CHECK.questions.length - 1 ? 'Finish Module 7 Check' : 'Next question'}
             </button>
           </div>
         )}
