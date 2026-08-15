@@ -22,6 +22,16 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain("activatePaycheckWorld()")
   })
 
+  it('clears stale earlier-module messages and completion state before entering 6 or 7', () => {
+    expect(launch).toContain('clearStalePhysicalModuleUi()')
+    expect(launch).toContain('dialog: null')
+    expect(launch).toContain('lessons: []')
+    expect(launch).toContain('cards: []')
+    expect(launch).toContain('pendingWeekComplete: false')
+    expect(launch).toContain('weekComplete: false')
+    expect(launch).toContain('enterParty: false')
+  })
+
   it('routes Module 6 to Bond Street and Module 7 to the Tax Office independently', () => {
     expect(launch).toContain("if (id === 6) sessionStorage.setItem(BOND_ONLY_KEY, '1')")
     expect(launch).toContain('else sessionStorage.removeItem(BOND_ONLY_KEY)')
