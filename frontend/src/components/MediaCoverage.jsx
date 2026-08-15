@@ -16,7 +16,7 @@ export function MediaCoverage({ compact = false, about = false }) {
   if (compact) {
     return (
       <section className={sectionClass} aria-labelledby={titleId}>
-        <div className="mx-auto flex max-w-none flex-nowrap items-center gap-2 overflow-x-auto whitespace-nowrap rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
+        <div className="mx-auto flex w-fit max-w-full flex-nowrap items-center gap-2 overflow-x-auto whitespace-nowrap rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
           <span id={titleId} className="shrink-0 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
             Featured
           </span>
