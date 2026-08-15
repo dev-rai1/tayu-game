@@ -44,7 +44,7 @@ export function MediaCoverage({ compact = false, about = false }) {
           </a>
           <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
           <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
-            NJ Coalition for Financial Education
+            NJCFE
           </a>
         </div>
       </section>
