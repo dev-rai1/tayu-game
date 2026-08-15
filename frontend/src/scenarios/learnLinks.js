@@ -1,7 +1,7 @@
 // Learning resources. Every concept points to a real, free resource from a
 // regulator, government agency, or established financial-education provider.
-// Core and newly added URLs were re-verified on 8/7/2026. The '?' menu groups
-// resources by PUBLIC module number; teaching cards can link to a specific key.
+// Core URLs were re-verified in August 2026. The module-menu resources tab and
+// in-game teaching cards share these same entries so help stays consistent.
 
 export const LEARN = {
   jars: { label: 'Money as You Grow (CFPB)', url: 'https://www.consumerfinance.gov/consumer-tools/money-as-you-grow/' },
@@ -19,13 +19,7 @@ export const LEARN = {
   debthelp: { label: 'Nonprofit credit counseling (NFCC)', url: 'https://www.nfcc.org/' },
   scams: { label: 'How to avoid a scam (FTC)', url: 'https://consumer.ftc.gov/articles/how-avoid-scam' },
 
-  // Module 5: Paycheck Planet
-  paystub: { label: 'Calculating the numbers in your paycheck (CFPB)', url: 'https://www.consumerfinance.gov/consumer-tools/educator-tools/youth-financial-education/teach/activities/calculating-numbers-your-paycheck/' },
-  teenEarning: { label: 'Teenagers and earning: gross vs net pay (CFPB)', url: 'https://www.consumerfinance.gov/consumer-tools/money-as-you-grow/teen-young-adult/explore-earning/' },
-  withholding: { label: 'Tax withholding (IRS)', url: 'https://www.irs.gov/individuals/employees/tax-withholding' },
-  studentTaxes: { label: 'Tax information for students (IRS)', url: 'https://www.irs.gov/individuals/students' },
-
-  // Module 6: Money Garden
+  // Module 5: Money Garden
   stocks: { label: 'What stocks are (Investor.gov)', url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks' },
   diversify: { label: 'Diversify your investments (Investor.gov)', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest/diversify-your-investments' },
   diversifyYouth: { label: 'What is diversification? Student resource (Investor.gov)', url: 'https://www.investor.gov/additional-resources/information/youth/teachers-classroom-resources/what-diversification' },
@@ -37,17 +31,27 @@ export const LEARN = {
   assetGuide: { label: 'Beginner guide to allocation, diversification, and rebalancing (Investor.gov)', url: 'https://www.investor.gov/additional-resources/general-resources/publications-research/info-sheets/beginners-guide-asset' },
   investIntro: { label: 'Introduction to investing (Investor.gov)', url: 'https://www.investor.gov/introduction-investing' },
   finbasics: { label: 'Investing basics (FINRA)', url: 'https://www.finra.org/investors/investing/investing-basics' },
+
+  // Module 6: Bond Street
+  bonds: { label: 'Bonds — FAQs (Investor.gov)', url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds-or-fixed-income-products/bonds' },
+  corporateBonds: { label: 'Corporate bonds (Investor.gov)', url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds-or-fixed-income-products' },
+  municipalBonds: { label: 'Municipal bonds (Investor.gov)', url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds-or-fixed-income-products-0' },
+
+  // Module 7: TAYU Tax Office
+  paystub: { label: 'Calculating the numbers in your paycheck (CFPB)', url: 'https://www.consumerfinance.gov/consumer-tools/educator-tools/youth-financial-education/teach/activities/calculating-numbers-your-paycheck/' },
+  teenEarning: { label: 'Teenagers and earning: gross vs net pay (CFPB)', url: 'https://www.consumerfinance.gov/consumer-tools/money-as-you-grow/teen-young-adult/explore-earning/' },
+  withholding: { label: 'Tax withholding (IRS)', url: 'https://www.irs.gov/individuals/employees/tax-withholding' },
+  studentTaxes: { label: 'Tax information for students (IRS)', url: 'https://www.irs.gov/individuals/students' },
+  taxTutorials: { label: 'Understanding Taxes student tutorials (IRS)', url: 'https://apps.irs.gov/app/understandingTaxes/student/tax_tutorials.jsp' },
 }
 
-// Resources organized by the six PUBLIC modules shown on Module Select.
+// Resources organized by the seven PUBLIC modules shown on Module Select.
 export const LEARNING_RESOURCES = [
-  { module: 'Module 1: The Market & Jars', items: ['jars', 'needswants'] },
-  { module: 'Module 2: The Lemonade Stand', items: ['business', 'earn', 'budgeting'] },
-  { module: 'Module 3: Budget Town', items: ['budgeting', 'allocation', 'compound'] },
-  { module: 'Module 4: The Bank of TAYU', items: ['banks', 'cd', 'debitcredit', 'compounddebt', 'carddebt', 'debthelp', 'scams'] },
-  { module: 'Module 5: Paycheck Planet', items: ['paystub', 'teenEarning', 'withholding', 'studentTaxes', 'earn', 'budgeting'] },
-  {
-    module: 'Module 6: Money Garden',
-    items: ['stocks', 'investIntro', 'risk', 'diversifyYouth', 'diversify', 'research', 'timeHorizon', 'longterm', 'allocation', 'rebalance', 'assetGuide', 'finbasics'],
-  },
+  { number: 1, module: 'The Market & Jars', items: ['jars', 'needswants'] },
+  { number: 2, module: 'The Lemonade Stand', items: ['business', 'earn', 'budgeting'] },
+  { number: 3, module: 'Budget Town', items: ['budgeting', 'allocation', 'compound'] },
+  { number: 4, module: 'The Bank of TAYU', items: ['banks', 'cd', 'debitcredit', 'compounddebt', 'carddebt', 'debthelp', 'scams'] },
+  { number: 5, module: 'Money Garden', items: ['stocks', 'investIntro', 'risk', 'diversifyYouth', 'diversify', 'research', 'timeHorizon', 'longterm', 'allocation', 'rebalance', 'assetGuide', 'finbasics'] },
+  { number: 6, module: 'Bond Street', items: ['bonds', 'corporateBonds', 'municipalBonds', 'risk', 'allocation'] },
+  { number: 7, module: 'TAYU Tax Office', items: ['paystub', 'teenEarning', 'withholding', 'studentTaxes', 'taxTutorials'] },
 ]
