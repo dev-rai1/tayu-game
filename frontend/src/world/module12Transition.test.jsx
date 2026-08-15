@@ -128,7 +128,7 @@ describe('Module 1 to Module 2 transition', () => {
     const source = readFileSync(join(process.cwd(), 'src/world/GameWorld.jsx'), 'utf8')
 
     expect(source).toContain('const physicalModule = readPhysicalModuleLaunch()')
-    expect(source).toContain('const paycheckWorld = Boolean(physicalModule) || isPaycheckWorldActive()')
+    expect(source).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
     expect(source).toContain("const sceneKey = paycheckWorld ? `paycheck-${week}-${physicalModule || 'active'}` : `week-${week}`")
     expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
     expect(source).toContain('key={sceneKey}')
