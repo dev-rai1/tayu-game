@@ -19,7 +19,7 @@ describe('module grade-level catalog', () => {
     expect(bands['High School'].plannedModules).not.toContain('Tax filing')
   })
 
-  it('places Money Garden 5A/5B before standalone Bond Street and Tax Office modules', () => {
+  it('places Money Garden 5A/5B before standalone Bond Street and Tax Office destinations', () => {
     const garden = MODULE_CATALOG.find((module) => module.badge === 'garden')
     const bond = MODULE_CATALOG.find((module) => module.badge === 'bond')
     const tax = MODULE_CATALOG.find((module) => module.badge === 'tax')
@@ -27,13 +27,15 @@ describe('module grade-level catalog', () => {
     expect(garden.worldModule).toBe(5)
     expect(garden.parts.map((part) => part.label)).toEqual(['Module 5A', 'Module 5B'])
     expect(bond.n).toBe(6)
-    expect(bond.title).toBe('Bond Street')
+    expect(bond.title).toContain('Bond Street')
+    expect(bond.underConstruction).toBe(true)
     expect(bond.desc).toMatch(/Treasury/i)
     expect(bond.desc).toMatch(/municipal/i)
     expect(bond.desc).toMatch(/corporate/i)
     expect(tax.n).toBe(7)
-    expect(tax.title).toBe('TAYU Tax Office')
-    expect(tax.desc).toMatch(/gross income/i)
-    expect(tax.desc).toMatch(/refund/i)
+    expect(tax.title).toContain('TAYU Tax Office')
+    expect(tax.underConstruction).toBe(true)
+    expect(tax.desc).toMatch(/Tax Office/i)
+    expect(tax.leadsToFinale).toBe(true)
   })
 })
