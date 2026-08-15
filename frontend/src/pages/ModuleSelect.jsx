@@ -92,6 +92,7 @@ export default function ModuleSelect() {
   const user = currentUser()
   const teacherPreview = user?.role === 'teacher' && params.get('teacherPreview') === '1'
   const gradePath = getGradePath(gradePathId)
+  const savedGradePath = getGradePath(loadActiveLearningPath()?.id)
   const pathAccent = GRADE_ACCENT[gradePath?.id] || '#1464F0'
 
   useEffect(() => {
@@ -219,7 +220,9 @@ export default function ModuleSelect() {
         <PageBackground />
         <div className="relative mx-auto max-w-5xl">
           <div className="flex justify-end">
-            <Link to="/" className="rounded-2xl border border-slate-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-slate-900 shadow-md backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-lg">← Back home</Link>
+            {savedGradePath && (
+              <button type="button" onClick={() => setGradePathId(savedGradePath.id)} className="rounded-2xl border border-slate-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-slate-900 shadow-md backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-lg">← Back to modules</button>
+            )}
           </div>
           <section className="mt-4 rounded-[2rem] border border-white/80 bg-white/95 p-6 shadow-2xl backdrop-blur-md sm:p-9">
             <div className="flex flex-col items-center text-center">
@@ -256,7 +259,7 @@ export default function ModuleSelect() {
                 <button type="button" onClick={() => setGlossaryOpen(true)} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50">Money word help</button>
                 {teacherPreview && <Link to="/teacher-guide" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm">Teacher guide</Link>}
                 {!teacherPreview && <Link to="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm">Reading settings</Link>}
-                {context.plain && !teacherPreview && <button type="button" onClick={() => chooseGradePath('')} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm">Change grade</button>}
+                {context.plain && !teacherPreview && <button type="button" onClick={() => setGradePathId('')} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm">Change grade</button>}
                 <Link to={user?.role === 'teacher' ? '/teacher' : '/'} className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-extrabold text-white shadow-sm">← Home</Link>
               </div>
             </div>
