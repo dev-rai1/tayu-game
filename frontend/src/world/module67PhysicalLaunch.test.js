@@ -42,6 +42,6 @@ describe('Module 6 and 7 physical launch flow', () => {
       expect(module.color, `Module ${module.n} should have a title color`).toMatch(/^#[0-9A-Fa-f]{6}$/)
     }
     expect(moduleSelect).toContain('style={{ color: module.color }}')
-    expect(moduleSelect).toContain('style={{ color: part.color || module.color }}')
+    expect(moduleSelect).toContain('style={{ color: part.color }}')
   })
 })
