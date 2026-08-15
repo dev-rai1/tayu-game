@@ -55,10 +55,9 @@ export const MODULE_CATALOG = [
     title: 'Bond Street',
     grades: 'Grades 6–12',
     minutes: '6–8 min',
-    desc: 'Visit the physical Bond Street Exchange, compare Treasury, municipal, and corporate bonds, and interact directly inside the 3D building.',
+    desc: 'Enter Bond Street directly from the main TAYU town, compare Treasury, municipal, and corporate bonds, and interact inside the building.',
     color: '#6FA44A',
     worldModule: 6,
-    physicalDestination: true,
   },
   {
     n: 7,
@@ -87,13 +86,13 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street, the TAYU Tax Office, then the Finale. The Tax Office is currently marked Under Construction.',
+    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street in the main town, the TAYU Tax Office, then the Finale. The Tax Office is currently marked Under Construction.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All seven core modules establish a shared baseline. Bond Street is a physical 3D destination, followed by the TAYU Tax Office and Finale.',
+    copy: 'All seven core modules establish a shared baseline. Bond Street is part of the main TAYU town, followed by the TAYU Tax Office and Finale.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
