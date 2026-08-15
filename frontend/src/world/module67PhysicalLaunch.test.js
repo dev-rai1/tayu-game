@@ -18,12 +18,14 @@ const partyHouse = fs.readFileSync(path.join(here, 'PartyHouse.jsx'), 'utf8')
 const taxCheck = fs.readFileSync(path.resolve('src/components/PaycheckCompletionCheck.jsx'), 'utf8')
 
 describe('Module 6 and 7 physical launch flow', () => {
-  it('bypasses the generic modal-first entry flow for physical destinations', () => {
+  it('routes Module 6 into the normal town and Module 7 into tax mode', () => {
     expect(moduleSelect).toContain('preparePhysicalModuleLaunch(target.n)')
     expect(moduleSelect).toContain("nav('/world')")
     expect(launch).toContain("localStorage.removeItem('tayu-module-entry-intent')")
     expect(launch).toContain('sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))')
-    expect(launch).toContain('activatePaycheckWorld()')
+    expect(launch).toContain("if (id === 6) setPaycheckWorldActive(false)")
+    expect(launch).toContain('else activatePaycheckWorld()')
+    expect(gameWorld).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
   })
 
   it('clears stale earlier-module messages and completion state before entering 6 or 7', () => {
@@ -51,6 +53,7 @@ describe('Module 6 and 7 physical launch flow', () => {
   it('keeps public order 1 through 7 and puts the Finale after the Tax Office', () => {
     expect(MODULE_CATALOG.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6, 7])
     expect(MODULE_CATALOG[5].title).toBe('Bond Street')
+    expect(MODULE_CATALOG[5].physicalDestination).not.toBe(true)
     expect(MODULE_CATALOG[5].underConstruction).not.toBe(true)
     expect(MODULE_CATALOG[6].title).toContain('TAYU Tax Office')
     expect(MODULE_CATALOG[6].underConstruction).toBe(true)
@@ -63,11 +66,12 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(partyHouse).not.toContain("cardTexture('MODULE 6'")
   })
 
-  it('spawns Module 6 outside in front of the Bond Street entrance', () => {
+  it('spawns Module 6 outside in front of Bond Street on the shared map', () => {
     expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_ENTRY')
     expect(launch).toContain("typeof game.adminTeleport === 'function'")
     expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]')
     expect(bondWorld).toContain('Module 6 starts OUTSIDE the building')
+    expect(gameWorld).toContain('if (moduleId === 6) setPaycheckWorldActive(false)')
     expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
   })
 
@@ -87,7 +91,8 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(bondGate).toContain('Walk inside the building. Get close, then click or press E to interact.')
   })
 
-  it('does not use a blue Canvas background for the physical Module 6/7 world', () => {
+  it('keeps Module 6 on the normal town background while Module 7 can use tax styling', () => {
+    expect(gameWorld).toContain("const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()")
     expect(gameWorld).toContain("paycheckWorld ? '#f4efe3' : '#cfe6f2'")
     expect(gameWorld).toContain("paycheckWorld ? '#e9e3d6' : '#d6e9f0'")
   })
