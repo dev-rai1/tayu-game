@@ -9,6 +9,7 @@ export const GRADE_PATHS = [
 
 export const DEFAULT_GRADE_PATH = 'middle-school'
 export const ACTIVE_PATH_KEY = 'tayu-active-learning-path-v1'
+export const LAST_GRADE_PATH_KEY = 'tayu-last-grade-learning-path-v1'
 
 const BADGES_BY_MODULE = { 1: 'jars', 2: 'lemonade', 3: 'budget', 4: 'bank', 5: 'garden', 6: 'bond', 7: 'tax' }
 
@@ -69,10 +70,16 @@ export function milestoneBadges(state = {}) {
   return badges
 }
 
+function saveLastGradePath(value) {
+  if (!getGradePath(value?.id)) return
+  try { localStorage.setItem(LAST_GRADE_PATH_KEY, JSON.stringify(value)) } catch { /* optional */ }
+}
+
 export function saveActiveLearningPath(path) {
   const value = normalizeLearningPath(path)
   if (!value) return null
   try { localStorage.setItem(ACTIVE_PATH_KEY, JSON.stringify(value)) } catch { /* optional */ }
+  saveLastGradePath(value)
   saveProfile({ activeLearningPath: value })
   return value
 }
@@ -85,5 +92,11 @@ export function clearActiveLearningPath() {
 export function loadActiveLearningPath() {
   const profileValue = normalizeLearningPath(loadProfile()?.activeLearningPath)
   if (profileValue) return profileValue
-  try { return normalizeLearningPath(JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null')) } catch { return null }
+  try {
+    const activeValue = normalizeLearningPath(JSON.parse(localStorage.getItem(ACTIVE_PATH_KEY) || 'null'))
+    if (activeValue) return activeValue
+    return normalizeLearningPath(JSON.parse(localStorage.getItem(LAST_GRADE_PATH_KEY) || 'null'))
+  } catch {
+    return null
+  }
 }
