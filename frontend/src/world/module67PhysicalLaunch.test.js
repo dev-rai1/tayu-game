@@ -12,6 +12,7 @@ const bondGate = fs.readFileSync(path.join(here, 'BondStreetGate.jsx'), 'utf8')
 const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx'), 'utf8')
 const bondWorld = fs.readFileSync(path.join(here, 'BondStreetWorld.jsx'), 'utf8')
 const taxWorld = fs.readFileSync(path.join(here, 'PaycheckPlanetWorld.jsx'), 'utf8')
+const taxCheck = fs.readFileSync(path.resolve('src/components/PaycheckCompletionCheck.jsx'), 'utf8')
 
 describe('Module 6 and 7 physical launch flow', () => {
   it('bypasses the generic modal-first entry flow for physical destinations', () => {
@@ -37,6 +38,18 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain('else sessionStorage.removeItem(BOND_ONLY_KEY)')
     expect(bondWorld).toContain('MODULE 6 · BOND STREET')
     expect(taxWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
+  })
+
+  it('keeps the public module order 1 through 7 and puts the Finale after Module 7', () => {
+    expect(MODULE_CATALOG.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    expect(MODULE_CATALOG[5].title).toBe('Bond Street')
+    expect(MODULE_CATALOG[6].title).toBe('TAYU Tax Office')
+    expect(MODULE_CATALOG[6].leadsToFinale).toBe(true)
+    expect(MODULE_CATALOG[6].finale).not.toBe(true)
+    expect(moduleSelect).toContain('Tax Office → Finale')
+    expect(taxCheck).toContain('Module 7 · tax filing check complete')
+    expect(taxCheck).toContain('Continue to Finale →')
+    expect(taxCheck).not.toContain('Finish Module 6 Check')
   })
 
   it('places both physical modules at real building entrances and re-applies the spawn after Canvas creation', () => {
