@@ -12,15 +12,18 @@ const bondGate = fs.readFileSync(path.join(here, 'BondStreetGate.jsx'), 'utf8')
 const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx'), 'utf8')
 const bondWorld = fs.readFileSync(path.join(here, 'BondStreetWorld.jsx'), 'utf8')
 const taxWorld = fs.readFileSync(path.join(here, 'PaycheckPlanetWorld.jsx'), 'utf8')
+const physicalSigns = fs.readFileSync(path.join(here, 'PhysicalModuleSigns.jsx'), 'utf8')
+const questionHelp = fs.readFileSync(path.join(here, 'WorldQuestionHelp.jsx'), 'utf8')
+const partyHouse = fs.readFileSync(path.join(here, 'PartyHouse.jsx'), 'utf8')
 const taxCheck = fs.readFileSync(path.resolve('src/components/PaycheckCompletionCheck.jsx'), 'utf8')
 
 describe('Module 6 and 7 physical launch flow', () => {
   it('bypasses the generic modal-first entry flow for physical destinations', () => {
-    expect(moduleSelect).toContain("preparePhysicalModuleLaunch(target.n)")
+    expect(moduleSelect).toContain('preparePhysicalModuleLaunch(target.n)')
     expect(moduleSelect).toContain("nav('/world')")
     expect(launch).toContain("localStorage.removeItem('tayu-module-entry-intent')")
-    expect(launch).toContain("sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))")
-    expect(launch).toContain("activatePaycheckWorld()")
+    expect(launch).toContain('sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))')
+    expect(launch).toContain('activatePaycheckWorld()')
   })
 
   it('clears stale earlier-module messages and completion state before entering 6 or 7', () => {
@@ -31,48 +34,70 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain('pendingWeekComplete: false')
     expect(launch).toContain('weekComplete: false')
     expect(launch).toContain('enterParty: false')
+    expect(launch).toContain('scenarioLocked: false')
+    expect(launch).toContain('playerSpeedMult: 1')
   })
 
-  it('routes Module 6 to Bond Street and Module 7 to the Tax Office independently', () => {
+  it('routes Bond Street and the Tax Office independently without numbered in-world labels', () => {
     expect(launch).toContain("if (id === 6) sessionStorage.setItem(BOND_ONLY_KEY, '1')")
     expect(launch).toContain('else sessionStorage.removeItem(BOND_ONLY_KEY)')
-    expect(bondWorld).toContain('MODULE 6 · BOND STREET')
-    expect(taxWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
+    expect(bondWorld).toContain('BOND STREET · UNDER CONSTRUCTION')
+    expect(bondWorld).not.toContain('MODULE 6 · BOND STREET')
+    expect(physicalSigns).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
+    expect(taxBridge).not.toContain('start Module 7')
   })
 
-  it('keeps the public module order 1 through 7 and puts the Finale after Module 7', () => {
+  it('keeps public order 1 through 7 and puts the Finale after the Tax Office', () => {
     expect(MODULE_CATALOG.map((module) => module.n)).toEqual([1, 2, 3, 4, 5, 6, 7])
-    expect(MODULE_CATALOG[5].title).toBe('Bond Street')
-    expect(MODULE_CATALOG[6].title).toBe('TAYU Tax Office')
+    expect(MODULE_CATALOG[5].title).toContain('Bond Street')
+    expect(MODULE_CATALOG[5].underConstruction).toBe(true)
+    expect(MODULE_CATALOG[6].title).toContain('TAYU Tax Office')
+    expect(MODULE_CATALOG[6].underConstruction).toBe(true)
     expect(MODULE_CATALOG[6].leadsToFinale).toBe(true)
     expect(MODULE_CATALOG[6].finale).not.toBe(true)
     expect(moduleSelect).toContain('Tax Office → Finale')
     expect(taxCheck).toContain('Module 7 · tax filing check complete')
     expect(taxCheck).toContain('Continue to Finale →')
-    expect(taxCheck).not.toContain('Finish Module 6 Check')
+    expect(partyHouse).toContain("cardTexture('FINALE AREA'")
+    expect(partyHouse).not.toContain("cardTexture('MODULE 6'")
   })
 
-  it('places both physical modules at real building entrances and re-applies the spawn after Canvas creation', () => {
+  it('spawns Module 6 inside its real building and re-applies physical placement after Canvas creation', () => {
     expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_ENTRY')
-    expect(launch).toContain('playerPos.x = point[0]')
-    expect(launch).toContain('playerPos.z = point[1]')
-    expect(launch).toContain('window.setTimeout(() => placePhysicalModuleArrival(id), 80)')
+    expect(launch).toContain("typeof game.adminTeleport === 'function'")
+    expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 4.7, BOND_DISTRICT[1] + 1.35]')
     expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
+    expect(gameWorld).toContain('Boolean(physicalModule) || isPaycheckWorldActive()')
     expect(gameWorld).toContain('window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))')
-    expect(gameWorld).toContain('window.setTimeout(() => placePhysicalModuleArrival(moduleId), 360)')
+    expect(gameWorld).toContain('2100')
   })
 
-  it('completely removes the Module 6 fullscreen 2D arrival version', () => {
+  it('keeps Bond Street before and separate from the Tax Office', () => {
+    expect(bondWorld).toContain('TAX_DISTRICT[0] - 21')
+    expect(bondWorld).toContain('TAX_DISTRICT[1] - 12')
+    expect(taxWorld).toContain('TaxCenterBuilding')
+  })
+
+  it('completely removes the fullscreen 2D Bond Street arrival version', () => {
     expect(bondGate).not.toContain('function BondArrivalIntro()')
     expect(bondGate).not.toContain('showArrivalIntro')
     expect(bondGate).not.toContain('Welcome to Bond Street')
-    expect(bondGate).toContain('Module 6 is now 3D-only')
-    expect(bondGate).toContain('Walk around the building. Get close, then click or press E to interact.')
+    expect(bondGate).toContain('Bond Street is 3D-only')
+    expect(bondGate).toContain('Walk inside the building. Get close, then click or press E to interact.')
   })
 
-  it('does not use a blue Canvas background for the Module 6/7 paycheck world', () => {
+  it('does not use a blue Canvas background for the physical Module 6/7 world', () => {
     expect(gameWorld).toContain("paycheckWorld ? '#f4efe3' : '#cfe6f2'")
     expect(gameWorld).toContain("paycheckWorld ? '#e9e3d6' : '#d6e9f0'")
+  })
+
+  it('restores a persistent question-mark help control with instructions and learning resources', () => {
+    expect(gameWorld).toContain('<WorldQuestionHelp />')
+    expect(questionHelp).toContain('Open instructions and learning resources')
+    expect(questionHelp).toContain('Instructions')
+    expect(questionHelp).toContain('Learning resources')
+    expect(questionHelp).toContain('Bond Street — Under Construction')
+    expect(questionHelp).toContain('TAYU Tax Office — Under Construction')
   })
 
   it('does not auto-start either lesson and requires a nearby E interaction', () => {
@@ -81,7 +106,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(taxBridge).toContain("event.code !== 'KeyE'")
     expect(taxBridge).toContain('nearbyTaxAction()')
     expect(bondGate).toContain('Walk inside and talk to Beau.')
-    expect(taxBridge).toContain('Talk to Rex and start Module 7')
+    expect(taxBridge).toContain('Talk to Rex and start the Tax Office')
   })
 
   it('keeps every module title assigned a visible catalog color', () => {

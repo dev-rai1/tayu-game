@@ -10,10 +10,11 @@ const paycheckWorld = fs.readFileSync(path.resolve('src/world/PaycheckPlanetWorl
 describe('Tax Center building and continuous flow', () => {
   beforeEach(() => useTaxLab.getState().reset())
 
-  it('renders a walk-in Module 7 Tax Office shell around the activity', () => {
+  it('renders a walk-in Tax Office shell around the activity without module-number labels', () => {
     expect(paycheckWorld).toContain('function TaxCenterBuilding')
     expect(paycheckWorld).toContain('<TaxCenterBuilding active={active} />')
-    expect(paycheckWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
+    expect(paycheckWorld).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
+    expect(paycheckWorld).not.toContain('MODULE 7 · TAYU TAX OFFICE')
     expect(paycheckWorld).toContain('name="Rex · Tax Guide"')
   })
 

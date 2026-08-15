@@ -16,13 +16,15 @@ import { BankDistrict } from './BankDistrict.jsx'
 import { ModuleLandmarks } from './ModuleLandmarks.jsx'
 import { BondStreetWorld } from './BondStreetWorld.jsx'
 import { PaycheckPlanetWorld } from './PaycheckPlanetWorld.jsx'
+import { PhysicalModuleSigns } from './PhysicalModuleSigns.jsx'
+import { WorldQuestionHelp } from './WorldQuestionHelp.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
 import { CoinLayer } from './CoinLayer.jsx'
 import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
-import { isPaycheckWorldActive } from './paycheckMode.js'
+import { activatePaycheckWorld, isPaycheckWorldActive } from './paycheckMode.js'
 import { clearPhysicalModuleLaunch, placePhysicalModuleArrival, readPhysicalModuleLaunch } from './physicalModuleLaunch.js'
 
 class SceneBoundary extends Component {
@@ -72,24 +74,28 @@ function settlePhysicalLaunchAfterCanvasMount() {
   const moduleId = readPhysicalModuleLaunch()
   if (!moduleId || typeof window === 'undefined') return
 
-  // Three.js and Player mount after route navigation. Re-apply the destination
-  // after those mounts so initWorld/camera setup can never leave Modules 6/7 on
-  // an empty background away from their actual buildings.
+  // Treat the launch marker as authoritative even if old world initialization
+  // toggled the mode during navigation. This prevents the blank/blue fallback.
+  activatePaycheckWorld()
   placePhysicalModuleArrival(moduleId)
   window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))
-  window.setTimeout(() => placePhysicalModuleArrival(moduleId), 120)
-  window.setTimeout(() => placePhysicalModuleArrival(moduleId), 360)
+  ;[120, 360, 800, 1400, 2100].forEach((delay) => {
+    window.setTimeout(() => placePhysicalModuleArrival(moduleId), delay)
+  })
   window.setTimeout(() => {
     placePhysicalModuleArrival(moduleId)
     clearPhysicalModuleLaunch()
-  }, 800)
+  }, 2400)
 }
 
 export function GameWorld({ avatar }) {
   repairRuntimeState()
   const week = useGame((state) => state.week)
-  const paycheckWorld = isPaycheckWorldActive()
-  const sceneKey = paycheckWorld ? `paycheck-${week}` : `week-${week}`
+  const physicalModule = readPhysicalModuleLaunch()
+  // A pending Module 6/7 launch must render the real district immediately,
+  // regardless of a stale global mode value from a previous route.
+  const paycheckWorld = Boolean(physicalModule) || isPaycheckWorldActive()
+  const sceneKey = paycheckWorld ? `paycheck-${week}-${physicalModule || 'active'}` : `week-${week}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
@@ -136,6 +142,7 @@ export function GameWorld({ avatar }) {
             <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
             <SceneBoundary name="bond-street"><BondStreetWorld /></SceneBoundary>
             <SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>
+            <SceneBoundary name="physical-module-signs"><PhysicalModuleSigns /></SceneBoundary>
             <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
             <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
             <SceneBoundary name="party"><PartyHouse /></SceneBoundary>
@@ -147,6 +154,7 @@ export function GameWorld({ avatar }) {
           </Suspense>
         </Canvas>
       </Boundary>
+      <WorldQuestionHelp />
     </div>
   )
 }

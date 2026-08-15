@@ -27,6 +27,7 @@ function canUseTaxOffice() {
 
 function placeAtTaxTownEntrance() {
   playerPos.x = TAX_POINTS.guide[0]
+  playerPos.y = 1
   playerPos.z = TAX_POINTS.guide[1] + 4.2
   joystick.x = 0
   joystick.y = 0
@@ -38,7 +39,7 @@ function nearbyTaxAction() {
   const state = useTaxLab.getState()
   if (state.panel) return null
   if (state.phase === 'intro') {
-    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and start Module 7' }
+    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and start the Tax Office' }
     return null
   }
   if (state.phase === 'case') {
@@ -55,7 +56,7 @@ function nearbyTaxAction() {
     if (station && distanceTo(station.point) <= INTERACT_RADIUS) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
-  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and finish Module 7' }
+  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and finish the Tax Office' }
   return null
 }
 

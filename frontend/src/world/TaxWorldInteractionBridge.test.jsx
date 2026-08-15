@@ -52,7 +52,7 @@ describe('Module 7 Tax Office interactions', () => {
     playerPos.x = 999
     playerPos.z = 999
     useTaxLab.getState().setNearbyAction(null)
-    expect(screen.queryByRole('button', { name: /start Module 7 Tax Office/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /start the Tax Office/i })).not.toBeInTheDocument()
     expect(useTaxLab.getState().panel).toBe(null)
   })
 
@@ -95,7 +95,7 @@ describe('Module 7 Tax Office interactions', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     mountTaxInteraction()
-    expect(screen.getByText('Module 6 · Bond Street')).toBeInTheDocument()
+    expect(screen.getByText('Bond Street · Under Construction')).toBeInTheDocument()
   })
 
   it('requires proximity to the next physical station after Rex starts the case flow', () => {
@@ -112,7 +112,7 @@ describe('Module 7 Tax Office interactions', () => {
     mountTaxInteraction()
     playerPos.x = 999
     playerPos.z = 999
-    expect(screen.queryByRole('button', { name: /Finish Module 7/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Finish Tax Office/i })).not.toBeInTheDocument()
     fireEvent.keyDown(window, { code: 'KeyE', key: 'e' })
     expect(useTaxLab.getState().panel).toBe(null)
     standByRex()

@@ -27,7 +27,7 @@ describe('Paycheck Planet full integration', () => {
   })
 
   it('keeps Module 7 inside a physical Tax Office with Rex and taxpayer NPCs', () => {
-    expect(paycheckWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
+    expect(paycheckWorld).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
     expect(paycheckWorld).toContain('Rex · Tax Guide')
     expect(paycheckWorld).toContain('TAX_CLIENTS.map')
     expect(paycheckWorld).toContain('InteractiveTaxNpc')
@@ -59,7 +59,7 @@ describe('Paycheck Planet full integration', () => {
     expect(world).toContain('<TaxActionPrompt />')
     expect(bridge).toContain("event.code !== 'KeyE'")
     expect(bridge).toContain("window.addEventListener('tayu-interact'")
-    expect(bridge).toContain("label: 'Talk to Rex and start Module 7'")
+    expect(bridge).toContain("label: 'Talk to Rex and start the Tax Office'")
     expect(bridge).toContain("state.phase === 'case'")
     expect(bridge).toContain("state.phase === 'steps'")
     expect(bridge).toContain('taxStationForStep(state.stepNumber)')

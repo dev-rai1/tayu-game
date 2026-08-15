@@ -64,8 +64,8 @@ export function BondStreetGate({ onComplete }) {
   const outcome = useMemo(() => bondOutcome(allocation), [allocation])
   const progress = { stage, visited }
 
-  // Module 6 is now 3D-only. There is deliberately no fullscreen arrival layer.
-  // The player sees the real Bond Street building immediately and walks to Beau.
+  // Bond Street is 3D-only. There is deliberately no fullscreen arrival layer.
+  // The player spawns inside the real building beside Beau.
   useEffect(() => {
     placeAtBondStreetEntrance()
     emitBondWorld('arrival', progress)
@@ -156,14 +156,14 @@ export function BondStreetGate({ onComplete }) {
           ? 'Walk to the glowing coin table and interact to collect interest.'
           : stage === 4
             ? 'Walk to the blue rate-risk seesaw and interact.'
-            : 'Talk with Beau’s lesson complete. Finish Module 6.'
+            : 'Beau’s lesson is complete. Continue to the Tax Office.'
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] text-navy" data-bond-street="true">
       <div className="absolute left-3 top-3 w-[min(92vw,28rem)] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Module 6 · Bond Street</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Bond Street · Under Construction</div>
         <div className="mt-1 font-display text-xl font-black">{objective}</div>
-        <div className="mt-2 text-xs font-bold text-navy/60">Walk around the building. Get close, then click or press E to interact.</div>
+        <div className="mt-2 text-xs font-bold text-navy/60">Walk inside the building. Get close, then click or press E to interact. Use ? for instructions and learning resources.</div>
       </div>
 
       {card && (
@@ -183,7 +183,7 @@ export function BondStreetGate({ onComplete }) {
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={() => setCard(null)} className="min-h-[44px] flex-1 rounded-xl border border-slate-300 bg-white px-4 font-black">Back to the building</button>
             {stage === 2 && total > 0.009 && <button type="button" onClick={finishAllocation} className="min-h-[44px] flex-1 rounded-xl bg-[#5d8b3d] px-4 font-black text-white">Lock in lending</button>}
-            {stage === 5 && <button type="button" onClick={finish} className="min-h-[44px] flex-1 rounded-xl bg-teal px-4 font-black text-navy">Finish Module 6</button>}
+            {stage === 5 && <button type="button" onClick={finish} className="min-h-[44px] flex-1 rounded-xl bg-teal px-4 font-black text-navy">Continue to Tax Office</button>}
           </div>
         </section>
       )}
@@ -192,7 +192,7 @@ export function BondStreetGate({ onComplete }) {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-navy/92 px-4 py-2 text-sm font-black text-white shadow-xl">{money(total)} lent · {money(remaining)} left</div>
       )}
       {stage === 5 && !card && (
-        <button type="button" onClick={finish} className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[50px] -translate-x-1/2 rounded-2xl bg-teal px-6 font-black text-navy shadow-2xl">Finish Module 6</button>
+        <button type="button" onClick={finish} className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[50px] -translate-x-1/2 rounded-2xl bg-teal px-6 font-black text-navy shadow-2xl">Continue to Tax Office</button>
       )}
     </div>
   )

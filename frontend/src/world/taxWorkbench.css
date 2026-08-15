@@ -117,7 +117,7 @@
 }
 
 [data-tax-mode='true'] [data-tax-field-ui='true'] > div:first-child > div:first-child::after {
-  content: 'Module 7 · TAYU Tax Office';
+  content: 'TAYU Tax Office · Under Construction';
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -136,7 +136,7 @@
 
 [data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='You filed the practice return'] button:last-child::after,
 [data-tax-mode='true'] [data-tax-station-panel='true'][aria-label='Practice return filed'] button:last-child::after {
-  content: 'Finish Module 7';
+  content: 'Finish Tax Office';
   font-size: 16px;
   font-weight: 900;
 }

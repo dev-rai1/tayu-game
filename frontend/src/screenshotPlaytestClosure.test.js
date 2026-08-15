@@ -17,7 +17,7 @@ describe('screenshot playtest fixes stay closed', () => {
     expect(css).toContain('background: rgba(255, 255, 255, 0.1) !important;')
   })
 
-  it('keeps Bond Street scrollable and prevents Module 7 UI from leaking into Module 6', () => {
+  it('keeps Bond Street scrollable and prevents Tax Office UI from leaking into Bond Street', () => {
     const worldCss = read('src/world/worldDeclutter.css')
     const taxCss = read('src/world/taxWorkbench.css')
 
@@ -26,17 +26,20 @@ describe('screenshot playtest fixes stay closed', () => {
     expect(worldCss).toContain('touch-action: pan-y;')
     expect(taxCss).toContain("[data-tax-field-ui='true']")
     expect(taxCss).toContain("[data-tax-action-prompt='true']")
-    expect(taxCss).toContain("content: 'Module 7 · TAYU Tax Office';")
+    expect(taxCss).toContain("content: 'TAYU Tax Office · Under Construction';")
+    expect(taxCss).not.toContain("content: 'Module 7 · TAYU Tax Office';")
     expect(taxCss).not.toContain("content: 'Module 6 · in-world Tax Lab';")
   })
 
-  it('shows Module 6 before the real finale and rewrites the Module 5 bridge before paint', () => {
+  it('keeps Bond Street separate from the real finale and rewrites the Module 5 bridge before paint', () => {
     const party = read('src/world/PartyHouse.jsx')
+    const bond = read('src/world/BondStreetWorld.jsx')
     const watcher = read('src/components/PathCompletionWatcher.jsx')
 
-    expect(party).toContain("cardTexture('MODULE 6', 'Bond Street is next — keep going!'")
+    expect(bond).toContain('BOND STREET · UNDER CONSTRUCTION')
     expect(party).toContain("cardTexture('FINALE AREA', 'Come in, Money Guru!'")
-    expect(party).not.toContain("cardTexture('FINALE AREA', 'Finish the journey... the party is waiting!'")
+    expect(party).toContain("cardTexture('FINALE AREA', 'Complete Bond Street and the TAYU Tax Office to unlock.'")
+    expect(party).not.toContain("cardTexture('MODULE 6'")
     expect(watcher).toContain('useLayoutEffect')
     expect(watcher).toContain("label: /finale/i.test(String(button?.label || '')) ? 'Start Module 6: Bond Street →'")
     expect(watcher).toContain("sessionStorage.setItem(TAX_ORIGIN_KEY, 'garden-handoff')")

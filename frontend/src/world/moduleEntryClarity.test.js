@@ -68,7 +68,7 @@ describe('module entry clarity', () => {
     expect(paycheck).not.toContain('RovingTaxWorker')
     expect(paycheck).not.toContain('DeskWorker')
     expect(paycheck).toContain('closeEnough(point)')
-    expect(bridge).toContain("label: 'Talk to Rex and start Module 7'")
+    expect(bridge).toContain("label: 'Talk to Rex and start the Tax Office'")
     expect(bridge).toContain("event.code !== 'KeyE'")
     expect(bridge).toContain("window.addEventListener('tayu-interact'")
   })
