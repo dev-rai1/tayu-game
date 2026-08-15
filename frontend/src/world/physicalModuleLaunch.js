@@ -1,6 +1,8 @@
 import { activatePaycheckWorld } from './paycheckMode.js'
-import { BOND_ENTRY } from './BondStreetWorld.jsx'
+import { BOND_ENTRY, BOND_DISTRICT } from './BondStreetWorld.jsx'
 import { TAX_POINTS } from './taxDistrictLayout.js'
+import { TAX_DISTRICT } from './config.js'
+import { cameraRig } from './cameraRig.js'
 import { joystick, moveTarget, playerPos, useGame } from './store.js'
 
 export const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
@@ -13,10 +15,25 @@ export function placePhysicalModuleArrival(moduleNumber) {
   const id = Number(moduleNumber)
   if (id !== 6 && id !== 7) return false
   const point = id === 6 ? BOND_ENTRY : TAX_ENTRY
+  const center = id === 6 ? BOND_DISTRICT : TAX_DISTRICT
 
   // Keep the physical district authoritative. Old module-entry state used to
   // reset the player to an unrelated/default position after route navigation.
   activatePaycheckWorld()
+
+  // Face the camera toward the building the player just arrived at. initWorld()
+  // resets azimuth to 0 (camera due south, looking north). Bond Street's entrance
+  // sits at the building's WEST edge, so the default view looks away toward the
+  // Module 1 town - turn the camera to face the building. The Tax Office entrance
+  // is due south of its building, which the default north-facing camera already
+  // frames well, so leave azimuth alone there.
+  try {
+    if (id === 6) {
+      const dx = center[0] - point[0]
+      const dz = center[1] - point[1]
+      cameraRig.azimuth = Math.atan2(dx, dz)
+    }
+  } catch { /* cameraRig always present in the browser */ }
   try {
     const game = useGame.getState()
     if (typeof game.adminTeleport === 'function') game.adminTeleport(point)

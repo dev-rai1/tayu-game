@@ -52,7 +52,7 @@ function InteractiveTaxNpc({ name, point, avatar, active = true, selected = fals
     onActivate?.()
   }
   return (
-    <group ref={root} position={p} onClick={activate} onPointerOver={() => { if (!active) return; setHovered(true); document.body.style.cursor = 'pointer' }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }} aria-label={name}>
+    <group ref={root} position={p} onClick={activate} onPointerOver={() => { if (!active) return; setHovered(true); document.body.style.cursor = 'pointer' }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}>
       <group scale={selected ? 1.08 : hovered ? 1.04 : 1}><CharacterMesh ref={mesh} avatar={avatar} /></group>
       <InteractionGlow active={active} selected={selected} />
     </group>

@@ -47,15 +47,15 @@ export const useTaxLab = create((set, get) => ({
   panel: null,
   feedback: null,
   nearbyAction: null,
-  worldNotice: 'Walk inside Module 7 · TAYU Tax Office and talk to Rex to begin.',
+  worldNotice: 'Walk inside the TAYU Tax Office and talk to Rex to begin.',
   work: emptyTaxWork(),
 
-  reset: () => set({ phase: 'intro', taxCase: null, candidateCase: null, stepNumber: 1, panel: null, feedback: null, nearbyAction: null, worldNotice: 'Walk inside Module 7 · TAYU Tax Office and talk to Rex to begin.', work: emptyTaxWork() }),
+  reset: () => set({ phase: 'intro', taxCase: null, candidateCase: null, stepNumber: 1, panel: null, feedback: null, nearbyAction: null, worldNotice: 'Walk inside the TAYU Tax Office and talk to Rex to begin.', work: emptyTaxWork() }),
 
   restore: ({ phase = 'case', taxCase = null, stepNumber = 1 } = {}) => {
     const restoredStep = boundedStep(stepNumber)
     const restoredPhase = phase === 'steps' && taxCase ? 'steps' : 'case'
-    set({ phase: restoredPhase, taxCase, candidateCase: null, stepNumber: restoredStep, panel: null, feedback: null, nearbyAction: null, worldNotice: restoredPhase === 'steps' ? `Continue Module 7 inside the Tax Office at ${taxStationForStep(restoredStep).label}.` : 'Meet Ari, Sam, or Jordan inside the Tax Office and choose a taxpayer.', work: emptyTaxWork() })
+    set({ phase: restoredPhase, taxCase, candidateCase: null, stepNumber: restoredStep, panel: null, feedback: null, nearbyAction: null, worldNotice: restoredPhase === 'steps' ? `Continue inside the Tax Office at ${taxStationForStep(restoredStep).label}.` : 'Meet Ari, Sam, or Jordan inside the Tax Office and choose a taxpayer.', work: emptyTaxWork() })
   },
 
   openGuide: () => set({ panel: 'guide', feedback: null, nearbyAction: null }),
@@ -110,6 +110,6 @@ export const useTaxLab = create((set, get) => ({
 
   complete: () => {
     emitTaxWorld('filed', { stepNumber: 6 })
-    set({ phase: 'complete', panel: null, feedback: null, nearbyAction: null, worldNotice: 'Practice return filed! Watch the Tax Office celebrate, then walk back to Rex to finish Module 7.' })
+    set({ phase: 'complete', panel: null, feedback: null, nearbyAction: null, worldNotice: 'Practice return filed! Watch the Tax Office celebrate, then walk back to Rex to finish.' })
   },
 }))

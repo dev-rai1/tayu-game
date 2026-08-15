@@ -30,6 +30,7 @@ import { AdminPanel } from '../components/AdminPanel.jsx'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { BANK_DISTRICT, BUDGET_TOWN, LEMONADE, SPAWN, SPROUT, TAX_DISTRICT } from '../world/config.js'
 import { useTaxLab } from '../world/taxLabStore.js'
+import { readPhysicalModuleLaunch, placePhysicalModuleArrival } from '../world/physicalModuleLaunch.js'
 import '../world/worldDeclutter.css'
 import '../world/moduleEntryFixes.css'
 
@@ -259,6 +260,23 @@ export default function World() {
     const entry = initialModuleEntry.current
     const gardenEntryPart = entry?.gardenEntryPart || null
     initWorld()
+
+    // Modules 6 & 7 are physical 3D destinations. initWorld() above unconditionally
+    // resets the player to SPAWN, and this parent effect runs AFTER the Bond/Tax
+    // child-scene placement effects, so without this the player is stranded at the
+    // world center. The generic module-entry path below never fires for 6/7, so
+    // re-place deterministically at the correct district entrance right here.
+    const physicalModule = readPhysicalModuleLaunch()
+    if (physicalModule) {
+      placePhysicalModuleArrival(physicalModule)
+      crossfadeTo('town')
+      const fadeTimer = setTimeout(() => setFaded(true), 60)
+      // Reassert across any late init/re-render passes so nothing re-strands them.
+      const reassert = [80, 200, 420, 800].map((d) =>
+        setTimeout(() => placePhysicalModuleArrival(physicalModule), d),
+      )
+      return () => { clearTimeout(fadeTimer); reassert.forEach((t) => clearTimeout(t)) }
+    }
 
     if (entry) {
       try {
