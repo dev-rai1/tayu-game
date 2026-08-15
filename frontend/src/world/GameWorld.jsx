@@ -24,7 +24,7 @@ import { CoinLayer } from './CoinLayer.jsx'
 import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
-import { activatePaycheckWorld, isPaycheckWorldActive } from './paycheckMode.js'
+import { activatePaycheckWorld, isPaycheckWorldActive, setPaycheckWorldActive } from './paycheckMode.js'
 import { clearPhysicalModuleLaunch, placePhysicalModuleArrival, readPhysicalModuleLaunch } from './physicalModuleLaunch.js'
 
 class SceneBoundary extends Component {
@@ -74,27 +74,30 @@ function settlePhysicalLaunchAfterCanvasMount() {
   const moduleId = readPhysicalModuleLaunch()
   if (!moduleId || typeof window === 'undefined') return
 
-  // Treat the launch marker as authoritative even if old world initialization
-  // toggled the mode during navigation. This prevents the blank/blue fallback.
-  activatePaycheckWorld()
+  // Module 6 is part of the same shared town as Modules 1–5. Keep normal town
+  // mode active and only use the launch marker to place the player in front of
+  // Bond Street after Canvas/world initialization. Module 7 still uses tax mode.
+  if (moduleId === 6) setPaycheckWorldActive(false)
+  else activatePaycheckWorld()
+
   placePhysicalModuleArrival(moduleId)
   window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))
-  ;[120, 360, 800, 1400, 2100].forEach((delay) => {
+  ;[120, 360, 800].forEach((delay) => {
     window.setTimeout(() => placePhysicalModuleArrival(moduleId), delay)
   })
   window.setTimeout(() => {
     placePhysicalModuleArrival(moduleId)
     clearPhysicalModuleLaunch()
-  }, 2400)
+  }, 1000)
 }
 
 export function GameWorld({ avatar }) {
   repairRuntimeState()
   const week = useGame((state) => state.week)
   const physicalModule = readPhysicalModuleLaunch()
-  // A pending Module 6/7 launch must render the real district immediately,
-  // regardless of a stale global mode value from a previous route.
-  const paycheckWorld = Boolean(physicalModule) || isPaycheckWorldActive()
+  // Only Module 7 needs the separate paycheck/tax scene styling. Module 6 must
+  // look and behave like the same main map used by every earlier module.
+  const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()
   const sceneKey = paycheckWorld ? `paycheck-${week}-${physicalModule || 'active'}` : `week-${week}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
