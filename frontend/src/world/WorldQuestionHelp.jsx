@@ -17,7 +17,7 @@ const TAX_RESOURCES = [
 
 export function WorldQuestionHelp() {
   const [open, setOpen] = useState(false)
-  const touch = usesTouchControls()
+  const touch = usesTouchControls
   const physicalModule = readPhysicalModuleLaunch()
   const resources = useMemo(() => {
     if (physicalModule === 6) return BOND_RESOURCES
