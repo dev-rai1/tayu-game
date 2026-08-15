@@ -50,27 +50,6 @@ function nearestExpected(stage) {
   return distance <= INTERACT_RADIUS + 0.8 ? best : null
 }
 
-function BondArrivalIntro() {
-  return (
-    <div className="pointer-events-none absolute inset-0 grid place-items-center bg-navy/20 backdrop-blur-[2px]">
-      <div className="w-[min(90vw,30rem)] rounded-[2rem] border border-white/80 bg-white/95 px-6 py-5 text-center shadow-2xl">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef7e8] shadow-inner">
-          <div className="relative h-11 w-11">
-            <span className="absolute left-0 top-3 text-3xl animate-bounce">🪙</span>
-            <span className="absolute right-0 top-0 text-2xl animate-pulse">↗</span>
-          </div>
-        </div>
-        <div className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-[#5d8b3d]">Module 6</div>
-        <div className="mt-1 font-display text-3xl font-black text-navy">Welcome to Bond Street</div>
-        <p className="mt-2 text-sm font-bold text-navy/65">Your Money Garden earnings are ready to lend. Head inside and meet Beau.</p>
-        <div className="mx-auto mt-4 h-1.5 w-28 overflow-hidden rounded-full bg-slate-200">
-          <div className="h-full w-full origin-left animate-pulse rounded-full bg-[#5d8b3d]" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function BondStreetGate({ onComplete }) {
   const wallet = loadWallet() || {}
   const savedStake = gardenProfitStake(wallet)
@@ -79,18 +58,17 @@ export function BondStreetGate({ onComplete }) {
   const [visited, setVisited] = useState([])
   const [selectedBond, setSelectedBond] = useState(null)
   const [card, setCard] = useState(null)
-  const [showArrivalIntro, setShowArrivalIntro] = useState(true)
   const [allocation, setAllocation] = useState({ treasury: 0, muni: 0, corporate: 0 })
   const total = allocationTotal(allocation)
   const remaining = Math.max(0, cents(stake - total))
   const outcome = useMemo(() => bondOutcome(allocation), [allocation])
   const progress = { stage, visited }
 
+  // Module 6 is now 3D-only. There is deliberately no fullscreen arrival layer.
+  // The player sees the real Bond Street building immediately and walks to Beau.
   useEffect(() => {
     placeAtBondStreetEntrance()
     emitBondWorld('arrival', progress)
-    const timer = window.setTimeout(() => setShowArrivalIntro(false), 1900)
-    return () => window.clearTimeout(timer)
   }, [])
   useEffect(() => { emitBondWorld('progress', progress) }, [stage, visited.join('|')])
 
@@ -216,8 +194,6 @@ export function BondStreetGate({ onComplete }) {
       {stage === 5 && !card && (
         <button type="button" onClick={finish} className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[50px] -translate-x-1/2 rounded-2xl bg-teal px-6 font-black text-navy shadow-2xl">Finish Module 6</button>
       )}
-
-      {showArrivalIntro && <BondArrivalIntro />}
     </div>
   )
 }

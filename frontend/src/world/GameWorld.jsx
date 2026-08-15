@@ -23,6 +23,7 @@ import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
 import { isPaycheckWorldActive } from './paycheckMode.js'
+import { clearPhysicalModuleLaunch, placePhysicalModuleArrival, readPhysicalModuleLaunch } from './physicalModuleLaunch.js'
 
 class SceneBoundary extends Component {
   constructor(props) {
@@ -67,10 +68,28 @@ export function repairRuntimeState() {
   if (Object.keys(patch).length) useGame.setState(patch)
 }
 
+function settlePhysicalLaunchAfterCanvasMount() {
+  const moduleId = readPhysicalModuleLaunch()
+  if (!moduleId || typeof window === 'undefined') return
+
+  // Three.js and Player mount after route navigation. Re-apply the destination
+  // after those mounts so initWorld/camera setup can never leave Modules 6/7 on
+  // an empty background away from their actual buildings.
+  placePhysicalModuleArrival(moduleId)
+  window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))
+  window.setTimeout(() => placePhysicalModuleArrival(moduleId), 120)
+  window.setTimeout(() => placePhysicalModuleArrival(moduleId), 360)
+  window.setTimeout(() => {
+    placePhysicalModuleArrival(moduleId)
+    clearPhysicalModuleLaunch()
+  }, 800)
+}
+
 export function GameWorld({ avatar }) {
   repairRuntimeState()
   const week = useGame((state) => state.week)
-  const sceneKey = isPaycheckWorldActive() ? `paycheck-${week}` : `week-${week}`
+  const paycheckWorld = isPaycheckWorldActive()
+  const sceneKey = paycheckWorld ? `paycheck-${week}` : `week-${week}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
@@ -90,6 +109,7 @@ export function GameWorld({ avatar }) {
             try {
               gl.getContext()
               if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true'
+              settlePhysicalLaunchAfterCanvasMount()
             } catch (error) {
               logTayuError('canvas:webgl-context', error?.message || error)
               throw error
@@ -98,8 +118,8 @@ export function GameWorld({ avatar }) {
         >
           <CanvasViewportGuard />
           <Suspense fallback={null}>
-            <color attach="background" args={['#cfe6f2']} />
-            <fog attach="fog" args={['#d6e9f0', 26, 74]} />
+            <color attach="background" args={[paycheckWorld ? '#f4efe3' : '#cfe6f2']} />
+            <fog attach="fog" args={[paycheckWorld ? '#e9e3d6' : '#d6e9f0', 26, 74]} />
             <hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} />
             <ambientLight intensity={0.28} />
             <directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" />

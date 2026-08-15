@@ -127,7 +127,8 @@ describe('Module 1 to Module 2 transition', () => {
   it('restarts the 3D canvas and its error boundary for every module', () => {
     const source = readFileSync(join(process.cwd(), 'src/world/GameWorld.jsx'), 'utf8')
 
-    expect(source).toContain("const sceneKey = isPaycheckWorldActive() ? `paycheck-${week}` : `week-${week}`")
+    expect(source).toContain('const paycheckWorld = isPaycheckWorldActive()')
+    expect(source).toContain("const sceneKey = paycheckWorld ? `paycheck-${week}` : `week-${week}`")
     expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
     expect(source).toContain('key={sceneKey}')
   })

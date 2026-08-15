@@ -7,6 +7,7 @@ import { MODULE_CATALOG } from '../constants/modules.js'
 const here = path.dirname(fileURLToPath(import.meta.url))
 const moduleSelect = fs.readFileSync(path.resolve('src/pages/ModuleSelect.jsx'), 'utf8')
 const launch = fs.readFileSync(path.join(here, 'physicalModuleLaunch.js'), 'utf8')
+const gameWorld = fs.readFileSync(path.join(here, 'GameWorld.jsx'), 'utf8')
 const bondGate = fs.readFileSync(path.join(here, 'BondStreetGate.jsx'), 'utf8')
 const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx'), 'utf8')
 const bondWorld = fs.readFileSync(path.join(here, 'BondStreetWorld.jsx'), 'utf8')
@@ -17,6 +18,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(moduleSelect).toContain("preparePhysicalModuleLaunch(target.n)")
     expect(moduleSelect).toContain("nav('/world')")
     expect(launch).toContain("localStorage.removeItem('tayu-module-entry-intent')")
+    expect(launch).toContain("sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))")
     expect(launch).toContain("activatePaycheckWorld()")
   })
 
@@ -27,21 +29,27 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(taxWorld).toContain('MODULE 7 · TAYU TAX OFFICE')
   })
 
-  it('places both physical modules at a real building even after world initialization', () => {
-    expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_POINTS.guide')
+  it('places both physical modules at real building entrances and re-applies the spawn after Canvas creation', () => {
+    expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_ENTRY')
     expect(launch).toContain('playerPos.x = point[0]')
     expect(launch).toContain('playerPos.z = point[1]')
     expect(launch).toContain('window.setTimeout(() => placePhysicalModuleArrival(id), 80)')
-    expect(launch).toContain('window.setTimeout(() => placePhysicalModuleArrival(id), 180)')
+    expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
+    expect(gameWorld).toContain('window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))')
+    expect(gameWorld).toContain('window.setTimeout(() => placePhysicalModuleArrival(moduleId), 360)')
   })
 
-  it('shows Module 6 as a brief animated arrival over live in-world interaction', () => {
-    expect(bondGate).toContain('function BondArrivalIntro()')
-    expect(bondGate).toContain('Welcome to Bond Street')
-    expect(bondGate).toContain('animate-bounce')
-    expect(bondGate).toContain('setShowArrivalIntro(false), 1900')
-    expect(bondGate).toContain('showArrivalIntro && <BondArrivalIntro />')
+  it('completely removes the Module 6 fullscreen 2D arrival version', () => {
+    expect(bondGate).not.toContain('function BondArrivalIntro()')
+    expect(bondGate).not.toContain('showArrivalIntro')
+    expect(bondGate).not.toContain('Welcome to Bond Street')
+    expect(bondGate).toContain('Module 6 is now 3D-only')
     expect(bondGate).toContain('Walk around the building. Get close, then click or press E to interact.')
+  })
+
+  it('does not use a blue Canvas background for the Module 6/7 paycheck world', () => {
+    expect(gameWorld).toContain("paycheckWorld ? '#f4efe3' : '#cfe6f2'")
+    expect(gameWorld).toContain("paycheckWorld ? '#e9e3d6' : '#d6e9f0'")
   })
 
   it('does not auto-start either lesson and requires a nearby E interaction', () => {
