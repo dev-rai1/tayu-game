@@ -67,7 +67,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain('const point = id === 6 ? BOND_ENTRY : TAX_ENTRY')
     expect(launch).toContain("typeof game.adminTeleport === 'function'")
     expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]')
-    expect(bondWorld).toContain('arrive in front of Bond Street')
+    expect(bondWorld).toContain('Module 6 starts OUTSIDE the building')
     expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
   })
 
