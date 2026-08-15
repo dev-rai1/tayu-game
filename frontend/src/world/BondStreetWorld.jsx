@@ -6,13 +6,13 @@ import { CharacterMesh } from './CharacterMesh.jsx'
 import { labelTexture } from './textures.js'
 import { joystick, moveTarget, playerPos } from './store.js'
 
-// Module 6 must be encountered before the Module 7 Tax Office. Keep Bond Street
-// physically separated from TAX_DISTRICT instead of placing it past the Tax Office.
-// This also gives both large buildings enough breathing room to be unmistakable.
-export const BOND_DISTRICT = [TAX_DISTRICT[0] - 21, TAX_DISTRICT[1] - 12]
-// Spawn INSIDE the open Bond Street building, beside Beau. This deliberately
-// avoids the old outside-the-building camera angle that could show only sky.
-export const BOND_ENTRY = [BOND_DISTRICT[0] - 4.7, BOND_DISTRICT[1] + 1.35]
+// Bond Street now sits on the outer side of the story route instead of in the
+// middle of the town. It is clearly before the Tax Office, with a landscaped
+// buffer between the two destinations.
+export const BOND_DISTRICT = [TAX_DISTRICT[0] - 8.9, TAX_DISTRICT[1] - 8.0]
+// Module 6 starts OUTSIDE the building, directly in front of the open west
+// entrance, matching the arrival pattern used by the other town destinations.
+export const BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]
 export const BOND_WORLD_EVENT = 'tayu-bond-world-action'
 export const BOND_INTERACT_EVENT = 'tayu-bond-interact'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
@@ -189,12 +189,53 @@ function RateSeesaw({ active, interactive }) {
   )
 }
 
+function BondApproachAndLandscaping() {
+  const planters = [
+    [8.8, 2.7, 0.78],
+    [9.6, 4.8, 0.68],
+    [8.2, 6.7, 0.72],
+    [10.8, 6.1, 0.62],
+  ]
+  return (
+    <group>
+      {/* Wide front approach: this visually connects the main route to the door
+          instead of letting the Bond building read like an object dropped in grass. */}
+      <RoundedBox args={[5.2, 0.08, 3.7]} radius={0.18} smoothness={3} position={[-9.1, 0.05, 0]} receiveShadow>
+        <meshStandardMaterial color="#e7d4ad" roughness={0.96} />
+      </RoundedBox>
+      <RoundedBox args={[2.0, 0.09, 3.0]} radius={0.16} smoothness={3} position={[-6.95, 0.08, 0]} receiveShadow>
+        <meshStandardMaterial color="#f1dfb8" roughness={0.94} />
+      </RoundedBox>
+
+      {/* Green buffer toward the Tax Office so the two large destinations read
+          as separate stops along one path rather than one crowded complex. */}
+      {planters.map(([x, z, s], index) => (
+        <group key={`bond-planter-${index}`} position={[x, 0, z]} scale={s}>
+          <mesh position={[0, 0.28, 0]} receiveShadow>
+            <cylinderGeometry args={[0.78, 0.9, 0.52, 18]} />
+            <meshStandardMaterial color="#d9c49a" roughness={0.92} />
+          </mesh>
+          <mesh position={[0, 0.95, 0]} castShadow>
+            <sphereGeometry args={[0.78, 16, 14]} />
+            <meshStandardMaterial color={index % 2 ? '#6ea65b' : '#82b968'} roughness={0.9} />
+          </mesh>
+          <mesh position={[0.35, 1.18, 0.12]} castShadow>
+            <sphereGeometry args={[0.44, 14, 12]} />
+            <meshStandardMaterial color="#98c979" roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  )
+}
+
 function BondExchangeBuilding({ effect, stage, visited }) {
   const interestActive = effect === 'interest' || effect === 'handoff'
   const rateActive = effect === 'rate'
 
   return (
     <group>
+      <BondApproachAndLandscaping />
       <RoundedBox args={[15.8, 0.18, 14.4]} radius={0.18} smoothness={3} position={[0, 0.08, 0]} receiveShadow><meshStandardMaterial color="#edf3e6" roughness={0.96} /></RoundedBox>
       <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, -7.05]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
       <RoundedBox args={[15.8, 5.1, 0.36]} radius={0.14} smoothness={3} position={[0, 2.55, 7.05]} castShadow receiveShadow><meshPhysicalMaterial color="#8bb36d" roughness={0.62} clearcoat={0.12} /></RoundedBox>
@@ -202,7 +243,7 @@ function BondExchangeBuilding({ effect, stage, visited }) {
       <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, -5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
       <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, 5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
       <RoundedBox args={[0.48, 0.5, 5.65]} radius={0.14} smoothness={3} position={[-7.58, 4.58, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
-      <Billboard position={[-7.82, 6.55, 0]}><mesh><planeGeometry args={[9.2, 2.15]} /><meshBasicMaterial map={labelTexture('BOND STREET · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+      <Billboard position={[-7.82, 6.55, 0]}><mesh><planeGeometry args={[6.8, 1.9]} /><meshBasicMaterial map={labelTexture('BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
       <RoundedBox args={[1.5, 0.08, 5.4]} radius={0.08} smoothness={2} position={[-7.05, 0.13, 0]} receiveShadow><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.12} /></RoundedBox>
 
       <BondGuide active={stage === 0} />
