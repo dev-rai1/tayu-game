@@ -25,6 +25,17 @@ describe('module menu modernization', () => {
     expect(dock).toContain('Module Menu')
   })
 
+  it('preserves the last valid grade path when returning from Change grade', () => {
+    const learningPaths = read('src/constants/learningPaths.js')
+    const moduleSelect = read('src/pages/ModuleSelect.jsx')
+
+    expect(moduleSelect).toContain('← Back to modules')
+    expect(moduleSelect).toContain('setGradePathId(savedGradePath.id)')
+    expect(learningPaths).toContain("LAST_GRADE_PATH_KEY = 'tayu-last-grade-learning-path-v1'")
+    expect(learningPaths).toContain('saveLastGradePath(value)')
+    expect(learningPaths).toContain('localStorage.getItem(LAST_GRADE_PATH_KEY)')
+  })
+
   it('positions admin access in the top utility area instead of over bottom gameplay controls', () => {
     const source = read('src/components/AdminPanel.jsx')
 
