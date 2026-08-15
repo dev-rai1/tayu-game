@@ -37,20 +37,23 @@ const EMPTY_KEYS = () => ({
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 const movementFor = (event) => KEYS[event.code] || KEY_FALLBACK[event.key]
 
-function releaseModule1CheckInForMovement() {
+function releaseGuidanceForMovement() {
   const state = useGame.getState()
-  if (state.week !== 1) return
-  if (state.dialog?.name !== 'Penny') return
+  const dialog = state.dialog
+  if (!dialog) return
 
-  // Module 1's Penny check-in is guidance, not a gate. A player who starts
-  // walking should continue immediately instead of being frozen until every
-  // line is clicked. Move straight into jar allocation and remove the overlay.
+  // Check-in / guidance dialogs should never trap a player at a module spawn.
+  // Treat the first movement input as "continue": close the guidance, run the
+  // same completion callback the final click would have run, and restore normal
+  // walking. True locked sequences still remain locked via scenarioLocked and
+  // the decision-panel freeze rules in Player.
   useGame.setState({
     dialog: null,
-    scenarioState: state.scenarioState === 'INTRO' ? 'ALLOCATING' : state.scenarioState,
     scenarioLocked: false,
     playerSpeedMult: 1,
+    scenarioState: state.week === 1 && state.scenarioState === 'INTRO' ? 'ALLOCATING' : state.scenarioState,
   })
+  try { dialog.onClose?.() } catch (error) { console.error(error) }
 }
 
 // Returns a stable ref whose .current holds the live pressed-direction booleans.
@@ -65,7 +68,7 @@ export function useKeyboardControls() {
       if (!k) return
 
       if (k === 'forward' || k === 'backward' || k === 'left' || k === 'right') {
-        releaseModule1CheckInForMovement()
+        releaseGuidanceForMovement()
       }
 
       e.preventDefault()
