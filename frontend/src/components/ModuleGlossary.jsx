@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { say } from '../services/speech.js'
+import { LEARN, LEARNING_RESOURCES } from '../scenarios/learnLinks.js'
 
 const WORDS = {
   1: {
@@ -61,7 +63,21 @@ const WORDS = {
     ],
   },
   6: {
-    title: 'Paycheck Planet · Tax Filing Lab',
+    title: 'Bond Street',
+    terms: [
+      ['Bond', 'A loan an investor makes to a company or government.'],
+      ['Issuer', 'The company or government that borrows the money by selling the bond.'],
+      ['Principal', 'The amount borrowed that is generally repaid when the bond matures.'],
+      ['Interest', 'Money the issuer pays the bondholder for lending money.'],
+      ['Maturity', 'The date when the bond reaches the end of its term and principal is due.'],
+      ['Credit risk', 'The risk that the issuer may not make promised payments.'],
+      ['Treasury', 'A debt security issued by the U.S. Treasury on behalf of the federal government.'],
+      ['Municipal bond', 'A bond issued by a state, city, county, or other government entity.'],
+      ['Corporate bond', 'A bond issued by a company.'],
+    ],
+  },
+  7: {
+    title: 'TAYU Tax Office',
     terms: [
       ['Tax return', 'A form used to report tax information and figure out whether tax is still due or money should be refunded.'],
       ['W-2', 'A yearly form from an employer that reports wages and certain taxes withheld.'],
@@ -77,43 +93,116 @@ const WORDS = {
   },
 }
 
+const PLAY_STEPS = [
+  ['Pick a module', 'Choose your recommended next module, replay a finished one, or explore another available module.'],
+  ['Move around', 'Desktop: use WASD to move. Touch devices: use the on-screen MOVE pad.'],
+  ['Interact', 'Desktop: press E when an interaction prompt appears. Touch devices: use the DO button. Some objects can also be tapped directly.'],
+  ['Follow the in-world prompts', 'Make choices, read the feedback, and complete the short concept checks. Optional hints and read-aloud tools are there when you need them.'],
+  ['Use the Module Menu', 'The menu button inside the 3D world brings you back here without making you log in again.'],
+  ['Modules 6 and 7', 'Bond Street and the TAYU Tax Office are separate 3D destinations. You arrive near the building, walk to the interaction point, and press E or DO to begin.'],
+]
+
 function speakModule(module) {
   const text = module.terms.map(([word, meaning]) => `${word}. ${meaning}`).join(' ')
   say(`${module.title}. ${text}`)
 }
 
-export function ModuleGlossary({ open, onClose, modules = [1, 2, 3, 4, 5, 6] }) {
-  if (!open) return null
+function MenuHelpTabs({ onSelect }) {
+  return (
+    <nav aria-label="Module menu help" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[700] flex -translate-x-1/2 gap-2 rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl backdrop-blur-md">
+      <button type="button" onClick={() => onSelect('instructions')} className="min-h-[44px] whitespace-nowrap rounded-xl bg-navy px-4 text-sm font-extrabold text-white">How to Play</button>
+      <button type="button" onClick={() => onSelect('resources')} className="min-h-[44px] whitespace-nowrap rounded-xl border border-navy/10 bg-[#eef8ff] px-4 text-sm font-extrabold text-navy">Learning Resources</button>
+    </nav>
+  )
+}
+
+export function ModuleGlossary({ open, onClose, modules = [1, 2, 3, 4, 5, 6, 7] }) {
+  const [menuTab, setMenuTab] = useState(null)
+  const activeTab = open ? 'glossary' : menuTab
   const visibleModules = modules.map((number) => [number, WORDS[number]]).filter(([, module]) => module)
+  const visibleResources = LEARNING_RESOURCES.filter((group) => !modules?.length || modules.includes(group.number))
+
+  const close = () => {
+    setMenuTab(null)
+    if (open) onClose?.()
+  }
+
+  if (!activeTab) return <MenuHelpTabs onSelect={setMenuTab} />
 
   return (
     <div className="fixed inset-0 z-[800] overflow-y-auto bg-navy/80 p-4 backdrop-blur-sm sm:p-6">
-      <section role="dialog" aria-modal="true" aria-labelledby="money-words-title" className="mx-auto w-full max-w-4xl rounded-3xl bg-white p-5 text-navy shadow-2xl sm:p-7">
-        <div className="flex items-start justify-between gap-4">
+      <section role="dialog" aria-modal="true" aria-labelledby="module-help-title" className="mx-auto w-full max-w-4xl rounded-3xl bg-white p-5 text-navy shadow-2xl sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Help section</div>
-            <h2 id="money-words-title" className="mt-1 font-display text-3xl font-extrabold">Money words in kid language</h2>
-            <p className="mt-2 max-w-2xl font-semibold text-navy/70">Open only the module you need. These definitions stay outside the game so they do not cover buttons or characters.</p>
+            <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Module menu help</div>
+            <h2 id="module-help-title" className="mt-1 font-display text-3xl font-extrabold">
+              {activeTab === 'instructions' ? 'How to play TAYU' : activeTab === 'resources' ? 'Learning resources' : 'Money words in kid language'}
+            </h2>
+            <p className="mt-2 max-w-2xl font-semibold text-navy/70">
+              {activeTab === 'resources' ? 'These are the same trusted resources referenced throughout the game.' : activeTab === 'instructions' ? 'Use this anytime you need a quick reminder of the controls or game flow.' : 'Open only the module you need. These definitions stay outside active gameplay so they do not cover buttons or characters.'}
+            </p>
           </div>
-          <button type="button" onClick={onClose} className="min-h-[44px] shrink-0 rounded-xl bg-navy px-4 font-extrabold text-white">Close</button>
+          <button type="button" onClick={close} className="min-h-[44px] shrink-0 rounded-xl bg-navy px-4 font-extrabold text-white">Close</button>
         </div>
 
-        <div className="mt-6 space-y-3">
-          {visibleModules.map(([number, module], index) => (
-            <details key={number} open={index === 0} className="rounded-2xl border-2 border-navy/10 bg-[#eef8ff] p-4">
-              <summary className="cursor-pointer font-display text-xl font-extrabold text-electric">Module {number}: {module.title}</summary>
-              <button type="button" onClick={() => speakModule(module)} className="mt-3 min-h-[44px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Read this section aloud</button>
-              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                {module.terms.map(([word, meaning]) => (
-                  <div key={word} className="rounded-2xl bg-white p-4 shadow-sm">
-                    <dt className="font-display text-lg font-extrabold text-navy">{word}</dt>
-                    <dd className="mt-1 font-semibold leading-relaxed text-navy/75">{meaning}</dd>
-                  </div>
-                ))}
-              </dl>
-            </details>
-          ))}
-        </div>
+        {!open && (
+          <div className="mt-5 flex flex-wrap gap-2 border-b border-navy/10 pb-4">
+            <button type="button" onClick={() => setMenuTab('instructions')} className={`rounded-xl px-4 py-2 text-sm font-extrabold ${activeTab === 'instructions' ? 'bg-navy text-white' : 'bg-[#eef8ff] text-navy'}`}>How to Play</button>
+            <button type="button" onClick={() => setMenuTab('resources')} className={`rounded-xl px-4 py-2 text-sm font-extrabold ${activeTab === 'resources' ? 'bg-navy text-white' : 'bg-[#eef8ff] text-navy'}`}>Learning Resources</button>
+          </div>
+        )}
+
+        {activeTab === 'instructions' && (
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {PLAY_STEPS.map(([title, copy], index) => (
+              <div key={title} className="rounded-2xl border-2 border-navy/10 bg-[#eef8ff] p-4">
+                <div className="text-xs font-extrabold uppercase tracking-[0.14em] text-electric">Step {index + 1}</div>
+                <h3 className="mt-1 font-display text-xl font-extrabold text-navy">{title}</h3>
+                <p className="mt-2 font-semibold leading-relaxed text-navy/75">{copy}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'resources' && (
+          <div className="mt-6 space-y-3">
+            {visibleResources.map((group, index) => (
+              <details key={group.number} open={index === 0} className="rounded-2xl border-2 border-navy/10 bg-[#eef8ff] p-4">
+                <summary className="cursor-pointer font-display text-xl font-extrabold text-electric">Module {group.number}: {group.module}</summary>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {group.items.map((key) => {
+                    const resource = LEARN[key]
+                    if (!resource) return null
+                    return (
+                      <a key={key} href={resource.url} target="_blank" rel="noreferrer" className="rounded-xl bg-white p-3 font-extrabold text-navy shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                        {resource.label} <span aria-hidden="true">↗</span>
+                      </a>
+                    )
+                  })}
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'glossary' && (
+          <div className="mt-6 space-y-3">
+            {visibleModules.map(([number, module], index) => (
+              <details key={number} open={index === 0} className="rounded-2xl border-2 border-navy/10 bg-[#eef8ff] p-4">
+                <summary className="cursor-pointer font-display text-xl font-extrabold text-electric">Module {number}: {module.title}</summary>
+                <button type="button" onClick={() => speakModule(module)} className="mt-3 min-h-[44px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Read this section aloud</button>
+                <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {module.terms.map(([word, meaning]) => (
+                    <div key={word} className="rounded-2xl bg-white p-4 shadow-sm">
+                      <dt className="font-display text-lg font-extrabold text-navy">{word}</dt>
+                      <dd className="mt-1 font-semibold leading-relaxed text-navy/75">{meaning}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )
