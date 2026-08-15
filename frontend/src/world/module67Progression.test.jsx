@@ -69,13 +69,13 @@ describe('Modules 6 and 7 progression', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     render(<TaxWorldInteractionBridge />)
-    expect(screen.getByText(/Module 6 · Bond Street/i)).toBeInTheDocument()
+    expect(screen.getByText(/Bond Street · Under Construction/i)).toBeInTheDocument()
   })
 
   it('opens Module 7 directly without forcing Module 6 first', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     render(<TaxWorldInteractionBridge />)
-    expect(screen.queryByText(/Module 6 · Bond Street/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Bond Street · Under Construction/i)).not.toBeInTheDocument()
     expect(playerPos.x).toBe(TAX_POINTS.guide[0])
     expect(playerPos.z).toBeCloseTo(TAX_POINTS.guide[1] + 4.2)
     expect(useTaxLab.getState().phase).toBe('intro')
