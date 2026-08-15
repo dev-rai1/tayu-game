@@ -50,6 +50,27 @@ function nearestExpected(stage) {
   return distance <= INTERACT_RADIUS + 0.8 ? best : null
 }
 
+function BondArrivalIntro() {
+  return (
+    <div className="pointer-events-none absolute inset-0 grid place-items-center bg-navy/20 backdrop-blur-[2px]">
+      <div className="w-[min(90vw,30rem)] rounded-[2rem] border border-white/80 bg-white/95 px-6 py-5 text-center shadow-2xl">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef7e8] shadow-inner">
+          <div className="relative h-11 w-11">
+            <span className="absolute left-0 top-3 text-3xl animate-bounce">🪙</span>
+            <span className="absolute right-0 top-0 text-2xl animate-pulse">↗</span>
+          </div>
+        </div>
+        <div className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-[#5d8b3d]">Module 6</div>
+        <div className="mt-1 font-display text-3xl font-black text-navy">Welcome to Bond Street</div>
+        <p className="mt-2 text-sm font-bold text-navy/65">Your Money Garden earnings are ready to lend. Head inside and meet Beau.</p>
+        <div className="mx-auto mt-4 h-1.5 w-28 overflow-hidden rounded-full bg-slate-200">
+          <div className="h-full w-full origin-left animate-pulse rounded-full bg-[#5d8b3d]" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function BondStreetGate({ onComplete }) {
   const wallet = loadWallet() || {}
   const savedStake = gardenProfitStake(wallet)
@@ -58,13 +79,19 @@ export function BondStreetGate({ onComplete }) {
   const [visited, setVisited] = useState([])
   const [selectedBond, setSelectedBond] = useState(null)
   const [card, setCard] = useState(null)
+  const [showArrivalIntro, setShowArrivalIntro] = useState(true)
   const [allocation, setAllocation] = useState({ treasury: 0, muni: 0, corporate: 0 })
   const total = allocationTotal(allocation)
   const remaining = Math.max(0, cents(stake - total))
   const outcome = useMemo(() => bondOutcome(allocation), [allocation])
   const progress = { stage, visited }
 
-  useEffect(() => { placeAtBondStreetEntrance(); emitBondWorld('arrival', progress) }, [])
+  useEffect(() => {
+    placeAtBondStreetEntrance()
+    emitBondWorld('arrival', progress)
+    const timer = window.setTimeout(() => setShowArrivalIntro(false), 1900)
+    return () => window.clearTimeout(timer)
+  }, [])
   useEffect(() => { emitBondWorld('progress', progress) }, [stage, visited.join('|')])
 
   const describeBooth = (bondId) => {
@@ -77,6 +104,7 @@ export function BondStreetGate({ onComplete }) {
   }
 
   const interact = (kind, bondId = null) => {
+    if (showArrivalIntro) return
     if (kind === 'guide' && stage === 0) {
       setStage(1)
       setCard({ title: 'Beau · Bond Guide', text: BOND_STREET_SCRIPT.beauIntro })
@@ -104,7 +132,7 @@ export function BondStreetGate({ onComplete }) {
   useEffect(() => {
     const onWorldInteract = (event) => interact(event?.detail?.kind, event?.detail?.bondId)
     const keyboard = (event) => {
-      if (event.code !== 'KeyE' || isTypingTarget(event.target)) return
+      if (showArrivalIntro || event.code !== 'KeyE' || isTypingTarget(event.target)) return
       const target = nearestExpected(stage)
       if (!target) return
       event.preventDefault(); event.stopImmediatePropagation()
@@ -113,7 +141,7 @@ export function BondStreetGate({ onComplete }) {
     window.addEventListener(BOND_INTERACT_EVENT, onWorldInteract)
     window.addEventListener('keydown', keyboard, true)
     return () => { window.removeEventListener(BOND_INTERACT_EVENT, onWorldInteract); window.removeEventListener('keydown', keyboard, true) }
-  }, [stage, visited, total, remaining, outcome])
+  }, [showArrivalIntro, stage, visited, total, remaining, outcome])
 
   const allocate = (bondId, amount) => {
     setAllocation((current) => {
@@ -155,13 +183,15 @@ export function BondStreetGate({ onComplete }) {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] text-navy" data-bond-street="true">
-      <div className="absolute left-3 top-3 w-[min(92vw,28rem)] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Module 6 · Bond Street</div>
-        <div className="mt-1 font-display text-xl font-black">{objective}</div>
-        <div className="mt-2 text-xs font-bold text-navy/60">Move normally. Get close, then click the person/object or press E.</div>
-      </div>
+      {showArrivalIntro ? <BondArrivalIntro /> : (
+        <div className="absolute left-3 top-3 w-[min(92vw,28rem)] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Module 6 · Bond Street</div>
+          <div className="mt-1 font-display text-xl font-black">{objective}</div>
+          <div className="mt-2 text-xs font-bold text-navy/60">Walk around the building. Get close, then click or press E to interact.</div>
+        </div>
+      )}
 
-      {card && (
+      {!showArrivalIntro && card && (
         <section className="pointer-events-auto absolute bottom-4 left-1/2 w-[min(94vw,34rem)] -translate-x-1/2 rounded-3xl border border-slate-200 bg-white/97 p-4 shadow-2xl backdrop-blur-md sm:p-5">
           <div className="font-display text-2xl font-black">{card.title}</div>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/75">{card.text}</p>
@@ -183,10 +213,10 @@ export function BondStreetGate({ onComplete }) {
         </section>
       )}
 
-      {stage === 2 && !card && (
+      {!showArrivalIntro && stage === 2 && !card && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-navy/92 px-4 py-2 text-sm font-black text-white shadow-xl">{money(total)} lent · {money(remaining)} left</div>
       )}
-      {stage === 5 && !card && (
+      {!showArrivalIntro && stage === 5 && !card && (
         <button type="button" onClick={finish} className="pointer-events-auto absolute bottom-5 left-1/2 min-h-[50px] -translate-x-1/2 rounded-2xl bg-teal px-6 font-black text-navy shadow-2xl">Finish Module 6</button>
       )}
     </div>
