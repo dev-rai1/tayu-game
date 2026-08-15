@@ -1,7 +1,7 @@
 import { activatePaycheckWorld } from './paycheckMode.js'
 import { TAX_DISTRICT } from './config.js'
 import { TAX_POINTS } from './taxDistrictLayout.js'
-import { joystick, moveTarget, playerPos } from './store.js'
+import { joystick, moveTarget, playerPos, useGame } from './store.js'
 
 export const TAX_ORIGIN_KEY = 'tayu-tax-entry-origin'
 export const BOND_ONLY_KEY = 'tayu-bond-only-entry'
@@ -38,6 +38,34 @@ export function clearPhysicalModuleLaunch() {
 }
 
 /**
+ * A completed earlier module can leave queued lessons/cards and the
+ * pendingWeekComplete flag in Zustand. If those survive a direct Module 6/7
+ * launch, the old "game update" appears over Bond Street/Tax Office and tapping
+ * Next can immediately send the player to the old completion certificate.
+ * Physical modules always start with a clean interaction layer instead.
+ */
+export function clearStalePhysicalModuleUi() {
+  useGame.setState({
+    dialog: null,
+    lessons: [],
+    cards: [],
+    pendingWeekComplete: false,
+    weekComplete: false,
+    enterParty: false,
+    near: null,
+    panelJar: null,
+    panelItem: null,
+    btPanel: null,
+    bkPanel: null,
+    toast: null,
+    guide: null,
+    actorCaption: null,
+    banner: null,
+    tint: null,
+  })
+}
+
+/**
  * Modules 6 and 7 are physical 3D destinations only. They must never enter the
  * generic modal/2D module-start path. The pending physical launch survives the
  * route change so GameWorld can place the player again after the Three.js Canvas
@@ -46,6 +74,10 @@ export function clearPhysicalModuleLaunch() {
 export function preparePhysicalModuleLaunch(moduleNumber) {
   const id = Number(moduleNumber)
   if (id !== 6 && id !== 7) return false
+
+  // Do this before navigation so no queued Module 1-5 message/completion layer
+  // can render on top of the selected 3D destination, even for one frame.
+  clearStalePhysicalModuleUi()
 
   try {
     // Completely remove the generic 2D/module-entry path for Modules 6 and 7.
