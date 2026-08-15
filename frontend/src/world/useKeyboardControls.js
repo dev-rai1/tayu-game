@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useGame } from './store.js'
 
 // Movement stays predictable: WASD walks, Up/Down mirror forward/back, and
 // Left/Right rotate the camera. Camera arrows only flip booleans here; the
@@ -36,6 +37,22 @@ const EMPTY_KEYS = () => ({
 const isTypingTarget = (target) => Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'))
 const movementFor = (event) => KEYS[event.code] || KEY_FALLBACK[event.key]
 
+function releaseModule1CheckInForMovement() {
+  const state = useGame.getState()
+  if (state.week !== 1) return
+  if (state.dialog?.name !== 'Penny') return
+
+  // Module 1's Penny check-in is guidance, not a gate. A player who starts
+  // walking should continue immediately instead of being frozen until every
+  // line is clicked. Move straight into jar allocation and remove the overlay.
+  useGame.setState({
+    dialog: null,
+    scenarioState: state.scenarioState === 'INTRO' ? 'ALLOCATING' : state.scenarioState,
+    scenarioLocked: false,
+    playerSpeedMult: 1,
+  })
+}
+
 // Returns a stable ref whose .current holds the live pressed-direction booleans.
 export function useKeyboardControls() {
   const keys = useRef(EMPTY_KEYS())
@@ -46,6 +63,11 @@ export function useKeyboardControls() {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const k = movementFor(e)
       if (!k) return
+
+      if (k === 'forward' || k === 'backward' || k === 'left' || k === 'right') {
+        releaseModule1CheckInForMovement()
+      }
+
       e.preventDefault()
       keys.current[k] = true
     }
