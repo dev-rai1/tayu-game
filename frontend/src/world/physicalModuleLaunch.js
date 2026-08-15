@@ -1,4 +1,4 @@
-import { activatePaycheckWorld } from './paycheckMode.js'
+import { activatePaycheckWorld, setPaycheckWorldActive } from './paycheckMode.js'
 import { BOND_ENTRY, BOND_DISTRICT } from './BondStreetWorld.jsx'
 import { TAX_POINTS } from './taxDistrictLayout.js'
 import { TAX_DISTRICT } from './config.js'
@@ -18,11 +18,12 @@ export function placePhysicalModuleArrival(moduleNumber) {
   const point = id === 6 ? BOND_ENTRY : TAX_ENTRY
   const center = id === 6 ? BOND_DISTRICT : TAX_DISTRICT
 
-  activatePaycheckWorld()
+  // Module 6 lives in the normal shared TAYU map. Only Module 7 uses the
+  // separate paycheck/tax mode. This prevents Bond Street from opening a
+  // different-looking scene instead of behaving like the earlier modules.
+  if (id === 6) setPaycheckWorldActive(false)
+  else activatePaycheckWorld()
 
-  // Module 6 now behaves like the other town destinations: arrive OUTSIDE,
-  // directly in front of the entrance, with the building in view. There is no
-  // inside-the-building spawn or special arrival sequence to fight the world init.
   try {
     const dx = center[0] - point[0]
     const dz = center[1] - point[1]
@@ -89,9 +90,9 @@ export function clearStalePhysicalModuleUi() {
 }
 
 /**
- * Queue one normal 3D-world arrival. World.jsx reads this marker immediately
- * after initWorld(), so a Module 6 click cannot be overwritten by the default
- * spawn. This replaces the old repeated timeout/re-teleport launch code.
+ * Queue a deterministic arrival after the world Canvas initializes. Module 6
+ * remains in the normal TAYU town and is placed at Bond Street's front door;
+ * Module 7 retains the separate tax-world mode.
  */
 export function preparePhysicalModuleLaunch(moduleNumber) {
   const id = Number(moduleNumber)
@@ -110,6 +111,7 @@ export function preparePhysicalModuleLaunch(moduleNumber) {
     else sessionStorage.removeItem(BOND_ONLY_KEY)
   } catch { /* storage can be unavailable */ }
 
-  activatePaycheckWorld()
+  if (id === 6) setPaycheckWorldActive(false)
+  else activatePaycheckWorld()
   return true
 }
