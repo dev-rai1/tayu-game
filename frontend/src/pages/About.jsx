@@ -4,12 +4,6 @@ import { TownBackground } from '../components/TownBackground.jsx'
 import { MuteButton } from '../components/MuteButton.jsx'
 import { MODULE_CATALOG } from '../constants/modules.js'
 
-// About Us (Round 2, Part A) - persuasive and credible: stat-backed Who We
-// Are, the real team with photos and LinkedIn, ONE merged track-record story
-// around The Seed That Grew, a Community Partners call to action, an animated
-// greeting-NPC background behind a readability scrim, and exactly ONE
-// canonical link row (the footer) plus the two Partner CTA buttons.
-
 const LOGO = '/assets/tayu-logo.webp'
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
@@ -18,6 +12,7 @@ const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%2007
 const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
 const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
+const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -33,7 +28,6 @@ const TEAM = [
   { file: 'gaamaa_hishigsuren.png', name: 'Gaamaa Hishigsuren', role: 'Project Advisor', li: 'https://linkedin.com/in/gaamaa' },
 ]
 
-// R13 11.5: corporate sponsors - add {name, org?, logo?} entries here to list more
 const SPONSORS = [
   { name: 'Michael Darcy', org: 'DG Fuel' },
 ]
@@ -41,27 +35,94 @@ const SPONSORS = [
 const STATS = [
   {
     big: 'Age 7',
-    head: 'when money habits are formed',
-    body: 'University of Cambridge research (Whitebread and Bingham, for the UK Money Advice Service) found that core money habits and attitudes are largely set by age seven. TAYU meets kids inside that window, while habits are still forming.',
-    src: 'Whitebread and Bingham, University of Cambridge / Money Advice Service',
+    head: 'money habits form early',
+    body: 'Cambridge research found core money habits are largely set by age 7. TAYU reaches kids while those habits are still forming.',
+    src: 'Cambridge / Money Advice Service',
   },
   {
     big: 'Play first',
-    head: 'how young brains actually learn',
-    body: 'Young children learn best through play, repetition, and immediate feedback. A child who practices save-versus-spend choices in a game builds the shortcut before real money is ever at stake. Early exposure compounds, just like money.',
-    src: 'Psychology of early habit formation',
+    head: 'learn by doing',
+    body: 'Kids practice save-vs-spend choices through play, repetition, and instant feedback before real money is at stake.',
+    src: 'Early-learning research',
   },
   {
-    big: 'Most students',
-    head: 'reach high school with no personal-finance instruction',
-    body: 'Surveys repeatedly find that a large majority of American adults say school never prepared them to manage money, and adult financial-literacy quiz scores stay low. Elementary school is the least-served age group of all, which is exactly where TAYU focuses.',
-    src: 'FINRA National Financial Capability Study',
+    big: 'K-12 gap',
+    head: 'finance is still under-taught',
+    body: 'Many students reach high school with limited personal-finance instruction. TAYU starts earlier and grows with them.',
+    src: 'FINRA NCFS',
   },
   {
     big: 'It works',
-    head: 'financial education changes outcomes',
-    body: 'Studies of state financial-education mandates link required instruction to better credit outcomes and less delinquency in early adulthood. Starting earlier extends that runway.',
-    src: 'FINRA research; Council for Economic Education, Survey of the States',
+    head: 'education changes outcomes',
+    body: 'Financial-ed requirements are linked with stronger credit outcomes and lower delinquency in early adulthood.',
+    src: 'FINRA / CEE',
+  },
+]
+
+const FEATURED = [
+  {
+    label: 'FOX 5 DC',
+    title: 'TV feature',
+    note: 'Live segment on our work.',
+    href: FOX_PAGE_URL,
+    badge: 'bg-[#d71920] text-white',
+    card: 'border-[#d71920]/20 bg-[#d71920]/5',
+  },
+  {
+    label: 'White House',
+    title: 'Recognition letter',
+    note: 'Letter recognizing our impact.',
+    href: WHITE_HOUSE_URL,
+    badge: 'bg-navy text-white',
+    card: 'border-navy/15 bg-navy/5',
+  },
+  {
+    label: 'WTOP',
+    title: 'News feature',
+    note: 'Book + classroom outreach.',
+    href: WTOP_URL,
+    badge: 'bg-electric text-white',
+    card: 'border-electric/20 bg-electric/5',
+  },
+  {
+    label: 'Vienna Ledger',
+    title: 'Local feature',
+    note: 'Schools + global reach.',
+    href: VIENNA_LEDGER_URL,
+    badge: 'bg-brandpurple text-white',
+    card: 'border-brandpurple/20 bg-brandpurple/5',
+  },
+  {
+    label: 'Connection',
+    title: 'County feature',
+    note: 'Book launch + VA DECA win.',
+    href: CONNECTION_URL,
+    badge: 'bg-teal text-navy',
+    card: 'border-teal/30 bg-teal/5',
+  },
+  {
+    label: 'Vision Times',
+    title: 'Intl. feature',
+    note: 'Chinese-language coverage.',
+    href: VISION_TIMES_URL,
+    badge: 'bg-navy text-white',
+    card: 'border-navy/15 bg-navy/5',
+  },
+  {
+    label: 'VA DECA',
+    title: '1st in VA + IG spotlight',
+    note: 'State champs; featured on VA DECA IG.',
+    href: VA_DECA_IG_URL,
+    badge: 'bg-[#FFD700] text-navy',
+    card: 'border-[#b8860b]/25 bg-[#FFD700]/10',
+  },
+  {
+    label: 'NJCFE',
+    title: 'Finance-ed feature',
+    note: 'Book + classroom impact.',
+    href: NJCFE_URL,
+    badge: 'bg-teal text-navy',
+    card: 'border-teal/30 bg-teal/5',
   },
 ]
 
@@ -119,7 +180,7 @@ export default function About() {
             <MuteButton />
           </div>
           <Link to="/" className="rounded-xl bg-electric px-4 py-2 text-sm font-bold text-white hover:bg-teal hover:text-navy">
-            Back to the game
+            Back to game
           </Link>
         </header>
 
@@ -127,13 +188,10 @@ export default function About() {
           <section>
             <h1 className="font-display text-3xl font-extrabold text-navy">Who we are</h1>
             <p className="mt-3 text-lg leading-relaxed text-navy/80">
-              TAYU is our DECA project: a 3D game that teaches money skills across three
-              school levels &mdash; elementary, middle, and high school &mdash; by letting kids play it.
+              TAYU is our DECA project: a 3D game teaching money skills across elementary, middle, and high school through play.
             </p>
             <p className="mt-3 text-lg font-semibold leading-relaxed text-navy">
-              We are focused on building a strong foundation from elementary school, closing the
-              existing gap, and offering more enhanced and gamified content for middle and high
-              school students to complement any existing content they may be able to access.
+              We build strong money habits early, then expand into more advanced, gamified content for older students.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {STATS.map((s) => (
@@ -145,11 +203,6 @@ export default function About() {
                 </div>
               ))}
             </div>
-            <p className="mt-6 text-lg font-semibold leading-relaxed text-navy">
-              Providing financial literacy at an early age, including from the elementary school
-              level, and strengthening it through middle and high school, will contribute to more
-              financially responsible citizens and a better economy.
-            </p>
           </section>
 
           <section>
@@ -172,87 +225,27 @@ export default function About() {
             <h2 className="font-display text-2xl font-extrabold text-navy">Our track record</h2>
 
             <div className="mt-4 rounded-3xl border border-navy/10 bg-white/95 p-5 shadow-md">
-              <h3 className="font-display text-lg font-extrabold text-navy">Featured &amp; recognized</h3>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="group rounded-2xl border-2 border-[#d71920]/20 bg-[#d71920]/5 p-5 transition hover:-translate-y-1 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
-                    <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-extrabold text-[#d71920]">Open feature →</a>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Watch our FOX 5 DC feature</h4>
-                  <div className="mt-3 overflow-hidden rounded-xl shadow-sm" style={{ position: 'relative', paddingTop: '56.25%' }}>
-                    <iframe
-                      src="https://www.youtube.com/embed/HjfuUGCowW4"
-                      title="TAYU on FOX 5 DC"
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-
-                <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">White House Letter</span>
-                    <span className="text-sm font-extrabold text-navy">View letter →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Letter from the White House</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">View the White House letter recognizing our financial-literacy work and community impact.</p>
-                </a>
-
-                <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-electric/5 p-5 transition hover:-translate-y-1 hover:bg-electric/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">WTOP News</span>
-                    <span className="text-sm font-extrabold text-electric">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax students teach financial literacy</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read WTOP&rsquo;s feature about our book, classroom outreach, and mission.</p>
-                </a>
-
-                <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-brandpurple/20 bg-brandpurple/5 p-5 transition hover:-translate-y-1 hover:bg-brandpurple/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-brandpurple px-3 py-1 font-display text-sm font-extrabold text-white">Vienna Ledger</span>
-                    <span className="text-sm font-extrabold text-brandpurple">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Book reaches 12 Fairfax County schools and four countries</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read Vienna Ledger&rsquo;s feature about our book distribution, classroom impact, and expansion through TAYU.</p>
-                </a>
-
-                <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">Connection Newspapers</span>
-                    <span className="text-sm font-extrabold text-navy">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Oakton High Trio Plant the Seeds of Wealth in Global Book Launch</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read The Connection&rsquo;s feature on our classroom results, global book launch, Virginia DECA win, and next phase with TAYU.</p>
-                </a>
-
-                <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-navy/15 bg-navy/5 p-5 transition hover:-translate-y-1 hover:bg-navy/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-navy px-3 py-1 font-display text-sm font-extrabold text-white">Vision Times · Chinese</span>
-                    <span className="text-sm font-extrabold text-navy">Read article →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Fairfax County students create a financial-literacy picture book for elementary students</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the international Chinese-language feature on our 274-book, 17-school outreach and the next step with a financial-literacy game.</p>
-                </a>
-
-                <div className="rounded-2xl border-2 border-[#b8860b]/25 bg-[#FFD700]/10 p-5 transition hover:-translate-y-1 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-[#FFD700] px-3 py-1 font-display text-sm font-extrabold text-navy">Virginia DECA</span>
-                    <span className="text-sm font-extrabold text-navy">2026</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">State Champions</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">1st Place at the 2026 Virginia DECA State Leadership Conference for our financial-literacy project.</p>
-                </div>
-
-                <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-5 transition hover:-translate-y-1 hover:bg-teal/10 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">New Jersey Coalition for Financial Education</span>
-                    <span className="text-sm font-extrabold text-navy">Read feature →</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-lg font-extrabold leading-tight text-navy">Financial-education feature</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-navy/65">Read the New Jersey Coalition for Financial Education feature on our book, classroom outreach, and financial-literacy mission.</p>
-                </a>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-display text-lg font-extrabold text-navy">Featured &amp; recognized</h3>
+                <span className="text-xs font-bold text-navy/45">Swipe / scroll →</span>
+              </div>
+              <div className="mt-4 flex flex-nowrap gap-3 overflow-x-auto pb-2">
+                {FEATURED.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`group w-52 shrink-0 rounded-2xl border-2 p-4 transition hover:-translate-y-1 hover:shadow-md ${item.card}`}
+                  >
+                    <div className={`inline-flex rounded-lg px-2.5 py-1 font-display text-xs font-extrabold ${item.badge}`}>
+                      {item.label}
+                    </div>
+                    <h4 className="mt-2 font-display text-base font-extrabold leading-tight text-navy">{item.title}</h4>
+                    <p className="mt-1 text-xs leading-relaxed text-navy/60">{item.note}</p>
+                    <div className="mt-2 text-xs font-extrabold text-electric">View →</div>
+                  </a>
+                ))}
               </div>
             </div>
 
@@ -260,34 +253,24 @@ export default function About() {
               <BookCover />
               <div>
                 <p className="text-lg leading-relaxed text-navy/85">
-                  Our team wrote and published <b className="text-navy">The Seed That Grew</b>, a
-                  children&rsquo;s book about investing. We brought it into elementary classrooms
-                  ourselves through our Cash Classroom sessions, reading with students and running
-                  live financial-literacy lessons. Then we took it global: the book was translated
-                  into <b>seven languages</b> (English, Hindi, Marathi, Chinese, Mongolian, Spanish, and Russian) and
-                  distributed to students and schools across <b>five countries</b> (the United
-                  States, India, China, Kazakhstan, and Australia). The book is also available on
-                  Amazon, making it accessible to readers beyond the schools and communities we
-                  have worked with.
+                  Our team wrote <b className="text-navy">The Seed That Grew</b>, a kids&rsquo; investing book used in our Cash Classroom sessions. It has been translated into <b>7 languages</b> and shared across <b>5 countries</b>.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a href="https://www.amazon.com/Seed-That-Grew-Story-Investing/dp/B0FZ9CNLJV/" target="_blank" rel="noopener" className="rounded-2xl bg-navy px-4 py-2 text-sm font-bold text-white hover:bg-electric">
-                    View on Amazon
+                    Amazon
                   </a>
                 </div>
                 <p className="mt-4 rounded-2xl bg-navy px-4 py-3 font-display text-base font-extrabold text-white">
-                  The book taught kids by reading. TAYU teaches them by playing.
+                  The book teaches by reading. TAYU teaches by playing.
                 </p>
               </div>
             </div>
           </section>
 
           <section className="rounded-3xl bg-white p-6 shadow-md">
-            <h2 className="font-display text-2xl font-extrabold text-navy">For teachers and classrooms</h2>
+            <h2 className="font-display text-2xl font-extrabold text-navy">For teachers &amp; classrooms</h2>
             <p className="mt-2 text-navy/75">
-              Each TAYU module is a self-contained 10-20 minute activity with a clear start and finish -
-              built for tablets and shared Chromebooks, with read-aloud for early readers, progress that
-              saves automatically, and no data collected beyond a first name. The concepts each module covers:
+              Each module is a 10-20 min activity with a clear start/finish, Chromebook/tablet support, read-aloud, auto-save, and minimal data collection.
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {MODULE_CATALOG.map((module) => (
@@ -301,45 +284,40 @@ export default function About() {
               ))}
             </div>
             <p className="mt-3 text-sm text-navy/60">
-              Grounded in the Cambridge finding that money habits form by age 7: concrete, hands-on choices with
-              immediate feedback - never lectures. A printable certificate marks full completion.
+              Hands-on choices + instant feedback, not lectures. Full completion earns a printable certificate.
             </p>
           </section>
 
           <section className="rounded-3xl p-7 text-center shadow-md" style={{ background: 'linear-gradient(135deg, #d9fbf1, #dceafe)' }}>
             <h2 className="font-display text-2xl font-extrabold text-navy">Partner with us</h2>
             <p className="mx-auto mt-3 max-w-xl text-lg leading-relaxed text-navy/85">
-              We partner with community organizations to run TAYU sessions with their kids. We come
-              in (or join virtually), teach financial literacy, and run live demos of the game.
-              We would love to work with schools, institutions, libraries, virtual camps, summer
-              camps, after-school programs, scout troops, and community organizations.
-              <b> Sessions are free.</b>
+              We run free TAYU sessions for schools, libraries, camps, after-school programs, scout troops, and community orgs — in person or virtual.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <a href="mailto:tayu.finance@gmail.com" className="rounded-2xl bg-electric px-6 py-3 text-base font-extrabold text-white hover:bg-teal hover:text-navy">
                 Email Us
               </a>
               <a href="https://calendly.com/tayu-finance/30min" target="_blank" rel="noopener" className="rounded-2xl bg-navy px-6 py-3 text-base font-extrabold text-white hover:bg-electric">
-                Schedule a Demo Call
+                Demo Call
               </a>
             </div>
           </section>
 
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
-            <h2 className="font-display text-xl font-extrabold text-navy">Ready when you are</h2>
-            <p className="mt-2 text-navy/70">TAYU is a free K-12 teacher resource, beginning with five playable core money modules and expanding for middle and high school.</p>
-            <a href="/avatar" className="btn-primary mt-4 inline-block min-h-[56px] px-10 text-lg leading-[56px]">Play the Game</a>
-            <p className="mt-4 text-sm font-bold text-navy/60">After you play, share your feedback:</p>
+            <h2 className="font-display text-xl font-extrabold text-navy">Ready?</h2>
+            <p className="mt-2 text-navy/70">Free K-12 financial-literacy game with expanding modules for all grade levels.</p>
+            <a href="/avatar" className="btn-primary mt-4 inline-block min-h-[56px] px-10 text-lg leading-[56px]">Play</a>
+            <p className="mt-4 text-sm font-bold text-navy/60">Share feedback:</p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4IgEETBk_Serp_OM0FQNH0o91OAOvbsjWK_DAGMVtz64aEw/viewform" target="_blank" rel="noopener" className="rounded-xl bg-electric px-5 py-3 text-sm font-extrabold text-white active:scale-95">Teacher Feedback</a>
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfko_Uc7k7xuMRDY_ZO1mzOrqK72cgybKUjy5Mk7OkS-9w_w/viewform" target="_blank" rel="noopener" className="rounded-xl bg-brandpurple px-5 py-3 text-sm font-extrabold text-white active:scale-95">Student Feedback</a>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4IgEETBk_Serp_OM0FQNH0o91OAOvbsjWK_DAGMVtz64aEw/viewform" target="_blank" rel="noopener" className="rounded-xl bg-electric px-5 py-3 text-sm font-extrabold text-white active:scale-95">Teacher</a>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfko_Uc7k7xuMRDY_ZO1mzOrqK72cgybKUjy5Mk7OkS-9w_w/viewform" target="_blank" rel="noopener" className="rounded-xl bg-brandpurple px-5 py-3 text-sm font-extrabold text-white active:scale-95">Student</a>
             </div>
           </section>
 
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
-            <h2 className="font-display text-2xl font-extrabold text-navy">Our sponsors</h2>
+            <h2 className="font-display text-2xl font-extrabold text-navy">Sponsors</h2>
             <p className="mx-auto mt-2 max-w-xl text-navy/70">
-              TAYU is supported by generous sponsors. Contributors of more than $200 are proudly listed here.
+              Sponsors contributing $200+ are listed here.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-4">
               {SPONSORS.map((sp) => (
@@ -352,15 +330,12 @@ export default function About() {
               ))}
             </div>
             <p className="mt-4 text-sm text-navy/60">
-              Interested in sponsoring? <a href="mailto:tayu.finance@gmail.com" className="font-bold text-electric underline underline-offset-2">Get in touch.</a>
+              Want to sponsor? <a href="mailto:tayu.finance@gmail.com" className="font-bold text-electric underline underline-offset-2">Contact us.</a>
             </p>
           </section>
 
           <section className="rounded-3xl bg-white p-6 text-center shadow-md">
-            <h2 className="font-display text-xl font-extrabold text-navy">Follow our journey</h2>
-            <p className="mx-auto mt-2 max-w-md text-navy/75">
-              Follow us on social media for updates, sessions, and new releases.
-            </p>
+            <h2 className="font-display text-xl font-extrabold text-navy">Follow TAYU</h2>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <a href="https://www.instagram.com/tayu.finance" target="_blank" rel="noopener" className="flex items-center gap-2 rounded-2xl px-6 py-3 text-base font-extrabold text-white transition hover:opacity-90" style={{ background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="#fff" /></svg>
