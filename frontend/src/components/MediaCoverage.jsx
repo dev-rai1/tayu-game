@@ -5,6 +5,7 @@ const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%2007
 const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
 const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
+const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
 
 export function MediaCoverage({ compact = false, about = false }) {
   const sectionClass = about && !compact
@@ -15,36 +16,40 @@ export function MediaCoverage({ compact = false, about = false }) {
   if (compact) {
     return (
       <section className={sectionClass} aria-labelledby={titleId}>
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
-          <span id={titleId} className="font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
+        <div className="mx-auto flex max-w-none flex-nowrap items-center gap-2 overflow-x-auto whitespace-nowrap rounded-2xl border border-navy/10 bg-navy/5 px-3 py-2 backdrop-blur-md">
+          <span id={titleId} className="shrink-0 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
             Featured
           </span>
-          <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
+          <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
             FOX 5 DC
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
-            White House Letter
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
+            White House
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
-            WTOP News
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
+            WTOP
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-brandpurple/10 px-3 py-1.5 text-xs font-extrabold text-brandpurple transition hover:bg-brandpurple/15">
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-brandpurple/10 px-3 py-1.5 text-xs font-extrabold text-brandpurple transition hover:bg-brandpurple/15">
             Vienna Ledger
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
-            Connection Newspapers
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={CONNECTION_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
+            Connection
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
-            Vision Times (Chinese)
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={VISION_TIMES_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
+            Vision Times
           </a>
-          <span className="hidden h-4 w-px bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
-            NJ Coalition for Financial Education
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={NJCFE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
+            NJCFE
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={VA_DECA_IG_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#FFD700]/20 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-[#FFD700]/30">
+            VA DECA
           </a>
         </div>
       </section>
