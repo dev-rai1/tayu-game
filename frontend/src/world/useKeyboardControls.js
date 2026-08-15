@@ -42,7 +42,8 @@ export function useKeyboardControls() {
   useEffect(() => {
     const reset = () => { keys.current = EMPTY_KEYS() }
     const onDown = (e) => {
-      if (isTypingTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return
+      if (isTypingTarget(e.target)) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
       const k = movementFor(e)
       if (!k) return
       e.preventDefault()
