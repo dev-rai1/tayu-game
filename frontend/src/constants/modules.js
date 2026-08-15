@@ -52,14 +52,13 @@ export const MODULE_CATALOG = [
   {
     n: 6,
     badge: 'bond',
-    title: 'Bond Street — Under Construction',
+    title: 'Bond Street',
     grades: 'Grades 6–12',
     minutes: '6–8 min',
-    desc: 'Preview the physical Bond Street Exchange, compare Treasury, municipal, and corporate bonds, and interact directly inside the 3D building.',
+    desc: 'Visit the physical Bond Street Exchange, compare Treasury, municipal, and corporate bonds, and interact directly inside the 3D building.',
     color: '#6FA44A',
     worldModule: 6,
     physicalDestination: true,
-    underConstruction: true,
   },
   {
     n: 7,
@@ -88,13 +87,13 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street, the TAYU Tax Office, then the Finale. Bond Street and the Tax Office are currently marked Under Construction.',
+    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street, the TAYU Tax Office, then the Finale. The Tax Office is currently marked Under Construction.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All seven core modules establish a shared baseline. Bond Street and the TAYU Tax Office are physical 3D destinations currently marked Under Construction, followed by the Finale.',
+    copy: 'All seven core modules establish a shared baseline. Bond Street is a physical 3D destination, followed by the TAYU Tax Office and Finale.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
