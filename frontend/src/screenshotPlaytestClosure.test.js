@@ -36,7 +36,8 @@ describe('screenshot playtest fixes stay closed', () => {
     const bond = read('src/world/BondStreetWorld.jsx')
     const watcher = read('src/components/PathCompletionWatcher.jsx')
 
-    expect(bond).toContain('BOND STREET · UNDER CONSTRUCTION')
+    expect(bond).toContain("labelTexture('BOND STREET'")
+    expect(bond).not.toContain('BOND STREET · UNDER CONSTRUCTION')
     expect(party).toContain("cardTexture('FINALE AREA', 'Come in, Money Guru!'")
     expect(party).toContain("cardTexture('FINALE AREA', 'Complete Bond Street and the TAYU Tax Office to unlock.'")
     expect(party).not.toContain("cardTexture('MODULE 6'")

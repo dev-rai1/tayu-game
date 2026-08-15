@@ -26,7 +26,7 @@ export function WorldQuestionHelp() {
   }, [physicalModule])
 
   const destination = physicalModule === 6
-    ? 'Bond Street — Under Construction'
+    ? 'Bond Street'
     : physicalModule === 7
       ? 'TAYU Tax Office — Under Construction'
       : 'TAYU World'
@@ -58,7 +58,7 @@ export function WorldQuestionHelp() {
             <p className="mt-1 text-sm font-semibold leading-relaxed text-navy/75">
               Walk through the 3D town to the highlighted building. Get close to a glowing person or object, then {touch ? 'tap the interaction button' : 'press E or click it'} to continue. You can keep moving between interactions.
             </p>
-            {physicalModule === 6 && <p className="mt-2 text-sm font-bold text-[#557d38]">Start inside Bond Street beside Beau, then visit the three borrower booths.</p>}
+            {physicalModule === 6 && <p className="mt-2 text-sm font-bold text-[#557d38]">You arrive in front of Bond Street. Walk through the entrance, talk to Beau, then visit the three borrower booths.</p>}
             {physicalModule === 7 && <p className="mt-2 text-sm font-bold text-[#d66d28]">The Tax Office comes after Bond Street. Enter the separate orange building and work through the tax stations in order.</p>}
           </div>
 

@@ -14,26 +14,21 @@ export const TAX_ENTRY = [TAX_POINTS.guide[0], TAX_POINTS.guide[1] + 4.2]
 export function placePhysicalModuleArrival(moduleNumber) {
   const id = Number(moduleNumber)
   if (id !== 6 && id !== 7) return false
+
   const point = id === 6 ? BOND_ENTRY : TAX_ENTRY
   const center = id === 6 ? BOND_DISTRICT : TAX_DISTRICT
 
-  // Keep the physical district authoritative. Old module-entry state used to
-  // reset the player to an unrelated/default position after route navigation.
   activatePaycheckWorld()
 
-  // Face the camera toward the building the player just arrived at. initWorld()
-  // resets azimuth to 0 (camera due south, looking north). Bond Street's entrance
-  // sits at the building's WEST edge, so the default view looks away toward the
-  // Module 1 town - turn the camera to face the building. The Tax Office entrance
-  // is due south of its building, which the default north-facing camera already
-  // frames well, so leave azimuth alone there.
+  // Module 6 now behaves like the other town destinations: arrive OUTSIDE,
+  // directly in front of the entrance, with the building in view. There is no
+  // inside-the-building spawn or special arrival sequence to fight the world init.
   try {
-    if (id === 6) {
-      const dx = center[0] - point[0]
-      const dz = center[1] - point[1]
-      cameraRig.azimuth = Math.atan2(dx, dz)
-    }
-  } catch { /* cameraRig always present in the browser */ }
+    const dx = center[0] - point[0]
+    const dz = center[1] - point[1]
+    cameraRig.azimuth = Math.atan2(dx, dz)
+  } catch { /* browser-only camera state */ }
+
   try {
     const game = useGame.getState()
     if (typeof game.adminTeleport === 'function') game.adminTeleport(point)
@@ -47,6 +42,7 @@ export function placePhysicalModuleArrival(moduleNumber) {
     playerPos.y = 1
     playerPos.z = point[1]
   }
+
   joystick.x = 0
   joystick.y = 0
   moveTarget.x = null
@@ -67,12 +63,6 @@ export function clearPhysicalModuleLaunch() {
   try { sessionStorage.removeItem(PHYSICAL_MODULE_KEY) } catch { /* storage can be unavailable */ }
 }
 
-/**
- * A completed earlier module can leave queued lessons/cards and the
- * pendingWeekComplete flag in Zustand. If those survive a direct Module 6/7
- * launch, the old game update appears over Bond Street/Tax Office and tapping
- * Next can immediately send the player to the old completion certificate.
- */
 export function clearStalePhysicalModuleUi() {
   useGame.setState({
     dialog: null,
@@ -99,10 +89,9 @@ export function clearStalePhysicalModuleUi() {
 }
 
 /**
- * Modules 6 and 7 are physical 3D destinations only. They must never enter the
- * generic modal/2D module-start path. The launch marker survives navigation and
- * Canvas creation so later initialization cannot strand the player on an empty
- * background.
+ * Queue one normal 3D-world arrival. World.jsx reads this marker immediately
+ * after initWorld(), so a Module 6 click cannot be overwritten by the default
+ * spawn. This replaces the old repeated timeout/re-teleport launch code.
  */
 export function preparePhysicalModuleLaunch(moduleNumber) {
   const id = Number(moduleNumber)
@@ -111,7 +100,6 @@ export function preparePhysicalModuleLaunch(moduleNumber) {
   clearStalePhysicalModuleUi()
 
   try {
-    // Completely remove every legacy generic-module jump for these destinations.
     localStorage.removeItem('tayu-module-entry-intent')
     localStorage.removeItem('tayu-jump-module')
     localStorage.removeItem('tayu-garden-entry-part')
@@ -123,15 +111,5 @@ export function preparePhysicalModuleLaunch(moduleNumber) {
   } catch { /* storage can be unavailable */ }
 
   activatePaycheckWorld()
-  placePhysicalModuleArrival(id)
-
-  // Route/Canvas/player initialization can happen in several passes. Reassert
-  // the physical destination through all of them rather than trusting one timer.
-  if (typeof window !== 'undefined') {
-    ;[60, 140, 300, 650, 1200, 1800].forEach((delay) => {
-      window.setTimeout(() => placePhysicalModuleArrival(id), delay)
-    })
-  }
-
   return true
 }
