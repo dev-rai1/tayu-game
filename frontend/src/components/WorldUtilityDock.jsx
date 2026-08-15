@@ -7,15 +7,16 @@ export default function WorldUtilityDock() {
   return (
     <nav
       aria-label="In-game navigation"
-      className="fixed left-[calc(0.75rem+env(safe-area-inset-left,0px))] top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[1100]"
+      className="fixed right-[calc(0.75rem+env(safe-area-inset-right,0px))] top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[1100]"
     >
       <Link
         to="/modules"
         aria-label="Back to module menu"
-        className="inline-flex min-h-[46px] items-center gap-2 rounded-2xl border border-slate-200 bg-white/95 px-4 text-sm font-extrabold text-slate-950 shadow-xl backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white hover:shadow-2xl active:translate-y-0"
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/35 bg-navy/90 px-4 text-sm font-extrabold text-white shadow-xl backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-navy hover:shadow-2xl active:translate-y-0"
       >
-        <span aria-hidden="true">←</span>
-        Module Menu
+        <span aria-hidden="true">☰</span>
+        <span className="hidden sm:inline">Module Menu</span>
+        <span className="sm:hidden">Menu</span>
       </Link>
     </nav>
   )
