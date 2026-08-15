@@ -19,6 +19,7 @@ import { Boundary, LoadingScreen } from './components/Boundary.jsx'
 import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser, isCloud } from './services/auth.js'
 import { loadProfile, saveProfile } from './services/walletStore.js'
+import { MODULE_CATALOG } from './constants/modules.js'
 import { activatePaycheckWorld } from './world/paycheckMode.js'
 import { useTaxLab } from './world/taxLabStore.js'
 import { installViewportSync } from './utils/viewport.js'
@@ -37,6 +38,13 @@ const Privacy = lazy(() => import('./pages/Privacy.jsx'))
 const Cookies = lazy(() => import('./pages/Cookies.jsx'))
 const Accessibility = lazy(() => import('./pages/Accessibility.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+
+export const FINALE_REQUIRED_BADGES = MODULE_CATALOG.map((module) => module.badge)
+
+export function isFinaleUnlocked(profile = loadProfile() || {}) {
+  const earned = new Set(profile?.badges || [])
+  return FINALE_REQUIRED_BADGES.length > 0 && FINALE_REQUIRED_BADGES.every((badge) => earned.has(badge))
+}
 
 function useAuthGateReady() {
   const [ready, setReady] = useState(() => Boolean(currentUser()) || !isCloud())
@@ -61,6 +69,19 @@ function PreQuizGate({ children }) {
   const user = currentUser()
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'admin' && user.role !== 'teacher' && !loadProfile()?.assessment?.pre) return <Navigate to="/assessment/pre" replace />
+  return children
+}
+
+function FinaleGate({ children }) {
+  const authReady = useAuthGateReady()
+  if (!authReady) return <LoadingScreen label="Checking your TAYU journey..." />
+  const user = currentUser()
+  if (!user) return <Navigate to="/login" replace />
+
+  // The Finale is never unlocked by an old gameComplete/enterParty flag or a
+  // direct URL. Every core module badge, including Module 7 Tax Office, must
+  // actually be saved on the learner profile first.
+  if (!isFinaleUnlocked(loadProfile() || {})) return <Navigate to="/modules" replace />
   return children
 }
 
@@ -184,7 +205,7 @@ export default function App() {
               <Route path="/world" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><DirectModule67World /></Suspense></PreQuizGate>} />
               <Route path="/tax-paycheck" element={<PreQuizGate><LegacyPaycheckRedirect /></PreQuizGate>} />
               <Route path="/party" element={<Navigate to="/guru" replace />} />
-              <Route path="/guru" element={<Guru />} />
+              <Route path="/guru" element={<FinaleGate><Guru /></FinaleGate>} />
               <Route path="/path-complete" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Preparing your path certificate..." />}><PathComplete /></Suspense></PreQuizGate>} />
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />

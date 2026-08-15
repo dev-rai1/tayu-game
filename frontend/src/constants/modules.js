@@ -66,11 +66,11 @@ export const MODULE_CATALOG = [
     title: 'TAYU Tax Office',
     grades: 'Grades 6–12',
     minutes: '10–15 min',
-    desc: 'Walk into the physical TAYU Tax Office and work with Rex through gross income, deductions, marginal tax brackets, effective rate, withholding, and a refund, amount due, or zero result.',
+    desc: 'Complete the final core module inside the physical TAYU Tax Office, then continue to the TAYU Finale. Work with Rex through gross income, deductions, marginal tax brackets, effective rate, withholding, and a refund, amount due, or zero result.',
     color: '#FF8A3D',
     worldModule: 7,
     physicalDestination: true,
-    finale: true,
+    leadsToFinale: true,
   },
 ]
 
@@ -86,13 +86,13 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by the separate 3D destinations Module 6 Bond Street and Module 7 TAYU Tax Office.',
+    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Module 6 Bond Street, Module 7 TAYU Tax Office, then the Finale.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },
   {
     title: 'High School', grades: 'Grades 9–12', color: '#00a77a',
-    copy: 'All seven core modules establish a shared baseline. Module 5A and 5B deepen investing, Module 6 adds fixed income in Bond Street, and Module 7 completes the journey inside the Tax Office.',
+    copy: 'All seven core modules establish a shared baseline. Module 5A and 5B deepen investing, Module 6 adds fixed income in Bond Street, Module 7 completes the core learning sequence in the Tax Office, and the Finale comes last.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['College costs and financial aid', 'Retirement and long-term investing', 'Fintech, fraud, and digital money', 'Personal financial roadmap'],
   },
