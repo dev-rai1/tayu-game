@@ -6,8 +6,13 @@ import { CharacterMesh } from './CharacterMesh.jsx'
 import { labelTexture } from './textures.js'
 import { joystick, moveTarget, playerPos } from './store.js'
 
-export const BOND_DISTRICT = [TAX_DISTRICT[0] - 1, TAX_DISTRICT[1] + 18]
-export const BOND_ENTRY = [BOND_DISTRICT[0] - 9.4, BOND_DISTRICT[1] + 0.2]
+// Module 6 must be encountered before the Module 7 Tax Office. Keep Bond Street
+// physically separated from TAX_DISTRICT instead of placing it past the Tax Office.
+// This also gives both large buildings enough breathing room to be unmistakable.
+export const BOND_DISTRICT = [TAX_DISTRICT[0] - 21, TAX_DISTRICT[1] - 12]
+// Spawn INSIDE the open Bond Street building, beside Beau. This deliberately
+// avoids the old outside-the-building camera angle that could show only sky.
+export const BOND_ENTRY = [BOND_DISTRICT[0] - 4.7, BOND_DISTRICT[1] + 1.35]
 export const BOND_WORLD_EVENT = 'tayu-bond-world-action'
 export const BOND_INTERACT_EVENT = 'tayu-bond-interact'
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
@@ -24,6 +29,7 @@ export const BOND_POINTS = {
 
 export function placeAtBondStreetEntrance() {
   playerPos.x = BOND_ENTRY[0]
+  playerPos.y = 1
   playerPos.z = BOND_ENTRY[1]
   joystick.x = 0
   joystick.y = 0
@@ -184,7 +190,6 @@ function RateSeesaw({ active, interactive }) {
 }
 
 function BondExchangeBuilding({ effect, stage, visited }) {
-  const allocationActive = effect === 'allocation' || effect === 'borrowers'
   const interestActive = effect === 'interest' || effect === 'handoff'
   const rateActive = effect === 'rate'
 
@@ -197,7 +202,7 @@ function BondExchangeBuilding({ effect, stage, visited }) {
       <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, -5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
       <RoundedBox args={[0.36, 5.1, 4.2]} radius={0.14} smoothness={3} position={[-7.72, 2.55, 5.1]} castShadow receiveShadow><meshPhysicalMaterial color="#709b55" roughness={0.6} clearcoat={0.14} /></RoundedBox>
       <RoundedBox args={[0.48, 0.5, 5.65]} radius={0.14} smoothness={3} position={[-7.58, 4.58, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
-      <Billboard position={[-7.82, 6.55, 0]}><mesh><planeGeometry args={[8.2, 2.15]} /><meshBasicMaterial map={labelTexture('MODULE 6 · BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+      <Billboard position={[-7.82, 6.55, 0]}><mesh><planeGeometry args={[9.2, 2.15]} /><meshBasicMaterial map={labelTexture('BOND STREET · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
       <RoundedBox args={[1.5, 0.08, 5.4]} radius={0.08} smoothness={2} position={[-7.05, 0.13, 0]} receiveShadow><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.12} /></RoundedBox>
 
       <BondGuide active={stage === 0} />
