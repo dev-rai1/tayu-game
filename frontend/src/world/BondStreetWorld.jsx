@@ -7,6 +7,7 @@ import { labelTexture } from './textures.js'
 import { joystick, moveTarget, playerPos } from './store.js'
 
 export const BOND_DISTRICT = [TAX_DISTRICT[0] - 8.9, TAX_DISTRICT[1] - 8.0]
+// Module 6 starts OUTSIDE the building, directly in front of Bond Street on the shared map.
 export const BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]
 export const BOND_WORLD_EVENT = 'tayu-bond-world-action'
 export const BOND_INTERACT_EVENT = 'tayu-bond-interact'
@@ -119,7 +120,7 @@ function BondApproachAndLandscaping() {
   return (
     <group>
       <RoundedBox args={[7.2, 0.08, 4.4]} radius={0.18} smoothness={3} position={[-8.4, 0.05, 0]} receiveShadow><meshStandardMaterial color="#e7d4ad" roughness={0.96} /></RoundedBox>
-      {planters.map(([x, z, s], index) => <group key={index} position={[x, 0, z]} scale={s}><mesh position={[0, 0.28, 0]}><cylinderGeometry args={[0.78, 0.9, 0.52, 18]} /><meshStandardMaterial color="#d9c49a" /></mesh><mesh position={[0, 0.95, 0]}><sphereGeometry args={[0.78, 16, 14]} /><meshStandardMaterial color={index ? '#6ea65b' : '#82b968'} /></mesh></group>)}
+      {planters.map(([x, z, s], index) => <group key={`bond-planter-${index}`} position={[x, 0, z]} scale={s}><mesh position={[0, 0.28, 0]}><cylinderGeometry args={[0.78, 0.9, 0.52, 18]} /><meshStandardMaterial color="#d9c49a" /></mesh><mesh position={[0, 0.95, 0]}><sphereGeometry args={[0.78, 16, 14]} /><meshStandardMaterial color={index ? '#6ea65b' : '#82b968'} /></mesh></group>)}
     </group>
   )
 }
