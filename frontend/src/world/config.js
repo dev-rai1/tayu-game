@@ -10,14 +10,13 @@
 // spawn -> Allowance Bank -> Home/Jars -> Market -> Lemonade -> Budget Town
 // -> Bank -> Money Garden -> Paycheck Planet -> FINALE AREA -> back to spawn.
 
-// Give the whole town a genuinely long boulevard. The larger scale keeps every
-// destination on the same route while creating enough frontage for the later
-// districts (Money Garden, Bond Street, Tax Office and Finale) to sit separately
-// instead of overlapping. Everything that uses sc()/ringPoint() expands together.
+// Keep the boulevard visibly longer than the original town, but keep every
+// required destination inside the playable island. The late-game stretch gets
+// its extra room from wider angular gaps instead of pushing buildings off-map.
 const CENTER = [30, -6]
-export const MAP_SCALE = 1.38
+export const MAP_SCALE = 1.24
 const sc = ([x, z]) => [CENTER[0] + (x - CENTER[0]) * MAP_SCALE, CENTER[1] + (z - CENTER[1]) * MAP_SCALE]
-export const worldScale = sc // decorative scenery follows the expanded map
+export const worldScale = sc
 
 export const RING = { c: CENTER, r: 30 * MAP_SCALE }
 const rad = (deg) => (deg * Math.PI) / 180
@@ -28,14 +27,11 @@ const outerStopPoint = (deg, outward = 0) => {
   const d = Math.hypot(dx, dz) || 1
   return [x + (dx / d) * outward, z + (dz / d) * outward]
 }
-// Widen the final stretch most aggressively. Money Garden now clears Bond
-// Street, Bond Street has a real approach before the Tax Office, and the Finale
-// remains fully inside the expanded playable map rather than hanging off an edge.
-export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 46, garden: 32, tax: -5, party: -55 }
 
-// Distinct scenery neighborhoods continue around the ENTIRE ring. The first
-// nine fill the module side; the final four prevent the quiet back half from
-// feeling unfinished. Theme and density keep adjacent areas from looking copied.
+// Bank -> Money Garden -> Tax Office -> Finale now has real breathing room.
+// These angles deliberately create long frontage while staying inside the map.
+export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 44, garden: 22, tax: -10, party: -55 }
+
 export const SCENERY_ZONES = [
   { angle: 166, theme: 'orchard', density: 3, accent: '#e05252' },
   { angle: 141.5, theme: 'butterfly-meadow', density: 2, accent: '#ff8fb3' },
@@ -43,25 +39,25 @@ export const SCENERY_ZONES = [
   { angle: 99, theme: 'sunflower-field', density: 3, accent: '#FFD700' },
   { angle: 76, theme: 'birdhouse-grove', density: 2, accent: '#5aa6ff' },
   { angle: 55, theme: 'mushroom-woods', density: 3, accent: '#e8626f' },
-  { angle: 39, theme: 'lantern-garden', density: 1, accent: '#fff0a8' },
-  { angle: 14, theme: 'reeds-and-pond', density: 2, accent: '#5aa6d8' },
-  { angle: -29, theme: 'picnic-grove', density: 2, accent: '#e8626f' },
+  { angle: 33, theme: 'lantern-garden', density: 1, accent: '#fff0a8' },
+  { angle: 6, theme: 'reeds-and-pond', density: 2, accent: '#5aa6d8' },
+  { angle: -31, theme: 'picnic-grove', density: 2, accent: '#e8626f' },
   { angle: -72, theme: 'pine-trail', density: 3, accent: '#4e9440' },
   { angle: -103, theme: 'sculpture-garden', density: 1, accent: '#c9a46a' },
   { angle: -133, theme: 'autumn-grove', density: 3, accent: '#e8893a' },
   { angle: -162, theme: 'wildflower-hill', density: 2, accent: '#c77dff' },
 ]
 export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
-// One story road: spawn through Paycheck Planet. More samples keep the visibly
-// longer road smooth all the way through the shifted Tax Office entrance.
+
+// More samples keep the longer road smooth through the final module gate.
 export const RING_POINTS = [
-  ...Array.from({ length: 38 }, (_, i) => ringPoint(180 - i * 5)),
+  ...Array.from({ length: 39 }, (_, i) => ringPoint(180 - i * 5)),
   ringPoint(STOP_ANGLES.tax),
 ]
 
-export const SPAWN = sc([0, -6]) // west point of the ring
-export const MAILBOX = sc([-1, -22.4]) // the ALLOWANCE BANK kiosk (interaction id 'mailbox')
-export const KITCHEN = sc([8.6, -31.6]) // jar table, in front of the house
+export const SPAWN = sc([0, -6])
+export const MAILBOX = sc([-1, -22.4])
+export const KITCHEN = sc([8.6, -31.6])
 export const JARS = {
   spend: sc([6.4, -31.8]),
   save: sc([8.6, -31.8]),
@@ -73,7 +69,7 @@ export const LEMONADE = sc([31.3, -43])
 export const BUDGET_TOWN = sc([48, -42.5])
 export const BANK_DISTRICT = outerStopPoint(STOP_ANGLES.bank, 10)
 export const SPROUT = outerStopPoint(STOP_ANGLES.garden, 12)
-export const TAX_DISTRICT = outerStopPoint(STOP_ANGLES.tax, 15)
+export const TAX_DISTRICT = outerStopPoint(STOP_ANGLES.tax, 12)
 export const PARTY_HOUSE = (() => {
   const [px, pz] = ringPoint(STOP_ANGLES.party)
   const dx = px - CENTER[0], dz = pz - CENTER[1]
@@ -120,10 +116,10 @@ export const PATHS = {
   spurTax: [ringPoint(STOP_ANGLES.tax), [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]],
   royalParty: [
     ringPoint(STOP_ANGLES.tax),
-    royalArcPoint(-14, 1.2),
-    royalArcPoint(-25, 2.4),
-    royalArcPoint(-38, 3.8),
-    royalArcPoint(-48, 4.6),
+    royalArcPoint(-18, 1.2),
+    royalArcPoint(-29, 2.4),
+    royalArcPoint(-40, 3.4),
+    royalArcPoint(-49, 4.2),
     ROYAL_APPROACH.forecourt,
     ROYAL_APPROACH.entrance,
   ],
@@ -167,8 +163,6 @@ export function isClearOfModuleGates(point, extraDegrees = 0) {
 }
 
 export const PLAY_BOUNDS = 120
-// Bounds grow with the road and include extra margin around the outermost
-// buildings so the last destination and its facade stay completely in-map.
 export const BOUNDS = { xMin: sc([-24, 0])[0], xMax: sc([92, 0])[0], zMin: sc([0, -62])[1], zMax: sc([0, 48])[1] }
 export const INTERACT_RADIUS = 2.6
 export const JAR_RADIUS = 2.4
