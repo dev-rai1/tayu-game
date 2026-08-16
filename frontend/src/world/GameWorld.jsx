@@ -24,7 +24,7 @@ import { CoinLayer } from './CoinLayer.jsx'
 import { CanvasViewportGuard, WorldBoundaryGuard } from './WorldSafety.jsx'
 import { Boundary, logTayuError } from '../components/Boundary.jsx'
 import { useGame } from './store.js'
-import { activatePaycheckWorld, isPaycheckWorldActive, setPaycheckWorldActive } from './paycheckMode.js'
+import { activatePaycheckWorld, isPaycheckWorldActive } from './paycheckMode.js'
 import { clearPhysicalModuleLaunch, placePhysicalModuleArrival, readPhysicalModuleLaunch } from './physicalModuleLaunch.js'
 
 class SceneBoundary extends Component {
@@ -77,8 +77,12 @@ function settlePhysicalLaunchAfterCanvasMount() {
   // Module 6 is part of the same shared town as Modules 1–5. Keep normal town
   // mode active and only use the launch marker to place the player in front of
   // Bond Street after Canvas/world initialization. Module 7 still uses tax mode.
-  if (moduleId === 6) setPaycheckWorldActive(false)
-  else activatePaycheckWorld()
+  // Both Module 6 (Bond Street) and Module 7 (Tax Office) run inside the shared
+  // interaction world. Module 6 previously turned this off to reuse the plain
+  // town map, but that also unmounted the Bond Street interaction bridge, so the
+  // module could never be started (pressing E did nothing). Keep it active for
+  // both; the launch marker still places the player at the right district.
+  activatePaycheckWorld()
 
   placePhysicalModuleArrival(moduleId)
   window.requestAnimationFrame(() => placePhysicalModuleArrival(moduleId))

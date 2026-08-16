@@ -1,4 +1,4 @@
-import { activatePaycheckWorld, setPaycheckWorldActive } from './paycheckMode.js'
+import { activatePaycheckWorld } from './paycheckMode.js'
 import { BOND_ENTRY, BOND_DISTRICT } from './BondStreetWorld.jsx'
 import { TAX_POINTS } from './taxDistrictLayout.js'
 import { TAX_DISTRICT } from './config.js'
@@ -18,11 +18,11 @@ export function placePhysicalModuleArrival(moduleNumber) {
   const point = id === 6 ? BOND_ENTRY : TAX_ENTRY
   const center = id === 6 ? BOND_DISTRICT : TAX_DISTRICT
 
-  // Module 6 lives in the normal shared TAYU map. Only Module 7 uses the
-  // separate paycheck/tax mode. This prevents Bond Street from opening a
-  // different-looking scene instead of behaving like the earlier modules.
-  if (id === 6) setPaycheckWorldActive(false)
-  else activatePaycheckWorld()
+  // Both Module 6 (Bond Street) and Module 7 (Tax Office) run in the shared
+  // interaction world so their gate/station UI mounts. (Bond previously reused
+  // the plain town map, which left its interaction bridge unmounted and made the
+  // module impossible to start.)
+  activatePaycheckWorld()
 
   try {
     const dx = center[0] - point[0]
@@ -111,7 +111,10 @@ export function preparePhysicalModuleLaunch(moduleNumber) {
     else sessionStorage.removeItem(BOND_ONLY_KEY)
   } catch { /* storage can be unavailable */ }
 
-  if (id === 6) setPaycheckWorldActive(false)
-  else activatePaycheckWorld()
+  // Both Module 6 (Bond Street) and Module 7 (Tax Office) run in the shared
+  // interaction world so their gate/station UI mounts. (Bond previously reused
+  // the plain town map, which left its interaction bridge unmounted and made the
+  // module impossible to start.)
+  activatePaycheckWorld()
   return true
 }

@@ -23,8 +23,11 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(moduleSelect).toContain("nav('/world')")
     expect(launch).toContain("localStorage.removeItem('tayu-module-entry-intent')")
     expect(launch).toContain('sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))')
-    expect(launch).toContain("if (id === 6) setPaycheckWorldActive(false)")
-    expect(launch).toContain('else activatePaycheckWorld()')
+    // Both Module 6 and Module 7 now activate the shared interaction world so the
+    // Bond/Tax gate + station UI mounts (Module 6 previously reused the plain town
+    // map, which left its interaction bridge unmounted and unstartable).
+    expect(launch).toContain('activatePaycheckWorld()')
+    expect(launch).not.toContain('if (id === 6) setPaycheckWorldActive(false)')
     expect(gameWorld).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
   })
 
@@ -71,7 +74,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(launch).toContain("typeof game.adminTeleport === 'function'")
     expect(bondWorld).toContain('BOND_ENTRY = [BOND_DISTRICT[0] - 9.35, BOND_DISTRICT[1]]')
     expect(bondWorld).toContain('Module 6 starts OUTSIDE the building')
-    expect(gameWorld).toContain('if (moduleId === 6) setPaycheckWorldActive(false)')
+    expect(gameWorld).not.toContain('if (moduleId === 6) setPaycheckWorldActive(false)')
     expect(gameWorld).toContain('settlePhysicalLaunchAfterCanvasMount()')
   })
 
