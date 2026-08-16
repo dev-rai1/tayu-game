@@ -3,12 +3,18 @@ import { useFrame } from '@react-three/fiber'
 import { useGame, playerPos } from './store.js'
 import { getObjectiveTarget, arriveRadius, guidePath } from './objective.js'
 import { TAX_DISTRICT, TAYU } from './config.js'
+import { BOND_POINTS } from './BondStreetWorld.jsx'
 import { isPaycheckWorldActive } from './paycheckMode.js'
 
+const BOND_ONLY_KEY = 'tayu-bond-only-entry'
 const NECK_H = 1.5
 const DOTS = 18
 const DOT_SPACING = 1.1
 const AVATAR_CLEARANCE = 2.6
+
+function isBondStreetModuleActive() {
+  try { return sessionStorage.getItem(BOND_ONLY_KEY) === '1' } catch { return false }
+}
 
 export function CompassBeam() {
   const grp = useRef()
@@ -23,10 +29,15 @@ export function CompassBeam() {
     t.current += d
     const st = useGame.getState()
     const paycheck = isPaycheckWorldActive()
-    const target = paycheck
-      ? [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.2]
-      : getObjectiveTarget(st)
-    const radius = paycheck ? 0.45 : arriveRadius(st)
+    const bondStreet = isBondStreetModuleActive()
+    // A direct Module 6 launch must guide to the first Bond Street interaction,
+    // not to whatever legacy campaign objective happens to be stored in state.
+    const target = bondStreet
+      ? BOND_POINTS.guide
+      : paycheck
+        ? [TAX_DISTRICT[0], TAX_DISTRICT[1] + 4.2]
+        : getObjectiveTarget(st)
+    const radius = bondStreet ? 1.2 : paycheck ? 0.45 : arriveRadius(st)
     const g = grp.current
     const b = beacon.current
     if (!g) return
@@ -65,8 +76,6 @@ export function CompassBeam() {
     let di = 0
     if (show && path) {
       let px = playerPos.x, pz = playerPos.z
-      // The first breadcrumb starts outside the avatar footprint so the path
-      // never stacks dots under the player or competes with the neck arrow.
       let carry = AVATAR_CLEARANCE
       for (const [qx, qz] of path) {
         let segLen = Math.hypot(qx - px, qz - pz)
