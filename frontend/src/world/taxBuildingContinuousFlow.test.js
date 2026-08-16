@@ -6,6 +6,7 @@ import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { taxStationForStep } from './taxDistrictLayout.js'
 
 const paycheckWorld = fs.readFileSync(path.resolve('src/world/PaycheckPlanetWorld.jsx'), 'utf8')
+const physicalSigns = fs.readFileSync(path.resolve('src/world/PhysicalModuleSigns.jsx'), 'utf8')
 
 describe('Tax Center building and continuous flow', () => {
   beforeEach(() => useTaxLab.getState().reset())
@@ -13,7 +14,7 @@ describe('Tax Center building and continuous flow', () => {
   it('renders a walk-in Tax Office shell around the activity without module-number labels', () => {
     expect(paycheckWorld).toContain('function TaxCenterBuilding')
     expect(paycheckWorld).toContain('<TaxCenterBuilding active={active} />')
-    expect(paycheckWorld).toContain("labelTexture('TAYU TAX OFFICE'")
+    expect(physicalSigns).toContain("labelTexture('TAYU TAX OFFICE'")
     expect(paycheckWorld).not.toContain('MODULE 7 · TAYU TAX OFFICE')
     expect(paycheckWorld).toContain('name="Rex · Tax Guide"')
   })

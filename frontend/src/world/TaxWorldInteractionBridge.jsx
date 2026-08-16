@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { INTERACT_RADIUS } from './config.js'
+import { STATION_REACH } from './PaycheckPlanetWorld.jsx'
 import { playerPos, joystick, moveTarget } from './store.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
@@ -53,7 +54,7 @@ function nearbyTaxAction() {
   }
   if (state.phase === 'steps') {
     const station = taxStationForStep(state.stepNumber)
-    if (station && distanceTo(station.point) <= INTERACT_RADIUS) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
+    if (station && distanceTo(station.point) <= STATION_REACH) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
   if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and finish the Tax Office' }

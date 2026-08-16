@@ -6,7 +6,7 @@ import { labelTexture } from './textures.js'
 // numbered billboard. Public in-world labels use place names, not module numbers.
 export function PhysicalModuleSigns() {
   return (
-    <Billboard position={[TAX_DISTRICT[0], 6.3, TAX_DISTRICT[1] + 7.97]}>
+    <Billboard position={[TAX_DISTRICT[0], 5.5, TAX_DISTRICT[1] + 7.6]}>
       <mesh renderOrder={1000}>
         <planeGeometry args={[9.8, 2.25]} />
         <meshBasicMaterial

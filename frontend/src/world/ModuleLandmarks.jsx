@@ -15,14 +15,7 @@ function MoneyGardenMarker() {
 }
 
 function TaxOfficeMarker() {
-  return (
-    <Billboard position={[TAX_ENTRY[0], 8.8, TAX_ENTRY[1] - 4.5]}>
-      <mesh>
-        <planeGeometry args={[7.8, 2.15]} />
-        <meshBasicMaterial map={labelTexture('TAYU TAX OFFICE', { bg: '#071748', color: '#ffffff', accent: '#ff8a3d' })} transparent toneMapped={false} depthTest={false} />
-      </mesh>
-    </Billboard>
-  )
+  return null
 }
 
 export function ModuleLandmarks() {

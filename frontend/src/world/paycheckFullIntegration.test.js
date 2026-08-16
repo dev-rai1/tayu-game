@@ -14,6 +14,7 @@ const taxLayout = read('src/world/taxDistrictLayout.js')
 const paycheckScenario = read('src/scenarios/paycheckPlanet.js')
 const objective = read('src/world/objective.js')
 const bridge = read('src/world/TaxWorldInteractionBridge.jsx')
+const physicalSigns = read('src/world/PhysicalModuleSigns.jsx')
 
 describe('Paycheck Planet full integration', () => {
   it('routes Modules 6 and 7 into the shared 3D town experience', () => {
@@ -27,7 +28,8 @@ describe('Paycheck Planet full integration', () => {
   })
 
   it('keeps Module 7 inside a physical Tax Office with Rex and taxpayer NPCs', () => {
-    expect(paycheckWorld).toContain("labelTexture('TAYU TAX OFFICE'")
+    expect(physicalSigns).toContain("labelTexture('TAYU TAX OFFICE'")
+    expect(paycheckWorld).toContain('function TaxCenterBuilding')
     expect(paycheckWorld).toContain('Rex · Tax Guide')
     expect(paycheckWorld).toContain('TAX_CLIENTS.map')
     expect(paycheckWorld).toContain('InteractiveTaxNpc')
