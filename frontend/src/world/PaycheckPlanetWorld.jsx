@@ -31,7 +31,7 @@ function InteractionGlow({ active = true, selected = false }) {
   return <mesh ref={glow} position={[0, 2.8, 0]}><sphereGeometry args={[selected ? 0.22 : 0.18, 16, 16]} /><meshStandardMaterial color={selected ? '#ffd700' : '#00dca0'} emissive={selected ? '#ffd700' : '#00dca0'} emissiveIntensity={0.9} /></mesh>
 }
 
-function InteractiveTaxNpc({ point, avatar, active = true, selected = false, reacting = false, onActivate }) {
+function InteractiveTaxNpc({ name, point, avatar, active = true, selected = false, reacting = false, onActivate }) {
   const root = useRef()
   const mesh = useRef()
   const clock = useRef(Math.random() * 10)
@@ -47,7 +47,7 @@ function InteractiveTaxNpc({ point, avatar, active = true, selected = false, rea
     }
   })
   const activate = (event) => { event?.stopPropagation?.(); if (active && closeEnough(point)) onActivate?.() }
-  return <group ref={root} position={p} onClick={activate} onPointerOver={() => { if (active) { setHovered(true); document.body.style.cursor = 'pointer' } }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}><group scale={selected ? 1.08 : hovered ? 1.04 : 1}><CharacterMesh ref={mesh} avatar={avatar} /></group><InteractionGlow active={active} selected={selected} /></group>
+  return <group ref={root} position={p} userData={{ name }} onClick={activate} onPointerOver={() => { if (active) { setHovered(true); document.body.style.cursor = 'pointer' } }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}><group scale={selected ? 1.08 : hovered ? 1.04 : 1}><CharacterMesh ref={mesh} avatar={avatar} /></group><InteractionGlow active={active} selected={selected} /></group>
 }
 
 function StationProp({ stationKey, active, reacting = false }) {
@@ -132,13 +132,13 @@ export function PaycheckPlanetWorld() {
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
       <TaxCenterBuilding active={active} />
-      <InteractiveTaxNpc point={TAX_POINTS.guide} avatar={rexAvatar} active={guideInteractive} reacting={Boolean(reaction)} onActivate={() => useTaxLab.getState().openGuide()} />
+      <InteractiveTaxNpc name="Rex · Tax Guide" point={TAX_POINTS.guide} avatar={rexAvatar} active={guideInteractive} reacting={Boolean(reaction)} onActivate={() => useTaxLab.getState().openGuide()} />
       {active && (phase === 'case' || phase === 'steps') && TAX_CLIENTS.map((client, index) => {
         const caseInfo = TAX_CASES.find((item) => item.id === client.caseId)
         const isSelected = selectedClient?.caseId === client.caseId
         const reacting = (reaction?.kind === 'client-selected' && reaction?.caseId === client.caseId) || (phase === 'steps' && isSelected && Boolean(reaction))
         const clientAvatar = { gender: index === 1 ? 'male' : index === 2 ? 'female' : 'neutral', bodyType: index === 1 ? 'athletic' : 'average', skinTone: index === 0 ? 'light_tan' : index === 1 ? 'medium_brown' : 'cream', hairStyle: index === 0 ? 'curly' : index === 1 ? 'short' : 'long', hairColor: index === 2 ? 'brown' : 'black', shirtColor: index === 0 ? 'green' : index === 1 ? 'blue' : 'purple', pantsColor: index === 0 ? 'denim' : index === 1 ? 'gray' : 'black', topStyle: index === 1 ? 'hoodie' : 'tee', bottomStyle: 'pants' }
-        return <InteractiveTaxNpc key={client.caseId} point={client.point} avatar={clientAvatar} selected={isSelected} reacting={reacting} active={phase === 'case'} onActivate={() => caseInfo && useTaxLab.getState().previewClient(caseInfo)} />
+        return <InteractiveTaxNpc key={client.caseId} name={client.name} point={client.point} avatar={clientAvatar} selected={isSelected} reacting={reacting} active={phase === 'case'} onActivate={() => caseInfo && useTaxLab.getState().previewClient(caseInfo)} />
       })}
       {active && phase === 'steps' && currentStation && <CurrentTaxStation step={stepNumber} station={currentStation} reacting={Boolean(reaction) && reactingStep === stepNumber} />}
       {reaction && reactingStation && <CelebrationBurst active position={[...local(reactingStation.point), 2.1]} />}
