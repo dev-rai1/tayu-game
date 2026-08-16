@@ -3,10 +3,10 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RING } from './config.js'
 import { playerPos } from './store.js'
 
-// The island mesh has a radius of 68. The camera can orbit as far as 16 units
-// behind the player, so keeping the player within 50 units of the island center
+// The island mesh has a radius of 69. The camera can orbit as far as 16 units
+// behind the player, so keeping the player within 51 units of the island center
 // guarantees that both the avatar and follow camera stay over rendered ground.
-export const WORLD_GROUND_RADIUS = 68
+export const WORLD_GROUND_RADIUS = 69
 export const MAX_CAMERA_DISTANCE = 16
 export const WORLD_EDGE_MARGIN = 2
 export const PLAYER_SAFE_RADIUS = WORLD_GROUND_RADIUS - MAX_CAMERA_DISTANCE - WORLD_EDGE_MARGIN

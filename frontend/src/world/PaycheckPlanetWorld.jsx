@@ -46,17 +46,8 @@ function InteractiveTaxNpc({ name, point, avatar, active = true, selected = fals
       mesh.current.rotation.z = reacting ? Math.sin(clock.current * 9) * 0.07 : active ? Math.sin(clock.current * 2.7) * 0.018 : 0
     }
   })
-  const activate = (event) => {
-    event?.stopPropagation?.()
-    if (!active || !closeEnough(point)) return
-    onActivate?.()
-  }
-  return (
-    <group ref={root} position={p} onClick={activate} onPointerOver={() => { if (!active) return; setHovered(true); document.body.style.cursor = 'pointer' }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}>
-      <group scale={selected ? 1.08 : hovered ? 1.04 : 1}><CharacterMesh ref={mesh} avatar={avatar} /></group>
-      <InteractionGlow active={active} selected={selected} />
-    </group>
-  )
+  const activate = (event) => { event?.stopPropagation?.(); if (active && closeEnough(point)) onActivate?.() }
+  return <group ref={root} position={p} userData={{ name }} onClick={activate} onPointerOver={() => { if (active) { setHovered(true); document.body.style.cursor = 'pointer' } }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}><group scale={selected ? 1.08 : hovered ? 1.04 : 1}><CharacterMesh ref={mesh} avatar={avatar} /></group><InteractionGlow active={active} selected={selected} /></group>
 }
 
 function StationProp({ stationKey, active, reacting = false }) {
@@ -74,45 +65,37 @@ function StationProp({ stationKey, active, reacting = false }) {
     if (stationKey === 'filing') motion.current.position.z = Math.sin(clock.current * 2.1 * speed) * (reacting ? 0.55 : 0.22)
   })
   if (stationKey === 'w2') return <group ref={motion} position={[0, 0.75, 0]}><mesh><boxGeometry args={[0.9, 1.15, 0.05]} /><meshStandardMaterial color="#ffffff" emissive={active ? '#9bdfff' : '#000000'} emissiveIntensity={reacting ? 0.8 : active ? 0.28 : 0} /></mesh></group>
-  if (stationKey === 'deduction') return <group ref={motion} position={[0, 0.9, 0]}><mesh><cylinderGeometry args={[0.22, 0.3, 0.5, 16]} /><meshStandardMaterial color="#ff8a3d" emissive={reacting ? '#ff8a3d' : '#000000'} emissiveIntensity={reacting ? 0.5 : 0} /></mesh></group>
-  if (stationKey === 'brackets') return <group ref={motion} position={[0, 0.85, 0]}>{[0, 1, 2].map((i) => <mesh key={i} position={[Math.cos(i * 2.1) * 0.45, 0, Math.sin(i * 2.1) * 0.45]}><cylinderGeometry args={[0.18, 0.18, 0.05, 16]} /><meshStandardMaterial color="#ffd700" emissive={reacting ? '#ffd700' : '#000000'} emissiveIntensity={reacting ? 0.55 : 0} metalness={0.35} /></mesh>)}</group>
-  if (stationKey === 'credit') return <group ref={motion} position={[0, 0.9, 0]}><mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.38, 0.1, 12, 24]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={reacting ? 0.95 : active ? 0.5 : 0.1} /></mesh></group>
-  if (stationKey === 'reconcile') return <group ref={motion} position={[0, 0.92, 0]}><mesh><boxGeometry args={[1.2, 0.08, 0.12]} /><meshStandardMaterial color="#ffd700" emissive={reacting ? '#ffd700' : '#000000'} emissiveIntensity={reacting ? 0.5 : 0} /></mesh><mesh position={[0, -0.45, 0]}><cylinderGeometry args={[0.08, 0.18, 0.8, 12]} /><meshStandardMaterial color="#071748" /></mesh></group>
-  return <group ref={motion} position={[0, 0.88, 0]}><mesh><boxGeometry args={[0.95, 0.58, 0.08]} /><meshStandardMaterial color="#fff3c4" emissive={reacting ? '#ffd700' : active ? '#00dca0' : '#000000'} emissiveIntensity={reacting ? 0.75 : active ? 0.28 : 0} /></mesh></group>
+  if (stationKey === 'deduction') return <group ref={motion} position={[0, 0.9, 0]}><mesh><cylinderGeometry args={[0.22, 0.3, 0.5, 16]} /><meshStandardMaterial color="#ff8a3d" /></mesh></group>
+  if (stationKey === 'brackets') return <group ref={motion} position={[0, 0.85, 0]}>{[0, 1, 2].map((i) => <mesh key={i} position={[Math.cos(i * 2.1) * 0.45, 0, Math.sin(i * 2.1) * 0.45]}><cylinderGeometry args={[0.18, 0.18, 0.05, 16]} /><meshStandardMaterial color="#ffd700" /></mesh>)}</group>
+  if (stationKey === 'credit') return <group ref={motion} position={[0, 0.9, 0]}><mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.38, 0.1, 12, 24]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.5 : 0.1} /></mesh></group>
+  if (stationKey === 'reconcile') return <group ref={motion} position={[0, 0.92, 0]}><mesh><boxGeometry args={[1.2, 0.08, 0.12]} /><meshStandardMaterial color="#ffd700" /></mesh><mesh position={[0, -0.45, 0]}><cylinderGeometry args={[0.08, 0.18, 0.8, 12]} /><meshStandardMaterial color="#071748" /></mesh></group>
+  return <group ref={motion} position={[0, 0.88, 0]}><mesh><boxGeometry args={[0.95, 0.58, 0.08]} /><meshStandardMaterial color="#fff3c4" emissive={active ? '#00dca0' : '#000000'} emissiveIntensity={active ? 0.28 : 0} /></mesh></group>
 }
 
 function CurrentTaxStation({ step, station, reacting }) {
   const p = local(station.point)
   const [hovered, setHovered] = useState(false)
-  const activate = (event) => {
-    event?.stopPropagation?.()
-    if (!isPaycheckWorldActive() || !closeEnough(station.point)) return
-    useTaxLab.getState().openStation(step)
-  }
-  return (
-    <group position={p} onClick={activate} onPointerOver={() => { setHovered(true); document.body.style.cursor = 'pointer' }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}>
-      <RoundedBox args={[2.15, 0.32, 1.55]} radius={0.17} smoothness={3} position={[0, 0.2, 0]}><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={reacting ? 0.95 : hovered ? 0.75 : 0.5} roughness={0.6} /></RoundedBox>
-      <StationProp stationKey={station.key} active reacting={reacting} />
-      <InteractionGlow active />
-      <Billboard position={[0, 2.55, 0]}><mesh><planeGeometry args={[3.1, 0.74]} /><meshBasicMaterial map={labelTexture(station.label.toUpperCase(), { bg: '#ffffff', color: '#071748', accent: '#1464f0' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
-    </group>
-  )
+  const activate = (event) => { event?.stopPropagation?.(); if (isPaycheckWorldActive() && closeEnough(station.point)) useTaxLab.getState().openStation(step) }
+  return <group position={p} onClick={activate} onPointerOver={() => { setHovered(true); document.body.style.cursor = 'pointer' }} onPointerOut={() => { setHovered(false); document.body.style.cursor = '' }}><RoundedBox args={[2.15, 0.32, 1.55]} radius={0.17} smoothness={3} position={[0, 0.2, 0]}><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={reacting ? 0.95 : hovered ? 0.75 : 0.5} /></RoundedBox><StationProp stationKey={station.key} active reacting={reacting} /><InteractionGlow active /><Billboard position={[0, 2.55, 0]}><mesh><planeGeometry args={[3.1, 0.74]} /><meshBasicMaterial map={labelTexture(station.label.toUpperCase(), { bg: '#ffffff', color: '#071748', accent: '#1464f0' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard></group>
 }
 
 function TaxCenterBuilding({ active }) {
+  const guide = local(TAX_POINTS.guide)
+  const len = Math.hypot(guide[0], guide[1]) || 1
+  const ux = guide[0] / len
+  const uz = guide[1] / len
+  const backdropPos = [-ux * 6.2, 0, -uz * 6.2]
+  const facing = Math.atan2(ux, uz)
   return (
     <group>
       <RoundedBox args={[14.8, 0.18, 12.8]} radius={0.16} smoothness={3} position={[0, 0.08, 1.55]} receiveShadow><meshStandardMaterial color="#f8f1e8" roughness={0.94} /></RoundedBox>
-      <RoundedBox args={[14.8, 4.9, 0.34]} radius={0.12} smoothness={3} position={[0, 2.45, -4.72]} castShadow receiveShadow><meshPhysicalMaterial color="#ffb36f" roughness={0.62} clearcoat={0.18} /></RoundedBox>
-      <RoundedBox args={[0.34, 4.9, 12.8]} radius={0.12} smoothness={3} position={[-7.23, 2.45, 1.55]} castShadow receiveShadow><meshPhysicalMaterial color="#ffc58f" roughness={0.62} clearcoat={0.15} /></RoundedBox>
-      <RoundedBox args={[0.34, 4.9, 12.8]} radius={0.12} smoothness={3} position={[7.23, 2.45, 1.55]} castShadow receiveShadow><meshPhysicalMaterial color="#ffc58f" roughness={0.62} clearcoat={0.15} /></RoundedBox>
-      <RoundedBox args={[5.15, 4.9, 0.34]} radius={0.12} smoothness={3} position={[-4.83, 2.45, 7.82]} castShadow receiveShadow><meshPhysicalMaterial color="#ffb36f" roughness={0.6} clearcoat={0.18} /></RoundedBox>
-      <RoundedBox args={[5.15, 4.9, 0.34]} radius={0.12} smoothness={3} position={[4.83, 2.45, 7.82]} castShadow receiveShadow><meshPhysicalMaterial color="#ffb36f" roughness={0.6} clearcoat={0.18} /></RoundedBox>
-      <RoundedBox args={[4.5, 0.52, 0.46]} radius={0.16} smoothness={3} position={[0, 4.56, 7.78]} castShadow><meshStandardMaterial color="#071748" roughness={0.5} /></RoundedBox>
-      <Billboard position={[0, 6.3, 7.95]}><mesh><planeGeometry args={[8.4, 2.05]} /><meshBasicMaterial map={labelTexture('TAYU TAX OFFICE · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
-      <RoundedBox args={[0.18, 3.6, 0.18]} radius={0.06} smoothness={2} position={[-2.16, 1.8, 7.58]} castShadow><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.22 : 0.06} /></RoundedBox>
-      <RoundedBox args={[0.18, 3.6, 0.18]} radius={0.06} smoothness={2} position={[2.16, 1.8, 7.58]} castShadow><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.22 : 0.06} /></RoundedBox>
-      <RoundedBox args={[3.5, 0.08, 1.15]} radius={0.08} smoothness={2} position={[0, 0.13, 7.15]} receiveShadow><meshStandardMaterial color="#1464f0" emissive="#1464f0" emissiveIntensity={active ? 0.16 : 0.04} /></RoundedBox>
+      <group position={backdropPos} rotation={[0, facing, 0]}>
+        <RoundedBox args={[10.8, 0.2, 2.2]} radius={0.12} smoothness={3} position={[0, 0.12, 0]}><meshStandardMaterial color="#ffe0bf" /></RoundedBox>
+        {[-4.2, -2.1, 0, 2.1, 4.2].map((x) => <mesh key={x} position={[x, 2.05, 0]} castShadow><cylinderGeometry args={[0.28, 0.36, 4.1, 12]} /><meshStandardMaterial color="#ffb36f" roughness={0.75} /></mesh>)}
+        <RoundedBox args={[11.2, 0.55, 1.0]} radius={0.14} smoothness={3} position={[0, 4.12, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
+        <Billboard position={[0, 5.65, -0.1]}><mesh><planeGeometry args={[8.4, 1.7]} /><meshBasicMaterial map={labelTexture('TAYU TAX OFFICE · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+        <mesh position={[0, 4.75, 0]}><octahedronGeometry args={[0.75, 0]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.24 : 0.08} /></mesh>
+      </group>
       <RoundedBox args={[5.2, 1.05, 0.75]} radius={0.16} smoothness={3} position={[0, 0.55, 5.45]} castShadow receiveShadow><meshStandardMaterial color="#071748" roughness={0.7} /></RoundedBox>
       <RoundedBox args={[4.6, 0.12, 0.92]} radius={0.08} smoothness={2} position={[0, 1.09, 5.45]} castShadow><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.2 : 0.05} /></RoundedBox>
       {[-4.6, -2.3, 0, 2.3, 4.6].map((x) => <mesh key={x} position={[x, 0.185, 0.75]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[0.06, 7.6]} /><meshStandardMaterial color="#e5c7a7" transparent opacity={0.55} /></mesh>)}
@@ -133,37 +116,23 @@ export function PaycheckPlanetWorld() {
   const phase = useTaxLab((s) => s.phase)
   const taxCase = useTaxLab((s) => s.taxCase)
   const stepNumber = useTaxLab((s) => s.stepNumber)
-
-  useEffect(() => {
-    const sync = (event) => setActive(event?.detail?.active ?? isPaycheckWorldActive())
-    sync()
-    window.addEventListener(PAYCHECK_MODE_EVENT, sync)
-    return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync)
-  }, [])
-
+  useEffect(() => { const sync = (event) => setActive(event?.detail?.active ?? isPaycheckWorldActive()); sync(); window.addEventListener(PAYCHECK_MODE_EVENT, sync); return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync) }, [])
   useEffect(() => {
     let timer = null
-    const react = (event) => {
-      setReaction(event?.detail || { kind: 'decision' })
-      if (timer) window.clearTimeout(timer)
-      timer = window.setTimeout(() => setReaction(null), event?.detail?.kind === 'filed' ? 2600 : 1700)
-    }
+    const react = (event) => { setReaction(event?.detail || { kind: 'decision' }); if (timer) window.clearTimeout(timer); timer = window.setTimeout(() => setReaction(null), event?.detail?.kind === 'filed' ? 2600 : 1700) }
     window.addEventListener(TAX_WORLD_EVENT, react)
     return () => { window.removeEventListener(TAX_WORLD_EVENT, react); if (timer) window.clearTimeout(timer) }
   }, [])
-
   const selectedClient = TAX_CLIENTS.find((client) => client.caseId === taxCase?.id)
   const currentStation = taxStationForStep(stepNumber)
   const reactingStep = Number(reaction?.stepNumber || stepNumber)
   const reactingStation = taxStationForStep(reactingStep)
   const rexAvatar = { gender: 'male', bodyType: 'average', skinTone: 'warm_beige', hairStyle: 'short', hairColor: 'brown', shirtColor: 'teal', pantsColor: 'blue', topStyle: 'hoodie', bottomStyle: 'pants' }
   const guideInteractive = active && (phase === 'intro' || phase === 'complete')
-  const rexReacting = Boolean(reaction)
-
   return (
     <group position={[TAX_DISTRICT[0], 0, TAX_DISTRICT[1]]}>
       <TaxCenterBuilding active={active} />
-      <InteractiveTaxNpc name="Rex · Tax Guide" point={TAX_POINTS.guide} avatar={rexAvatar} active={guideInteractive} reacting={rexReacting} onActivate={() => useTaxLab.getState().openGuide()} />
+      <InteractiveTaxNpc name="Rex · Tax Guide" point={TAX_POINTS.guide} avatar={rexAvatar} active={guideInteractive} reacting={Boolean(reaction)} onActivate={() => useTaxLab.getState().openGuide()} />
       {active && (phase === 'case' || phase === 'steps') && TAX_CLIENTS.map((client, index) => {
         const caseInfo = TAX_CASES.find((item) => item.id === client.caseId)
         const isSelected = selectedClient?.caseId === client.caseId
