@@ -15,6 +15,20 @@ import { TrustMeter } from './BankPanels.jsx'
 import { shouldShowInteractionPrompt } from './interactionPrompt.js'
 import { getGuidance } from './guidance.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
+import { PAYCHECK_MODE_EVENT, isPaycheckWorldActive } from './paycheckMode.js'
+
+// Bond Street (Module 6) and the Tax Office (Module 7) run in the same 3D world
+// while `week` can still read 5 from the garden. Garden-only HUD must hide there.
+function usePaycheckActive() {
+  const [active, setActive] = useState(() => isPaycheckWorldActive())
+  useEffect(() => {
+    const sync = (event) => setActive(event?.detail?.active ?? isPaycheckWorldActive())
+    sync()
+    window.addEventListener(PAYCHECK_MODE_EVENT, sync)
+    return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync)
+  }, [])
+  return active
+}
 
 const JAR_LABEL = { spend: 'SPEND', save: 'SAVE', give: 'GIVE' }
 const JAR_TEXT = { spend: 'text-electric', save: 'text-teal', give: 'text-brandpurple' }
@@ -232,6 +246,8 @@ function DayBudgetBar() {
 function PinnedLesson() {
   const week = useGame((s) => s.week)
   const mg = useGame((s) => s.mg)
+  const paycheckActive = usePaycheckActive()
+  if (paycheckActive) return null
   if (week !== 5 || !mg || !['adjust', 'slider'].includes(mg.phase)) return null
   const spec = weekSpec(mg.week)
   return (
@@ -247,6 +263,8 @@ function PinnedLesson() {
 function SeedProgress() {
   const week = useGame((s) => s.week)
   const mg = useGame((s) => s.mg)
+  const paycheckActive = usePaycheckActive()
+  if (paycheckActive) return null
   if (week !== 5 || !mg) return null
   const total = totalValue(mg)
   const p = Math.min(1, total / mg.goal)
@@ -272,6 +290,8 @@ function DockedControls() {
   const panelPortfolio = useGame((s) => s.panelPortfolio)
   const openPortfolio = useGame((s) => s.openPortfolio)
   const startTheWeek = useGame((s) => s.startTheWeek)
+  const paycheckActive = usePaycheckActive()
+  if (paycheckActive) return null
   if (week !== 5 || !mg || mg.phase !== 'adjust' || cards.length > 0 || dialog || panelPortfolio) return null
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-[calc(7rem+env(safe-area-inset-bottom,0px))] z-[180] flex flex-wrap justify-center gap-2 px-3 sm:gap-3">
@@ -1231,10 +1251,11 @@ function WeekDots() {
   const mg = useGame((s) => s.mg)
   const cards = useGame((s) => s.cards)
   const dialog = useGame((s) => s.dialog)
+  const paycheckActive = usePaycheckActive()
   let n = 0, max = 0
   if (week === 4 && bk) { n = Math.min(bk.week, 6); max = 6 }
   else if (week === 5 && mg) { n = Math.min(mg.week, 10); max = 10 }
-  if (!max || cards.length > 0 || dialog) return null
+  if (paycheckActive || !max || cards.length > 0 || dialog) return null
   return (
     <div className="pointer-events-none absolute inset-x-0 z-[140] flex justify-center" style={{ bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
       <div className="glass--navy flex items-center gap-1.5 rounded-2xl px-3 py-1.5">

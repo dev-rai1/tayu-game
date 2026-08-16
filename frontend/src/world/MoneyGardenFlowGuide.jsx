@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGame } from './store.js'
+import { PAYCHECK_MODE_EVENT, isPaycheckWorldActive } from './paycheckMode.js'
 import { weekSpec } from '../scenarios/marketScenarios.js'
 import {
   applyStarterInvestingGift,
@@ -100,6 +101,17 @@ export function MoneyGardenFlowGuide() {
   const startTheWeek = useGame((state) => state.startTheWeek)
   const persist = useGame((state) => state.persist)
   const [clueIndex, setClueIndex] = useState(0)
+  // Bond Street (Module 6) and the Tax Office (Module 7) reuse the same 3D world
+  // while the game's `week` can still read 5 from the garden. Without this guard
+  // the garden's "Module 5A/5B" HUD keeps rendering on top of those modules
+  // (the "top still shows me Module 5B" bug on handoff and on replay).
+  const [paycheckActive, setPaycheckActive] = useState(() => isPaycheckWorldActive())
+  useEffect(() => {
+    const sync = (event) => setPaycheckActive(event?.detail?.active ?? isPaycheckWorldActive())
+    sync()
+    window.addEventListener(PAYCHECK_MODE_EVENT, sync)
+    return () => window.removeEventListener(PAYCHECK_MODE_EVENT, sync)
+  }, [])
 
   const decisionWeek = mg?.week ?? 1
   const partTwoStarted = Boolean(mg?.partTwoStarted)
@@ -152,6 +164,7 @@ export function MoneyGardenFlowGuide() {
     }))
   }, [cards, mg?.phase, mg?.week, week])
 
+  if (paycheckActive) return null
   if (week !== 5 || !mg) return null
 
   if (intermission) {
