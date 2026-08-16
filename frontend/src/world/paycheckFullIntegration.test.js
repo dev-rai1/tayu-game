@@ -27,7 +27,7 @@ describe('Paycheck Planet full integration', () => {
   })
 
   it('keeps Module 7 inside a physical Tax Office with Rex and taxpayer NPCs', () => {
-    expect(paycheckWorld).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
+    expect(paycheckWorld).toContain("labelTexture('TAYU TAX OFFICE'")
     expect(paycheckWorld).toContain('Rex · Tax Guide')
     expect(paycheckWorld).toContain('TAX_CLIENTS.map')
     expect(paycheckWorld).toContain('InteractiveTaxNpc')

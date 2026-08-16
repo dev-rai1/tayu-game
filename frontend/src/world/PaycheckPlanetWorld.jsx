@@ -93,7 +93,7 @@ function TaxCenterBuilding({ active }) {
         <RoundedBox args={[10.8, 0.2, 2.2]} radius={0.12} smoothness={3} position={[0, 0.12, 0]}><meshStandardMaterial color="#ffe0bf" /></RoundedBox>
         {[-4.2, -2.1, 0, 2.1, 4.2].map((x) => <mesh key={x} position={[x, 2.05, 0]} castShadow><cylinderGeometry args={[0.28, 0.36, 4.1, 12]} /><meshStandardMaterial color="#ffb36f" roughness={0.75} /></mesh>)}
         <RoundedBox args={[11.2, 0.55, 1.0]} radius={0.14} smoothness={3} position={[0, 4.12, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
-        <Billboard position={[0, 5.65, -0.1]}><mesh><planeGeometry args={[8.4, 1.7]} /><meshBasicMaterial map={labelTexture('TAYU TAX OFFICE · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
+        <Billboard position={[0, 5.65, -0.1]}><mesh><planeGeometry args={[8.4, 1.7]} /><meshBasicMaterial map={labelTexture('TAYU TAX OFFICE', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
         <mesh position={[0, 4.75, 0]}><octahedronGeometry args={[0.75, 0]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.24 : 0.08} /></mesh>
       </group>
       <RoundedBox args={[5.2, 1.05, 0.75]} radius={0.16} smoothness={3} position={[0, 0.55, 5.45]} castShadow receiveShadow><meshStandardMaterial color="#071748" roughness={0.7} /></RoundedBox>

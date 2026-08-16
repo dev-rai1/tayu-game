@@ -95,7 +95,7 @@ describe('Module 7 Tax Office interactions', () => {
     sessionStorage.setItem(TAX_ORIGIN_KEY, 'module-select')
     sessionStorage.setItem(BOND_ONLY_KEY, '1')
     mountTaxInteraction()
-    expect(screen.getByText('Bond Street · Under Construction')).toBeInTheDocument()
+    expect(screen.getByText('Bond Street')).toBeInTheDocument()
   })
 
   it('requires proximity to the next physical station after Rex starts the case flow', () => {

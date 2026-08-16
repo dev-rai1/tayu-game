@@ -10,7 +10,7 @@ export function PhysicalModuleSigns() {
       <mesh renderOrder={1000}>
         <planeGeometry args={[9.8, 2.25]} />
         <meshBasicMaterial
-          map={labelTexture('TAYU TAX OFFICE · UNDER CONSTRUCTION', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })}
+          map={labelTexture('TAYU TAX OFFICE', { bg: '#071748', color: '#ffffff', accent: '#ff9a52' })}
           transparent
           toneMapped={false}
           depthTest={false}

@@ -161,7 +161,7 @@ export function BondStreetGate({ onComplete }) {
   return (
     <div className="pointer-events-none fixed inset-0 z-[1000] text-navy" data-bond-street="true">
       <div className="absolute left-3 top-3 w-[min(92vw,28rem)] rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Bond Street · Under Construction</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#5d8b3d]">Bond Street</div>
         <div className="mt-1 font-display text-xl font-black">{objective}</div>
         <div className="mt-2 text-xs font-bold text-navy/60">Walk inside the building. Get close, then click or press E to interact. Use ? for instructions and learning resources.</div>
       </div>

@@ -62,7 +62,7 @@ export const MODULE_CATALOG = [
   {
     n: 7,
     badge: 'tax',
-    title: 'TAYU Tax Office — Under Construction',
+    title: 'TAYU Tax Office',
     grades: 'Grades 6–12',
     minutes: '10–15 min',
     desc: 'Preview the separate physical TAYU Tax Office after Bond Street and work through the in-world tax stations before the Finale.',
@@ -86,7 +86,7 @@ export const EDUCATOR_GRADE_BANDS = [
   },
   {
     title: 'Middle School', grades: 'Grades 6–8', color: '#7850F0',
-    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street in the main town, the TAYU Tax Office, then the Finale. The Tax Office is currently marked Under Construction.',
+    copy: 'All seven core modules are available. Money Garden is split into 5A and 5B, followed by Bond Street in the main town, the TAYU Tax Office, then the Finale.',
     currentModules: MODULE_CATALOG,
     plannedModules: ['Credit scores and debt', 'Insurance and risk', 'Careers, earnings, and benefits'],
   },

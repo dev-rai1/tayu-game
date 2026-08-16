@@ -28,7 +28,7 @@ export function WorldQuestionHelp() {
   const destination = physicalModule === 6
     ? 'Bond Street'
     : physicalModule === 7
-      ? 'TAYU Tax Office — Under Construction'
+      ? 'TAYU Tax Office'
       : 'TAYU World'
 
   return (

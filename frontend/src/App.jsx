@@ -20,7 +20,7 @@ import { PrivacyChoices } from './components/PrivacyChoices.jsx'
 import { currentUser, isCloud } from './services/auth.js'
 import { loadProfile, saveProfile } from './services/walletStore.js'
 import { MODULE_CATALOG } from './constants/modules.js'
-import { activatePaycheckWorld } from './world/paycheckMode.js'
+import { preparePhysicalModuleLaunch } from './world/physicalModuleLaunch.js'
 import { useTaxLab } from './world/taxLabStore.js'
 import { installViewportSync } from './utils/viewport.js'
 import './styles/viewport.css'
@@ -106,16 +106,15 @@ function DirectModule67World() {
     const moduleId = String(intent?.moduleId || localStorage.getItem('tayu-jump-module') || '')
     if (moduleId === '6' || moduleId === '7') {
       localStorage.removeItem('tayu-module-entry-intent')
-      localStorage.removeItem('tayu-jump-module')
-      localStorage.removeItem('tayu-garden-entry-part')
-      sessionStorage.setItem('tayu-tax-entry-origin', 'module-select')
-      if (moduleId === '6') sessionStorage.setItem('tayu-bond-only-entry', '1')
-      else {
-        sessionStorage.removeItem('tayu-bond-only-entry')
+      if (moduleId === '7') {
         saveProfile({ taxLabProgress: null, taxLab: null })
         useTaxLab.getState().reset()
       }
-      activatePaycheckWorld()
+      // Set the physical-launch marker AND run the placement/reassert timers.
+      // Previously this route only set bond-only/tax-origin and activated the
+      // world, but never set tayu-physical-module-launch, so the World mount
+      // effect had nothing to read and stranded the player back at spawn.
+      preparePhysicalModuleLaunch(Number(moduleId))
     }
   } catch { /* storage can be unavailable */ }
   return <World />

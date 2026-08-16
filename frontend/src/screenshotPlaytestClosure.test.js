@@ -26,7 +26,7 @@ describe('screenshot playtest fixes stay closed', () => {
     expect(worldCss).toContain('touch-action: pan-y;')
     expect(taxCss).toContain("[data-tax-field-ui='true']")
     expect(taxCss).toContain("[data-tax-action-prompt='true']")
-    expect(taxCss).toContain("content: 'TAYU Tax Office · Under Construction';")
+    expect(taxCss).toContain("content: 'TAYU Tax Office';")
     expect(taxCss).not.toContain("content: 'Module 7 · TAYU Tax Office';")
     expect(taxCss).not.toContain("content: 'Module 6 · in-world Tax Lab';")
   })

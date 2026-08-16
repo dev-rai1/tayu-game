@@ -46,7 +46,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(bondWorld).toContain("labelTexture('BOND STREET'")
     expect(bondWorld).not.toContain('BOND STREET · UNDER CONSTRUCTION')
     expect(bondWorld).not.toContain('MODULE 6 · BOND STREET')
-    expect(physicalSigns).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
+    expect(physicalSigns).toContain("labelTexture('TAYU TAX OFFICE'")
     expect(taxBridge).not.toContain('start Module 7')
   })
 
@@ -104,7 +104,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(questionHelp).toContain('Learning resources')
     expect(questionHelp).toContain("? 'Bond Street'")
     expect(questionHelp).toContain('You arrive in front of Bond Street.')
-    expect(questionHelp).toContain('TAYU Tax Office — Under Construction')
+    expect(questionHelp).toContain('TAYU Tax Office')
   })
 
   it('does not auto-start either lesson and requires a nearby E interaction', () => {

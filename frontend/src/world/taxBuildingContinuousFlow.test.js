@@ -13,7 +13,7 @@ describe('Tax Center building and continuous flow', () => {
   it('renders a walk-in Tax Office shell around the activity without module-number labels', () => {
     expect(paycheckWorld).toContain('function TaxCenterBuilding')
     expect(paycheckWorld).toContain('<TaxCenterBuilding active={active} />')
-    expect(paycheckWorld).toContain('TAYU TAX OFFICE · UNDER CONSTRUCTION')
+    expect(paycheckWorld).toContain("labelTexture('TAYU TAX OFFICE'")
     expect(paycheckWorld).not.toContain('MODULE 7 · TAYU TAX OFFICE')
     expect(paycheckWorld).toContain('name="Rex · Tax Guide"')
   })
