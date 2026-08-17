@@ -515,6 +515,17 @@ function HarvestSummary() {
         <p className="mt-1 text-sm font-bold text-navy/70">
           {played} weeks in the garden. You followed {followed} of {played} lessons - every one was a DECISION, not luck.
         </p>
+        {(() => {
+          const profit = Math.round(Math.max(0, totalValue(mg) - (mg.startTotal || 0)))
+          if (profit <= 0) return null
+          const roi = mg.startTotal > 0 ? Math.round((profit / mg.startTotal) * 100) : 0
+          const benchmark = roi > 12 ? 'better than' : roi >= 6 ? 'about the same as' : 'below'
+          return (
+            <p className="mt-3 rounded-2xl bg-[#eef4fb] p-3 text-xs font-semibold leading-snug text-navy/75">
+              Your <b style={{ color: '#b8860b' }}>${fmt(profit)}</b> profit is a <b>capital gain</b>. In the Tax Office, Rex will show how capital gains are taxed differently from the wages on a W-2 - keep that number in mind. Your {roi}% return is {benchmark} the long-run market average of about 7-10% a year; the garden just moves faster to teach the lesson in minutes, not years.
+            </p>
+          )
+        })()}
         <SpeakButton text={`You started with $${fmt(mg.startTotal)} and finished with $${fmt(totalValue(mg))}. ${played} weeks in the garden.`} />
         <button className="btn-primary mt-4 min-h-[64px] w-full text-xl" onClick={() => act('mg.finish')}>Finish</button>
       </div>
