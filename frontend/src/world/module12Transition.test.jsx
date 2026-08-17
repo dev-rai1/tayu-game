@@ -129,7 +129,10 @@ describe('Module 1 to Module 2 transition', () => {
 
     expect(source).toContain('const physicalModule = readPhysicalModuleLaunch()')
     expect(source).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
-    expect(source).toContain("const sceneKey = paycheckWorld ? `paycheck-${week}-${physicalModule || 'active'}` : `week-${week}`")
+    // The paycheck (Bond/Tax) key is intentionally STABLE so entering a module
+    // does not remount the Canvas / create a second WebGL context (blue-screen fix).
+    // Normal town modules still key on week so each restarts its own scene.
+    expect(source).toContain("const sceneKey = paycheckWorld ? 'paycheck-world' : `week-${week}`")
     expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
     expect(source).toContain('key={sceneKey}')
   })
