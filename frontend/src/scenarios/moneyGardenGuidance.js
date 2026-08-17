@@ -3,6 +3,8 @@
 // Bonds are taught as lending rather than ownership so the distinction stays
 // clear without replacing the existing three-company stock simulation.
 
+import { COMPANIES } from './moneyGarden.js'
+
 export const MONEY_GARDEN_STARTER_GIFT = 100
 
 const roundMoney = (value) => Math.round(Number(value || 0) * 100) / 100
@@ -46,6 +48,34 @@ export const STOCK_BOND_COMPARE = {
   bond: 'BOND = loan. You lend money to a borrower who promises interest and repayment.',
   seniority: 'If a company fails, bondholders generally have a higher claim than stockholders. That helps explain why bonds often move less.',
   rates: 'When new interest rates rise, older lower-rate bonds can look less attractive, so their market prices may fall.',
+}
+
+// Five Lenses: the structured stock-selection framework for grades 6-12. It
+// replaces the loose "busy + good news = good stock" heuristic (which is how
+// people pile into meme stocks) with the criteria real analysts actually use.
+export const FIVE_LENSES = {
+  summary: [
+    'Smart gardeners use five lenses before planting:',
+    '1 - Is the store BUSY? (Revenue and customers)',
+    '2 - Does it KEEP money after costs? (Profit margin)',
+    '3 - Does it OWE more than it OWNS? (Financial health)',
+    '4 - Is it HARD TO COPY? (Competitive advantage)',
+    '5 - Am I paying a FAIR PRICE? (Value)',
+    'No single lens tells the whole story. Check all five, then plant.',
+  ],
+  priceValue: 'A great company at the wrong price is still a bad plant. If everyone knows a company is great, the price may already show it. Ask: am I paying a fair price?',
+}
+
+// Per-company lens readings, pulled from the company data in moneyGarden.js.
+export function companyLenses(company) {
+  const lens = company?.lens
+  if (!lens) return []
+  return [
+    { key: 'profit', label: 'Profit', text: lens.profit },
+    { key: 'health', label: 'Health', text: lens.health },
+    { key: 'moat', label: 'Moat', text: lens.moat },
+    { key: 'value', label: 'Value', text: lens.value },
+  ].filter((entry) => entry.text)
 }
 
 export const MONEY_GARDEN_PARTS = [
@@ -93,8 +123,8 @@ export const MONEY_GARDEN_DECISIONS = {
   },
   4: {
     title: 'Stock ownership or bond lending?',
-    why: `${STOCK_BOND_COMPARE.stock} ${STOCK_BOND_COMPARE.bond}`,
-    instruction: 'Inspect the PACKED and EMPTY storefronts. These shares mean ownership; a bond would make you the lender instead.',
+    why: `${STOCK_BOND_COMPARE.stock} ${STOCK_BOND_COMPARE.bond} Use all five lenses before you plant: busy (revenue), profit margin, financial health, moat, and fair price.`,
+    instruction: 'Inspect the PACKED and EMPTY storefronts. Check profit, health, and moat too - not just the busy store. These shares mean ownership; a bond would make you the lender instead.',
   },
   5: {
     title: 'Compare return with risk',
@@ -161,11 +191,21 @@ export function moneyGardenClues(week, mg = {}) {
       return [
         'You currently own zero company shares. Your first goal is to own at least two different companies.',
         'Toy Town has steady customer activity. Snack Shack has exciting product news. Game Land can move sharply.',
+        'Before you plant, be a detective. Lens 2 - Profit: a busy store that loses money is worse than a quiet one that keeps it.',
+        COMPANIES.toy.lens.profit,
+        COMPANIES.snack.lens.profit,
+        COMPANIES.game.lens.profit,
       ]
     case 2:
       return [`${companyName(fx.rain)} may fall this week. Notice how much of your plan depends on it.`]
     case 3:
-      return [`${companyName(fx.dip)} has a price dip on screen.`, 'There is no new warning that the business itself became weaker.']
+      return [
+        `${companyName(fx.dip)} has a price dip on screen.`,
+        'There is no new warning that the business itself became weaker.',
+        'Lens 3 - Health: a company that owes more than it owns can fail even with a full store. Lens 4 - Moat: is it hard to copy?',
+        COMPANIES.game.lens.moat,
+        COMPANIES.toy.lens.health,
+      ]
     case 4:
       return [
         `${companyName(fx.busy)} is PACKED — lots of customers are showing up.`,
@@ -178,6 +218,7 @@ export function moneyGardenClues(week, mg = {}) {
         `${companyName(fx.busy || fx.sale)} is on SALE and PACKED while ${companyName(fx.dusty || fx.sale2)} is cheaper but weak.`,
         `Bond Meadow safety: Treasury ${BOND_MEADOW.treasury.safety} stars, Muni ${BOND_MEADOW.muni.safety}, Corporate ${BOND_MEADOW.corporate.safety}.`,
         'Muni interest can receive special tax treatment. You will revisit that connection in Tax Town.',
+        `Lens 5 - Value: ${FIVE_LENSES.priceValue}`,
       ]
     case 6:
       return [`Pocket money ready right now: ${money(mg?.pocket)}.`, 'A surprise bill can arrive before an investment has time to recover.']

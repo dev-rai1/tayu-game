@@ -16,18 +16,40 @@ export const COMPANIES = {
     color: '#e23b3b', accent: '#f5c542',
     base: 5, min: 3, max: 25, wiggle: 1, // steady grower
     pos: [-4.6, 0.2], // local to the garden plaza
+    // Five Lenses data (grades 6-12 detective criteria)
+    lens: {
+      margin: 0.20, // keeps $0.20 of every $1 after costs
+      profit: 'After paying workers, suppliers, and rent, Toy Town keeps about $0.20 of every $1. Steady, growing margin.',
+      health: 'Toy Town owns more than it owes. A healthy balance sheet.',
+      moat: 'Years of trust and better supplier prices make Toy Town hard to copy. A wide moat.',
+      value: 'Everyone already knows Toy Town is great, so its price may already show that - maybe too much.',
+    },
   },
   snack: {
     id: 'snack', name: 'Snack Shack', sells: 'Snacks and juice',
     color: '#3f9a42', accent: '#ffffff',
     base: 4, min: 2, max: 20, wiggle: 1, // wiggly
     pos: [0, -0.6],
+    lens: {
+      margin: 0.06, // thin margin - heavy marketing spend
+      profit: 'Good product news, but the profit meter is thin - Snack Shack spends a lot on marketing. The money math needs work.',
+      health: 'Snack Shack owes a bit more than Toy Town, but is not drowning in debt.',
+      moat: 'Tasty, but another juice stand could copy it. A narrow moat.',
+      value: 'The good news may already be in the price. Ask if you are paying a fair price for it.',
+    },
   },
   game: {
     id: 'game', name: 'Game Land', sells: 'Video games',
     color: '#7850F0', accent: '#00DCA0',
     base: 6, min: 3, max: 30, wiggle: 2, // big mover
     pos: [4.6, 0.2],
+    lens: {
+      margin: 0.15, // lumpy - spikes on launch, then falls
+      profit: 'Game Land profits spike when a new game launches, then fall. Lumpy earnings - one reason the price wiggles so much.',
+      health: 'Game Land carries more debt to fund new games. Watch that it can still pay it back.',
+      moat: 'A competitor could launch a similar game next year. A narrow moat - great while it lasts, risky long-term.',
+      value: 'A wiggly Game Land at a low price might actually be the smarter buy than a hyped one at a high price.',
+    },
   },
 }
 export const COMPANY_IDS = ['toy', 'snack', 'game']
