@@ -1,4 +1,5 @@
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
+const FOX_EMBED_URL = 'https://www.youtube.com/embed/HjfuUGCowW4?rel=0'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
@@ -21,10 +22,6 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span id={titleId} className="shrink-0 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
             Featured
           </span>
-          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
-            FCPS
-          </a>
-          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
             FOX 5 DC
           </a>
@@ -35,6 +32,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
             WTOP
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
+            FCPS
           </a>
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={VIENNA_LEDGER_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-brandpurple/10 px-3 py-1.5 text-xs font-extrabold text-brandpurple transition hover:bg-brandpurple/15">
@@ -70,15 +71,30 @@ export function MediaCoverage({ compact = false, about = false }) {
           <p className="mx-auto mt-2 max-w-2xl text-navy/70">Explore coverage of our student-led financial-literacy project, children&rsquo;s book, classroom outreach, and the next phase with TAYU.</p>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-2xl border-2 border-[#d71920]/20 bg-[#fff5f5] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
-              <span className="text-sm font-extrabold text-[#d71920]">Live feature</span>
-            </div>
-            <p className="mt-3 font-display text-lg font-extrabold text-navy">The Cash Classroom and TAYU</p>
-            <p className="mt-1 text-sm leading-relaxed text-navy/65">See the TAYU team share its mission, book, and financial-literacy work.</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920] px-3 py-2 text-sm font-extrabold text-white">View FOX 5 page</a>
+          <div className="rounded-2xl border-2 border-[#d71920]/20 bg-[#fff5f5] p-4 md:col-span-2 lg:col-span-2">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(280px,1.2fr)] lg:items-center">
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
+                  <span className="text-sm font-extrabold text-[#d71920]">Live feature</span>
+                </div>
+                <p className="mt-3 font-display text-lg font-extrabold text-navy">The Cash Classroom and TAYU</p>
+                <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch the TAYU team share its mission, book, and financial-literacy work directly from this page.</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d71920] px-3 py-2 text-sm font-extrabold text-white">View FOX 5 page</a>
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-[#d71920]/15 bg-black shadow-sm">
+                <iframe
+                  className="aspect-video w-full border-0"
+                  src={FOX_EMBED_URL}
+                  title="FOX 5 DC feature: The Cash Classroom and TAYU"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
             </div>
           </div>
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-1 hover:shadow-md">
