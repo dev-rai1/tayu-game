@@ -61,3 +61,9 @@ button[data-tayu-enhanced='true']:active,
 a[data-tayu-enhanced='true']:active {
   transform: scale(0.98) !important;
 }
+
+/* The About page team portraits were rendering as empty white image boxes in
+   the deployed layout. Hide those portrait slots so the team cards stay clean. */
+img[src^='/assets/team/'] {
+  display: none !important;
+}
