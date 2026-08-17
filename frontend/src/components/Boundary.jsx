@@ -16,11 +16,11 @@ export function logTayuError(kind, detail) {
 export class Boundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { oops: false }
+    this.state = { oops: false, detail: '', showDetail: false }
   }
-  static getDerivedStateFromError() { return { oops: true } }
+  static getDerivedStateFromError(err) { return { oops: true, detail: (err?.message || String(err) || 'unknown').slice(0, 300) } }
   componentDidCatch(err) {
-    logTayuError('boundary:' + (this.props.name || 'app'), err?.message || err)
+    logTayuError('boundary:' + (this.props.name || 'app'), err?.stack || err?.message || err)
   }
   render() {
     if (!this.state.oops) return this.props.children
@@ -32,12 +32,23 @@ export class Boundary extends Component {
         <button
           className="btn-primary mt-5 min-h-[56px] px-8 text-lg"
           onClick={() => {
-            this.setState({ oops: false })
+            this.setState({ oops: false, showDetail: false })
             if (this.props.hard) window.location.reload()
           }}
         >
           Try again
         </button>
+        <button
+          className="mt-4 text-xs font-semibold text-white/40 underline"
+          onClick={() => this.setState((s) => ({ showDetail: !s.showDetail }))}
+        >
+          {this.state.showDetail ? 'Hide details' : 'Show details'}
+        </button>
+        {this.state.showDetail && (
+          <pre className="mt-2 max-w-md overflow-auto rounded-lg bg-black/40 p-3 text-left text-[11px] leading-snug text-white/70">
+            [{this.props.name || 'app'}] {this.state.detail}
+          </pre>
+        )}
       </div>
     )
   }
