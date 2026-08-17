@@ -25,9 +25,14 @@ export function placePhysicalModuleArrival(moduleNumber) {
   activatePaycheckWorld()
 
   try {
+    // Face the follow camera TOWARD the district building on arrival. The camera
+    // sits at offset (sin(az), cos(az)) from the player and looks back at them,
+    // so to look along (dx,dz) the camera must sit at -(dx,dz): az = atan2(-dx,-dz).
+    // (The old atan2(dx,dz) pointed the camera away from the building - the
+    // "Module 7 orientation" bug where you spawned looking at the entrance side-on.)
     const dx = center[0] - point[0]
     const dz = center[1] - point[1]
-    cameraRig.azimuth = Math.atan2(dx, dz)
+    cameraRig.azimuth = Math.atan2(-dx, -dz)
   } catch { /* browser-only camera state */ }
 
   try {

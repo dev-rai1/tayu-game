@@ -56,3 +56,5 @@ export function taxStationForStep(stepNumber) {
 export function toTaxLocal(point) {
   return [point[0] - TAX_DISTRICT[0], 0, point[1] - TAX_DISTRICT[1]]
 }
+
+try{ if(typeof window!=='undefined'){ window.__taxpts=TAX_POINTS } }catch{}

@@ -117,27 +117,27 @@ function TaxCenterBuilding({ active }) {
   const len = Math.hypot(guide[0], guide[1]) || 1
   const ux = guide[0] / len
   const uz = guide[1] / len
-  const backdropPos = [-ux * 4.3, 0, -uz * 4.3]
+  const backdropPos = [-ux * 4.6, 0, -uz * 4.6]
   const facing = Math.atan2(ux, uz)
   return (
     <group>
       <RoundedBox args={[14.8, 0.18, 12.8]} radius={0.16} smoothness={3} position={[0, 0.08, 1.55]} receiveShadow><meshStandardMaterial color="#f8f1e8" roughness={0.94} /></RoundedBox>
       <group position={backdropPos} rotation={[0, facing, 0]}>
-        {/* solid civic hall body behind the columns */}
-        <RoundedBox args={[11.4, 4.8, 3.0]} radius={0.2} smoothness={3} position={[0, 2.4, -1.25]} castShadow receiveShadow><meshPhysicalMaterial color="#f6ecdd" clearcoat={0.25} roughness={0.66} /></RoundedBox>
-        {/* deep-set entrance */}
-        <RoundedBox args={[3.2, 3.0, 0.4]} radius={0.12} smoothness={3} position={[0, 1.6, 0.2]}><meshStandardMaterial color="#0d2560" roughness={0.7} /></RoundedBox>
-        {/* four sturdy civic columns (fewer + thicker than Bond's five) */}
-        {[-3.6, -1.2, 1.2, 3.6].map((x) => <mesh key={x} position={[x, 2.0, 0.4]} castShadow><cylinderGeometry args={[0.33, 0.44, 4.0, 14]} /><meshStandardMaterial color="#e7c9a6" roughness={0.72} /></mesh>)}
-        {/* entablature */}
-        <RoundedBox args={[11.6, 0.6, 1.0]} radius={0.14} smoothness={3} position={[0, 4.2, 0.4]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
-        {/* hipped roof - civic silhouette, distinct from Bond's flat exchange roof */}
-        <mesh position={[0, 5.35, -1.0]} rotation={[0, Math.PI / 4, 0]} scale={[1.3, 1, 0.66]} castShadow><coneGeometry args={[6.7, 1.9, 4]} /><meshStandardMaterial color="#071748" roughness={0.6} /></mesh>
-        {/* teal "%" emblem = taxes, mounted on the pediment */}
-        <group position={[0, 4.75, 0.6]}>
-          <mesh position={[-0.5, 0.45, 0]} castShadow><sphereGeometry args={[0.24, 14, 14]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.3 : 0.12} /></mesh>
-          <mesh position={[0.5, -0.45, 0]} castShadow><sphereGeometry args={[0.24, 14, 14]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.3 : 0.12} /></mesh>
-          <mesh rotation={[0, 0, -0.7]} castShadow><boxGeometry args={[0.2, 1.5, 0.18]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.24 : 0.1} /></mesh>
+        {/* civic hall body - front face toward the player (+z) */}
+        <RoundedBox args={[10.6, 4.4, 3.6]} radius={0.2} smoothness={3} position={[0, 2.3, -0.5]} castShadow receiveShadow><meshPhysicalMaterial color="#f6ecdd" clearcoat={0.25} roughness={0.66} /></RoundedBox>
+        {/* recessed dark entrance on the front face */}
+        <RoundedBox args={[3.0, 3.0, 0.5]} radius={0.12} smoothness={3} position={[0, 1.55, 1.3]}><meshStandardMaterial color="#0d2560" roughness={0.7} /></RoundedBox>
+        {/* four columns standing IN FRONT of the facade as a portico */}
+        {[-3.8, -1.3, 1.3, 3.8].map((x) => <mesh key={x} position={[x, 2.05, 1.95]} castShadow><cylinderGeometry args={[0.32, 0.42, 4.1, 14]} /><meshStandardMaterial color="#efe0cb" roughness={0.7} /></mesh>)}
+        {/* entablature resting on the columns */}
+        <RoundedBox args={[10.8, 0.55, 0.95]} radius={0.14} smoothness={3} position={[0, 4.3, 1.95]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
+        {/* hipped roof sitting squarely on the body */}
+        <mesh position={[0, 4.95, -0.5]} rotation={[0, Math.PI / 4, 0]} scale={[1.12, 1, 0.44]} castShadow><coneGeometry args={[6.2, 1.7, 4]} /><meshStandardMaterial color="#071748" roughness={0.6} /></mesh>
+        {/* teal "%" emblem prominent on the front, above the entrance */}
+        <group position={[0, 3.55, 1.5]}>
+          <mesh position={[-0.42, 0.4, 0]} castShadow><sphereGeometry args={[0.22, 14, 14]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.35 : 0.16} /></mesh>
+          <mesh position={[0.42, -0.4, 0]} castShadow><sphereGeometry args={[0.22, 14, 14]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.35 : 0.16} /></mesh>
+          <mesh rotation={[0, 0, -0.7]} castShadow><boxGeometry args={[0.18, 1.35, 0.16]} /><meshStandardMaterial color="#00dca0" emissive="#00dca0" emissiveIntensity={active ? 0.28 : 0.12} /></mesh>
         </group>
       </group>
       <RoundedBox args={[5.2, 1.05, 0.75]} radius={0.16} smoothness={3} position={[0, 0.55, 5.45]} castShadow receiveShadow><meshStandardMaterial color="#071748" roughness={0.7} /></RoundedBox>

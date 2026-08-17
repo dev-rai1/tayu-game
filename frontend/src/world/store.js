@@ -28,6 +28,7 @@ import { cameraRig } from './cameraRig.js'
 
 // Module-level mutable refs for per-frame data (position, joystick, click target).
 export const playerPos = { x: SPAWN[0], y: 1, z: SPAWN[1] }
+try{ if(typeof window!=='undefined'){ window.__pp=playerPos } }catch{}
 export const joystick = { x: 0, y: 0 }
 export const moveTarget = { x: null, z: null }
 

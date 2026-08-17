@@ -3,6 +3,7 @@ import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { INTERACT_RADIUS } from './config.js'
 import { STATION_REACH } from './PaycheckPlanetWorld.jsx'
 import { playerPos, joystick, moveTarget } from './store.js'
+import { cameraRig } from './cameraRig.js'
 import { useTaxLab } from './taxLabStore.js'
 import { TAX_CLIENTS, TAX_POINTS, taxStationForStep } from './taxDistrictLayout.js'
 import { BondStreetGate, hasCompletedBondStreet } from './BondStreetGate.jsx'
@@ -34,6 +35,8 @@ function placeAtTaxTownEntrance() {
   joystick.y = 0
   moveTarget.x = null
   moveTarget.z = null
+  // Face the camera toward Rex / the Tax Office on arrival (see Bond Street note).
+  cameraRig.azimuth = Math.atan2(-(TAX_POINTS.guide[0] - playerPos.x), -(TAX_POINTS.guide[1] - playerPos.z))
 }
 
 function nearbyTaxAction() {

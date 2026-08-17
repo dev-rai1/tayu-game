@@ -5,6 +5,7 @@ import { INTERACT_RADIUS, TAX_DISTRICT } from './config.js'
 import { CharacterMesh } from './CharacterMesh.jsx'
 import { labelTexture } from './textures.js'
 import { joystick, moveTarget, playerPos } from './store.js'
+import { cameraRig } from './cameraRig.js'
 
 export const BOND_DISTRICT = [TAX_DISTRICT[0] - 8.9, TAX_DISTRICT[1] - 8.0]
 // Module 6 starts OUTSIDE the building, directly in front of Bond Street on the shared map.
@@ -31,6 +32,10 @@ export function placeAtBondStreetEntrance() {
   joystick.y = 0
   moveTarget.x = null
   moveTarget.z = null
+  // Face the camera toward Beau / the Bond Street building on arrival so the
+  // player looks straight at the entrance instead of at it side-on. The follow
+  // camera looks along -(sin(az), cos(az)), so this azimuth points at the guide.
+  cameraRig.azimuth = Math.atan2(-(BOND_POINTS.guide[0] - playerPos.x), -(BOND_POINTS.guide[1] - playerPos.z))
 }
 
 function closeEnough(point) {
