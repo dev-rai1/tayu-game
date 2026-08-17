@@ -360,7 +360,7 @@ export default function World() {
       {!moduleEntry && usesTouchControls && <MobileControls />}
       {!moduleEntry && <FirstTimeMovementTutorial enabled={!taxMode} />}
       {!moduleEntry && !taxMode && <WorldModuleLearningRecap />}
-      {!moduleEntry && !taxMode && <AdminPanel />}
+      {!moduleEntry && <AdminPanel />}
 
       {moduleEntry && (
         <div className="absolute inset-0 z-[1200] flex items-end justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="module-entry-title">

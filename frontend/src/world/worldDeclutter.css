@@ -301,3 +301,38 @@
     font-size: 0.9rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Fix clipped Help "?" and Admin buttons in the 3D world.
+   .tayu-fixed-viewport sets `contain: layout paint`, which makes it the
+   containing block for position:fixed descendants. Two controls used bare
+   `fixed right-*` and ended up rendered off the LEFT edge (x ~= -12/-20),
+   effectively invisible. Anchor them explicitly to visible corners the same
+   way the working Help control (inside an .absolute.right-4 wrapper) is.
+--------------------------------------------------------------------------- */
+.tayu-world-declutter [aria-label="Open instructions and learning resources"] {
+  position: static !important;
+}
+/* WorldQuestionHelp renders inside .tayu-world-canvas, whose `> *` rule forces
+   width:100%, which broke its `right-4` anchor and pushed the "?" off the left
+   edge. Reset it and pin the dock to the top-right, just under the Help row. */
+.tayu-world-canvas > .tayu-qhelp-dock,
+.tayu-qhelp-dock {
+  width: auto !important;
+  height: auto !important;
+  position: absolute !important;
+  left: auto !important;
+  right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
+  top: calc(4.25rem + env(safe-area-inset-top, 0px)) !important;
+  bottom: auto !important;
+  z-index: 1450;
+}
+
+.tayu-world-declutter button[aria-label="Admin access for teachers"] {
+  position: absolute !important;
+  left: auto !important;
+  right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
+  top: auto !important;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+  z-index: 1000;
+}
