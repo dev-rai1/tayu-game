@@ -47,11 +47,14 @@ describe('Module 7 Tax Office interactions', () => {
     sessionStorage.removeItem(BOND_ONLY_KEY)
   })
 
-  it('does not show an action prompt when the player is far away', () => {
+  it('does not show an action prompt when the player is far away', async () => {
     mountTaxInteraction()
     playerPos.x = 999
     playerPos.z = 999
     useTaxLab.getState().setNearbyAction(null)
+    // mount places the player at the entrance (now within the widened guide
+    // reach), so wait one poll cycle for the bridge to re-evaluate at 999.
+    await new Promise((resolve) => setTimeout(resolve, 140))
     expect(screen.queryByRole('button', { name: /start the Tax Office/i })).not.toBeInTheDocument()
     expect(useTaxLab.getState().panel).toBe(null)
   })

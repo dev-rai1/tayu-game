@@ -47,7 +47,11 @@ function nearestExpected(stage) {
     const d = Math.hypot(point[0] - playerPos.x, point[1] - playerPos.z)
     if (d < distance) { best = kind; distance = d }
   }
-  return distance <= INTERACT_RADIUS + 0.8 ? best : null
+  // Stage 0 is "talk to Beau" and the player spawns ~3.8 units away, past the
+  // normal 3.4 reach - so pressing E did nothing at the entrance. Give the guide
+  // a wider reach so the module starts right from the spawn point.
+  const reach = stage === 0 ? 5.0 : INTERACT_RADIUS + 0.8
+  return distance <= reach ? best : null
 }
 
 export function BondStreetGate({ onComplete }) {

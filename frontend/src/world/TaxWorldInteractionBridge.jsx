@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { TAX_CASES } from '../scenarios/paycheckPlanet.js'
 import { INTERACT_RADIUS } from './config.js'
 import { STATION_REACH } from './PaycheckPlanetWorld.jsx'
+
+// The player spawns ~4.2 units in front of Rex, but INTERACT_RADIUS is only 2.6,
+// so "press E to start" did nothing until you walked closer. Give the guide a
+// wider reach so the module starts right from the entrance.
+const GUIDE_REACH = 5.0
 import { playerPos, joystick, moveTarget } from './store.js'
 import { cameraRig } from './cameraRig.js'
 import { useTaxLab } from './taxLabStore.js'
@@ -43,7 +48,7 @@ function nearbyTaxAction() {
   const state = useTaxLab.getState()
   if (state.panel) return null
   if (state.phase === 'intro') {
-    if (distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and start the Tax Office' }
+    if (distanceTo(TAX_POINTS.guide) <= GUIDE_REACH) return { kind: 'guide', label: 'Talk to Rex and start the Tax Office' }
     return null
   }
   if (state.phase === 'case') {
@@ -60,7 +65,7 @@ function nearbyTaxAction() {
     if (station && distanceTo(station.point) <= STATION_REACH) return { kind: 'station', stepNumber: state.stepNumber, label: `Use ${station.label}` }
     return null
   }
-  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= INTERACT_RADIUS) return { kind: 'guide', label: 'Talk to Rex and finish the Tax Office' }
+  if (state.phase === 'complete' && distanceTo(TAX_POINTS.guide) <= GUIDE_REACH) return { kind: 'guide', label: 'Talk to Rex and finish the Tax Office' }
   return null
 }
 
