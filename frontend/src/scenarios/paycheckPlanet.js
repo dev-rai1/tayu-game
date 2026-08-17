@@ -128,7 +128,7 @@ export function filingStepFor(taxCase, stepNumber, { investedInMuni = false } = 
       title: 'Read the W-2',
       eyebrow: 'Step 1 · gross income + withholding',
       prompt: 'Which W-2 numbers belong on this practice return?',
-      explanation: `Box 1 wages are ${dollars(math.wages)}. That is the gross-income starting number. Box 2 federal income tax withheld is ${dollars(math.withheld)} — money already sent ahead toward the tax bill.`,
+      explanation: `Box 1 wages are ${dollars(math.wages)}. That is the gross-income starting number. Box 2 federal income tax withheld is ${dollars(math.withheld)} — money already sent ahead toward the tax bill. Note: a side hustle like a lemonade stand is self-employment income and goes on Schedule C of a real return, because no employer withheld tax for you.`,
       hint: 'On a W-2, Box 1 is wages and Box 2 is federal income tax withheld.',
       choices: [
         { id: 'swap', label: `${dollars(math.withheld)} wages · ${dollars(math.wages)} withheld`, correct: false },
@@ -146,7 +146,7 @@ export function filingStepFor(taxCase, stepNumber, { investedInMuni = false } = 
       title: 'Find taxable income',
       eyebrow: 'Step 2 · deductions',
       prompt: `${dollars(math.wages)} wages − ${dollars(math.deduction)} game deduction = ?`,
-      explanation: `A deduction reduces the amount that gets taxed. Taxable income is ${dollars(math.wages)} − ${dollars(math.deduction)} = ${dollars(math.taxableIncome)}. You do not pay income tax on the full gross-income number in this practice return.`,
+      explanation: `A deduction reduces the amount that gets taxed. Taxable income is ${dollars(math.wages)} − ${dollars(math.deduction)} = ${dollars(math.taxableIncome)}. You do not pay income tax on the full gross-income number in this practice return. Municipal-bond interest is different: it is excluded from federal taxable income, so it never joins this pile — that is the muni tax benefit.`,
       hint: 'Subtract the deduction from wages. Do not subtract withholding here.',
       choices: [
         moneyChoice('wrong-a', wrong[0] ?? math.wages),
@@ -169,7 +169,7 @@ export function filingStepFor(taxCase, stepNumber, { investedInMuni = false } = 
       explanation: math.secondBracketIncome > 0
         ? `${dollars(firstTax)} + ${dollars(secondTax)} = ${dollars(math.taxBeforeCredits)} tax before credits. Only the dollars that reach the second step use 12%; the whole income is not taxed at 12%.`
         : `${dollars(math.firstBracketIncome)} × 10% = ${dollars(math.taxBeforeCredits)} tax before credits.`,
-      hint: 'Only the dollars above the first $5,000 use the 12% practice rate.',
+      hint: 'Only the dollars above the first $5,000 use the 12% practice rate. A capital gain from selling a stock uses its own lower rate schedule: short-term gains (held under a year) are taxed like ordinary income; long-term gains use a lower rate.',
       choices: [
         moneyChoice('all-ten', Math.round(math.taxableIncome * FIRST_BRACKET_RATE)),
         moneyChoice('right', math.taxBeforeCredits, true),
