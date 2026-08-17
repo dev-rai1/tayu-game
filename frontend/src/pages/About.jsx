@@ -13,6 +13,7 @@ const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211
 const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
+const FCPS_URL = 'https://www.fcps.edu/news/superintendents-weekly-reflections-199'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -115,6 +116,14 @@ const FEATURED = [
     href: VA_DECA_IG_URL,
     badge: 'bg-[#FFD700] text-navy',
     card: 'border-[#b8860b]/25 bg-[#FFD700]/10',
+  },
+  {
+    label: 'FCPS',
+    title: 'Superintendent spotlight',
+    note: 'Featured in Dr. Reid’s weekly reflections.',
+    href: FCPS_URL,
+    badge: 'bg-electric text-white',
+    card: 'border-electric/20 bg-electric/5',
   },
   {
     label: 'NJCFE',
