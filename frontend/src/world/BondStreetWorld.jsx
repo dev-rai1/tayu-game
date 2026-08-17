@@ -126,13 +126,27 @@ function BondApproachAndLandscaping() {
 }
 
 function BondBackdrop() {
+  // Bond Street reads as a neoclassical EXCHANGE: a solid stone hall behind a
+  // five-column portico, a flat entablature roof, and a gold rising-arrow emblem
+  // (bond returns). Distinct silhouette from the Tax Office's hipped civic hall.
   return (
     <group position={[7.2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-      <RoundedBox args={[10.8, 0.2, 2.2]} radius={0.12} smoothness={3} position={[0, 0.12, 0]}><meshStandardMaterial color="#dfead5" /></RoundedBox>
-      {[-4.2, -2.1, 0, 2.1, 4.2].map((x) => <mesh key={x} position={[x, 2.1, 0]} castShadow><cylinderGeometry args={[0.28, 0.36, 4.2, 12]} /><meshStandardMaterial color="#83aa68" roughness={0.75} /></mesh>)}
-      <RoundedBox args={[11.2, 0.55, 1.0]} radius={0.14} smoothness={3} position={[0, 4.2, 0]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
-      <Billboard position={[0, 5.7, -0.1]}><mesh><planeGeometry args={[6.8, 1.55]} /><meshBasicMaterial map={labelTexture('BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
-      <mesh position={[0, 4.72, 0]}><torusGeometry args={[1.1, 0.16, 14, 32]} /><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.18} /></mesh>
+      {/* solid building body behind the columns */}
+      <RoundedBox args={[11.6, 5.0, 3.2]} radius={0.2} smoothness={3} position={[0, 2.5, -1.35]} castShadow receiveShadow><meshPhysicalMaterial color="#e7efdb" clearcoat={0.3} roughness={0.62} /></RoundedBox>
+      {/* deep-set entrance so the hall reads as a real building */}
+      <RoundedBox args={[3.4, 3.2, 0.4]} radius={0.12} smoothness={3} position={[0, 1.7, 0.15]}><meshStandardMaterial color="#0d2560" roughness={0.7} /></RoundedBox>
+      {/* five-column portico (front face, toward the plaza) */}
+      {[-4.4, -2.2, 0, 2.2, 4.4].map((x) => <mesh key={x} position={[x, 2.05, 0.35]} castShadow><cylinderGeometry args={[0.3, 0.4, 4.1, 14]} /><meshStandardMaterial color="#c2d3a6" roughness={0.72} /></mesh>)}
+      {/* entablature over the columns */}
+      <RoundedBox args={[11.8, 0.62, 1.0]} radius={0.14} smoothness={3} position={[0, 4.3, 0.35]} castShadow><meshStandardMaterial color="#071748" /></RoundedBox>
+      {/* flat roof cap */}
+      <RoundedBox args={[12.1, 0.34, 3.9]} radius={0.1} smoothness={2} position={[0, 5.2, -1.1]}><meshStandardMaterial color="#0d2560" /></RoundedBox>
+      {/* gold rising-arrow emblem = bond returns going up */}
+      <group position={[0, 6.1, 0.1]}>
+        <mesh position={[0, 0.5, 0]} castShadow><coneGeometry args={[0.66, 0.95, 4]} /><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.28} metalness={0.5} roughness={0.28} /></mesh>
+        <mesh position={[0, -0.28, 0]} castShadow><boxGeometry args={[0.36, 1.05, 0.24]} /><meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={0.22} metalness={0.5} roughness={0.28} /></mesh>
+      </group>
+      <Billboard position={[0, 7.15, 0.1]}><mesh><planeGeometry args={[6.8, 1.5]} /><meshBasicMaterial map={labelTexture('BOND STREET', { bg: '#071748', color: '#ffffff', accent: '#9ed36f' })} transparent toneMapped={false} depthTest={false} /></mesh></Billboard>
     </group>
   )
 }
