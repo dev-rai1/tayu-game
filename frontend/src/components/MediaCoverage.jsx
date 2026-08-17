@@ -6,6 +6,7 @@ const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211
 const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
+const FCPS_URL = 'https://www.fcps.edu/news/superintendents-weekly-reflections-199'
 
 export function MediaCoverage({ compact = false, about = false }) {
   const sectionClass = about && !compact
@@ -50,6 +51,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={VA_DECA_IG_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#FFD700]/20 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-[#FFD700]/30">
             VA DECA
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
+            FCPS
           </a>
         </div>
       </section>
@@ -107,6 +112,14 @@ export function MediaCoverage({ compact = false, about = false }) {
             </div>
             <p className="mt-3 font-display text-lg font-extrabold text-navy">Fairfax County students create a financial-literacy picture book for elementary students</p>
             <p className="mt-1 text-sm leading-relaxed text-navy/65">International Chinese-language coverage of the team&rsquo;s 274-book, 17-school outreach and its next step: a financial-literacy game.</p>
+          </a>
+          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">FCPS</span>
+              <span className="text-sm font-extrabold text-electric">View feature →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">Superintendent&rsquo;s Weekly Reflections</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">FCPS highlighted the team&rsquo;s financial-literacy work, classroom impact, media coverage, and Virginia DECA recognition.</p>
           </a>
         </div>
       </div>
