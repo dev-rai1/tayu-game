@@ -21,6 +21,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span id={titleId} className="shrink-0 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
             Featured
           </span>
+          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
+            FCPS
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
             FOX 5 DC
           </a>
@@ -51,10 +55,6 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={VA_DECA_IG_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#FFD700]/20 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-[#FFD700]/30">
             VA DECA
-          </a>
-          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
-          <a href={FCPS_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-electric/10 px-3 py-1.5 text-xs font-extrabold text-electric transition hover:bg-electric/15">
-            FCPS
           </a>
         </div>
       </section>
