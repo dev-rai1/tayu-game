@@ -5,6 +5,14 @@ on:
     branches:
       - main
 
+# Only one production deploy at a time, and cancel any older in-flight deploy when
+# a newer push arrives. Without this, rapid pushes raced and an OLDER build could
+# finish last and overwrite the newer one (Firebase Hosting is last-write-wins),
+# leaving a stale bundle live even though the deployment marker showed the new commit.
+concurrency:
+  group: firebase-hosting-production
+  cancel-in-progress: true
+
 permissions:
   contents: read
   statuses: write
