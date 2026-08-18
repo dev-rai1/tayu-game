@@ -30,6 +30,7 @@ jobs:
 
   browser-3d:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     defaults:
       run:
         working-directory: frontend
@@ -44,7 +45,11 @@ jobs:
       - name: Install Playwright runner and Chromium
         run: |
           npm install --no-save @playwright/test@1.47.2
-          npx playwright install --with-deps chromium
+          # No --with-deps: the GitHub ubuntu-latest runner already ships
+          # Chromium's system libraries, and --with-deps runs apt against a
+          # flaky mirror that was hanging the job for 30+ minutes. Just fetch
+          # the browser binary.
+          npx playwright install chromium
       - name: Start Vite and verify the real 3D town renders
         run: |
           npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/tayu-vite.log 2>&1 &
