@@ -17,9 +17,9 @@ describe('module entry clarity', () => {
     expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
     expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
     expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
-    expect(world).toContain("if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
-    expect(world).toContain("enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })")
-    expect(world).toContain('saveProfile({ taxLabProgress: null, taxLab: null })')
+    // Modules 6/7 now start card-driven flows in the normal town scene (no paycheck world).
+    expect(world).toContain("if (moduleId === '6') useGame.getState().startBond()")
+    expect(world).toContain('else useGame.getState().startTax()')
     expect(world).toContain('Nothing in the module starts or appears until you choose')
     expect(world).toContain('{moduleEntry.resume ? `Resume ${arrival.label}` : `Start ${arrival.label}`} →')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')

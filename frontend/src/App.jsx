@@ -21,6 +21,7 @@ import { currentUser, isCloud } from './services/auth.js'
 import { loadProfile, saveProfile } from './services/walletStore.js'
 import { MODULE_CATALOG } from './constants/modules.js'
 import { preparePhysicalModuleLaunch } from './world/physicalModuleLaunch.js'
+import { useGame } from './world/store.js'
 import { useTaxLab } from './world/taxLabStore.js'
 import { installViewportSync } from './utils/viewport.js'
 import './styles/viewport.css'
@@ -100,23 +101,9 @@ function LegacyPaycheckRedirect() {
 }
 
 function DirectModule67World() {
-  try {
-    const raw = localStorage.getItem('tayu-module-entry-intent')
-    const intent = raw ? JSON.parse(raw) : null
-    const moduleId = String(intent?.moduleId || localStorage.getItem('tayu-jump-module') || '')
-    if (moduleId === '6' || moduleId === '7') {
-      localStorage.removeItem('tayu-module-entry-intent')
-      if (moduleId === '7') {
-        saveProfile({ taxLabProgress: null, taxLab: null })
-        useTaxLab.getState().reset()
-      }
-      // Set the physical-launch marker AND run the placement/reassert timers.
-      // Previously this route only set bond-only/tax-origin and activated the
-      // world, but never set tayu-physical-module-launch, so the World mount
-      // effect had nothing to read and stranded the player back at spawn.
-      preparePhysicalModuleLaunch(Number(moduleId))
-    }
-  } catch { /* storage can be unavailable */ }
+  // Modules 6 (Bond Street) and 7 (Tax Office) now run as card-driven flows in
+  // the normal town scene. World reads the module-entry intent and starts the
+  // flow after initWorld(); no paycheck-world launch, so no blue screen.
   return <World />
 }
 

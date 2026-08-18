@@ -19,8 +19,9 @@ const physicalSigns = read('src/world/PhysicalModuleSigns.jsx')
 describe('Paycheck Planet full integration', () => {
   it('routes Modules 6 and 7 into the shared 3D town experience', () => {
     expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
-    expect(world).toContain("if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')")
-    expect(world).toContain("enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })")
+    // Modules 6/7 now run as card-driven flows in the shared town scene.
+    expect(world).toContain("if (moduleId === '6') useGame.getState().startBond()")
+    expect(world).toContain('else useGame.getState().startTax()')
     expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
     expect(world).toContain('<GameWorld key={worldSession} avatar={state.avatar} />')
     expect(world).toContain('data-world-mode="3d"')

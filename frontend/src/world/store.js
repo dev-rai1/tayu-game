@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { SPAWN, STORE_ITEMS, JARS, LEMONADE, SPROUT, MAILBOX } from './config.js'
+import { BOND_INTRO, BOND_STEPS, TAX_INTRO, TAX_STEPS } from '../scenarios/bondTaxFlow.js'
+import { deactivatePaycheckWorld } from './paycheckMode.js'
 import { JAR_SCENARIOS, checkAllocation } from '../scenarios/jarScenario.js'
 import { evaluateBasket, DAY_LESSON, cartFeedback } from '../scenarios/storeMission.js'
 import { playConsequence, playDayScene } from '../scenarios/scenes.js'
@@ -78,6 +80,8 @@ export const useGame = create((set, get) => ({
 
   // Week 2 - lemonade (ONE money pool = allocations.save; comment 28)
   lemPhase: null, // recap|toStand|toMarket|supplies|pool|toStand2|template|selling|recapCard|results|goalCard|tipCard|done
+  bondStep: 0, // Module 6 card-driven flow position
+  taxStep: 0, // Module 7 card-driven flow position
   lemRound: 1,
   lemBundle: null,
   lemHours: DEFAULT_HOURS,
@@ -159,9 +163,81 @@ export const useGame = create((set, get) => ({
   cardAct: (act) => {
     set((s) => ({ cards: s.cards.slice(1) }))
     if (!act) return
-    if (act.startsWith('bt.')) get().btAct(act)
+    if (act.startsWith('bond.')) get().bondAct(act)
+    else if (act.startsWith('tax.')) get().taxAct(act)
+    else if (act.startsWith('bt.')) get().btAct(act)
     else if (act.startsWith('bk.')) get().bkAct(act)
     else get().mgAct(act)
+  },
+
+  // ---- MODULE 6: BOND STREET (card-driven, runs in the normal town scene) ----
+  startBond: () => {
+    try { deactivatePaycheckWorld() } catch { /* no-op */ }
+    playerPos.x = SPAWN[0]; playerPos.y = 1; playerPos.z = SPAWN[1]
+    set({ week: 6, objective: 'bond', weekComplete: false, pendingWeekComplete: false, bondStep: 0, cards: [], lessons: [], dialog: null })
+    get().openDialog('Beau · Bond Guide', BOND_INTRO, () => get().pushBondStep(0))
+  },
+  pushBondStep: (n) => {
+    if (n >= BOND_STEPS.length) return
+    set({ bondStep: n })
+    const step = BOND_STEPS[n]
+    if (step.choices) {
+      get().pushCards([{ id: `bond${n}`, speaker: step.speaker, text: step.text, learn: 'bond', buttons: step.choices.map((c, i) => ({ label: c.label, act: `bond.pick:${i}` })) }])
+    } else {
+      get().pushCards([{ id: `bond${n}`, speaker: step.speaker, text: step.text, learn: 'bond', buttons: [{ label: step.continue || 'Next', act: step.done ? 'bond.finish' : 'bond.next' }] }])
+    }
+  },
+  bondAct: (act) => {
+    const g = get()
+    if (act === 'bond.next') { g.pushBondStep(g.bondStep + 1); return }
+    if (act === 'bond.reask') { g.pushBondStep(g.bondStep); return }
+    if (act === 'bond.finish') {
+      g.awardBadge('bond', 'BOND BUILDER')
+      set({ pendingWeekComplete: true, objective: 'done' })
+      return
+    }
+    if (act.startsWith('bond.pick:')) {
+      const i = Number(act.split(':')[1])
+      const step = BOND_STEPS[g.bondStep]
+      const choice = step.choices?.[i]
+      if (!choice) return
+      g.pushCards([{ id: `bondfb${g.bondStep}_${i}`, speaker: step.speaker, text: choice.feedback, learn: 'bond', buttons: [{ label: choice.correct ? 'Continue' : 'Try again', act: choice.correct ? 'bond.next' : 'bond.reask' }] }])
+    }
+  },
+
+  // ---- MODULE 7: TAX OFFICE (card-driven, runs in the normal town scene) ----
+  startTax: () => {
+    try { deactivatePaycheckWorld() } catch { /* no-op */ }
+    playerPos.x = SPAWN[0]; playerPos.y = 1; playerPos.z = SPAWN[1]
+    set({ week: 7, objective: 'tax', weekComplete: false, pendingWeekComplete: false, taxStep: 0, cards: [], lessons: [], dialog: null })
+    get().openDialog('Rex · Tax Assessor', TAX_INTRO, () => get().pushTaxStep(0))
+  },
+  pushTaxStep: (n) => {
+    if (n >= TAX_STEPS.length) return
+    set({ taxStep: n })
+    const step = TAX_STEPS[n]
+    if (step.choices) {
+      get().pushCards([{ id: `tax${n}`, speaker: step.speaker, text: step.text, learn: 'taxes', buttons: step.choices.map((c, i) => ({ label: c.label, act: `tax.pick:${i}` })) }])
+    } else {
+      get().pushCards([{ id: `tax${n}`, speaker: step.speaker, text: step.text, learn: 'taxes', buttons: [{ label: step.continue || 'Next', act: step.done ? 'tax.finish' : 'tax.next' }] }])
+    }
+  },
+  taxAct: (act) => {
+    const g = get()
+    if (act === 'tax.next') { g.pushTaxStep(g.taxStep + 1); return }
+    if (act === 'tax.reask') { g.pushTaxStep(g.taxStep); return }
+    if (act === 'tax.finish') {
+      g.awardBadge('tax', 'TAX FILER')
+      set({ pendingWeekComplete: true, objective: 'done' })
+      return
+    }
+    if (act.startsWith('tax.pick:')) {
+      const i = Number(act.split(':')[1])
+      const step = TAX_STEPS[g.taxStep]
+      const choice = step.choices?.[i]
+      if (!choice) return
+      g.pushCards([{ id: `taxfb${g.taxStep}_${i}`, speaker: step.speaker, text: choice.feedback, learn: 'taxes', buttons: [{ label: choice.correct ? 'Continue' : 'Try again', act: choice.correct ? 'tax.next' : 'tax.reask' }] }])
+    }
   },
 
   // ---- BANK / ALLOWANCE (Week 1) ----

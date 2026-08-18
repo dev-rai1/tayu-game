@@ -311,11 +311,11 @@ export default function World() {
 
     clearWorldMessages()
     if (moduleId === '6' || moduleId === '7') {
-      try {
-        if (moduleId === '6') sessionStorage.setItem(BOND_ONLY_KEY, '1')
-        else sessionStorage.removeItem(BOND_ONLY_KEY)
-      } catch { /* storage can be unavailable */ }
-      enterPaycheckPlanet({ restart: moduleId === '7', origin: 'module-select' })
+      // Card-driven flows in the normal town scene - no paycheck world, no blue
+      // screen. The guide dialog + decision cards start immediately.
+      deactivatePaycheckWorld()
+      if (moduleId === '6') useGame.getState().startBond()
+      else useGame.getState().startTax()
     } else {
       deactivatePaycheckWorld()
       const internal = moduleId === '5' ? 5 : Number(moduleId)
