@@ -23,7 +23,7 @@ const CONTACTS = [
 ]
 
 const TEAM = [
-  { file: 'dev_rai.png', name: 'Dev Rai', role: 'Co-Founder, Project Lead', li: 'https://linkedin.com/in/dev-rai-948bb32a9' },
+  { file: 'dev_rai.jpg', name: 'Dev Rai', role: 'Co-Founder, Project Lead', li: 'https://linkedin.com/in/dev-rai-948bb32a9' },
   { file: 'ayush_ranjan.png', name: 'Ayush Ranjan', role: 'Co-Founder, Lead Developer', li: 'https://linkedin.com/in/ayush-ranjan6285' },
   { file: 'austin_chen.png', name: 'Austin Chen', role: 'Co-Founder, Outreach', li: 'https://linkedin.com/in/austin-chen-56028731a' },
   { file: 'gaamaa_hishigsuren.png', name: 'Gaamaa Hishigsuren', role: 'Project Advisor', li: 'https://linkedin.com/in/gaamaa' },
@@ -292,92 +292,33 @@ export default function About() {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-sm text-navy/60">
-              Hands-on choices + instant feedback, not lectures. Full completion earns a printable certificate.
-            </p>
+            <p className="mt-3 text-sm text-navy/60">Built to support teachers, not replace them.</p>
           </section>
 
-          <section className="rounded-3xl p-7 text-center shadow-md" style={{ background: 'linear-gradient(135deg, #d9fbf1, #dceafe)' }}>
-            <h2 className="font-display text-2xl font-extrabold text-navy">Partner with us</h2>
-            <p className="mx-auto mt-3 max-w-xl text-lg leading-relaxed text-navy/85">
-              We run free TAYU sessions for schools, libraries, camps, after-school programs, scout troops, and community orgs — in person or virtual.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <a href="mailto:tayu.finance@gmail.com" className="rounded-2xl bg-electric px-6 py-3 text-base font-extrabold text-white hover:bg-teal hover:text-navy">
-                Email Us
-              </a>
-              <a href="https://calendly.com/tayu-finance/30min" target="_blank" rel="noopener" className="rounded-2xl bg-navy px-6 py-3 text-base font-extrabold text-white hover:bg-electric">
-                Demo Call
-              </a>
+          <section className="rounded-3xl bg-white p-6 shadow-md">
+            <h2 className="font-display text-2xl font-extrabold text-navy">Contact</h2>
+            <p className="mt-2 text-navy/75">Want to bring TAYU into a classroom, event, or partnership?</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {CONTACTS.map((c) => (
+                <a key={c.label} href={c.href} target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-electric px-4 py-2 text-sm font-bold text-white hover:bg-teal hover:text-navy">
+                  {c.label}
+                </a>
+              ))}
             </div>
           </section>
 
-          <section className="rounded-3xl bg-white p-6 text-center shadow-md">
-            <h2 className="font-display text-xl font-extrabold text-navy">Ready?</h2>
-            <p className="mt-2 text-navy/70">Free K-12 financial-literacy game with expanding modules for all grade levels.</p>
-            <a href="/avatar" className="btn-primary mt-4 inline-block min-h-[56px] px-10 text-lg leading-[56px]">Play</a>
-            <p className="mt-4 text-sm font-bold text-navy/60">Share feedback:</p>
-            <div className="mt-2 flex flex-wrap justify-center gap-2">
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4IgEETBk_Serp_OM0FQNH0o91OAOvbsjWK_DAGMVtz64aEw/viewform" target="_blank" rel="noopener" className="rounded-xl bg-electric px-5 py-3 text-sm font-extrabold text-white active:scale-95">Teacher</a>
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfko_Uc7k7xuMRDY_ZO1mzOrqK72cgybKUjy5Mk7OkS-9w_w/viewform" target="_blank" rel="noopener" className="rounded-xl bg-brandpurple px-5 py-3 text-sm font-extrabold text-white active:scale-95">Student</a>
-            </div>
-          </section>
-
-          <section className="rounded-3xl bg-white p-6 text-center shadow-md">
+          <section className="rounded-3xl bg-white p-6 shadow-md">
             <h2 className="font-display text-2xl font-extrabold text-navy">Sponsors</h2>
-            <p className="mx-auto mt-2 max-w-xl text-navy/70">
-              Sponsors contributing $200+ are listed here.
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-4">
-              {SPONSORS.map((sp) => (
-                <div key={sp.name} className="rounded-2xl border-2 border-navy/10 bg-navy/5 px-6 py-4">
-                  {sp.logo
-                    ? <img src={sp.logo} alt={sp.name} className="mx-auto h-12 object-contain" />
-                    : <div className="font-display text-lg font-extrabold text-navy">{sp.name}</div>}
-                  {sp.org && <div className="mt-1 text-sm font-bold text-electric">{sp.org}</div>}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {SPONSORS.map((s) => (
+                <div key={s.name} className="rounded-2xl bg-navy/5 p-4">
+                  <div className="font-display text-base font-extrabold text-navy">{s.name}</div>
+                  <div className="text-sm font-semibold text-navy/60">{s.org}</div>
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-sm text-navy/60">
-              Want to sponsor? <a href="mailto:tayu.finance@gmail.com" className="font-bold text-electric underline underline-offset-2">Contact us.</a>
-            </p>
-          </section>
-
-          <section className="rounded-3xl bg-white p-6 text-center shadow-md">
-            <h2 className="font-display text-xl font-extrabold text-navy">Follow TAYU</h2>
-            <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <a href="https://www.instagram.com/tayu.finance" target="_blank" rel="noopener" className="flex items-center gap-2 rounded-2xl px-6 py-3 text-base font-extrabold text-white transition hover:opacity-90" style={{ background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="#fff" /></svg>
-                Instagram
-              </a>
-              <a href="https://www.facebook.com/share/1BmGNEpdrV/" target="_blank" rel="noopener" className="flex items-center gap-2 rounded-2xl bg-[#1877F2] px-6 py-3 text-base font-extrabold text-white transition hover:opacity-90">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
-                Facebook
-              </a>
-            </div>
           </section>
         </main>
-
-        <footer className="py-6">
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-6">
-            <img src={LOGO} alt="TAYU" className="h-8 w-8 rounded-xl" />
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
-              {CONTACTS.map((l) => (
-                <a key={l.label} href={l.href} target="_blank" rel="noopener" className="text-sm font-bold text-electric underline-offset-4 hover:underline">
-                  {l.label}
-                </a>
-              ))}
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 text-xs font-bold text-navy/50">
-              {TEAM.map((m) => (
-                <a key={m.name} href={m.li} target="_blank" rel="noopener" className="hover:text-electric">
-                  {m.name.split(' ')[0]}&rsquo;s LinkedIn
-                </a>
-              ))}
-            </div>
-            <p className="text-xs text-navy/40">TAYU. Learn money by playing it.</p>
-          </div>
-        </footer>
       </div>
     </div>
   )
