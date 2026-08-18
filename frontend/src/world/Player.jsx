@@ -8,6 +8,7 @@ import { cameraRig, rotateCamera, pitchCamera, zoomCamera } from './cameraRig.js
 import {
   MAILBOX, JARS, STORE, STORE_ITEMS, SHOPKEEPER, BLOCKERS, BOUNDS,
   INTERACT_RADIUS, JAR_RADIUS, ITEM_RADIUS, NPC_RADIUS, LEMONADE, SPROUT, PARTY_HOUSE, AMBIENT_NPCS } from './config.js'
+import { BOND_GUIDE, TAX_GUIDE } from './BondTaxBuildings.jsx'
 import { getObjectiveTarget } from './objective.js'
 import { NPC_HOME, stage } from '../anim/stage.js'
 
@@ -209,6 +210,8 @@ export function Player({ avatar }) {
       else if (near.id === 'supplies') st.openSupplies()
       else if (near.id === 'stand2') st.openTemplate()
       else if (near.id === 'sprout') st.enterGarden()
+      else if (near.id === 'bondGuide') st.beginBond()
+      else if (near.id === 'taxGuide') st.beginTax()
       else if (near.id === 'party') {
         if (st.gameComplete) useGame.setState({ enterParty: true })
         else st.setToast('LOCKED! Finish the whole game first - a surprise is waiting.')
@@ -396,6 +399,12 @@ export function Player({ avatar }) {
             if (d < ITEM_RADIUS && d < best) { best = d; near = { id: `item:${it.id}`, label: `Buy ${it.name} ($${it.price})` } }
           }
         }
+      } else if (st.objective === 'bond' && !st.dialog && !st.cards?.length) {
+        // Module 6: start by walking up to Beau and talking to him.
+        if (dist2(playerPos.x, playerPos.z, BOND_GUIDE[0], BOND_GUIDE[1]) < 4.2) near = { id: 'bondGuide', label: 'Talk to Beau' }
+      } else if (st.objective === 'tax' && !st.dialog && !st.cards?.length) {
+        // Module 7: start by walking up to Rex and talking to him.
+        if (dist2(playerPos.x, playerPos.z, TAX_GUIDE[0], TAX_GUIDE[1]) < 4.2) near = { id: 'taxGuide', label: 'Talk to Rex' }
       }
     }
     // R9 Part 8.2: crossing into the Finale Area triggers the town party

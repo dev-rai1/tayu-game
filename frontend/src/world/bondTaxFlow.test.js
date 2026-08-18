@@ -27,6 +27,7 @@ describe('Module 6 Bond Street card flow', () => {
     g().startBond()
     expect(g().week).toBe(6)
     expect(g().objective).toBe('bond')
+    g().beginBond()
     expect(g().dialog).toBeTruthy()
     // Finishing the intro dialog pushes the first card.
     g().dialog.onClose?.()
@@ -46,6 +47,7 @@ describe('Module 7 Tax Office card flow', () => {
     g().startTax()
     expect(g().week).toBe(7)
     expect(g().objective).toBe('tax')
+    g().beginTax()
     expect(g().dialog).toBeTruthy()
     g().dialog.onClose?.()
     expect(g().cards.length).toBeGreaterThan(0)

@@ -175,7 +175,11 @@ export const useGame = create((set, get) => ({
   startBond: () => {
     try { deactivatePaycheckWorld() } catch { /* no-op */ }
     playerPos.x = BOND_ENTRY[0]; playerPos.y = 1; playerPos.z = BOND_ENTRY[1]
+    // Spawn on the map next to Bond Street. The module starts when the player
+    // walks up to Beau and talks to him (see Player.jsx / beginBond).
     set({ week: 6, objective: 'bond', weekComplete: false, pendingWeekComplete: false, bondStep: 0, cards: [], lessons: [], dialog: null })
+  },
+  beginBond: () => {
     get().openDialog('Beau · Bond Guide', BOND_INTRO, () => get().pushBondStep(0))
   },
   pushBondStep: (n) => {
@@ -210,7 +214,11 @@ export const useGame = create((set, get) => ({
   startTax: () => {
     try { deactivatePaycheckWorld() } catch { /* no-op */ }
     playerPos.x = TAX_ENTRY[0]; playerPos.y = 1; playerPos.z = TAX_ENTRY[1]
+    // Spawn on the map next to the Tax Office. The module starts when the player
+    // walks up to Rex and talks to him (see Player.jsx / beginTax).
     set({ week: 7, objective: 'tax', weekComplete: false, pendingWeekComplete: false, taxStep: 0, cards: [], lessons: [], dialog: null })
+  },
+  beginTax: () => {
     get().openDialog('Rex · Tax Assessor', TAX_INTRO, () => get().pushTaxStep(0))
   },
   pushTaxStep: (n) => {

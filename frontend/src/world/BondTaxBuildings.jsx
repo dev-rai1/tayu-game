@@ -16,6 +16,10 @@ export const BOND_SPOT = [TAX_DISTRICT[0] - 15, TAX_DISTRICT[1] + 1]
 export const TAX_ENTRY = [TAX_SPOT[0], TAX_SPOT[1] + 6]
 export const BOND_ENTRY = [BOND_SPOT[0], BOND_SPOT[1] + 6]
 
+// Where Beau / Rex stand - the player walks up to them and talks to start.
+export const BOND_GUIDE = [BOND_SPOT[0] + 1.6, BOND_SPOT[1] + 2.4]
+export const TAX_GUIDE = [TAX_SPOT[0] + 1.7, TAX_SPOT[1] + 2.5]
+
 function SignLabel({ text, color, y = 5.4 }) {
   return (
     <Billboard position={[0, y, 0]}>
