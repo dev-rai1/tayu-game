@@ -90,7 +90,7 @@ export function AdminPanel({ showButton = true }) {
         <button
           onClick={onAdminClick}
           aria-label="Admin access for teachers"
-          className="fixed right-[calc(0.75rem+env(safe-area-inset-right,0px))] top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-[1000] min-h-[42px] rounded-2xl border border-slate-200 bg-white/90 px-3 text-xs font-extrabold text-slate-700 shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950 hover:shadow-xl active:translate-y-0"
+          className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] z-[1000] min-h-[42px] rounded-2xl border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-700 shadow-lg transition hover:-translate-y-0.5 hover:text-slate-950 hover:shadow-xl active:translate-y-0"
         >
           TAYU Admin
         </button>
@@ -117,7 +117,10 @@ export function AdminPanel({ showButton = true }) {
       )}
 
       {open && adminUnlocked && (
-        <div className="fixed right-[calc(0.75rem+env(safe-area-inset-right,0px))] top-[calc(4.25rem+env(safe-area-inset-top,0px))] z-[1001] max-h-[calc(100dvh-5.5rem)] w-[320px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-white/15 p-4 font-mono text-white shadow-2xl" style={{ background: '#4A4A4A' }}>
+        <div
+          className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] z-[1001] max-h-[calc(100dvh-5.5rem)] w-[320px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-white/15 p-4 font-mono text-white shadow-2xl"
+          style={{ background: '#4A4A4A' }}
+        >
           <div className="flex items-center justify-between">
             <div className="text-xs font-bold tracking-widest">ADMIN</div>
             <button className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-bold active:scale-95" onClick={() => setOpen(false)}>Close</button>
