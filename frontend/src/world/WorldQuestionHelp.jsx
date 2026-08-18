@@ -32,7 +32,7 @@ export function WorldQuestionHelp() {
       : 'TAYU World'
 
   return (
-    <div className="tayu-qhelp-dock pointer-events-none absolute left-4 top-[4.25rem] z-[1450] sm:left-5 sm:top-[4.5rem]">
+    <div className="tayu-qhelp-dock pointer-events-none absolute left-4 top-[5.5rem] z-[1450] sm:left-5 sm:top-[5.75rem]">
       <button
         type="button"
         aria-label="Open instructions and learning resources"
