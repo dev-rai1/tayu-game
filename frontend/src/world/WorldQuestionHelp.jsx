@@ -32,19 +32,24 @@ export function WorldQuestionHelp() {
       : 'TAYU World'
 
   return (
-    <div className="tayu-qhelp-dock pointer-events-none absolute left-4 top-[4.25rem] z-[1450] sm:left-5 sm:top-[4.5rem]">
+    <div className="tayu-qhelp-dock pointer-events-none absolute left-4 top-[5.75rem] z-[1450] sm:left-5 sm:top-[6rem]">
       <button
         type="button"
         aria-label="Open instructions and learning resources"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border-2 border-white bg-navy text-xl font-black text-white shadow-xl transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-electric/30"
+        className="pointer-events-auto grid h-11 w-11 place-items-center rounded-full border-2 border-white text-xl font-black text-white shadow-xl transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-electric/30"
+        style={{ background: '#071426' }}
       >
         ?
       </button>
 
       {open && (
-        <section className="pointer-events-auto absolute left-0 mt-2 max-h-[72vh] w-[min(92vw,24rem)] overflow-y-auto rounded-3xl border border-slate-200 bg-white/98 p-5 text-navy shadow-2xl backdrop-blur-md" aria-label="TAYU help">
+        <section
+          className="pointer-events-auto absolute left-0 mt-2 max-h-[72vh] w-[min(92vw,24rem)] overflow-y-auto rounded-3xl border border-slate-200 p-5 text-navy shadow-2xl"
+          style={{ background: '#ffffff' }}
+          aria-label="TAYU help"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-[10px] font-black uppercase tracking-[0.18em] text-electric">Help & learning</div>
