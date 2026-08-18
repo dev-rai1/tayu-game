@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { currentUser } from '../services/auth.js'
-import { isAdminEmail } from '../services/adminAccess.js'
 
 export default function AdminDashboardButton() {
   const [user, setUser] = useState(() => currentUser())
@@ -12,7 +11,7 @@ export default function AdminDashboardButton() {
     return () => window.removeEventListener('tayu-auth-changed', refresh)
   }, [])
 
-  if (!user || (user.role !== 'admin' && !isAdminEmail(user.email))) return null
+  if (!user || user.role !== 'admin') return null
 
   return (
     <Link
