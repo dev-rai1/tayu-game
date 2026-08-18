@@ -102,13 +102,13 @@ export function GameWorld({ avatar }) {
   // Only Module 7 needs the separate paycheck/tax scene styling. Module 6 must
   // look and behave like the same main map used by every earlier module.
   const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()
-  // IMPORTANT: keep this key STABLE across a module session. It used to include
-  // `physicalModule`, which is cleared ~1s after arrival - that flipped the key
-  // (paycheck-5-6 -> paycheck-5-active) and force-remounted the whole Canvas,
-  // creating a SECOND WebGL context right after entering Module 6/7. On devices
-  // that can't allocate another context (many Chromebooks/tablets) the remount
-  // failed and left a blank navy screen. A constant key means one context.
-  const sceneKey = paycheckWorld ? 'paycheck-world' : `week-${week}`
+  // STAGE 1 of the Module 6/7 rebuild: render Bond Street and the Tax Office in
+  // the SAME scene as every working module. The only thing that made them a
+  // "separate scene" was this key flipping to a paycheck value, which remounted
+  // the Canvas and created a second WebGL context (the blue screen on devices
+  // that can't allocate one). Keying purely on week means entering Module 6/7
+  // uses the identical, proven rendering path the other modules use - no remount.
+  const sceneKey = `week-${week ?? 0}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}

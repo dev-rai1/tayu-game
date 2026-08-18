@@ -129,10 +129,10 @@ describe('Module 1 to Module 2 transition', () => {
 
     expect(source).toContain('const physicalModule = readPhysicalModuleLaunch()')
     expect(source).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
-    // The paycheck (Bond/Tax) key is intentionally STABLE so entering a module
-    // does not remount the Canvas / create a second WebGL context (blue-screen fix).
-    // Normal town modules still key on week so each restarts its own scene.
-    expect(source).toContain("const sceneKey = paycheckWorld ? 'paycheck-world' : `week-${week}`")
+    // Stage 1 rebuild: Bond/Tax now render in the SAME week-keyed scene as every
+    // other module, so entering them never remounts the Canvas / makes a 2nd
+    // WebGL context (the blue-screen cause). One key family for all modules.
+    expect(source).toContain('const sceneKey = `week-${week ?? 0}`')
     expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
     expect(source).toContain('key={sceneKey}')
   })
