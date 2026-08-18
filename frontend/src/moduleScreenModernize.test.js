@@ -36,12 +36,13 @@ describe('module menu modernization', () => {
     expect(learningPaths).toContain('localStorage.getItem(LAST_GRADE_PATH_KEY)')
   })
 
-  it('positions admin access in the top utility area instead of over bottom gameplay controls', () => {
+  it('positions admin access in the bottom-right with the panel directly above it', () => {
     const source = read('src/components/AdminPanel.jsx')
 
     expect(source).toContain('TAYU Admin')
-    expect(source).toContain('top-[calc(0.75rem+env(safe-area-inset-top,0px))]')
-    expect(source).toContain('top-[calc(4.25rem+env(safe-area-inset-top,0px))]')
-    expect(source).not.toContain("bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'")
+    expect(source).toContain('bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]')
+    expect(source).toContain('bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))]')
+    expect(source).toContain('right-[calc(0.75rem+env(safe-area-inset-right,0px))]')
+    expect(source).not.toContain('top-[calc(0.75rem+env(safe-area-inset-top,0px))]')
   })
 })
