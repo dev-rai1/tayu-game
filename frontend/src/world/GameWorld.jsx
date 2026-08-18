@@ -123,11 +123,27 @@ export function GameWorld({ avatar }) {
           camera={{ position: [0, 7, 11], fov: 52 }}
           dpr={1}
           style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
-          gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
+          gl={{ antialias: false, powerPreference: 'default', failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
           onCreated={({ gl }) => {
             try {
               gl.getContext()
               if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true'
+              // Make a lost GL context RECOVERABLE. By default a lost context is
+              // permanent (a dead navy canvas - the "blue screen"). Calling
+              // preventDefault lets the browser fire webglcontextrestored so the
+              // scene can come back instead of staying blank. Common on tablets/
+              // Chromebooks under memory pressure or when backgrounding the tab.
+              const canvas = gl.domElement
+              if (canvas && !canvas.dataset.ctxGuard) {
+                canvas.dataset.ctxGuard = '1'
+                canvas.addEventListener('webglcontextlost', (event) => {
+                  event.preventDefault()
+                  logTayuError('canvas:context-lost', 'webgl context lost')
+                }, false)
+                canvas.addEventListener('webglcontextrestored', () => {
+                  logTayuError('canvas:context-restored', 'webgl context restored')
+                }, false)
+              }
               settlePhysicalLaunchAfterCanvasMount()
             } catch (error) {
               logTayuError('canvas:webgl-context', error?.message || error)
