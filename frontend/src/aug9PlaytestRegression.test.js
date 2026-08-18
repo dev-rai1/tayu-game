@@ -90,8 +90,8 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(hud).toContain('absolute left-4 top-[4.5rem]')
     expect(skip).toContain('fixed right-4 top-[5.5rem]')
     expect(admin).toContain('right-[calc(0.75rem+env(safe-area-inset-right,0px))]')
-    expect(admin).toContain('top-[calc(0.75rem+env(safe-area-inset-top,0px))]')
-    expect(admin).not.toContain("bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'")
+    expect(admin).toContain('bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]')
+    expect(admin).toContain('bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))]')
   })
 
   it('keeps dead primary actions visibly disabled with a reason', () => {
