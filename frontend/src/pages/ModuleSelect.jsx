@@ -157,13 +157,9 @@ export default function ModuleSelect() {
     const target = MODULE_CARDS.find((module) => module.n === moduleNumber)
     if (!target) return
 
-    // Modules 6 and 7 are real walk-in destinations. Enter the 3D district
-    // immediately; the lesson does not start until the player reaches the
-    // building guide and presses E.
-    if (preparePhysicalModuleLaunch(target.n)) {
-      nav('/world')
-      return
-    }
+    // Modules 6 and 7 use the SAME entry as every other module: set the entry
+    // intent, navigate, and the world shows the "Start" gate. Clicking Start
+    // begins the card-driven flow. (No paycheck-world launch.)
 
     const internalWorldModule = target.worldModule || target.n
     let canResume = Boolean(wallet && internalWorldModule === Number(wallet.week || 1) && !badges.includes(target.badge))

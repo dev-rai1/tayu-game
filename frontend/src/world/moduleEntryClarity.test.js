@@ -15,11 +15,12 @@ describe('module entry clarity', () => {
   it('teleports to the selected module before any module state or UI starts', () => {
     expect(world).toContain('readModuleEntryIntent()')
     expect(world).toContain('teleportToModuleArrival(entry.moduleId)')
-    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
+    // Modules 6/7 now spawn at their own buildings (BOND_ENTRY / TAX_ENTRY).
+    expect(world).toContain("if (moduleId === '6') return [BOND_ENTRY[0], BOND_ENTRY[1]]")
+    expect(world).toContain("if (moduleId === '7') return [TAX_ENTRY[0], TAX_ENTRY[1]]")
     expect(world).toContain("if (moduleId === '6' || moduleId === '7')")
     // Modules 6/7 now start card-driven flows in the normal town scene (no paycheck world).
-    expect(world).toContain("if (moduleId === '6') useGame.getState().startBond()")
-    expect(world).toContain('else useGame.getState().startTax()')
+    expect(world).toContain("if (moduleId === '6') { useGame.getState().startBond(); useGame.getState().beginBond() }")
     expect(world).toContain('Nothing in the module starts or appears until you choose')
     expect(world).toContain('{moduleEntry.resume ? `Resume ${arrival.label}` : `Start ${arrival.label}`} →')
     expect(world).not.toContain('adminTeleport(PAYCHECK_START)')

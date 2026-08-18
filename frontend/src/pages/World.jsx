@@ -9,6 +9,7 @@ import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
 import { useGame, playerPos, joystick, moveTarget } from '../world/store.js'
+import { BOND_ENTRY, TAX_ENTRY } from '../world/BondTaxBuildings.jsx'
 import {
   PAYCHECK_MODE_EVENT,
   activatePaycheckWorld,
@@ -148,7 +149,8 @@ function moduleArrivalPoint(moduleId) {
   if (moduleId === '3') return [BUDGET_TOWN[0], BUDGET_TOWN[1] + 8]
   if (moduleId === '4') return [BANK_DISTRICT[0] - 1, BANK_DISTRICT[1] - 6]
   if (moduleId === '5') return [SPROUT[0], SPROUT[1] + 10]
-  if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]
+  if (moduleId === '6') return [BOND_ENTRY[0], BOND_ENTRY[1]]
+  if (moduleId === '7') return [TAX_ENTRY[0], TAX_ENTRY[1]]
   return [SPAWN[0], SPAWN[1]]
 }
 
@@ -262,14 +264,9 @@ export default function World() {
     initWorld()
 
     // Modules 6 (Bond Street) and 7 (Tax Office): spawn in the map next to the
-    // building and START immediately - no gate. Beau / Rex say hi, then the
-    // decision cards run. Card-driven, in the normal town scene, no blue screen.
+    // building and set up the objective, but DON'T start - the "Start" gate shows
+    // (same as every other module). Clicking Start runs beginBond/beginTax.
     if (entry && (String(entry.moduleId) === '6' || String(entry.moduleId) === '7')) {
-      try {
-        localStorage.removeItem(MODULE_ENTRY_KEY)
-        localStorage.removeItem(MODULE_JUMP_KEY)
-      } catch { /* storage can be unavailable */ }
-      setModuleEntry(null)
       if (String(entry.moduleId) === '6') useGame.getState().startBond()
       else useGame.getState().startTax()
       crossfadeTo('town')
@@ -327,11 +324,11 @@ export default function World() {
 
     clearWorldMessages()
     if (moduleId === '6' || moduleId === '7') {
-      // Card-driven flows in the normal town scene - no paycheck world, no blue
-      // screen. The guide dialog + decision cards start immediately.
+      // Start button: set up the module (spawn + objective) then begin the guide
+      // dialog + decision cards. Card-driven, normal town scene, no blue screen.
       deactivatePaycheckWorld()
-      if (moduleId === '6') useGame.getState().startBond()
-      else useGame.getState().startTax()
+      if (moduleId === '6') { useGame.getState().startBond(); useGame.getState().beginBond() }
+      else { useGame.getState().startTax(); useGame.getState().beginTax() }
     } else {
       deactivatePaycheckWorld()
       const internal = moduleId === '5' ? 5 : Number(moduleId)

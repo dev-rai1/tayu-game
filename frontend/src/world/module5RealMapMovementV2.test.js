@@ -26,7 +26,9 @@ describe('final-module real-map movement v2', () => {
   })
 
   it('teleports Explore launches for Module 6 or Module 7 to the district before module UI starts', () => {
-    expect(world).toContain("if (moduleId === '6' || moduleId === '7') return [TAX_DISTRICT[0], TAX_DISTRICT[1] + 5]")
+    // Modules 6/7 now spawn at their own buildings (BOND_ENTRY / TAX_ENTRY).
+    expect(world).toContain("if (moduleId === '6') return [BOND_ENTRY[0], BOND_ENTRY[1]]")
+    expect(world).toContain("if (moduleId === '7') return [TAX_ENTRY[0], TAX_ENTRY[1]]")
     expect(world).toContain('function teleportToModuleArrival(moduleId)')
     expect(world).toContain('const point = moduleArrivalPoint(moduleId)')
     expect(world).toContain('const arrivalTimer = setTimeout(() => teleportToModuleArrival(entry.moduleId), 60)')

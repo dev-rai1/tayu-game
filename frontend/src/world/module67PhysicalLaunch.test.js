@@ -18,17 +18,14 @@ const partyHouse = fs.readFileSync(path.join(here, 'PartyHouse.jsx'), 'utf8')
 const taxCheck = fs.readFileSync(path.resolve('src/components/PaycheckCompletionCheck.jsx'), 'utf8')
 
 describe('Module 6 and 7 physical launch flow', () => {
-  it('routes Module 6 into the normal town and Module 7 into tax mode', () => {
-    expect(moduleSelect).toContain('preparePhysicalModuleLaunch(target.n)')
+  it('routes Module 6 and 7 through the standard Start-gate entry (card-driven town flow)', () => {
+    // Modules 6/7 now use the same entry as every other module: set the entry
+    // intent and navigate; the world shows the Start gate, and clicking Start
+    // begins the card-driven Bond/Tax flow. No paycheck world.
+    expect(moduleSelect).not.toContain('preparePhysicalModuleLaunch(target.n)')
+    expect(moduleSelect).toContain("moduleId: String(target.n)")
     expect(moduleSelect).toContain("nav('/world')")
-    expect(launch).toContain("localStorage.removeItem('tayu-module-entry-intent')")
-    expect(launch).toContain('sessionStorage.setItem(PHYSICAL_MODULE_KEY, String(id))')
-    // Both Module 6 and Module 7 now activate the shared interaction world so the
-    // Bond/Tax gate + station UI mounts (Module 6 previously reused the plain town
-    // map, which left its interaction bridge unmounted and unstartable).
-    expect(launch).toContain('activatePaycheckWorld()')
-    expect(launch).not.toContain('if (id === 6) setPaycheckWorldActive(false)')
-    expect(gameWorld).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
+    expect(gameWorld).toContain('<BondTaxBuildings />')
   })
 
   it('clears stale earlier-module messages and completion state before entering 6 or 7', () => {
