@@ -18,7 +18,7 @@ export default function AdminDashboardButton() {
     <Link
       to="/dashboard"
       className="fixed right-3 z-[1000] grid min-h-[44px] place-items-center rounded-xl bg-teal px-4 text-sm font-extrabold text-navy shadow-xl"
-      style={{ bottom: 'calc(54px + env(safe-area-inset-bottom, 0px))' }}
+      style={{ bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}
     >
       Admin Dashboard
     </Link>
