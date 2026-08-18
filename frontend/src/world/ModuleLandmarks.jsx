@@ -1,7 +1,7 @@
 import { Billboard } from '@react-three/drei'
 import { SPROUT } from './config.js'
 import { labelTexture } from './textures.js'
-import { TAX_ENTRY } from './PaycheckPlanetWorld.jsx'
+import { TAX_ENTRY } from './BondTaxBuildings.jsx'
 
 function MoneyGardenMarker() {
   return (

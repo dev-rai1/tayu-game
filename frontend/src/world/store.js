@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { SPAWN, STORE_ITEMS, JARS, LEMONADE, SPROUT, MAILBOX } from './config.js'
 import { BOND_INTRO, BOND_STEPS, TAX_INTRO, TAX_STEPS } from '../scenarios/bondTaxFlow.js'
+import { BOND_ENTRY, TAX_ENTRY } from './BondTaxBuildings.jsx'
 import { deactivatePaycheckWorld } from './paycheckMode.js'
 import { JAR_SCENARIOS, checkAllocation } from '../scenarios/jarScenario.js'
 import { evaluateBasket, DAY_LESSON, cartFeedback } from '../scenarios/storeMission.js'
@@ -173,7 +174,7 @@ export const useGame = create((set, get) => ({
   // ---- MODULE 6: BOND STREET (card-driven, runs in the normal town scene) ----
   startBond: () => {
     try { deactivatePaycheckWorld() } catch { /* no-op */ }
-    playerPos.x = SPAWN[0]; playerPos.y = 1; playerPos.z = SPAWN[1]
+    playerPos.x = BOND_ENTRY[0]; playerPos.y = 1; playerPos.z = BOND_ENTRY[1]
     set({ week: 6, objective: 'bond', weekComplete: false, pendingWeekComplete: false, bondStep: 0, cards: [], lessons: [], dialog: null })
     get().openDialog('Beau · Bond Guide', BOND_INTRO, () => get().pushBondStep(0))
   },
@@ -208,7 +209,7 @@ export const useGame = create((set, get) => ({
   // ---- MODULE 7: TAX OFFICE (card-driven, runs in the normal town scene) ----
   startTax: () => {
     try { deactivatePaycheckWorld() } catch { /* no-op */ }
-    playerPos.x = SPAWN[0]; playerPos.y = 1; playerPos.z = SPAWN[1]
+    playerPos.x = TAX_ENTRY[0]; playerPos.y = 1; playerPos.z = TAX_ENTRY[1]
     set({ week: 7, objective: 'tax', weekComplete: false, pendingWeekComplete: false, taxStep: 0, cards: [], lessons: [], dialog: null })
     get().openDialog('Rex · Tax Assessor', TAX_INTRO, () => get().pushTaxStep(0))
   },

@@ -14,9 +14,7 @@ import { PartyHouse } from './PartyHouse.jsx'
 import { BudgetTown } from './BudgetTown.jsx'
 import { BankDistrict } from './BankDistrict.jsx'
 import { ModuleLandmarks } from './ModuleLandmarks.jsx'
-import { BondStreetWorld } from './BondStreetWorld.jsx'
-import { PaycheckPlanetWorld } from './PaycheckPlanetWorld.jsx'
-import { PhysicalModuleSigns } from './PhysicalModuleSigns.jsx'
+import { BondTaxBuildings } from './BondTaxBuildings.jsx'
 import { WorldQuestionHelp } from './WorldQuestionHelp.jsx'
 import { GuidanceArrow } from './GuidanceArrow.jsx'
 import { CompassBeam } from './CompassBeam.jsx'
@@ -169,9 +167,7 @@ export function GameWorld({ avatar }) {
             <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
             <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
             <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
-            <SceneBoundary name="bond-street"><BondStreetWorld /></SceneBoundary>
-            <SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>
-            <SceneBoundary name="physical-module-signs"><PhysicalModuleSigns /></SceneBoundary>
+            <SceneBoundary name="bond-tax"><BondTaxBuildings /></SceneBoundary>
             <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
             <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
             <SceneBoundary name="party"><PartyHouse /></SceneBoundary>

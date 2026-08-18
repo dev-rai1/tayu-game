@@ -20,8 +20,8 @@ describe('final-module real-map movement v2', () => {
     expect(world).not.toContain('AccessibleWorld')
     expect(world).not.toContain('TaxLabWorld')
     expect(gameWorld).toContain('<ModuleLandmarks />')
-    expect(gameWorld).toContain('<SceneBoundary name="tax-town"><PaycheckPlanetWorld /></SceneBoundary>')
-    expect(landmarks).not.toContain('<PaycheckPlanetWorld />')
+    // Bond Street + Tax Office are now plain town buildings in one scene boundary.
+    expect(gameWorld).toContain('<SceneBoundary name="bond-tax"><BondTaxBuildings /></SceneBoundary>')
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 

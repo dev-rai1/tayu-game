@@ -10,8 +10,8 @@ const taxBridge = fs.readFileSync(path.join(here, 'TaxWorldInteractionBridge.jsx
 
 describe('Module 6/7 streamlined interaction regression', () => {
   it('keeps the Tax Office mounted in its own 3D scene boundary', () => {
-    expect(gameWorld).toContain('name="tax-town"')
-    expect(gameWorld).toContain('<PaycheckPlanetWorld />')
+    expect(gameWorld).toContain('name="bond-tax"')
+    expect(gameWorld).toContain('<BondTaxBuildings />')
   })
 
   it('does not leave an inactive E prompt covering Next buttons', () => {

@@ -18,9 +18,8 @@ const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 describe('physical module districts', () => {
   it('renders the Tax Office as an independently isolated, playable district inside the main town', () => {
     expect(gameWorld).toContain('<ModuleLandmarks />')
-    expect(gameWorld).toContain('<PaycheckPlanetWorld />')
-    expect(gameWorld).toContain('name="tax-town"')
-    expect(landmarks).not.toContain('<PaycheckPlanetWorld />')
+    expect(gameWorld).toContain('<BondTaxBuildings />')
+    expect(gameWorld).toContain('name="bond-tax"')
     expect(paycheck).toContain('CurrentTaxStation')
     expect(paycheck).toContain('taxStationForStep(stepNumber)')
     expect(paycheck).toContain('Rex · Tax Guide')

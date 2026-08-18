@@ -261,6 +261,22 @@ export default function World() {
     const gardenEntryPart = entry?.gardenEntryPart || null
     initWorld()
 
+    // Modules 6 (Bond Street) and 7 (Tax Office): spawn in the map next to the
+    // building and START immediately - no gate. Beau / Rex say hi, then the
+    // decision cards run. Card-driven, in the normal town scene, no blue screen.
+    if (entry && (String(entry.moduleId) === '6' || String(entry.moduleId) === '7')) {
+      try {
+        localStorage.removeItem(MODULE_ENTRY_KEY)
+        localStorage.removeItem(MODULE_JUMP_KEY)
+      } catch { /* storage can be unavailable */ }
+      setModuleEntry(null)
+      if (String(entry.moduleId) === '6') useGame.getState().startBond()
+      else useGame.getState().startTax()
+      crossfadeTo('town')
+      const t = setTimeout(() => setFaded(true), 60)
+      return () => clearTimeout(t)
+    }
+
     // Modules 6 & 7 are physical 3D destinations. initWorld() above unconditionally
     // resets the player to SPAWN, and this parent effect runs AFTER the Bond/Tax
     // child-scene placement effects, so without this the player is stranded at the
