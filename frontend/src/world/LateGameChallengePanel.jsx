@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useGame } from './store.js'
 import { BOND_STEPS, TAX_STEPS } from '../scenarios/bondTaxFlow.js'
 
@@ -32,14 +32,66 @@ function NumericChallenge({ step, onPick, unit='' }) {
 }
 
 function DragChoice({ step, onPick }) {
+  const basketRef = useRef(null)
+  const [drag,setDrag] = useState(null)
   const [over,setOver] = useState(false)
-  const drop=(e)=>{e.preventDefault();setOver(false);const i=Number(e.dataTransfer.getData('text/plain'));if(Number.isInteger(i))onPick(i)}
+
+  const insideBasket=(x,y)=>{
+    const r=basketRef.current?.getBoundingClientRect()
+    return !!r && x>=r.left && x<=r.right && y>=r.top && y<=r.bottom
+  }
+  const start=(e,i)=>{
+    if(e.button!==undefined && e.button!==0) return
+    e.preventDefault()
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    setDrag({i,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY})
+    setOver(insideBasket(e.clientX,e.clientY))
+  }
+  const move=(e,i)=>{
+    if(!drag || drag.i!==i || drag.pointerId!==e.pointerId) return
+    e.preventDefault()
+    setDrag(d=>d?{...d,x:e.clientX,y:e.clientY}:d)
+    setOver(insideBasket(e.clientX,e.clientY))
+  }
+  const finish=(e,i)=>{
+    if(!drag || drag.i!==i || drag.pointerId!==e.pointerId) return
+    e.preventDefault()
+    const hit=insideBasket(e.clientX,e.clientY)
+    try{e.currentTarget.releasePointerCapture?.(e.pointerId)}catch{}
+    setDrag(null);setOver(false)
+    if(hit) onPick(i)
+  }
+  const cancel=(e,i)=>{
+    if(!drag || drag.i!==i) return
+    try{e.currentTarget.releasePointerCapture?.(e.pointerId)}catch{}
+    setDrag(null);setOver(false)
+  }
+
   return <div className="mt-5 grid gap-4 md:grid-cols-[1fr_.8fr]">
     <div className="grid gap-2">
-      {step.choices.map((c,i)=><div key={c.label} draggable onDragStart={e=>e.dataTransfer.setData('text/plain',String(i))} className="cursor-grab rounded-2xl border-2 border-navy/10 bg-[#fffaf0] px-4 py-3 font-bold text-navy shadow-sm transition hover:-translate-y-0.5 hover:rotate-[.3deg] hover:shadow-md active:cursor-grabbing">↕ {c.label}</div>)}
+      {step.choices.map((c,i)=>{
+        const active=drag?.i===i
+        const dx=active?drag.x-drag.startX:0
+        const dy=active?drag.y-drag.startY:0
+        return <div
+          key={c.label}
+          role="button"
+          tabIndex={0}
+          aria-label={`Drag ${c.label} to the answer basket`}
+          onPointerDown={e=>start(e,i)}
+          onPointerMove={e=>move(e,i)}
+          onPointerUp={e=>finish(e,i)}
+          onPointerCancel={e=>cancel(e,i)}
+          onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPick(i)}}}
+          style={{touchAction:'none',userSelect:'none',transform:active?`translate3d(${dx}px,${dy}px,0) rotate(${Math.max(-5,Math.min(5,dx/30))}deg) scale(1.04)`:undefined,zIndex:active?999:1,position:'relative'}}
+          className={`rounded-2xl border-2 px-4 py-3 font-bold text-navy transition ${active?'cursor-grabbing border-[#f4b942] bg-white shadow-2xl ring-4 ring-[#f4b942]/20':'cursor-grab border-navy/10 bg-[#fffaf0] shadow-sm hover:-translate-y-0.5 hover:shadow-md'}`}
+        >
+          <span className="mr-2 inline-block text-navy/35">⠿</span>{c.label}
+        </div>
+      })}
     </div>
-    <div onDragOver={e=>{e.preventDefault();setOver(true)}} onDragLeave={()=>setOver(false)} onDrop={drop} className={`grid min-h-[150px] place-items-center rounded-[26px] border-[3px] border-dashed p-5 text-center transition ${over?'scale-[1.02] border-[#f4b942] bg-[#fff0bd]':'border-navy/20 bg-white/55'}`}>
-      <div><div className="text-4xl">🧺</div><div className="mt-2 font-black text-navy">Drag your answer here</div><div className="text-xs font-bold text-navy/45">All cards use the same neutral color — no answer hint.</div></div>
+    <div ref={basketRef} className={`grid min-h-[160px] place-items-center rounded-[26px] border-[3px] border-dashed p-5 text-center transition duration-150 ${over?'scale-[1.035] border-[#f4b942] bg-[#fff0bd] shadow-[0_0_0_7px_rgba(244,185,66,.16)]':'border-navy/20 bg-white/55'}`}>
+      <div><div className={`text-4xl transition ${over?'scale-125':'scale-100'}`}>🧺</div><div className="mt-2 font-black text-navy">{over?'Release to choose':'Drag your answer here'}</div><div className="text-xs font-bold text-navy/45">Mouse, trackpad, and touch all work. You can also press Enter on a focused card.</div></div>
     </div>
   </div>
 }
@@ -55,7 +107,6 @@ function AllocationChallenge({ onPick }) {
 
 function TaxSort({ onPick }) {
   const [muni,setMuni]=useState(null),[corp,setCorp]=useState(null)
-  const Card=({name,amt,set})=><div className="rounded-2xl border-2 border-navy/10 bg-white p-3 shadow-sm"><b className="text-navy">{name}</b><div className="text-2xl font-black text-navy">${amt}</div><div className="mt-2 grid grid-cols-2 gap-2"><button onClick={()=>set('taxable')} className={`rounded-xl border-2 p-2 text-xs font-black ${set===null?'':''}`}>TAXABLE</button><button onClick={()=>set('excluded')} className="rounded-xl border-2 p-2 text-xs font-black">EXCLUDED</button></div></div>
   return <div className="mt-5 rounded-[26px] border-2 border-navy/10 bg-[#f9f5ec] p-5"><div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white p-3"><b>Municipal interest</b><div className="text-2xl font-black">$40</div><div className="mt-2 flex gap-2"><button onClick={()=>setMuni('taxable')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black ${muni==='taxable'?'border-navy bg-navy text-white':'border-navy/15'}`}>TAXABLE</button><button onClick={()=>setMuni('excluded')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black ${muni==='excluded'?'border-navy bg-navy text-white':'border-navy/15'}`}>EXCLUDED</button></div></div><div className="rounded-2xl bg-white p-3"><b>Corporate interest</b><div className="text-2xl font-black">$20</div><div className="mt-2 flex gap-2"><button onClick={()=>setCorp('taxable')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black ${corp==='taxable'?'border-navy bg-navy text-white':'border-navy/15'}`}>TAXABLE</button><button onClick={()=>setCorp('excluded')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black ${corp==='excluded'?'border-navy bg-navy text-white':'border-navy/15'}`}>EXCLUDED</button></div></div></div><button onClick={()=>onPick(muni==='excluded'&&corp==='taxable'?0:1)} disabled={!muni||!corp} className="mt-4 rounded-2xl bg-navy px-5 py-3 font-black text-white disabled:opacity-35">Send to return</button></div>
 }
 
