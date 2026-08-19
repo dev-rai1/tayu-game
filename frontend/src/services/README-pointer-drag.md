@@ -1,0 +1,1 @@
+This branch replaces flaky native HTML5 drag/drop registration with a pointer-driven bridge for TAYU draggable learning activities. It preserves existing React drag handlers while supporting mouse, trackpad, touch, and pen input consistently.
