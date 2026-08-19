@@ -1,0 +1,33 @@
+name: Patch Module 6-7 select help
+on:
+  push:
+    branches: [fresh-module67-drag-review]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fresh-module67-drag-review
+      - name: Replace drag wording with select wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('frontend/src/components/ModuleGlossary.jsx')
+          s=p.read_text()
+          s=s.replace("You may type a number, drag an answer card into the basket, move sliders to build a portfolio, sort items into categories, or make another hands-on choice.","You may type a number, select an answer, move sliders to build a portfolio, sort items into categories, or make another hands-on choice.")
+          s=s.replace("Work through bond decisions using drag-and-drop, typed calculations, and the portfolio sliders. Drag cards all the way into the answer basket and release them there.","Work through bond decisions by selecting answers, typing calculations, and adjusting the portfolio sliders.")
+          s=s.replace("Complete the practice return using typed math, drag-and-drop decisions, and the taxable-versus-excluded sorting activity.","Complete the practice return using typed math, simple answer selections, and the taxable-versus-excluded sorting activity.")
+          p.write_text(s)
+          PY
+      - name: Commit help update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/ModuleGlossary.jsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Module 6-7 help for click selection"
+          git push origin HEAD:fresh-module67-drag-review
