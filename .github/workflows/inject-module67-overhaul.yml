@@ -1,0 +1,52 @@
+name: Inject Module 6-7 gameplay overhaul
+on:
+  push:
+    branches: [module67-gameplay-overhaul]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: module67-gameplay-overhaul
+          fetch-depth: 0
+      - name: Wire rich challenges and clean ambient NPCs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          hud=Path('frontend/src/world/Hud.jsx')
+          s=hud.read_text()
+          imp="import { LateGameChallengePanel } from './LateGameChallengePanel.jsx'\n"
+          if imp not in s:
+              marker="import { useGame } from './store.js'\n"
+              s=s.replace(marker, marker+imp)
+          if "const lateWeek = useGame((s) => s.week)" not in s:
+              s=s.replace("function BottomSheet() {\n", "function BottomSheet() {\n  const lateWeek = useGame((s) => s.week)\n", 1)
+          s=s.replace("if (!card || dialog) return null", "if (!card || dialog || lateWeek === 6 || lateWeek === 7) return null", 1)
+          if '<LateGameChallengePanel />' not in s:
+              s=s.replace('      <BottomSheet />', '      <LateGameChallengePanel />\n      <BottomSheet />', 1)
+          hud.write_text(s)
+
+          world=Path('frontend/src/world/BondTaxBuildings.jsx')
+          w=world.read_text()
+          old_bond='''      <MovingNpc id="bond-courier" avatar={COURIER} from={[-6.0, 4.3]} to={[5.8, 3.7]} speed={0.42} phase={0.3} accent="#f5c542" />\n      <MovingNpc id="town-project-worker" avatar={CLIENT_C} from={[-1.5, 5.1]} to={[1.5, 1.8]} speed={0.31} phase={2.1} accent="#00b37f" />\n      <MovingNpc id="corporate-analyst" avatar={CLIENT_B} from={[5.5, 4.8]} to={[3.8, 1.2]} speed={0.38} phase={4.4} accent="#ff8a3d" />'''
+          new_bond='''      {/* One ambient walker only: no duplicate/elevating crowd. */}\n      <MovingNpc id="bond-courier" avatar={COURIER} from={[-6.0, 4.3]} to={[5.8, 3.7]} speed={0.62} phase={0.3} accent="#f5c542" />'''
+          w=w.replace(old_bond,new_bond)
+          old_tax='''      <MovingNpc id="postal-pat" avatar={COURIER} from={[-6.2, 4.9]} to={[-1.2, 3.0]} speed={0.4} phase={0.6} accent="#1464f0" />\n      <MovingNpc id="tax-clerk" avatar={CLERK} from={[5.4, 4.6]} to={[2.0, 1.4]} speed={0.28} phase={2.7} accent="#00dca0" />\n      <MovingNpc id="taxpayer-queue" avatar={CLIENT_A} from={[-3.7, 5.4]} to={[3.7, 5.4]} speed={0.25} phase={4.2} accent="#7850f0" />'''
+          new_tax='''      {/* One ambient walker only: keeps the office alive without duplicate NPCs. */}\n      <MovingNpc id="postal-pat" avatar={COURIER} from={[-6.2, 4.9]} to={[5.6, 4.1]} speed={0.58} phase={0.6} accent="#d86b45" />'''
+          w=w.replace(old_tax,new_tax)
+          # Make walking read as walking, not elevator bobbing.
+          w=w.replace("root.current.position.y = Math.abs(Math.sin(clock.elapsedTime * speed * 4 + phase)) * 0.025", "root.current.position.y = Math.abs(Math.sin(clock.elapsedTime * speed * 7 + phase)) * 0.008")
+          world.write_text(w)
+          PY
+      - name: Commit generated wiring
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/world/Hud.jsx frontend/src/world/BondTaxBuildings.jsx
+          git commit -m "Wire hands-on Module 6 and 7 gameplay"
+          git push origin HEAD:module67-gameplay-overhaul
