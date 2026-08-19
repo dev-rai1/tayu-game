@@ -1,6 +1,20 @@
-import { TAX_DISTRICT } from './config.js'
+import { STOP_ANGLES, TAX_DISTRICT, ringPoint } from './config.js'
 
-const worldPoint = (x, z) => [TAX_DISTRICT[0] + x, TAX_DISTRICT[1] + z]
+// Module 7 sits on a curved part of the ring. Rotate the entire Tax Office
+// interaction layout so its front/entrance points back toward the actual road
+// instead of staying locked to world +Z. This keeps the building visually on
+// the path and prevents the final district from looking like it hangs off-map.
+const TAX_ROAD = ringPoint(STOP_ANGLES.tax)
+const roadDx = TAX_ROAD[0] - TAX_DISTRICT[0]
+const roadDz = TAX_ROAD[1] - TAX_DISTRICT[1]
+const roadLen = Math.hypot(roadDx, roadDz) || 1
+const forward = [roadDx / roadLen, roadDz / roadLen]
+const right = [forward[1], -forward[0]]
+
+const worldPoint = (x, z) => [
+  TAX_DISTRICT[0] + right[0] * x + forward[0] * z,
+  TAX_DISTRICT[1] + right[1] * x + forward[1] * z,
+]
 
 export const TAX_POINTS = {
   guide: worldPoint(0, 6.1),
