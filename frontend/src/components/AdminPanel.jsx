@@ -72,6 +72,30 @@ export function AdminPanel({ showButton = true }) {
     : { n: 1, max: 1 }
   const jumpWeek = (d) => guard(() => g().adminJumpWeek(Math.max(1, Math.min(wkInfo.max, wkInfo.n + d))))()
 
+  // Skip just the current interaction without jumping the whole week/module.
+  // Late-game Bond/Tax modules are explicitly step-driven; earlier modules
+  // commonly expose their next progression action on the current card.
+  const skipCurrentStep = guard(() => {
+    const s = g()
+    if (s.week === 6 && typeof s.pushBondStep === 'function') {
+      s.adminClearUi?.()
+      s.pushBondStep((s.bondStep || 0) + 1)
+      return
+    }
+    if (s.week === 7 && typeof s.pushTaxStep === 'function') {
+      s.adminClearUi?.()
+      s.pushTaxStep((s.taxStep || 0) + 1)
+      return
+    }
+    const card = s.cards?.[0]
+    const action = card?.buttons?.find((button) => button?.act)?.act
+    if (action && typeof s.cardAct === 'function') {
+      s.cardAct(action)
+      return
+    }
+    throw new Error('No skippable step is active right now.')
+  })
+
   const addMoney = guard(() => {
     if (moduleStep === 6 || moduleStep === 7) return
     const amt = Math.max(0, Number(money) || 0)
@@ -137,6 +161,10 @@ export function AdminPanel({ showButton = true }) {
               {moduleStep === 6 ? 'Finale >' : 'Module >'}
             </button>
           </div>
+
+          <div className="mt-3 text-[11px] font-bold text-white/70">CURRENT ACTIVITY</div>
+          <button className={`${B} mt-1 w-full bg-teal text-navy`} onClick={skipCurrentStep}>Skip current step &gt;</button>
+          <div className="mt-1 text-[10px] leading-snug text-white/55">Moves to the next interaction inside the current week without skipping the entire module.</div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">
             {moduleStep === 6 ? 'PAYCHECK PLANET: IN-WORLD ACTIVITY' : moduleStep === 7 ? 'FINALE' : `WEEK ${wkInfo.n} of ${wkInfo.max}`}
