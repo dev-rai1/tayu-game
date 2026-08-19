@@ -16,6 +16,7 @@ import { PlaytestUxParity } from './components/PlaytestUxParity.jsx'
 import { ModalQueueSanitizer } from './components/ModalQueueSanitizer.jsx'
 import { CurriculumCarryoverBridge } from './components/CurriculumCarryoverBridge.jsx'
 import { armFirstGesture } from './services/audio.js'
+import { installPointerDragBridge } from './services/pointerDragBridge.js'
 import './world/replayGuidanceListener.js'
 import { MoneyGardenFlowGuide } from './world/MoneyGardenFlowGuide.jsx'
 
@@ -23,6 +24,7 @@ import { MoneyGardenFlowGuide } from './world/MoneyGardenFlowGuide.jsx'
 window.addEventListener('unhandledrejection', (e) => logTayuError('unhandledrejection', e.reason))
 window.addEventListener('error', (e) => logTayuError('window.onerror', e.message))
 armFirstGesture()
+installPointerDragBridge()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

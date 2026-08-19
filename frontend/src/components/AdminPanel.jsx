@@ -1,9 +1,8 @@
 // Teacher/demo admin controls. Public module numbering is:
 // 1 Market & Jars, 2 Lemonade, 3 Budget, 4 Bank,
-// 5 Money Garden, 6 Paycheck Planet, 7 Finale.
+// 5 Money Garden, 6 Bond Street, 7 TAYU Tax Office.
 import { useState, useEffect } from 'react'
 import { useGame } from '../world/store.js'
-import { isPaycheckWorldActive } from '../world/paycheckMode.js'
 import { currentUser } from '../services/auth.js'
 
 const ADMIN_PW = 'tayu1234'
@@ -16,20 +15,25 @@ const MODULE_NAME = {
   3: 'Budget Town',
   4: 'Bank of TAYU',
   5: 'Money Garden',
-  6: 'Paycheck Planet',
-  7: 'Finale Area',
+  6: 'Bond Street',
+  7: 'TAYU Tax Office',
 }
 
 function publicModuleStep(state) {
-  if (isPaycheckWorldActive()) return 6
-  if (state.gameComplete && state.objective === 'party') return 7
-  if (state.week === 5) return 5
-  return Math.max(1, Math.min(4, Number(state.week || 1)))
+  // The store now uses weeks 6 and 7 for the two late-game modules too.
+  // Do not infer the module from the old paycheck/finale flags because that
+  // made Admin report the wrong module and disabled the navigation buttons.
+  return Math.max(1, Math.min(7, Number(state.week || 1)))
 }
 
 function openPublicModule(step) {
-  localStorage.setItem('tayu-jump-module', String(step))
-  window.location.href = '/world'
+  const target = Math.max(1, Math.min(7, Number(step || 1)))
+  try {
+    localStorage.removeItem('tayu-module-entry-intent')
+    localStorage.removeItem('tayu-garden-entry-part')
+    localStorage.setItem('tayu-jump-module', String(target))
+  } catch { /* storage can be unavailable */ }
+  window.location.assign('/world')
 }
 
 export function AdminPanel({ showButton = true }) {
@@ -66,14 +70,44 @@ export function AdminPanel({ showButton = true }) {
   const moduleStep = open && adminUnlocked ? publicModuleStep(g()) : 1
   const moduleBack = guard(() => { if (moduleStep > 1) openPublicModule(moduleStep - 1) })
   const moduleForward = guard(() => { if (moduleStep < 7) openPublicModule(moduleStep + 1) })
+  const jumpModule = (step) => guard(() => openPublicModule(step))()
 
-  const wkInfo = open && adminUnlocked && moduleStep !== 6 && moduleStep !== 7
+  const wkInfo = open && adminUnlocked && moduleStep <= 5
     ? (() => { try { return g().adminCurrentWeek() } catch { return { n: 1, max: 1 } } })()
     : { n: 1, max: 1 }
-  const jumpWeek = (d) => guard(() => g().adminJumpWeek(Math.max(1, Math.min(wkInfo.max, wkInfo.n + d))))()
+
+  const jumpWeek = (d) => guard(() => {
+    const s = g()
+    if (moduleStep > 5 || typeof s.adminJumpWeek !== 'function') return
+    const fresh = s.adminCurrentWeek?.() || wkInfo
+    const target = Math.max(1, Math.min(fresh.max, fresh.n + d))
+    s.adminJumpWeek(target)
+  })()
+
+  // Skip just the current interaction without jumping the whole week/module.
+  const skipCurrentStep = guard(() => {
+    const s = g()
+    if (s.week === 6 && typeof s.pushBondStep === 'function') {
+      s.adminClearUi?.()
+      s.pushBondStep((s.bondStep || 0) + 1)
+      return
+    }
+    if (s.week === 7 && typeof s.pushTaxStep === 'function') {
+      s.adminClearUi?.()
+      s.pushTaxStep((s.taxStep || 0) + 1)
+      return
+    }
+    const card = s.cards?.[0]
+    const action = card?.buttons?.find((button) => button?.act)?.act
+    if (action && typeof s.cardAct === 'function') {
+      s.cardAct(action)
+      return
+    }
+    throw new Error('No skippable step is active right now.')
+  })
 
   const addMoney = guard(() => {
-    if (moduleStep === 6 || moduleStep === 7) return
+    if (moduleStep > 5) return
     const amt = Math.max(0, Number(money) || 0)
     if (!amt) return
     const s = g()
@@ -118,7 +152,7 @@ export function AdminPanel({ showButton = true }) {
 
       {open && adminUnlocked && (
         <div
-          className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] z-[1001] max-h-[calc(100dvh-5.5rem)] w-[320px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-white/15 p-4 font-mono text-white shadow-2xl"
+          className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] z-[1001] max-h-[calc(100dvh-5.5rem)] w-[340px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-white/15 p-4 font-mono text-white shadow-2xl"
           style={{ background: '#4A4A4A' }}
         >
           <div className="flex items-center justify-between">
@@ -131,24 +165,43 @@ export function AdminPanel({ showButton = true }) {
           {currentUser()?.role === 'admin' && (
             <a href="/dashboard" className="mt-2 grid min-h-[44px] place-items-center rounded-lg bg-teal px-3 text-sm font-bold text-navy">View player data</a>
           )}
+
           <div className="mt-2 flex gap-2">
             <button className={`${B} flex-1 bg-white/20`} disabled={moduleStep <= 1} onClick={moduleBack}>&lt; Module</button>
-            <button className={`${B} flex-1 bg-white text-black`} disabled={moduleStep >= 7} onClick={moduleForward}>
-              {moduleStep === 6 ? 'Finale >' : 'Module >'}
-            </button>
+            <button className={`${B} flex-1 bg-white text-black`} disabled={moduleStep >= 7} onClick={moduleForward}>Module &gt;</button>
           </div>
+
+          <div className="mt-2 grid grid-cols-4 gap-1.5" aria-label="Jump directly to module">
+            {[1, 2, 3, 4, 5, 6, 7].map((step) => (
+              <button
+                key={step}
+                className={`${B} min-h-[38px] px-2 ${moduleStep === step ? 'bg-teal text-navy' : 'bg-white/15 text-white'}`}
+                onClick={() => jumpModule(step)}
+              >
+                M{step}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 text-[11px] font-bold text-white/70">CURRENT ACTIVITY</div>
+          <button className={`${B} mt-1 w-full bg-teal text-navy`} onClick={skipCurrentStep}>Skip current step &gt;</button>
+          <div className="mt-1 text-[10px] leading-snug text-white/55">Moves to the next interaction inside the current week without skipping the entire module.</div>
 
           <div className="mt-3 text-[11px] font-bold text-white/70">
-            {moduleStep === 6 ? 'PAYCHECK PLANET: IN-WORLD ACTIVITY' : moduleStep === 7 ? 'FINALE' : `WEEK ${wkInfo.n} of ${wkInfo.max}`}
+            {moduleStep <= 5 ? `WEEK ${wkInfo.n} of ${wkInfo.max}` : moduleStep === 6 ? 'BOND STREET: STEP-BASED MODULE' : 'TAX OFFICE: STEP-BASED MODULE'}
           </div>
-          <div className="mt-1 flex gap-2">
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1 || moduleStep === 6 || moduleStep === 7} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
-            <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max || moduleStep === 6 || moduleStep === 7} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
-          </div>
+          {moduleStep <= 5 ? (
+            <div className="mt-1 flex gap-2">
+              <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n <= 1} onClick={() => jumpWeek(-1)}>&lt; Week back</button>
+              <button className={`${B} flex-1 bg-white/20`} disabled={wkInfo.n >= wkInfo.max} onClick={() => jumpWeek(+1)}>Week forward &gt;</button>
+            </div>
+          ) : (
+            <div className="mt-1 rounded-lg bg-white/10 px-3 py-2 text-[11px] text-white/70">Modules 6 and 7 progress by individual steps instead of weeks. Use “Skip current step” above.</div>
+          )}
 
           <div className="mt-3 text-[11px] font-bold text-white/70">ADD MONEY</div>
-          {moduleStep === 6 ? (
-            <div className="mt-1 rounded-lg bg-white/10 px-3 py-2 text-[11px] text-white/70">Paycheck Planet uses its own animated practice paycheck, so no admin money override is needed.</div>
+          {moduleStep > 5 ? (
+            <div className="mt-1 rounded-lg bg-white/10 px-3 py-2 text-[11px] text-white/70">Bond Street and the Tax Office use their own activity values, so the money override is disabled here.</div>
           ) : (
             <div className="mt-1 flex gap-2">
               <input
@@ -156,10 +209,9 @@ export function AdminPanel({ showButton = true }) {
                 onChange={(e) => setMoney(e.target.value.replace(/[^0-9.]/g, ''))}
                 onKeyDown={(e) => e.key === 'Enter' && addMoney()}
                 placeholder="$"
-                disabled={moduleStep === 7}
-                className="w-20 rounded-lg border border-white/30 bg-black/30 px-2 py-2 text-sm text-white outline-none disabled:opacity-40"
+                className="w-20 rounded-lg border border-white/30 bg-black/30 px-2 py-2 text-sm text-white outline-none"
               />
-              <button className={`${B} flex-1 bg-white text-black`} disabled={moduleStep === 7} onClick={addMoney}>Add</button>
+              <button className={`${B} flex-1 bg-white text-black`} onClick={addMoney}>Add</button>
             </div>
           )}
 
