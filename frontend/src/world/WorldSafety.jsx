@@ -3,10 +3,10 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RING } from './config.js'
 import { playerPos } from './store.js'
 
-// The island mesh has a radius of 69. The camera can orbit as far as 16 units
-// behind the player, so keeping the player within 51 units of the island center
-// guarantees that both the avatar and follow camera stay over rendered ground.
-export const WORLD_GROUND_RADIUS = 69
+// The late-game Bond/Tax districts now use a wider local ground apron, so the
+// playable safety radius is widened too. This prevents the player from being
+// invisibly pushed back while trying to walk around those larger districts.
+export const WORLD_GROUND_RADIUS = 77
 export const MAX_CAMERA_DISTANCE = 16
 export const WORLD_EDGE_MARGIN = 2
 export const PLAYER_SAFE_RADIUS = WORLD_GROUND_RADIUS - MAX_CAMERA_DISTANCE - WORLD_EDGE_MARGIN
@@ -20,9 +20,6 @@ export function clampToPlayableIsland(x, z) {
   return [RING.c[0] + dx * scale, RING.c[1] + dz * scale]
 }
 
-// Runs after Player in the scene tree. This closes the rectangular-corner gap
-// that previously let a learner walk beyond the circular island and see a
-// half-ground/half-blank view when the camera turned toward the map edge.
 export function WorldBoundaryGuard() {
   useFrame(() => {
     const [x, z] = clampToPlayableIsland(playerPos.x, playerPos.z)
@@ -32,11 +29,6 @@ export function WorldBoundaryGuard() {
   return null
 }
 
-// React Three Fiber normally tracks its parent with ResizeObserver. Mobile
-// browser chrome, orientation changes, split-screen windows, and compressed
-// screen-sharing layouts can change the visual viewport without producing a
-// reliable parent resize. Re-sync the renderer, camera, and viewport whenever
-// any of those surfaces change, and explicitly disable stale WebGL scissoring.
 export function CanvasViewportGuard() {
   const { gl, camera, setSize, size } = useThree()
   const sizeRef = useRef(size)

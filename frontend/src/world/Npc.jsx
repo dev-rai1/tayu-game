@@ -7,18 +7,38 @@ import { useGame } from './store.js'
 
 // Reusable NPC = a recolored character + a billboarded name tag + gentle idle
 // bob. Dialogue is driven from the store and shown as a DOM speech panel (Hud).
-// This is the base for Penny, Mr. Bram, Theo, Mia, Grandma Rose, Coach Dollar.
-export function Npc({ id, name, avatar, position, faceCamera = false, accent = '#7850F0' }) {
+// `walking` enables a real arm/leg stride so moving NPCs do not look like they
+// are sliding across the ground.
+export function Npc({ id, name, avatar, position, faceCamera = false, accent = '#7850F0', walking = false, walkSpeed = 7 }) {
   const root = useRef()
   const mesh = useRef()
   const t = useRef(Math.random() * 10)
+  const limbs = useRef(null)
   const tex = labelTexture(name, { accent })
 
   useFrame((_, d) => {
     t.current += d
-    if (root.current) root.current.position.y = position[1] + Math.sin(t.current * 1.8) * 0.04
-    if (mesh.current && !faceCamera) mesh.current.rotation.y = Math.sin(t.current * 0.4) * 0.25
-    // light up the name tag when the player is talking to / near this npc
+    if (mesh.current && !limbs.current) {
+      limbs.current = {
+        ll: mesh.current.getObjectByName('leftLeg'),
+        rl: mesh.current.getObjectByName('rightLeg'),
+        la: mesh.current.getObjectByName('leftArm'),
+        ra: mesh.current.getObjectByName('rightArm'),
+      }
+    }
+    const stride = walking ? Math.sin(t.current * walkSpeed) * 0.52 : 0
+    if (limbs.current) {
+      if (limbs.current.ll) limbs.current.ll.rotation.x = stride
+      if (limbs.current.rl) limbs.current.rl.rotation.x = -stride
+      if (limbs.current.la) limbs.current.la.rotation.x = -stride * 0.72
+      if (limbs.current.ra) limbs.current.ra.rotation.x = stride * 0.72
+    }
+    if (root.current) {
+      root.current.position.y = position[1] + (walking
+        ? Math.abs(Math.sin(t.current * walkSpeed * 2)) * 0.018
+        : Math.sin(t.current * 1.8) * 0.04)
+    }
+    if (mesh.current && !faceCamera && !walking) mesh.current.rotation.y = Math.sin(t.current * 0.4) * 0.25
   })
 
   return (
