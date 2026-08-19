@@ -46,7 +46,7 @@ function MovingNpc({ id, avatar, from, to, speed = 0.35, phase = 0, accent = '#1
     const eased = wave * wave * (3 - 2 * wave)
     root.current.position.x = lerp(from[0], to[0], eased)
     root.current.position.z = lerp(from[1], to[1], eased)
-    root.current.position.y = Math.abs(Math.sin(clock.elapsedTime * speed * 4 + phase)) * 0.025
+    root.current.position.y = Math.abs(Math.sin(clock.elapsedTime * speed * 7 + phase)) * 0.008
     root.current.rotation.y = wave > 0.5 ? Math.atan2(to[0] - from[0], to[1] - from[1]) : Math.atan2(from[0] - to[0], from[1] - to[1])
   })
   return <group ref={root}><Npc id={id} name="" avatar={avatar} position={[0, 0, 0]} accent={accent} /></group>
@@ -135,9 +135,8 @@ function StepActivity({ data, step, feedback }) {
 function BondStreetLife({ active, step }) {
   return (
     <>
-      <MovingNpc id="bond-courier" avatar={COURIER} from={[-6.0, 4.3]} to={[5.8, 3.7]} speed={0.42} phase={0.3} accent="#f5c542" />
-      <MovingNpc id="town-project-worker" avatar={CLIENT_C} from={[-1.5, 5.1]} to={[1.5, 1.8]} speed={0.31} phase={2.1} accent="#00b37f" />
-      <MovingNpc id="corporate-analyst" avatar={CLIENT_B} from={[5.5, 4.8]} to={[3.8, 1.2]} speed={0.38} phase={4.4} accent="#ff8a3d" />
+      {/* One ambient walker only: no duplicate/elevating crowd. */}
+      <MovingNpc id="bond-courier" avatar={COURIER} from={[-6.0, 4.3]} to={[5.8, 3.7]} speed={0.62} phase={0.3} accent="#f5c542" />
       <FlyingEnvelope from={[-4.3, 1.6]} to={[0.2, 3.2]} phase={0.05} active={active && step >= 2} />
       <FlyingEnvelope from={[0, 2.4]} to={[0.2, 3.2]} phase={0.38} active={active && step >= 3} />
       <FlyingEnvelope from={[4.3, 1.6]} to={[0.2, 3.2]} phase={0.7} active={active && step >= 5} />
@@ -148,9 +147,8 @@ function BondStreetLife({ active, step }) {
 function TaxOfficeLife({ active, step }) {
   return (
     <>
-      <MovingNpc id="postal-pat" avatar={COURIER} from={[-6.2, 4.9]} to={[-1.2, 3.0]} speed={0.4} phase={0.6} accent="#1464f0" />
-      <MovingNpc id="tax-clerk" avatar={CLERK} from={[5.4, 4.6]} to={[2.0, 1.4]} speed={0.28} phase={2.7} accent="#00dca0" />
-      <MovingNpc id="taxpayer-queue" avatar={CLIENT_A} from={[-3.7, 5.4]} to={[3.7, 5.4]} speed={0.25} phase={4.2} accent="#7850f0" />
+      {/* One ambient walker only: keeps the office alive without duplicate NPCs. */}
+      <MovingNpc id="postal-pat" avatar={COURIER} from={[-6.2, 4.9]} to={[5.6, 4.1]} speed={0.58} phase={0.6} accent="#d86b45" />
       <FlyingEnvelope from={[-6.0, 5.0]} to={[0.2, 3.0]} phase={0.2} active={active && step >= 1} />
       <FlyingEnvelope from={[0.2, 3.0]} to={[4.3, 1.6]} phase={0.58} active={active && step >= 10} />
     </>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame } from './store.js'
+import { LateGameChallengePanel } from './LateGameChallengePanel.jsx'
 import { JARS, STORE_ITEMS } from './config.js'
 import {
   BUNDLES, PROFIT_GOAL, HOURS_OPTIONS, QUALITY, SIGNS, WAGE_RATES,
@@ -406,6 +407,7 @@ function PortfolioPanel() {
 // THE sequential bottom sheet (G2/F6): renders exactly ONE card at a time.
 // Every instructional beat in the Money Garden flows through here.
 function BottomSheet() {
+  const lateWeek = useGame((s) => s.week)
   const card = useGame((s) => s.cards[0])
   const cardCount = useGame((s) => s.cards.length)
   const dialog = useGame((s) => s.dialog)
@@ -416,7 +418,7 @@ function BottomSheet() {
     const t = setTimeout(() => setToast('Take your time! Tap a button when you are ready.'), 20000)
     return () => clearTimeout(t)
   }, [card, setToast])
-  if (!card || dialog) return null
+  if (!card || dialog || lateWeek === 6 || lateWeek === 7) return null
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[92px] z-[320] flex max-h-[calc(100vh-108px)] justify-center overflow-y-auto p-4">
       <div className="pop-in w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
@@ -1435,6 +1437,7 @@ export function Hud({ playerName, onContinue }) {
       <CostTemplatePanel />
       <PoolPanel />
       <WeekEndCards playerName={playerName} />
+      <LateGameChallengePanel />
       <BottomSheet />
       <DockedControls />
       <PortfolioPanel />
