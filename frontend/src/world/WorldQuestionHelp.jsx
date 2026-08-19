@@ -1,35 +1,41 @@
 import { useMemo, useState } from 'react'
-import { LEARN } from '../scenarios/learnLinks.js'
+import { LEARN, LEARNING_RESOURCES } from '../scenarios/learnLinks.js'
 import { readPhysicalModuleLaunch } from './physicalModuleLaunch.js'
 import { usesTouchControls } from './controlMode.js'
+import { useGame } from './store.js'
 
 const GENERAL_RESOURCES = [LEARN.jars, LEARN.budgeting, LEARN.investIntro].filter(Boolean)
-const BOND_RESOURCES = [
-  LEARN.investIntro,
-  LEARN.risk,
-  LEARN.allocation,
-].filter(Boolean)
-const TAX_RESOURCES = [
-  LEARN.studentTaxes,
-  LEARN.withholding,
-  LEARN.paystub,
-].filter(Boolean)
+
+const MODULE_DESTINATIONS = {
+  1: 'The Market & Jars',
+  2: 'The Lemonade Stand',
+  3: 'Budget Town',
+  4: 'The Bank of TAYU',
+  5: 'Money Garden',
+  6: 'Bond Street',
+  7: 'TAYU Tax Office',
+}
+
+const MODULE_INSTRUCTIONS = {
+  6: 'You arrive in front of Bond Street. Talk to Ben, then make decisions at the Treasury, Municipal, and Corporate booths. Expect interest math, risk comparisons, and a final portfolio choice.',
+  7: 'You arrive at the TAYU Tax Office. Talk to Rex, then work through the W-2, income, deductions, bracket, capital-gains, and e-file decisions. The module includes real arithmetic, not just reading.',
+}
+
+function resourcesFor(moduleNumber) {
+  const group = LEARNING_RESOURCES.find((entry) => entry.number === moduleNumber)
+  if (!group) return GENERAL_RESOURCES
+  return group.items.map((key) => LEARN[key]).filter(Boolean)
+}
 
 export function WorldQuestionHelp() {
   const [open, setOpen] = useState(false)
+  const week = useGame((state) => state.week)
   const touch = usesTouchControls
   const physicalModule = readPhysicalModuleLaunch()
-  const resources = useMemo(() => {
-    if (physicalModule === 6) return BOND_RESOURCES
-    if (physicalModule === 7) return TAX_RESOURCES
-    return GENERAL_RESOURCES
-  }, [physicalModule])
+  const moduleNumber = physicalModule || (week === 6 || week === 7 ? week : null)
 
-  const destination = physicalModule === 6
-    ? 'Bond Street'
-    : physicalModule === 7
-      ? 'TAYU Tax Office'
-      : 'TAYU World'
+  const resources = useMemo(() => resourcesFor(moduleNumber), [moduleNumber])
+  const destination = MODULE_DESTINATIONS[moduleNumber] || 'TAYU World'
 
   return (
     <div className="tayu-qhelp-dock pointer-events-none absolute left-4 top-[5.75rem] z-[1450] sm:left-5 sm:top-[6rem]">
@@ -61,10 +67,13 @@ export function WorldQuestionHelp() {
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
             <h3 className="font-display text-base font-black">Instructions</h3>
             <p className="mt-1 text-sm font-semibold leading-relaxed text-navy/75">
-              Walk through the 3D town to the highlighted building. Get close to a glowing person or object, then {touch ? 'tap the interaction button' : 'press E or click it'} to continue. You can keep moving between interactions.
+              Walk through the 3D town to the highlighted destination. Get close to a glowing person or object, then {touch ? 'tap the interaction button' : 'press E or click it'} to continue. Follow the choices and feedback instead of rushing through the cards.
             </p>
-            {physicalModule === 6 && <p className="mt-2 text-sm font-bold text-[#557d38]">You arrive in front of Bond Street. Walk through the entrance, talk to Beau, then visit the three borrower booths.</p>}
-            {physicalModule === 7 && <p className="mt-2 text-sm font-bold text-[#d66d28]">The Tax Office comes after Bond Street. Enter the separate orange building and work through the tax stations in order.</p>}
+            {MODULE_INSTRUCTIONS[moduleNumber] && (
+              <p className={`mt-2 text-sm font-bold ${moduleNumber === 6 ? 'text-[#557d38]' : 'text-[#d66d28]'}`}>
+                {MODULE_INSTRUCTIONS[moduleNumber]}
+              </p>
+            )}
           </div>
 
           <div className="mt-4">
@@ -77,6 +86,7 @@ export function WorldQuestionHelp() {
 
           <div className="mt-4">
             <h3 className="font-display text-base font-black">Learning resources</h3>
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-navy/60">These links match the concepts taught in this module.</p>
             <div className="mt-2 flex flex-col gap-2">
               {resources.map((resource) => (
                 <a key={resource.url} href={resource.url} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-electric transition hover:bg-slate-50">

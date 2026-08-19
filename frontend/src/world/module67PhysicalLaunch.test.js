@@ -19,13 +19,10 @@ const taxCheck = fs.readFileSync(path.resolve('src/components/PaycheckCompletion
 
 describe('Module 6 and 7 physical launch flow', () => {
   it('routes Module 6 and 7 through the standard Start-gate entry (card-driven town flow)', () => {
-    // Modules 6/7 now use the same entry as every other module: set the entry
-    // intent and navigate; the world shows the Start gate, and clicking Start
-    // begins the card-driven Bond/Tax flow. No paycheck world.
     expect(moduleSelect).not.toContain('preparePhysicalModuleLaunch(target.n)')
     expect(moduleSelect).toContain("moduleId: String(target.n)")
     expect(moduleSelect).toContain("nav('/world')")
-    expect(gameWorld).toContain('<BondTaxBuildings />')
+    expect(gameWorld).toContain('<BondTaxBuildings week={week} bondStep={bondStep} taxStep={taxStep} choiceFeedback={choiceFeedback} />')
   })
 
   it('clears stale earlier-module messages and completion state before entering 6 or 7', () => {
@@ -102,7 +99,7 @@ describe('Module 6 and 7 physical launch flow', () => {
     expect(questionHelp).toContain('Open instructions and learning resources')
     expect(questionHelp).toContain('Instructions')
     expect(questionHelp).toContain('Learning resources')
-    expect(questionHelp).toContain("? 'Bond Street'")
+    expect(questionHelp).toContain("6: 'Bond Street'")
     expect(questionHelp).toContain('You arrive in front of Bond Street.')
     expect(questionHelp).toContain('TAYU Tax Office')
   })

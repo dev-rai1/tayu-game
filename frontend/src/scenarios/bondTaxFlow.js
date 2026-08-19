@@ -1,114 +1,158 @@
-// Modules 6 (Bond Street) and 7 (Tax Office), rebuilt as card-driven decision
-// flows that run over the normal town scene - exactly like the other modules use
-// openDialog + pushCards. No separate "paycheck world" scene, so there is no
-// second WebGL context and no blue screen. Content follows the OrangeConsulting
-// review: bonds taught as lending, and a simplified but accurate tax return.
-//
-// Each step is either a teaching card ({ text, continue }) or a decision
-// ({ text, choices:[{ label, correct, feedback }] }). The store turns these into
-// cards; a wrong choice shows feedback and re-asks, a right choice advances.
+// Modules 6 (Bond Street) and 7 (TAYU Tax Office).
+// These flows deliberately favor short decisions, comparisons, and real arithmetic
+// over lecture cards. Wrong answers give targeted feedback and retry; correct
+// answers move the player through the district.
 
 export const BOND_INTRO = [
-  'Welcome to Bond Street! I am Ben, your bond guide.',
-  'A stock made you an OWNER. A bond is different: a bond is a LOAN you make.',
-  'You lend your money to a borrower. They pay you interest and return your money later.',
+  'Welcome to Bond Street! I am Ben.',
+  'Stocks make you an owner. Bonds make you a lender.',
+  'Meet three borrowers, compare their offers, and build a bond plan.',
 ]
 
 export const BOND_STEPS = [
   {
     speaker: 'Ben · Bond Guide',
-    text: 'Three borrowers want your money. TREASURY is the government - the safest, but pays the lowest interest. MUNICIPAL (a town) pays interest that can be tax-free. CORPORATE (a company) pays the most interest, but has the most risk.',
-    continue: 'Meet the borrowers',
+    text: 'Three booths are open. Treasury is the U.S. government, Municipal is a town, and Corporate is a company. Which booth is usually the lowest-risk borrower?',
+    choices: [
+      { label: 'Treasury', correct: true, feedback: 'Yes. U.S. Treasury debt is generally treated as the lowest-credit-risk choice of these three.' },
+      { label: 'Municipal', correct: false, feedback: 'A municipal bond can be strong, but the Treasury booth is generally the lower-credit-risk choice here.' },
+      { label: 'Corporate', correct: false, feedback: 'Companies can fail, so corporate bonds usually need to offer more yield to compensate for more credit risk.' },
+    ],
   },
   {
-    speaker: 'Ben · Bond Guide',
-    text: 'You have $90 to lend. You want the SAFEST steady interest, even if it is not the biggest. Who do you lend to?',
+    speaker: 'Treasury Teller',
+    text: 'Math stop: You lend $100 at 4% simple annual interest for one year. How much interest do you earn?',
     choices: [
-      { label: 'Treasury (government)', correct: true, feedback: 'Right. A Treasury bond is backed by the government, so it is the safest loan you can make. Lower interest, but very steady.' },
-      { label: 'Corporate (a new company)', correct: false, feedback: 'Corporate bonds pay more, but a company can struggle to pay you back. That is more risk than you asked for. Try again.' },
-      { label: 'A friend with no job', correct: false, feedback: 'A borrower who may not repay is the riskiest of all. Bonds are only as safe as the borrower. Try again.' },
+      { label: '$4', correct: true, feedback: 'Correct: $100 × 0.04 = $4 of interest.' },
+      { label: '$40', correct: false, feedback: 'That would be 40%. Convert 4% to 0.04 first, then multiply.' },
+      { label: '$104', correct: false, feedback: '$104 is principal plus interest. The question asks for interest only.' },
+    ],
+  },
+  {
+    speaker: 'Municipal Teller',
+    text: 'Two bonds both pay $5 of interest. The municipal bond interest is federally tax-exempt; the corporate interest is taxable. If everything else were equal, which leaves you with more after federal tax?',
+    choices: [
+      { label: 'Municipal bond', correct: true, feedback: 'Right. If the interest is federally tax-exempt, you keep more of that $5 after federal tax.' },
+      { label: 'Corporate bond', correct: false, feedback: 'The corporate interest is taxable in this example, so some of the $5 may go to federal tax.' },
+      { label: 'Always exactly equal', correct: false, feedback: 'Not when one interest payment is tax-exempt and the other is taxable.' },
+    ],
+  },
+  {
+    speaker: 'Corporate Teller',
+    text: 'Decision stop: Treasury offers 4%. A riskier company offers 7%. Why would the company usually need to offer a higher rate?',
+    choices: [
+      { label: 'To compensate lenders for more risk', correct: true, feedback: 'Exactly. More default risk generally means investors demand a higher yield.' },
+      { label: 'Because corporate bonds are always safer', correct: false, feedback: 'It is the opposite here: the company is riskier, so it must make the offer more attractive.' },
+      { label: 'Because interest has nothing to do with risk', correct: false, feedback: 'Risk and required return are closely linked. More risk usually requires more potential return.' },
     ],
   },
   {
     speaker: 'Ben · Bond Guide',
-    text: 'Here is a bond surprise: when NEW bonds start paying HIGHER interest, your older, lower-interest bond is worth LESS if you try to sell it early. Prices and interest rates move in opposite directions.',
-    continue: 'Got it',
-  },
-  {
-    speaker: 'Ben · Bond Guide',
-    text: 'If a company FAILS, who gets paid back first - the people who lent it money, or the people who own shares?',
+    text: 'Rate-shock challenge: Your old bond pays 3%. New similar bonds now pay 6%. If you try to sell the old 3% bond, what usually happens to its price?',
     choices: [
-      { label: 'Bondholders (the lenders)', correct: true, feedback: 'Correct. Lenders have a higher claim than owners, so bondholders are paid before stockholders. That is one reason bonds usually move less than stocks.' },
-      { label: 'Stockholders (the owners)', correct: false, feedback: 'Owners are paid LAST if a company fails. Lenders (bondholders) come first. Try again.' },
+      { label: 'It falls', correct: true, feedback: 'Correct. Buyers prefer the new 6% bonds, so the older 3% bond generally must sell for less.' },
+      { label: 'It rises', correct: false, feedback: 'Think like a buyer: why pay extra for 3% when new similar bonds pay 6%?' },
+      { label: 'Rates cannot affect bond prices', correct: false, feedback: 'They do. Bond prices and market interest rates generally move in opposite directions.' },
     ],
   },
   {
     speaker: 'Ben · Bond Guide',
-    text: 'You want steadier money and to be first in line if things go wrong. Do you buy a STOCK (ownership) or a BOND (a loan)?',
+    text: 'Failure scenario: A company collapses. Who generally has the higher claim on company assets?',
     choices: [
-      { label: 'Bond (lend the money)', correct: true, feedback: 'Good judgment. For steadier returns and a higher claim, a bond fits. Stocks can grow more, but move more too.' },
-      { label: 'Stock (own a piece)', correct: false, feedback: 'Stocks can grow more but wiggle more and pay owners last. For "steadier and safer," a bond is the better fit here. Try again.' },
+      { label: 'Bondholders', correct: true, feedback: 'Yes. Lenders generally rank ahead of common stockholders in the capital structure.' },
+      { label: 'Common stockholders', correct: false, feedback: 'Common owners are usually farther back in line. Bondholders generally have the higher claim.' },
     ],
   },
   {
     speaker: 'Ben · Bond Guide',
-    text: 'Nicely done. Your Treasury and municipal bonds are earning interest. Remember: your MUNICIPAL bond interest can be tax-free. You will see exactly why at the Tax Office in the next module. Bond Street complete!',
+    text: 'Final portfolio choice: You want steadier income and lower risk, but you still want some extra yield. Which plan is most balanced?',
+    choices: [
+      { label: '$60 Treasury + $30 Municipal + $10 Corporate', correct: true, feedback: 'Strong fit. Most money is in the lower-risk booths, with a smaller slice taking extra corporate risk.' },
+      { label: '$100 Corporate', correct: false, feedback: 'That concentrates all your money in the highest-risk booth, which does not match the goal.' },
+      { label: '$100 in one friend’s IOU', correct: false, feedback: 'That is concentrated and hard to evaluate. Diversifying across stronger borrowers better fits the goal.' },
+    ],
+  },
+  {
+    speaker: 'Ben · Bond Guide',
+    text: 'Bond Street complete. You compared credit risk, calculated interest, handled rate risk, and built a diversified lending plan.',
     continue: 'Finish Bond Street',
     done: true,
   },
 ]
 
 export const TAX_INTRO = [
-  'Welcome to the TAYU Tax Office. I am Rex, your tax assessor.',
-  'Every year you add up what you earned, subtract what the rules let you, and pay tax on the rest.',
-  'Let us walk through one simple return together, station by station.',
+  'Welcome to the TAYU Tax Office. I am Rex.',
+  'You will build one simplified return by making choices and checking the math.',
+  'Start at the W-2 desk, then move through deductions, brackets, gains, and e-file.',
 ]
 
 export const TAX_STEPS = [
   {
-    speaker: 'Rex · Tax Assessor',
-    text: 'STATION 1 - Your W-2. Box 1 shows your WAGES (what a job paid you). Box 2 shows the tax already WITHHELD - money sent ahead toward your bill. A side hustle like a lemonade stand is different: it is self-employment income and goes on Schedule C, because no boss withheld tax for you.',
-    continue: 'Next station',
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'STATION 2 - Total income. We add up wages + lemonade profit + your stock capital gain + taxable bond interest. That is your income BEFORE the muni exclusion and the standard deduction. Now, a question about that bond interest...',
-    continue: 'Continue',
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'Your MUNICIPAL bond interest - does the federal government tax it?',
+    speaker: 'W-2 Desk',
+    text: 'Your W-2 shows $1,200 of wages and $120 of federal income tax withheld. What does “withheld” mean?',
     choices: [
-      { label: 'No, muni interest is excluded', correct: true, feedback: 'Correct! Municipal bond interest is EXCLUDED from federal taxable income. That is the muni tax benefit you heard about on Bond Street. Your corporate/taxable interest still counts.' },
-      { label: 'Yes, it is taxed like wages', correct: false, feedback: 'Not quite. Municipal bond interest is EXCLUDED from federal tax - that is the whole point of the muni benefit. Try again.' },
+      { label: '$120 was already sent toward your tax bill', correct: true, feedback: 'Correct. Withholding is tax sent in during the year on your behalf.' },
+      { label: '$120 is extra wages you received', correct: false, feedback: 'No. Withholding is money sent toward taxes, not extra take-home pay.' },
+      { label: 'You automatically owe exactly $120', correct: false, feedback: 'Withholding is a prepayment. Your final tax can be lower or higher after the return is calculated.' },
+    ],
+  },
+  {
+    speaker: 'Income Desk',
+    text: 'Math stop: You earned $1,200 in wages and $300 of lemonade profit. Before any exclusions or deductions, what is your total income from these two sources?',
+    choices: [
+      { label: '$1,500', correct: true, feedback: 'Correct: $1,200 + $300 = $1,500.' },
+      { label: '$900', correct: false, feedback: 'You subtracted. For total income, add the income sources.' },
+      { label: '$1,200', correct: false, feedback: 'Do not forget the $300 lemonade profit.' },
+    ],
+  },
+  {
+    speaker: 'Bond Income Desk',
+    text: 'You also received $40 of municipal-bond interest and $20 of taxable corporate-bond interest. Which amount is generally included in federal taxable interest here?',
+    choices: [
+      { label: '$20', correct: true, feedback: 'Right. The corporate interest is taxable here; the municipal interest is federally tax-exempt in this simplified example.' },
+      { label: '$60', correct: false, feedback: 'That taxes the municipal interest too. In this example, the $40 muni interest is excluded federally.' },
+      { label: '$0', correct: false, feedback: 'The $20 corporate-bond interest is still taxable.' },
+    ],
+  },
+  {
+    speaker: 'Deductions Desk',
+    text: 'Practice return: Your income included for this simplified calculation is $1,520. You get a $500 practice deduction. What taxable income remains?',
+    choices: [
+      { label: '$1,020', correct: true, feedback: 'Correct: $1,520 − $500 = $1,020 taxable income.' },
+      { label: '$2,020', correct: false, feedback: 'A deduction reduces taxable income. Subtract, do not add.' },
+      { label: '$500', correct: false, feedback: '$500 is the deduction itself, not the amount left after the deduction.' },
+    ],
+  },
+  {
+    speaker: 'Bracket Desk',
+    text: 'Bracket math: In this practice game, the first $500 is taxed at 10% and the next $520 at 20%. What is the tax?',
+    choices: [
+      { label: '$154', correct: true, feedback: 'Correct: $500×10% = $50 and $520×20% = $104. Total = $154.' },
+      { label: '$204', correct: false, feedback: 'That taxes all $1,020 at 20%. A progressive bracket applies each rate only to the dollars in that bracket.' },
+      { label: '$102', correct: false, feedback: 'That is 10% of all taxable income, but the upper $520 uses the 20% practice rate.' },
+    ],
+  },
+  {
+    speaker: 'Capital Gains Desk',
+    text: 'You bought a stock for $80 and later sold it for $110. What is the capital gain?',
+    choices: [
+      { label: '$30', correct: true, feedback: 'Correct: sale price $110 − cost $80 = $30 gain.' },
+      { label: '$110', correct: false, feedback: '$110 is the sale price, not the gain. Subtract what you paid.' },
+      { label: '$80', correct: false, feedback: '$80 is your cost basis, not the profit.' },
+    ],
+  },
+  {
+    speaker: 'E-File Desk',
+    text: 'The computer says: “Tax the $40 municipal interest and ignore the $20 corporate interest.” What should you do?',
+    choices: [
+      { label: 'Flag it and reverse those two treatments', correct: true, feedback: 'Great catch. In this simplified federal example, the muni interest is excluded and the corporate interest is taxable.' },
+      { label: 'File it exactly as shown', correct: false, feedback: 'That would keep the planted error. Check which interest is tax-exempt and which is taxable.' },
+      { label: 'Delete all interest from the return', correct: false, feedback: 'The taxable corporate interest still belongs in the return.' },
     ],
   },
   {
     speaker: 'Rex · Tax Assessor',
-    text: 'STATION 3 - The deduction. The standard deduction lowers the amount that gets taxed. Taxable income = your income minus the deduction. You never pay tax on the full amount you earned.',
-    continue: 'Next station',
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'STATION 4 - Brackets. Not all your money is taxed the same. The first dollars are taxed at a low rate, and only the dollars ABOVE that use a higher rate. That is what a tax bracket means.',
-    continue: 'Got it',
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'STATION 5 - Capital gains. Your profit from SELLING a stock is a capital gain, and it has its OWN lower rate schedule. Short-term gains (held under a year) are taxed like ordinary income; long-term gains (held over a year) use a lower rate.',
-    continue: 'Next station',
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'STATION 6 - E-File. The computer filled out your return, but it made a mistake: it TAXED your municipal bond interest. Catch the error - is that correct?',
-    choices: [
-      { label: 'No - muni interest is excluded', correct: true, feedback: 'Great catch! Muni interest should NOT be taxed federally. You fixed the return. This is why you always check before you file.' },
-      { label: 'Yes, tax everything', correct: false, feedback: 'Look again - municipal interest is excluded from federal tax. Taxing it is the planted error. Try again.' },
-    ],
-  },
-  {
-    speaker: 'Rex · Tax Assessor',
-    text: 'Return filed correctly! You matched income, excluded muni interest, applied the deduction, used the brackets, and handled the capital gain on its own schedule. That is a real tax return. Tax Office complete!',
+    text: 'Return complete. You read withholding, added income, excluded muni interest, used a deduction, calculated brackets, found a capital gain, and caught an e-file error.',
     continue: 'Finish Tax Office',
     done: true,
   },

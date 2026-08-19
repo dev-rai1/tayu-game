@@ -20,13 +20,12 @@ describe('final-module real-map movement v2', () => {
     expect(world).not.toContain('AccessibleWorld')
     expect(world).not.toContain('TaxLabWorld')
     expect(gameWorld).toContain('<ModuleLandmarks />')
-    // Bond Street + Tax Office are now plain town buildings in one scene boundary.
-    expect(gameWorld).toContain('<SceneBoundary name="bond-tax"><BondTaxBuildings /></SceneBoundary>')
+    expect(gameWorld).toContain('name="bond-tax"')
+    expect(gameWorld).toContain('<BondTaxBuildings week={week} bondStep={bondStep} taxStep={taxStep} choiceFeedback={choiceFeedback} />')
     expect(fs.existsSync(path.resolve('src/world/TaxLabWorld.jsx'))).toBe(false)
   })
 
   it('teleports Explore launches for Module 6 or Module 7 to the district before module UI starts', () => {
-    // Modules 6/7 now spawn at their own buildings (BOND_ENTRY / TAX_ENTRY).
     expect(world).toContain("if (moduleId === '6') return [BOND_ENTRY[0], BOND_ENTRY[1]]")
     expect(world).toContain("if (moduleId === '7') return [TAX_ENTRY[0], TAX_ENTRY[1]]")
     expect(world).toContain('function teleportToModuleArrival(moduleId)')

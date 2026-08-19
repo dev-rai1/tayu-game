@@ -72,14 +72,6 @@ function settlePhysicalLaunchAfterCanvasMount() {
   const moduleId = readPhysicalModuleLaunch()
   if (!moduleId || typeof window === 'undefined') return
 
-  // Module 6 is part of the same shared town as Modules 1–5. Keep normal town
-  // mode active and only use the launch marker to place the player in front of
-  // Bond Street after Canvas/world initialization. Module 7 still uses tax mode.
-  // Both Module 6 (Bond Street) and Module 7 (Tax Office) run inside the shared
-  // interaction world. Module 6 previously turned this off to reuse the plain
-  // town map, but that also unmounted the Bond Street interaction bridge, so the
-  // module could never be started (pressing E did nothing). Keep it active for
-  // both; the launch marker still places the player at the right district.
   activatePaycheckWorld()
 
   placePhysicalModuleArrival(moduleId)
@@ -96,20 +88,21 @@ function settlePhysicalLaunchAfterCanvasMount() {
 export function GameWorld({ avatar }) {
   repairRuntimeState()
   const week = useGame((state) => state.week)
+  const bondStep = useGame((state) => state.bondStep)
+  const taxStep = useGame((state) => state.taxStep)
+  const activeCard = useGame((state) => state.cards?.[0] || null)
   const physicalModule = readPhysicalModuleLaunch()
-  // Only Module 7 needs the separate paycheck/tax scene styling. Module 6 must
-  // look and behave like the same main map used by every earlier module.
   const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()
-  // STAGE 1 of the Module 6/7 rebuild: render Bond Street and the Tax Office in
-  // the SAME scene as every working module. The only thing that made them a
-  // "separate scene" was this key flipping to a paycheck value, which remounted
-  // the Canvas and created a second WebGL context (the blue screen on devices
-  // that can't allocate one). Keying purely on week means entering Module 6/7
-  // uses the identical, proven rendering path the other modules use - no remount.
   const sceneKey = `week-${week ?? 0}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
+
+  const feedbackButton = activeCard?.buttons?.[0]
+  const feedbackAction = feedbackButton?.act || ''
+  const choiceFeedback = activeCard?.id?.startsWith('bondfb') || activeCard?.id?.startsWith('taxfb')
+    ? (feedbackAction.endsWith('.next') ? 'correct' : feedbackAction.endsWith('.reask') ? 'wrong' : null)
+    : null
 
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
@@ -126,11 +119,6 @@ export function GameWorld({ avatar }) {
             try {
               gl.getContext()
               if (typeof document !== 'undefined') document.documentElement.dataset.tayu3dReady = 'true'
-              // Make a lost GL context RECOVERABLE. By default a lost context is
-              // permanent (a dead navy canvas - the "blue screen"). Calling
-              // preventDefault lets the browser fire webglcontextrestored so the
-              // scene can come back instead of staying blank. Common on tablets/
-              // Chromebooks under memory pressure or when backgrounding the tab.
               const canvas = gl.domElement
               if (canvas && !canvas.dataset.ctxGuard) {
                 canvas.dataset.ctxGuard = '1'
@@ -167,7 +155,7 @@ export function GameWorld({ avatar }) {
             <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
             <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
             <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
-            <SceneBoundary name="bond-tax"><BondTaxBuildings /></SceneBoundary>
+            <SceneBoundary name="bond-tax"><BondTaxBuildings week={week} bondStep={bondStep} taxStep={taxStep} choiceFeedback={choiceFeedback} /></SceneBoundary>
             <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
             <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
             <SceneBoundary name="party"><PartyHouse /></SceneBoundary>
