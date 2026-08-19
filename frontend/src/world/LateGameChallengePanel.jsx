@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useGame } from './store.js'
 import { BOND_STEPS, TAX_STEPS } from '../scenarios/bondTaxFlow.js'
+import { PointerDragChoice } from './PointerDragChoice.jsx'
 
 const money = (s='') => Number(String(s).replace(/[^0-9.\-]/g,''))
 const accent = { 6:'#f4b942', 7:'#d86b45' }
@@ -138,6 +139,6 @@ export function LateGameChallengePanel(){
   return <div key={`${week}-${stepIndex}-${instance}`} className="pointer-events-auto absolute left-1/2 top-[92px] z-[340] max-h-[calc(100vh-110px)] w-[min(94vw,44rem)] -translate-x-1/2 overflow-y-auto rounded-[32px] border-2 border-white/70 p-5 shadow-2xl backdrop-blur-xl" style={{background:week===6?'linear-gradient(145deg,rgba(255,250,232,.97),rgba(238,244,255,.96))':'linear-gradient(145deg,rgba(255,247,235,.97),rgba(255,238,230,.96))',boxShadow:`0 24px 80px ${accent[week]}33`}}>
     <style>{`@keyframes lateSlide{to{background-position:64px 0}}@keyframes lateFloat{50%{transform:translateY(-9px) rotate(5deg)}}@keyframes lateStamp{50%{transform:translateY(7px) rotate(-7deg) scale(.92)}}`}</style>
     <ChallengeArt week={week} step={stepIndex}/><div className="flex items-start justify-between gap-4"><div><div className="text-[11px] font-black uppercase tracking-[.2em]" style={{color:accent[week]}}>{step.speaker}</div><h3 className="mt-1 text-xl font-black leading-snug text-navy">{step.text}</h3></div><div className="shrink-0 rounded-full bg-navy/5 px-3 py-1 text-xs font-black text-navy/50">{stepIndex+1}/{steps.length}</div></div>
-    {week===6&&stepIndex===10?<AllocationChallenge onPick={pick}/>:week===7&&stepIndex===4?<TaxSort onPick={pick}/>:numeric?<NumericChallenge step={step} onPick={pick}/>:<DragChoice step={step} onPick={pick}/>} 
+    {week===6&&stepIndex===10?<AllocationChallenge onPick={pick}/>:week===7&&stepIndex===4?<TaxSort onPick={pick}/>:numeric?<NumericChallenge step={step} onPick={pick}/>:<PointerDragChoice step={step} onPick={pick}/>} 
   </div>
 }
