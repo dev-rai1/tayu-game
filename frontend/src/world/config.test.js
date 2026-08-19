@@ -53,13 +53,13 @@ describe('world path separation', () => {
     expect(isClearOfModuleGates(ringPoint(120.5))).toBe(true)
   })
 
-  it('ends the normal road at Paycheck Planet and uses one gold Finale path', () => {
+  it('ends the road at the Tax stop and uses one normal Finale path', () => {
     const finalModuleGate = ringPoint(STOP_ANGLES.tax)
     expect(PATHS.ring.at(-1)).toEqual(finalModuleGate)
     expect(ROYAL_APPROACH.gate).toEqual(finalModuleGate)
     expect(PATHS.royalParty[0]).toEqual(finalModuleGate)
     expect(PATHS.royalParty.at(-1)).toEqual(ROYAL_APPROACH.entrance)
-    expect(PATHS.royalParty.length).toBeGreaterThanOrEqual(7)
+    expect(PATHS.royalParty.length).toBeGreaterThanOrEqual(6)
     expect(PATHS.royalPartyLeft).toBeUndefined()
     expect(PATHS.royalPartyRight).toBeUndefined()
   })
@@ -70,6 +70,7 @@ describe('world path separation', () => {
       'royalParty',
       'spurAllowance',
       'spurBank',
+      'spurBond',
       'spurBudget',
       'spurGarden',
       'spurJars',

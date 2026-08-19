@@ -18,7 +18,7 @@ export function getGuidance(st, touch = false) {
   if (st.dialog) return guide('FINISH THE CONVERSATION', 'Read what the character says.', 'Tap Next to continue')
   if (st.lessons?.length) return guide('READ THIS CARD', 'This short lesson explains your next decision.', 'Tap the large button at the bottom')
   if (st.cards?.length) return guide('MAKE THE CHOICE ON SCREEN', 'Read the current card, then choose one of its large buttons.', 'Your next step starts automatically')
-  if (st.objective === 'bond') return guide('TALK TO BEAU', 'Walk up to Beau at Bond Street and talk to him to begin.', `${act} beside Beau`)
+  if (st.objective === 'bond') return guide('TALK TO BEAU', 'Walk up to Ben at Bond Street and talk to him to begin.', `${act} beside Ben`)
   if (st.objective === 'tax') return guide('TALK TO REX', 'Walk up to Rex at the Tax Office and talk to him to begin.', `${act} beside Rex`)
   if (st.panelJar) return guide('ADD TO THIS JAR', 'Choose how many dollars this jar should receive.', 'Confirm the amount or close the panel')
   if (st.panelItem) return guide('CHECK THIS ITEM', 'Read its name, price, and type before buying.', 'Tap Buy or go back')

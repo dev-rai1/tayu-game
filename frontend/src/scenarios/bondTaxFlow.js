@@ -9,19 +9,19 @@
 // cards; a wrong choice shows feedback and re-asks, a right choice advances.
 
 export const BOND_INTRO = [
-  'Welcome to Bond Street! I am Beau, your bond guide.',
+  'Welcome to Bond Street! I am Ben, your bond guide.',
   'A stock made you an OWNER. A bond is different: a bond is a LOAN you make.',
   'You lend your money to a borrower. They pay you interest and return your money later.',
 ]
 
 export const BOND_STEPS = [
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'Three borrowers want your money. TREASURY is the government - the safest, but pays the lowest interest. MUNICIPAL (a town) pays interest that can be tax-free. CORPORATE (a company) pays the most interest, but has the most risk.',
     continue: 'Meet the borrowers',
   },
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'You have $90 to lend. You want the SAFEST steady interest, even if it is not the biggest. Who do you lend to?',
     choices: [
       { label: 'Treasury (government)', correct: true, feedback: 'Right. A Treasury bond is backed by the government, so it is the safest loan you can make. Lower interest, but very steady.' },
@@ -30,12 +30,12 @@ export const BOND_STEPS = [
     ],
   },
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'Here is a bond surprise: when NEW bonds start paying HIGHER interest, your older, lower-interest bond is worth LESS if you try to sell it early. Prices and interest rates move in opposite directions.',
     continue: 'Got it',
   },
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'If a company FAILS, who gets paid back first - the people who lent it money, or the people who own shares?',
     choices: [
       { label: 'Bondholders (the lenders)', correct: true, feedback: 'Correct. Lenders have a higher claim than owners, so bondholders are paid before stockholders. That is one reason bonds usually move less than stocks.' },
@@ -43,7 +43,7 @@ export const BOND_STEPS = [
     ],
   },
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'You want steadier money and to be first in line if things go wrong. Do you buy a STOCK (ownership) or a BOND (a loan)?',
     choices: [
       { label: 'Bond (lend the money)', correct: true, feedback: 'Good judgment. For steadier returns and a higher claim, a bond fits. Stocks can grow more, but move more too.' },
@@ -51,7 +51,7 @@ export const BOND_STEPS = [
     ],
   },
   {
-    speaker: 'Beau · Bond Guide',
+    speaker: 'Ben · Bond Guide',
     text: 'Nicely done. Your Treasury and municipal bonds are earning interest. Remember: your MUNICIPAL bond interest can be tax-free. You will see exactly why at the Tax Office in the next module. Bond Street complete!',
     continue: 'Finish Bond Street',
     done: true,

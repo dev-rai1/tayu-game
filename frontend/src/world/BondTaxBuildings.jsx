@@ -1,22 +1,21 @@
 import { Billboard, RoundedBox } from '@react-three/drei'
-import { TAX_DISTRICT } from './config.js'
+import { BOND_DISTRICT, TAX_DISTRICT } from './config.js'
 import { labelTexture } from './textures.js'
 
 // Bond Street and the Tax Office as plain town buildings that sit ON the island,
-// spaced apart with room between them - just like the Bank or Lemonade Stand.
-// No separate scene, no paycheck world. The card-driven flow (Beau / Rex) starts
-// on arrival; these are the landmarks the player spawns next to.
+// on their own ring stops with room between them - just like the Bank or
+// Lemonade Stand. No separate scene, no paycheck world. The card-driven flow
+// (Ben / Rex) starts when the player reaches the guide and starts the module.
 
-// Tax office at its ring stop; Bond exchange spaced along the ring, both well
-// inside the playable island.
+// Each district is its own ring stop now (spaced ~28 degrees apart).
+export const BOND_SPOT = [BOND_DISTRICT[0], BOND_DISTRICT[1]]
 export const TAX_SPOT = [TAX_DISTRICT[0], TAX_DISTRICT[1]]
-export const BOND_SPOT = [TAX_DISTRICT[0] - 15, TAX_DISTRICT[1] + 1]
 
 // Spawn points a few steps in front of each building (player faces the door).
 export const TAX_ENTRY = [TAX_SPOT[0], TAX_SPOT[1] + 6]
 export const BOND_ENTRY = [BOND_SPOT[0], BOND_SPOT[1] + 6]
 
-// Where Beau / Rex stand - the player walks up to them and talks to start.
+// Where Ben / Rex stand - the player walks up to them and talks to start.
 export const BOND_GUIDE = [BOND_SPOT[0] + 1.6, BOND_SPOT[1] + 2.4]
 export const TAX_GUIDE = [TAX_SPOT[0] + 1.7, TAX_SPOT[1] + 2.5]
 
@@ -76,7 +75,7 @@ function BondBuilding() {
         <mesh position={[0, -0.45, 0]} castShadow><boxGeometry args={[0.42, 1.0, 0.24]} /><meshStandardMaterial color="#f5c542" emissive="#f5c542" emissiveIntensity={0.2} /></mesh>
       </group>
       <SignLabel text="BOND STREET" color="#264a86" />
-      <Person x={1.6} z={2.4} shirt="#f5c542" name="Beau" nameColor="#264a86" />
+      <Person x={1.6} z={2.4} shirt="#f5c542" name="Ben" nameColor="#264a86" />
     </group>
   )
 }

@@ -176,11 +176,11 @@ export const useGame = create((set, get) => ({
     try { deactivatePaycheckWorld() } catch { /* no-op */ }
     playerPos.x = BOND_ENTRY[0]; playerPos.y = 1; playerPos.z = BOND_ENTRY[1]
     // Spawn on the map next to Bond Street. The module starts when the player
-    // walks up to Beau and talks to him (see Player.jsx / beginBond).
+    // walks up to Ben and talks to him (see Player.jsx / beginBond).
     set({ week: 6, objective: 'bond', weekComplete: false, pendingWeekComplete: false, bondStep: 0, cards: [], lessons: [], dialog: null })
   },
   beginBond: () => {
-    get().openDialog('Beau · Bond Guide', BOND_INTRO, () => get().pushBondStep(0))
+    get().openDialog('Ben · Bond Guide', BOND_INTRO, () => get().pushBondStep(0))
   },
   pushBondStep: (n) => {
     if (n >= BOND_STEPS.length) return

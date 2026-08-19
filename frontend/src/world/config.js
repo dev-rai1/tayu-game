@@ -30,7 +30,7 @@ const outerStopPoint = (deg, outward = 0) => {
 
 // Bank -> Money Garden -> Tax Office -> Finale now has real breathing room.
 // These angles deliberately create long frontage while staying inside the map.
-export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 44, garden: 22, tax: -10, party: -55 }
+export const STOP_ANGLES = { spawn: 180, allowance: 152, home: 131, market: 110, lemonade: 88, budget: 64, bank: 44, garden: 22, bond: -6, tax: -34, party: -84 }
 
 export const SCENERY_ZONES = [
   { angle: 166, theme: 'orchard', density: 3, accent: '#e05252' },
@@ -50,8 +50,10 @@ export const SCENERY_ZONES = [
 export const DISTRICT_GAP_ANGLES = SCENERY_ZONES.map((zone) => zone.angle)
 
 // More samples keep the longer road smooth through the final module gate.
+// The ring now runs all the way to the Tax stop (-34) so Bond Street and the
+// Tax Office both sit ON the main loop, spaced apart with room between them.
 export const RING_POINTS = [
-  ...Array.from({ length: 39 }, (_, i) => ringPoint(180 - i * 5)),
+  ...Array.from({ length: 44 }, (_, i) => ringPoint(180 - i * 5)),
   ringPoint(STOP_ANGLES.tax),
 ]
 
@@ -70,6 +72,7 @@ export const BUDGET_TOWN = sc([48, -42.5])
 export const BANK_DISTRICT = outerStopPoint(STOP_ANGLES.bank, 10)
 export const SPROUT = outerStopPoint(STOP_ANGLES.garden, 12)
 export const TAX_DISTRICT = outerStopPoint(STOP_ANGLES.tax, 12)
+export const BOND_DISTRICT = outerStopPoint(STOP_ANGLES.bond, 12)
 export const PARTY_HOUSE = (() => {
   const [px, pz] = ringPoint(STOP_ANGLES.party)
   const dx = px - CENTER[0], dz = pz - CENTER[1]
@@ -113,13 +116,15 @@ export const PATHS = {
   spurBudget: [ringPoint(STOP_ANGLES.budget), [BUDGET_TOWN[0] + 3.6, BUDGET_TOWN[1] + 4.4]],
   spurBank: [ringPoint(STOP_ANGLES.bank), [BANK_DISTRICT[0] + 0.5, BANK_DISTRICT[1] + 3.2]],
   spurGarden: [ringPoint(STOP_ANGLES.garden), [SPROUT[0] - 6.2, SPROUT[1] + 4.6]],
+  spurBond: [ringPoint(STOP_ANGLES.bond), [BOND_DISTRICT[0], BOND_DISTRICT[1] + 3.4]],
   spurTax: [ringPoint(STOP_ANGLES.tax), [TAX_DISTRICT[0], TAX_DISTRICT[1] + 3.4]],
+  // Finale approach: a normal path (no gold pads) that leans inward from the Tax
+  // stop to the finale, which now sits further back.
   royalParty: [
     ringPoint(STOP_ANGLES.tax),
-    royalArcPoint(-18, 1.2),
-    royalArcPoint(-29, 2.4),
-    royalArcPoint(-40, 3.4),
-    royalArcPoint(-49, 4.2),
+    royalArcPoint(-46, 2.0),
+    royalArcPoint(-58, 3.2),
+    royalArcPoint(-70, 4.0),
     ROYAL_APPROACH.forecourt,
     ROYAL_APPROACH.entrance,
   ],

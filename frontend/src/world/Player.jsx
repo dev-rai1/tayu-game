@@ -400,8 +400,8 @@ export function Player({ avatar }) {
           }
         }
       } else if (st.objective === 'bond' && !st.dialog && !st.cards?.length) {
-        // Module 6: start by walking up to Beau and talking to him.
-        if (dist2(playerPos.x, playerPos.z, BOND_GUIDE[0], BOND_GUIDE[1]) < 4.2) near = { id: 'bondGuide', label: 'Talk to Beau' }
+        // Module 6: start by walking up to Ben and talking to him.
+        if (dist2(playerPos.x, playerPos.z, BOND_GUIDE[0], BOND_GUIDE[1]) < 4.2) near = { id: 'bondGuide', label: 'Talk to Ben' }
       } else if (st.objective === 'tax' && !st.dialog && !st.cards?.length) {
         // Module 7: start by walking up to Rex and talking to him.
         if (dist2(playerPos.x, playerPos.z, TAX_GUIDE[0], TAX_GUIDE[1]) < 4.2) near = { id: 'taxGuide', label: 'Talk to Rex' }
