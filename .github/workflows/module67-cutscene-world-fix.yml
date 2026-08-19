@@ -1,0 +1,145 @@
+name: Patch Module 6-7 consequence scenes and world layout
+on:
+  push:
+    branches: [module67-cutscene-world-fix]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: module67-cutscene-world-fix
+          fetch-depth: 0
+      - name: Patch late-game world
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # 1) Real walk cycle support for NPCs instead of character sliding.
+          p=Path('frontend/src/world/Npc.jsx')
+          s=p.read_text()
+          s=s.replace("export function Npc({ id, name, avatar, position, faceCamera = false, accent = '#7850F0' }) {", "export function Npc({ id, name, avatar, position, faceCamera = false, accent = '#7850F0', walking = false, walkSpeed = 7 }) {")
+          s=s.replace("  const t = useRef(Math.random() * 10)\n", "  const t = useRef(Math.random() * 10)\n  const limbs = useRef(null)\n")
+          old="""  useFrame((_, d) => {\n    t.current += d\n    if (root.current) root.current.position.y = position[1] + Math.sin(t.current * 1.8) * 0.04\n    if (mesh.current && !faceCamera) mesh.current.rotation.y = Math.sin(t.current * 0.4) * 0.25\n    // light up the name tag when the player is talking to / near this npc\n  })"""
+          new="""  useFrame((_, d) => {\n    t.current += d\n    if (mesh.current && !limbs.current) {\n      limbs.current = {\n        ll: mesh.current.getObjectByName('leftLeg'), rl: mesh.current.getObjectByName('rightLeg'),\n        la: mesh.current.getObjectByName('leftArm'), ra: mesh.current.getObjectByName('rightArm'),\n      }\n    }\n    const stride = walking ? Math.sin(t.current * walkSpeed) * 0.52 : 0\n    if (limbs.current) {\n      if (limbs.current.ll) limbs.current.ll.rotation.x = stride\n      if (limbs.current.rl) limbs.current.rl.rotation.x = -stride\n      if (limbs.current.la) limbs.current.la.rotation.x = -stride * 0.72\n      if (limbs.current.ra) limbs.current.ra.rotation.x = stride * 0.72\n    }\n    if (root.current) root.current.position.y = position[1] + (walking ? Math.abs(Math.sin(t.current * walkSpeed * 2)) * 0.018 : Math.sin(t.current * 1.8) * 0.04)\n    if (mesh.current && !faceCamera && !walking) mesh.current.rotation.y = Math.sin(t.current * 0.4) * 0.25\n    // light up the name tag when the player is talking to / near this npc\n  })"""
+          if old not in s: raise SystemExit('Npc useFrame pattern changed')
+          s=s.replace(old,new)
+          p.write_text(s)
+
+          # 2) Face Tax Office toward the actual curved path, add one-shot physical consequence scenes,
+          #    remove duplicate static crowd, and make the remaining ambient NPC truly walk.
+          p=Path('frontend/src/world/BondTaxBuildings.jsx')
+          s=p.read_text()
+          s=s.replace("import { useRef } from 'react'", "import { useRef } from 'react'")
+          s=s.replace("import { TAX_SITE } from './taxDistrictLayout.js'", "import { TAX_FORWARD, TAX_SITE } from './taxDistrictLayout.js'")
+          s=s.replace("export const TAX_ENTRY = [TAX_SPOT[0], TAX_SPOT[1] + 6.2]\nexport const BOND_GUIDE = [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 3.2]\nexport const TAX_GUIDE = [TAX_SPOT[0] + 0.2, TAX_SPOT[1] + 3.0]", "export const TAX_ROTATION = Math.atan2(TAX_FORWARD[0], TAX_FORWARD[1])\nexport const TAX_ENTRY = [TAX_SPOT[0] + TAX_FORWARD[0] * 7.2, TAX_SPOT[1] + TAX_FORWARD[1] * 7.2]\nexport const BOND_GUIDE = [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 3.2]\nexport const TAX_GUIDE = [TAX_SPOT[0] + TAX_FORWARD[0] * 3.0, TAX_SPOT[1] + TAX_FORWARD[1] * 3.0]")
+          s=s.replace("return <group ref={root}><Npc id={id} name=\"\" avatar={avatar} position={[0, 0, 0]} accent={accent} /></group>", "return <group ref={root}><Npc id={id} name=\"\" avatar={avatar} position={[0, 0, 0]} accent={accent} walking walkSpeed={9} /></group>")
+
+          marker="function BondBuilding({ active, step, feedback }) {"
+          cutscene=r'''function DecisionCutscene({ kind, step, feedback }) {
+  const root = useRef()
+  const runner = useRef()
+  const stamp = useRef()
+  const bars = useRef()
+  const started = useRef(null)
+  const lastKey = useRef('')
+  const key = `${kind}-${step}-${feedback || 'none'}`
+  useFrame(({ clock }) => {
+    if (!root.current) return
+    if (feedback !== 'correct') { root.current.visible = false; started.current = null; lastKey.current = key; return }
+    if (lastKey.current !== key || started.current == null) { started.current = clock.elapsedTime; lastKey.current = key }
+    const t = clock.elapsedTime - started.current
+    const p = Math.min(1, t / 3.4)
+    root.current.visible = p < 1
+    const ease = 1 - Math.pow(1 - p, 3)
+    root.current.rotation.y = Math.sin(p * Math.PI * 2) * 0.08
+    if (runner.current) {
+      runner.current.position.x = -4.8 + ease * 9.6
+      runner.current.position.y = 1.0 + Math.sin(p * Math.PI) * 3.1
+      runner.current.rotation.z = p * Math.PI * 4
+    }
+    if (stamp.current) {
+      stamp.current.position.y = 4.8 - Math.min(1, p * 4) * 3.3 + Math.abs(Math.sin(p * Math.PI * 5)) * (1-p) * 0.8
+      stamp.current.rotation.y = p * Math.PI * 2
+    }
+    if (bars.current) {
+      bars.current.scale.y = 0.2 + Math.min(1, p * 2.4) * 0.8
+      bars.current.rotation.y = p * 0.8
+    }
+  })
+  const bond = kind === 'bond'
+  const accent = bond ? ['#f5c542','#1464f0','#00b37f','#ff8a3d'][step % 4] : ['#d86b45','#00b37f','#7850f0','#f5c542'][step % 4]
+  return (
+    <group ref={root} visible={false} position={[0, 0, 2.4]}>
+      {/* A visible consequence after EVERY correct decision, inspired by the Bank/Lemonade cutscenes. */}
+      <group ref={runner}>
+        {bond ? (
+          <>
+            <mesh rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[0.42,0.42,0.12,24]} /><meshStandardMaterial color="#ffd34d" metalness={0.6} roughness={0.28} emissive="#7a5a00" emissiveIntensity={0.35} /></mesh>
+            <mesh position={[0,0.55,0]}><boxGeometry args={[1.3,0.72,0.08]} /><meshStandardMaterial color="#fff8dc" emissive={accent} emissiveIntensity={0.16} /></mesh>
+          </>
+        ) : (
+          <>
+            <mesh><boxGeometry args={[1.2,0.82,0.06]} /><meshStandardMaterial color="#fffdf5" emissive={accent} emissiveIntensity={0.14} /></mesh>
+            <mesh position={[0,0,0.04]}><boxGeometry args={[0.78,0.05,0.025]} /><meshStandardMaterial color={accent} /></mesh>
+          </>
+        )}
+      </group>
+      <group ref={bars} position={[0,0.25,-0.4]}>
+        {[0,1,2,3,4].map((i)=><mesh key={i} position={[(i-2)*0.62,0.45+i*0.2,0]}><boxGeometry args={[0.38,0.9+i*0.28,0.38]} /><meshStandardMaterial color={i%2?accent:'#ffffff'} emissive={accent} emissiveIntensity={0.22} /></mesh>)}
+      </group>
+      <group ref={stamp} position={[0,4.8,0.6]}>
+        <mesh><cylinderGeometry args={[0.72,0.72,0.32,24]} /><meshStandardMaterial color={bond ? '#0d2560' : '#b94e36'} emissive={accent} emissiveIntensity={0.35} /></mesh>
+        <mesh position={[0,-0.34,0]}><cylinderGeometry args={[0.22,0.38,0.48,18]} /><meshStandardMaterial color="#f2e4c9" /></mesh>
+      </group>
+      {Array.from({length:10},(_,i)=>{ const a=(i/10)*Math.PI*2; return <mesh key={i} position={[Math.cos(a)*3.3,1.0+(i%3)*0.45,Math.sin(a)*2.1]}><sphereGeometry args={[0.12+(i%2)*0.05,10,10]} /><meshStandardMaterial color={i%2?accent:'#ffd34d'} emissive={accent} emissiveIntensity={0.5} /></mesh> })}
+    </group>
+  )
+}
+
+'''
+          if marker not in s: raise SystemExit('BondBuilding marker missing')
+          s=s.replace(marker,cutscene+marker,1)
+          s=s.replace("      <Npc id=\"bond-client-a\" name=\"\" avatar={CLIENT_A} position={[-3.4, 0, 3.6]} accent=\"#7850F0\" />\n      <Npc id=\"bond-client-b\" name=\"\" avatar={CLIENT_B} position={[3.6, 0, 3.4]} accent=\"#ff8a3d\" />\n","")
+          s=s.replace("      <BondStreetLife active={active} step={step} />\n      {active && <StepActivity data={BOND_ACTIVITY} step={step} feedback={feedback} />}", "      <BondStreetLife active={active} step={step} />\n      {active && <DecisionCutscene kind=\"bond\" step={step} feedback={feedback} />}\n      {active && <StepActivity data={BOND_ACTIVITY} step={step} feedback={feedback} />}")
+          s=s.replace("    <group position={[TAX_SPOT[0], 0, TAX_SPOT[1]]}>", "    <group position={[TAX_SPOT[0], 0, TAX_SPOT[1]]} rotation={[0, TAX_ROTATION, 0]}>",1)
+          s=s.replace("      <Npc id=\"tax-client-a\" name=\"\" avatar={CLIENT_C} position={[-3.4, 0, 3.6]} accent=\"#00b37f\" />\n      <Npc id=\"tax-client-b\" name=\"\" avatar={CLIENT_A} position={[3.6, 0, 3.4]} accent=\"#7850F0\" />\n","")
+          s=s.replace("      <TaxOfficeLife active={active} step={step} />\n      {active && <StepActivity data={TAX_ACTIVITY} step={step} feedback={feedback} />}", "      <TaxOfficeLife active={active} step={step} />\n      {active && <DecisionCutscene kind=\"tax\" step={step} feedback={feedback} />}\n      {active && <StepActivity data={TAX_ACTIVITY} step={step} feedback={feedback} />}")
+          # Make Tax plaza/office noticeably larger and unlike Bond Street.
+          s=s.replace("<circleGeometry args={[7.4, 44]}", "<circleGeometry args={[9.4, 52]}")
+          s=s.replace("<RoundedBox args={[8.2, 4.6, 3.7]}", "<RoundedBox args={[10.2, 5.2, 4.5]}")
+          s=s.replace("position={[0, 2.4, -2.75]}", "position={[0, 2.7, -3.1]}",1)
+          # Different station arrangement from Bond Street.
+          s=s.replace("<Booth x={-4.3} z={1.6} color=\"#1464f0\" label=\"W-2 DESK\" />\n      <Booth x={0} z={2.4} color=\"#00b37f\" label=\"DEDUCTIONS\" />\n      <Booth x={4.3} z={1.6} color=\"#7850f0\" label=\"E-FILE\" />", "<Booth x={-4.5} z={0.8} color=\"#d86b45\" label=\"W-2 SCANNER\" />\n      <Booth x={0} z={4.25} color=\"#00b37f\" label=\"BRACKET MACHINE\" />\n      <Booth x={4.5} z={0.8} color=\"#7850f0\" label=\"E-FILE DESK\" />")
+          p.write_text(s)
+
+          # 3) Render the missing Module 6/7 approach paths and enlarge real ground.
+          p=Path('frontend/src/world/Environment.jsx')
+          s=p.read_text()
+          s=s.replace('<cylinderGeometry args={[68, 68, 2, 64]}', '<cylinderGeometry args={[76, 76, 2, 72]}')
+          s=s.replace("      <ModuleApproach points={PATHS.spurGarden} />\n      <RoyalFinaleApproach />", "      <ModuleApproach points={PATHS.spurGarden} />\n      <ModuleApproach points={PATHS.spurBond} />\n      <ModuleApproach points={PATHS.spurTax} />\n      <RoyalFinaleApproach />")
+          s=s.replace('const CX = 32, CZ = -8, RX = 51, RZ = 47, N = 96', 'const CX = 32, CZ = -8, RX = 58, RZ = 54, N = 108')
+          s=s.replace('if (d > 65) { sp[0] = RING.c[0] + dx * (65 / d); sp[1] = RING.c[1] + dz * (65 / d) }', 'if (d > 73) { sp[0] = RING.c[0] + dx * (73 / d); sp[1] = RING.c[1] + dz * (73 / d) }')
+          p.write_text(s)
+
+          # 4) Expand actual movement clamp to match the enlarged island.
+          p=Path('frontend/src/world/WorldSafety.jsx')
+          s=p.read_text().replace('export const WORLD_GROUND_RADIUS = 69', 'export const WORLD_GROUND_RADIUS = 77')
+          p.write_text(s)
+
+          # 5) Give the rectangular player clamp extra late-game breathing room too.
+          p=Path('frontend/src/world/config.js')
+          s=p.read_text()
+          s=s.replace("export const BOUNDS = { xMin: sc([-24, 0])[0], xMax: sc([92, 0])[0], zMin: sc([0, -62])[1], zMax: sc([0, 48])[1] }", "export const BOUNDS = { xMin: sc([-30, 0])[0], xMax: sc([100, 0])[0], zMin: sc([0, -70])[1], zMax: sc([0, 56])[1] }")
+          p.write_text(s)
+          PY
+      - name: Commit generated patch
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/world/Npc.jsx frontend/src/world/BondTaxBuildings.jsx frontend/src/world/Environment.jsx frontend/src/world/WorldSafety.jsx frontend/src/world/config.js
+          git commit -m "Add late-game consequence cutscenes and expand walkable world"
+          git push origin HEAD:module67-cutscene-world-fix
