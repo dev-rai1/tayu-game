@@ -323,7 +323,7 @@
   position: absolute !important;
   right: auto !important;
   left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
-  top: calc(4.25rem + env(safe-area-inset-top, 0px)) !important;
+  top: calc(7rem + env(safe-area-inset-top, 0px)) !important;
   bottom: auto !important;
   z-index: 1450;
 }

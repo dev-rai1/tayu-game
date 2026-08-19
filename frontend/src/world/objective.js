@@ -6,6 +6,7 @@
 // the current instruction - Mr. Bram himself when the step is "talk to Mr.
 // Bram", Mr. Sprout herself for the garden, never just "the building".
 import { MAILBOX, KITCHEN, STORE, STORE_ITEMS, LEMONADE, SHOPKEEPER, PARTY_HOUSE, RING } from './config.js'
+import { BOND_GUIDE, TAX_GUIDE } from './BondTaxBuildings.jsx'
 import { stage } from '../anim/stage.js'
 import { isPaycheckWorldActive } from './paycheckMode.js'
 import { useTaxLab } from './taxLabStore.js'
@@ -21,6 +22,8 @@ export function getObjectiveTarget(st) {
   // When the next action is already on screen, remove the world arrow so it
   // never competes with the card or panel the player must use.
   if (st.dialog || st.lessons?.length || st.cards?.length || st.panelJar || st.panelItem || st.btPanel || st.bkPanel || st.panelPortfolio) return null
+  if (st.objective === 'bond') return BOND_GUIDE
+  if (st.objective === 'tax') return TAX_GUIDE
 
   // Module 5 remains in the persistent town. Guidance now walks the player to
   // Maya, then the taxpayer cluster, then the exact physical station for each
