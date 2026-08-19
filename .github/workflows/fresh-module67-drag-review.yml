@@ -1,0 +1,36 @@
+name: Wire fresh Module 6-7 drag review
+on:
+  push:
+    branches: [fresh-module67-drag-review]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fresh-module67-drag-review
+      - name: Replace inline drag with floating pointer drag
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('frontend/src/world/LateGameChallengePanel.jsx')
+          s = p.read_text()
+          imp = "import { PointerDragChoice } from './PointerDragChoice.jsx'\n"
+          if imp not in s:
+              s = s.replace("import { BOND_STEPS, TAX_STEPS } from '../scenarios/bondTaxFlow.js'\n", "import { BOND_STEPS, TAX_STEPS } from '../scenarios/bondTaxFlow.js'\n" + imp)
+          old = ":<DragChoice step={step} onPick={pick}/>}"
+          new = ":<PointerDragChoice step={step} onPick={pick}/>}"
+          if old not in s:
+              raise SystemExit('Could not find late-game drag render target')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/world/LateGameChallengePanel.jsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Use robust floating pointer drag in Modules 6 and 7"
+          git push
