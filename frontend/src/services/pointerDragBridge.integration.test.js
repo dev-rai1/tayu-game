@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import fs from 'node:fs'
-
-const source = fs.readFileSync(new URL('./pointerDragBridge.js', import.meta.url), 'utf8')
+import source from './pointerDragBridge.js?raw'
 
 describe('cross-device drag/drop integration', () => {
   it('dispatches drag start, drag over and drop events', () => {
