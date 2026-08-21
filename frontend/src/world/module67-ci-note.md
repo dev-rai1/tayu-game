@@ -1,0 +1,1 @@
+Module 6 and Module 7 now rely only on the repository's normal CI/deploy workflows. Obsolete branch-patching workflows are intentionally removed so source changes are validated by the standard frontend/backend/browser checks and Firebase deployment path.
