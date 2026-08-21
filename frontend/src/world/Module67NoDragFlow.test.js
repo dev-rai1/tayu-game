@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
-const source = readFileSync(new URL('./PointerDragChoice.jsx', import.meta.url), 'utf8')
+const source = readFileSync(join(process.cwd(), 'src/world/PointerDragChoice.jsx'), 'utf8')
 
 describe('Module 6/7 no-drag interaction source', () => {
   it('uses ordinary click buttons and no drag APIs', () => {
