@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { currentUser, signUp, signIn } from '../services/auth.js'
 import { recoverLogin } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
-import { loadProfile } from '../services/walletStore.js'
+import { loadProfile, saveProfile } from '../services/walletStore.js'
 import { createOrLoadTeacherClass, joinStudentToClass } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 
@@ -20,7 +20,7 @@ export default function Auth() {
   const [err, setErr] = useState(null)
   const [ok, setOk] = useState(params.get('reset') === 'complete' ? 'Your password was changed. Log in with your new password.' : null)
   const [recovery, setRecovery] = useState(null)
-  const [f, setF] = useState({ email: '', password: '', confirm: '', affiliation: '', role: '', gradeLevels: '', foundVia: '', organizationName: '', studentCode: '' })
+  const [f, setF] = useState({ email: '', password: '', confirm: '', affiliation: '', role: '', gradeLevels: '', country: '', otherCountry: '', foundVia: '', organizationName: '', studentCode: '' })
 
   const set = (key) => (event) => {
     const value = event.target.value
@@ -38,6 +38,11 @@ export default function Auth() {
     setF((current) => ({ ...current, role, studentCode: role === 'student' ? current.studentCode : '' }))
   }
 
+  const setCountry = (event) => {
+    const country = event.target.value
+    setF((current) => ({ ...current, country, otherCountry: country === 'Other' ? current.otherCountry : '' }))
+  }
+
   const changeMode = (nextMode) => { setMode(nextMode); setErr(null); setOk(null); setRecovery(null) }
 
   const activateOlderAccount = () => {
@@ -51,10 +56,6 @@ export default function Auth() {
     if (user.role === 'admin') return nav('/dashboard')
     if (user.role === 'teacher') return nav('/teacher')
     if (!loadProfile()?.assessment?.pre) return nav('/assessment/pre')
-    // Do not drop players straight into a saved 3D world from the login form.
-    // Older or partially synced world state can be incompatible with the
-    // current build and can crash immediately after login. The module chooser
-    // is a stable post-login home and still offers resume/replay controls.
     return nav('/modules')
   }
 
@@ -66,11 +67,15 @@ export default function Auth() {
         if (f.password !== f.confirm) throw new Error('The two passwords do not match.')
         if (!f.affiliation) throw new Error('Choose School or organization, or Playing on my own.')
         if (!f.gradeLevels) throw new Error('Please select a grade level.')
+        if (!f.country) throw new Error('Please select your country.')
+        if (f.country === 'Other' && !f.otherCountry.trim()) throw new Error('Please enter your country.')
         if (!f.foundVia) throw new Error('Please tell us how you found TAYU.')
         if (f.affiliation === 'organization' && !f.organizationName.trim()) throw new Error('Enter your organization name.')
         if (f.affiliation === 'organization' && !['teacher', 'student'].includes(f.role)) throw new Error('Choose Teacher or Student.')
         if (f.role === 'student' && !f.studentCode.trim()) throw new Error('Students joining an organization need their teacher’s class code.')
         const user = await signUp(f)
+        const country = f.country === 'Other' ? f.otherCountry.trim() : f.country
+        saveProfile({ ...(loadProfile() || {}), country })
         setDefaultReadingBandForGrade(f.gradeLevels)
         if (user.role === 'teacher') { await createOrLoadTeacherClass(); nav('/teacher'); return }
         if (user.role === 'student') await joinStudentToClass(f.studentCode)
@@ -80,10 +85,6 @@ export default function Auth() {
         try {
           user = await signIn(f.email, f.password)
         } catch (error) {
-          // Before showing an error, try both an already-authenticated Firebase
-          // session and the older device-only account credentials. This keeps
-          // login working even when Firestore/profile sync fails or an older
-          // account has not been migrated yet.
           user = currentUser() || await recoverLogin(f.email, f.password).catch(() => null)
           if (!user) throw error
         }
@@ -121,6 +122,8 @@ export default function Auth() {
             </>}
             {f.affiliation && <label className={LABEL}>{gradeLabel} {REQUIRED}<select className={SELECT} required value={f.gradeLevels} onChange={set('gradeLevels')}><option value="">Choose...</option><option value="K-2">K–2</option><option value="3-5">3–5</option><option value="6-8">6–8</option><option value="9-12">9–12</option><option value="mixed">Mixed / multiple grades</option></select></label>}
             {f.role === 'student' && <label className={LABEL}>Teacher’s class code {REQUIRED}<input className={FIELD} required autoComplete="off" value={f.studentCode} onChange={set('studentCode')} placeholder="Example: ABC234" /></label>}
+            <label className={LABEL}>What country are you from? {REQUIRED}<select className={SELECT} required value={f.country} onChange={setCountry}><option value="">Choose one...</option><option value="United States">United States</option><option value="India">India</option><option value="China">China</option><option value="Mongolia">Mongolia</option><option value="Australia">Australia</option><option value="Other">Other</option></select></label>
+            {f.country === 'Other' && <label className={LABEL}>Enter your country {REQUIRED}<input className={FIELD} required autoComplete="country-name" value={f.otherCountry} onChange={set('otherCountry')} /></label>}
             <label className={LABEL}>How did you find TAYU? {REQUIRED}<select className={SELECT} required value={f.foundVia} onChange={set('foundVia')}><option value="">Choose one...</option><option value="teacher">A teacher</option><option value="friend">Friend or family</option><option value="school">School or district</option><option value="social">Social media</option><option value="search">Web search</option><option value="event">Event</option><option value="other">Other</option></select></label>
           </>}
         </div>
