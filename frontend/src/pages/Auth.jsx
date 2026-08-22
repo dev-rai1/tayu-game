@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { currentUser, signUp, signIn } from '../services/auth.js'
+import { currentUser, signUp, signIn, syncUp } from '../services/auth.js'
 import { recoverLogin } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
@@ -76,6 +76,7 @@ export default function Auth() {
         const user = await signUp(f)
         const country = f.country === 'Other' ? f.otherCountry.trim() : f.country
         saveProfile({ ...(loadProfile() || {}), country })
+        await syncUp()
         setDefaultReadingBandForGrade(f.gradeLevels)
         if (user.role === 'teacher') { await createOrLoadTeacherClass(); nav('/teacher'); return }
         if (user.role === 'student') await joinStudentToClass(f.studentCode)
