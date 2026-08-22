@@ -23,13 +23,15 @@ export async function adminAnalyticsData() {
 
   const accounts = profilesSnapshot.docs.map((item) => {
     const profile = item.data()
+    const progress = progressById[item.id] || null
     return {
       uid: item.id,
       email: profile.email || '', role: profile.role || 'student', gradeLevels: profile.gradeLevels || '',
+      country: profile.country || progress?.profile?.country || '',
       foundVia: profile.foundVia || '', social: profile.social || '', organizationName: profile.organizationName || '',
       organizationEmail: profile.organizationEmail || '', createdAt: profile.createdAt || '', lastLoginAt: profile.lastLoginAt || '',
       lastLogoutAt: profile.lastLogoutAt || '', lastActiveAt: profile.lastActiveAt || '', loginCount: Number(profile.loginCount || 0),
-      progress: progressById[item.id] || null, sessions: sessionsByUid[item.id] || [],
+      progress, sessions: sessionsByUid[item.id] || [],
     }
   })
 
@@ -46,6 +48,7 @@ export async function adminAnalyticsData() {
         role: 'guest',
         accountType: 'guest',
         gradeLevels: '',
+        country: guestProgress?.country || '',
         foundVia: 'Guest mode',
         social: '',
         organizationName: '',

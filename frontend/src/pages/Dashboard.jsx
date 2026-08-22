@@ -97,6 +97,15 @@ export default function Dashboard() {
   const sessions = data?.sessions || []
   const selected = accounts.find((row) => row.uid === selectedUid) || null
 
+  const countryCounts = useMemo(() => {
+    const counts = accounts.reduce((result, row) => {
+      const country = row.country || 'Not provided'
+      result[country] = Number(result[country] || 0) + 1
+      return result
+    }, {})
+    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  }, [accounts])
+
   const stats = useMemo(() => {
     const withPre = accounts.filter((row) => row.progress?.profile?.assessment?.pre)
     const withPost = accounts.filter((row) => row.progress?.profile?.assessment?.post)
@@ -121,7 +130,7 @@ export default function Dashboard() {
 
   const exportCsv = () => {
     const headers = [
-      'email', 'role', 'organization', 'gradeLevels', 'createdAt', 'loginCount', 'lastLoginAt',
+      'email', 'role', 'country', 'organization', 'gradeLevels', 'createdAt', 'loginCount', 'lastLoginAt',
       'sessionCount', 'totalSessionSeconds', ...MODULES.map((moduleName) => `${moduleName}Seconds`),
       'choiceAttempts', 'incorrectOutcomes', 'retryPrompts', 'moduleCompletions', 'lastStoppedModule',
       'preScoreVerified', 'postScoreVerified', 'scoreChange',
@@ -135,7 +144,7 @@ export default function Dashboard() {
       const post = verifiedScore(assessment.post)
       const lastStoppedModule = row.sessions.find((session) => session.endedAt && session.lastModule)?.lastModule || ''
       const values = [
-        row.email, row.role, row.organizationName, row.gradeLevels, row.createdAt, row.loginCount,
+        row.email, row.role, row.country, row.organizationName, row.gradeLevels, row.createdAt, row.loginCount,
         row.lastLoginAt, row.sessions.length, totalSessionSeconds(row.sessions),
         ...MODULES.map((moduleName) => totals[moduleName] || 0),
         behavior.attempts, behavior.incorrect, behavior.retries, behavior.completions, lastStoppedModule,
@@ -185,6 +194,14 @@ export default function Dashboard() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+        <h2 className="font-display text-xl font-extrabold">Users by country</h2>
+        <p className="mt-1 text-sm font-semibold text-white/55">Based on the country selected during account sign-up.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {countryCounts.map(([country, count]) => <Stat key={country} label={country} value={count} />)}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
         <h2 className="font-display text-xl font-extrabold">Time spent by module</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {MODULES.map((moduleName) => (
@@ -203,8 +220,8 @@ export default function Dashboard() {
           <h2 className="font-display text-xl font-extrabold">Accounts</h2>
           <span className="text-xs font-bold text-white/45">Select an account for exact sessions, module time, attempts, and survey answers</span>
         </div>
-        <table className="mt-4 w-full min-w-[1100px] text-left text-sm">
-          <thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Email</th><th className="pr-3">Role</th><th className="pr-3">Organization</th><th className="pr-3">Created</th><th className="pr-3">Logins</th><th className="pr-3">Last login</th><th className="pr-3">Sessions</th><th className="pr-3">Active time</th><th>Verified pre → post</th></tr></thead>
+        <table className="mt-4 w-full min-w-[1200px] text-left text-sm">
+          <thead><tr className="text-xs uppercase text-white/45"><th className="py-2 pr-3">Email</th><th className="pr-3">Role</th><th className="pr-3">Country</th><th className="pr-3">Organization</th><th className="pr-3">Created</th><th className="pr-3">Logins</th><th className="pr-3">Last login</th><th className="pr-3">Sessions</th><th className="pr-3">Active time</th><th>Verified pre → post</th></tr></thead>
           <tbody>
             {accounts.map((row) => {
               const assessment = row.progress?.profile?.assessment || {}
@@ -212,7 +229,7 @@ export default function Dashboard() {
               const post = verifiedScore(assessment.post)
               return (
                 <tr key={row.uid} onClick={() => setSelectedUid(selectedUid === row.uid ? '' : row.uid)} className="cursor-pointer border-t border-white/10 hover:bg-white/5">
-                  <td className="py-3 pr-3 font-extrabold">{row.email || 'No email'}</td><td className="pr-3">{row.role}</td><td className="pr-3">{row.organizationName || '—'}</td><td className="pr-3">{timestamp(row.createdAt)}</td><td className="pr-3 font-extrabold">{row.loginCount}</td><td className="pr-3">{timestamp(row.lastLoginAt, 'Not yet')}</td><td className="pr-3">{row.sessions.length}</td><td className="pr-3">{duration(totalSessionSeconds(row.sessions))}</td><td className="font-extrabold">{pre === null ? 'Not taken' : `${pre}/${KNOWLEDGE_QUESTIONS.length} → ${post === null ? 'pending' : `${post}/${KNOWLEDGE_QUESTIONS.length} (${post - pre >= 0 ? '+' : ''}${post - pre})`}`}</td>
+                  <td className="py-3 pr-3 font-extrabold">{row.email || 'No email'}</td><td className="pr-3">{row.role}</td><td className="pr-3 font-bold">{row.country || '—'}</td><td className="pr-3">{row.organizationName || '—'}</td><td className="pr-3">{timestamp(row.createdAt)}</td><td className="pr-3 font-extrabold">{row.loginCount}</td><td className="pr-3">{timestamp(row.lastLoginAt, 'Not yet')}</td><td className="pr-3">{row.sessions.length}</td><td className="pr-3">{duration(totalSessionSeconds(row.sessions))}</td><td className="font-extrabold">{pre === null ? 'Not taken' : `${pre}/${KNOWLEDGE_QUESTIONS.length} → ${post === null ? 'pending' : `${post}/${KNOWLEDGE_QUESTIONS.length} (${post - pre >= 0 ? '+' : ''}${post - pre})`}`}</td>
                 </tr>
               )
             })}
@@ -242,6 +259,7 @@ function AccountDetails({ account }) {
   return (
     <section className="mt-6 rounded-2xl border-2 border-teal/40 bg-white/5 p-5">
       <h2 className="font-display text-2xl font-extrabold text-teal">{account.email || account.displayName || 'Guest player'}</h2>
+      <p className="mt-1 text-sm font-bold text-white/60">Country: {account.country || 'Not provided'}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Stat label="Successful logins" value={account.loginCount} /><Stat label="Recorded sessions" value={account.sessions.length} /><Stat label="Total active time" value={duration(totalSessionSeconds(account.sessions))} /><Stat label="Last activity" value={timestamp(account.lastActiveAt || account.sessions[0]?.lastSeenAt)} /><Stat label="Choices" value={behavior.attempts} /><Stat label="Incorrect" value={behavior.incorrect} /><Stat label="Retry clues" value={behavior.retries} /><Stat label="Completions" value={behavior.completions} />
       </div>
