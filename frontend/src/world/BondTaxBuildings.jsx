@@ -37,14 +37,19 @@ function Booth({ x, z, color, label }) {
 
 function MovingNpc({ id, avatar, from, to, speed = 0.35, phase = 0, accent = '#1464f0' }) {
   const root = useRef()
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!root.current) return
     const wave = (Math.sin(clock.elapsedTime * speed + phase) + 1) / 2
     const eased = wave * wave * (3 - 2 * wave)
     root.current.position.x = lerp(from[0], to[0], eased)
     root.current.position.z = lerp(from[1], to[1], eased)
     root.current.position.y = 0
-    root.current.rotation.y = wave > 0.5 ? Math.atan2(to[0] - from[0], to[1] - from[1]) : Math.atan2(from[0] - to[0], from[1] - to[1])
+    // Turn smoothly toward the direction of travel instead of snapping 180 deg
+    // at the midpoint (which read as a jarring "drag/teleport").
+    const target = wave > 0.5 ? Math.atan2(to[0] - from[0], to[1] - from[1]) : Math.atan2(from[0] - to[0], from[1] - to[1])
+    let diff = target - root.current.rotation.y
+    diff = Math.atan2(Math.sin(diff), Math.cos(diff))
+    root.current.rotation.y += diff * Math.min(1, 6 * (delta || 0.016))
   })
   return <group ref={root}><Npc id={id} name="" avatar={avatar} position={[0, 0, 0]} accent={accent} walking walkSpeed={9} /></group>
 }
