@@ -1,5 +1,6 @@
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
 const FOX_EMBED_URL = 'https://www.youtube.com/embed/HjfuUGCowW4?rel=0'
+const NBC4_URL = 'https://www.nbcwashington.com/video/news/local/northern-virginia/fairfax-county-students-write-kids-book-about-financial-literacy/4145741/'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
@@ -24,6 +25,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           </span>
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
             FOX 5 DC
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#1f4e8c]/10 px-3 py-1.5 text-xs font-extrabold text-[#1f4e8c] transition hover:bg-[#1f4e8c]/15">
+            NBC4 Washington
           </a>
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
@@ -97,6 +102,14 @@ export function MediaCoverage({ compact = false, about = false }) {
               </div>
             </div>
           </div>
+          <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-[#1f4e8c]/20 bg-[#f4f8fd] p-4 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-[#1f4e8c] px-3 py-1 font-display text-sm font-extrabold text-white">NBC4 WASHINGTON</span>
+              <span className="text-sm font-extrabold text-[#1f4e8c]">Book feature →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">The Seed That Grew</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch our NBC4 Washington book feature on <em>The Seed That Grew</em>, its inspiration, and our work introducing financial literacy to young students.</p>
+          </a>
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-1 hover:shadow-md">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-lg bg-electric px-3 py-1 font-display text-sm font-extrabold text-white">WTOP NEWS</span>
