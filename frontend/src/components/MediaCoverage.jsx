@@ -24,11 +24,11 @@ export function MediaCoverage({ compact = false, about = false }) {
             Featured
           </span>
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
-            FOX 5 DC
+            🔴 FOX 5 DC Live
           </a>
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#1f4e8c]/10 px-3 py-1.5 text-xs font-extrabold text-[#1f4e8c] transition hover:bg-[#1f4e8c]/15">
-            NBC4 Washington
+            🔴 NBC4 Washington Live
           </a>
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
@@ -81,7 +81,7 @@ export function MediaCoverage({ compact = false, about = false }) {
               <div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="rounded-lg bg-[#d71920] px-3 py-1 font-display text-sm font-extrabold text-white">FOX 5 DC</span>
-                  <span className="text-sm font-extrabold text-[#d71920]">Live feature</span>
+                  <span className="text-sm font-extrabold text-[#d71920]">🔴 Live feature</span>
                 </div>
                 <p className="mt-3 font-display text-lg font-extrabold text-navy">The Cash Classroom and TAYU</p>
                 <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch the TAYU team share its mission, book, and financial-literacy work directly from this page.</p>
@@ -102,13 +102,14 @@ export function MediaCoverage({ compact = false, about = false }) {
               </div>
             </div>
           </div>
-          <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-[#1f4e8c]/20 bg-[#f4f8fd] p-4 transition hover:-translate-y-1 hover:shadow-md">
+          <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-[#1f4e8c]/25 bg-[#f4f8fd] p-4 transition hover:-translate-y-1 hover:shadow-md md:col-span-2 lg:col-span-2">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-lg bg-[#1f4e8c] px-3 py-1 font-display text-sm font-extrabold text-white">NBC4 WASHINGTON</span>
-              <span className="text-sm font-extrabold text-[#1f4e8c]">Book feature →</span>
+              <span className="text-sm font-extrabold text-[#d71920]">🔴 Live feature</span>
             </div>
             <p className="mt-3 font-display text-lg font-extrabold text-navy">The Seed That Grew</p>
-            <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch our NBC4 Washington book feature on <em>The Seed That Grew</em>, its inspiration, and our work introducing financial literacy to young students.</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch our NBC4 Washington studio feature and book talk on <em>The Seed That Grew</em>, its inspiration, and our work introducing financial literacy to young students.</p>
+            <div className="mt-4 inline-flex rounded-xl bg-[#1f4e8c] px-3 py-2 text-sm font-extrabold text-white">Watch NBC4 feature →</div>
           </a>
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-1 hover:shadow-md">
             <div className="flex items-center justify-between gap-3">
