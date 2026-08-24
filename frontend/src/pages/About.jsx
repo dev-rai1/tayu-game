@@ -6,6 +6,7 @@ import { MODULE_CATALOG } from '../constants/modules.js'
 
 const LOGO = '/assets/tayu-logo.webp'
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
+const NBC4_URL = 'https://www.nbcwashington.com/video/news/local/northern-virginia/fairfax-county-students-write-kids-book-about-financial-literacy/4145741/'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
@@ -63,11 +64,19 @@ const STATS = [
 const FEATURED = [
   {
     label: 'FOX 5 DC',
-    title: 'TV feature',
+    title: 'Live TV feature',
     note: 'Live segment on our work.',
     href: FOX_PAGE_URL,
     badge: 'bg-[#d71920] text-white',
     card: 'border-[#d71920]/20 bg-[#d71920]/5',
+  },
+  {
+    label: 'NBC4 Washington',
+    title: 'Live TV feature',
+    note: 'Live studio feature on The Seed That Grew.',
+    href: NBC4_URL,
+    badge: 'bg-[#1f4e8c] text-white',
+    card: 'border-[#1f4e8c]/20 bg-[#1f4e8c]/5',
   },
   {
     label: 'White House',
