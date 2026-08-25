@@ -11,8 +11,27 @@ export const TAX_SPOT = [TAX_SITE[0], TAX_SITE[1]]
 export const BOND_ENTRY = [BOND_SPOT[0], BOND_SPOT[1] + 6.5]
 export const TAX_ROTATION = Math.atan2(TAX_FORWARD[0], TAX_FORWARD[1])
 export const TAX_ENTRY = [TAX_SPOT[0] + TAX_FORWARD[0] * 7.2, TAX_SPOT[1] + TAX_FORWARD[1] * 7.2]
-export const BOND_GUIDE = [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 3.2]
+export const BOND_GUIDE = [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 4.6]
 export const TAX_GUIDE = [TAX_SPOT[0] + TAX_FORWARD[0] * 3.0, TAX_SPOT[1] + TAX_FORWARD[1] * 3.0]
+
+// Bond Street's booth layout, in the SAME local coordinates the <Booth>
+// elements below are drawn with. This is the single source of truth other
+// files (BondStreetGate, CompassBeam, GuidanceArrow) should read from - they
+// used to point at a leftover pre-rebuild layout ~25 units away from where
+// the building actually sits, which is why walking up to Beau/the booths in
+// Module 6 looked disconnected from the visible scene.
+const BOND_LOCAL = { treasury: [-5.4, 1.6], muni: [0, 2.2], corporate: [5.4, 1.6], guide: [0.2, 4.6] }
+export const BOND_POINTS = {
+  guide: BOND_GUIDE,
+  treasury: [BOND_SPOT[0] + BOND_LOCAL.treasury[0], BOND_SPOT[1] + BOND_LOCAL.treasury[1]],
+  muni: [BOND_SPOT[0] + BOND_LOCAL.muni[0], BOND_SPOT[1] + BOND_LOCAL.muni[1]],
+  corporate: [BOND_SPOT[0] + BOND_LOCAL.corporate[0], BOND_SPOT[1] + BOND_LOCAL.corporate[1]],
+  // No separate interest-table/rate-seesaw props exist in the rebuilt scene -
+  // both later beats happen at the trading-floor center, between the booths
+  // and Beau, so the walk-up target always matches something the player sees.
+  interest: [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 3.0],
+  rate: [BOND_SPOT[0] + 0.2, BOND_SPOT[1] + 3.0],
+}
 
 const BEN = { skinTone: 'warm_beige', hairColor: 'brown', hairStyle: 'short', shirtColor: 'yellow', pantsColor: 'navy', topStyle: 'tee', bottomStyle: 'pants' }
 const REX = { skinTone: 'medium_brown', hairColor: 'black', hairStyle: 'short', shirtColor: 'teal', pantsColor: 'navy', topStyle: 'tee', bottomStyle: 'pants' }
@@ -261,11 +280,14 @@ function BondBuilding({ active, step, feedback }) {
       {[-2.7, -0.9, 0.9, 2.7].map((x) => <mesh key={x} position={[x, 3.8, -0.92]}><boxGeometry args={[0.72, 5.7, 0.1]} /><meshStandardMaterial color="#8fb4ee" emissive="#8fb4ee" emissiveIntensity={0.15} /></mesh>)}
       <RoundedBox args={[9.4, 0.5, 5.0]} radius={0.14} smoothness={3} position={[0, 7.15, -3.2]} castShadow><meshStandardMaterial color="#12305f" /></RoundedBox>
       <mesh position={[0, 5.25, -0.86]}><planeGeometry args={[7.2, 0.9]} /><meshBasicMaterial map={labelTexture('BONDS  +interest  ▲', '#0d1f42', '#f5c542')} transparent /></mesh>
-      <Booth x={-4.3} z={1.6} color="#1464f0" label="TREASURY" />
-      <Booth x={0} z={2.4} color="#00b37f" label="MUNICIPAL" />
-      <Booth x={4.3} z={1.6} color="#ff8a3d" label="CORPORATE" />
+      <Booth x={BOND_LOCAL.treasury[0]} z={BOND_LOCAL.treasury[1]} color="#1464f0" label="TREASURY" />
+      <Booth x={BOND_LOCAL.muni[0]} z={BOND_LOCAL.muni[1]} color="#00b37f" label="MUNICIPAL" />
+      <Booth x={BOND_LOCAL.corporate[0]} z={BOND_LOCAL.corporate[1]} color="#ff8a3d" label="CORPORATE" />
       <SignLabel text="BOND STREET" color="#264a86" y={7.8} />
-      <Npc id="ben" name="Ben" avatar={BEN} position={[0.2, 0, 3.2]} accent="#f5c542" faceCamera />
+      {/* Ben now stands well clear of the booths (was ~0.8 units from the
+          Municipal booth, reading as cramped/overlapping) so there's open
+          ground to walk into instead of everything stacked in one spot. */}
+      <Npc id="ben" name="Ben" avatar={BEN} position={[BOND_LOCAL.guide[0], 0, BOND_LOCAL.guide[1]]} accent="#f5c542" faceCamera />
       <BondStreetLife active={active} step={step} />
       {active && <DecisionCutscene kind="bond" step={step} feedback={feedback} />}
       {active && <StepActivity data={BOND_ACTIVITY} step={step} feedback={feedback} />}
@@ -282,9 +304,9 @@ function TaxBuilding({ active, step, feedback }) {
       <mesh position={[0, 6.2, -3.25]} rotation={[0, Math.PI / 4, 0]} scale={[1.3, 1, 0.62]} castShadow><coneGeometry args={[6.0, 2.1, 4]} /><meshStandardMaterial color="#6f2f28" roughness={0.62} /></mesh>
       {[-3.8, -1.25, 1.25, 3.8].map((x) => <mesh key={x} position={[x, 2.5, -0.78]} castShadow><cylinderGeometry args={[0.34, 0.44, 4.9, 14]} /><meshStandardMaterial color="#efe0cb" /></mesh>)}
       <RoundedBox args={[9.5, 0.65, 1.0]} radius={0.12} smoothness={3} position={[0, 5.15, -0.78]} castShadow><meshStandardMaterial color="#6f2f28" /></RoundedBox>
-      <Booth x={-4.5} z={0.8} color="#d86b45" label="W-2 SCANNER" />
+      <Booth x={-5.4} z={0.6} color="#d86b45" label="W-2 SCANNER" />
       <Booth x={0} z={4.25} color="#00b37f" label="BRACKET MACHINE" />
-      <Booth x={4.5} z={0.8} color="#7850f0" label="E-FILE DESK" />
+      <Booth x={5.4} z={0.6} color="#7850f0" label="E-FILE DESK" />
       <SignLabel text="TAYU TAX OFFICE" color="#6f2f28" y={7.2} />
       <Npc id="rex" name="Rex" avatar={REX} position={[0.2, 0, 3.0]} accent="#00dca0" faceCamera />
       <TaxOfficeLife active={active} step={step} />
