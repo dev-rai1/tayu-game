@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { useGame, playerPos } from './store.js'
 import { getObjectiveTarget, arriveRadius, guidePath } from './objective.js'
 import { TAX_DISTRICT, TAYU } from './config.js'
-import { BOND_POINTS } from './BondStreetWorld.jsx'
+import { BOND_POINTS } from './BondTaxBuildings.jsx'
 import { isPaycheckWorldActive } from './paycheckMode.js'
 
 const BOND_ONLY_KEY = 'tayu-bond-only-entry'
