@@ -1,9 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadProfile, loadWallet, saveProfile } from '../services/walletStore.js'
 import { BOND_STREET_SCRIPT, BOND_TYPES, allocationTotal, bondOutcome, gardenProfitStake } from '../scenarios/bondStreet.js'
-import { BOND_INTERACT_EVENT, BOND_POINTS, BOND_WORLD_EVENT, placeAtBondStreetEntrance } from './BondStreetWorld.jsx'
+import { BOND_INTERACT_EVENT, BOND_WORLD_EVENT } from './BondStreetWorld.jsx'
+import { BOND_ENTRY, BOND_POINTS } from './BondTaxBuildings.jsx'
 import { INTERACT_RADIUS } from './config.js'
-import { playerPos } from './store.js'
+import { playerPos, joystick, moveTarget } from './store.js'
+import { cameraRig } from './cameraRig.js'
+
+// Spawn on the plaza in front of the real Bond Street building (BOND_ENTRY,
+// from BondTaxBuildings.jsx) instead of the old pre-rebuild layout, which sat
+// ~25 units away from where the building is actually drawn - the player used
+// to land in an empty field and every "walk to X" trigger was checking a
+// point nowhere near what was on screen.
+function placeAtBondStreetEntrance() {
+  playerPos.x = BOND_ENTRY[0]
+  playerPos.y = 1
+  playerPos.z = BOND_ENTRY[1]
+  joystick.x = 0
+  joystick.y = 0
+  moveTarget.x = null
+  moveTarget.z = null
+  cameraRig.azimuth = Math.atan2(-(BOND_POINTS.guide[0] - playerPos.x), -(BOND_POINTS.guide[1] - playerPos.z))
+}
 
 const money = (value) => `$${Number(value || 0).toFixed(2).replace(/\.00$/, '')}`
 const cents = (value) => Math.round(Number(value || 0) * 100) / 100
