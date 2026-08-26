@@ -24,9 +24,9 @@ export function PointerDragChoice({ step, onPick }) {
             key={`${index}-${choice.label}`}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => choose(event, index)}
-            className="min-h-[64px] w-full rounded-2xl border-2 border-navy/15 bg-white px-5 py-3 text-left text-lg font-extrabold text-navy shadow-sm transition hover:-translate-y-0.5 hover:border-navy/30 hover:bg-[#f8fbff] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-navy/10 active:translate-y-0 active:scale-[.985]"
+            className="flex min-h-[64px] w-full appearance-none items-center rounded-2xl border-2 border-navy/15 !bg-white !bg-none px-5 py-3 text-left text-lg font-extrabold !text-navy shadow-sm transition before:!hidden after:!hidden hover:-translate-y-0.5 hover:border-navy/30 hover:!bg-white hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-navy/15 active:translate-y-0 active:scale-[.985]"
           >
-            {choice.label}
+            <span className="block w-full break-words">{choice.label}</span>
           </button>
         ))}
       </div>
