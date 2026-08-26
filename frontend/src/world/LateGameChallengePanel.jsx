@@ -22,6 +22,26 @@ const money = (s = '') => Number(String(s).replace(/[^0-9.\-]/g, ''))
 const accent = { 6: '#f4b942', 7: '#d86b45' }
 const accentDeep = { 6: '#b6801f', 7: '#a44a2c' }
 
+// Every type-in calculation gets a question-specific learning hint instead of
+// the old generic "read the numbers carefully" message. The hints explain the
+// operation/formula and the expected input format without simply giving away
+// the final answer.
+const NUMERIC_HINTS = {
+  6: {
+    2: 'Hint: Annual interest = amount lent × interest rate as a decimal. Change 4.5% to 0.045, then calculate 200 × 0.045. Enter the dollar number only (no $ sign).',
+    3: 'Hint: Tax-equivalent yield = municipal yield ÷ (1 − tax rate). Change 22% to 0.22, find 1 − 0.22 first, then divide 3.8 by that result. Enter the percentage number only, such as 4.87.',
+    9: 'Hint: The question asks for interest only. Add the three payments: 4.50 + 3.80 + 6.20. Do not add the $300 principal. Enter the dollar number only.',
+    11: 'Hint: At maturity, principal is repaid along with the interest you earned. Add the $300 principal and $14.50 interest. Enter the total dollar number only.',
+  },
+  7: {
+    2: 'Hint: Gross income here means add all taxable income sources before deductions. Add wages + lemonade profit + taxable corporate-bond interest: 1,200 + 300 + 20. Enter the dollar number only.',
+    5: 'Hint: A deduction reduces taxable income. Start with gross income of 1,520 and subtract the 500 deduction. Enter the amount that remains.',
+    6: 'Hint: Tax each bracket separately, then add the tax amounts. First calculate 500 × 0.10, then 520 × 0.20, then add those two results. Enter total tax only.',
+    8: 'Hint: A capital gain is sale price − what you originally paid (cost basis). Calculate 110 − 80. Enter the gain only.',
+    10: 'Hint: Withholding is tax already prepaid. Compare $154 total tax with $120 already withheld by calculating 154 − 120. Enter the amount still due.',
+  },
+}
+
 // --- confetti / coin burst played on a correct answer -----------------------
 function Celebrate({ week }) {
   const bits = useMemo(() => {
@@ -100,7 +120,7 @@ function Feedback({ card, act, week }) {
 }
 
 // --- type-in numeric task ("work it out, then type the number") -------------
-function NumericChallenge({ step, onPick, accentHex }) {
+function NumericChallenge({ step, onPick, accentHex, hint }) {
   const correctIndex = step.choices.findIndex((c) => c.correct)
   const expected = money(step.choices[correctIndex]?.label)
   const [value, setValue] = useState('')
@@ -129,7 +149,9 @@ function NumericChallenge({ step, onPick, accentHex }) {
         />
         <button onClick={submit} className="rounded-2xl px-6 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 active:scale-95" style={{ background: accentHex }}>Check</button>
       </div>
-      <div className="mt-2 text-xs font-bold text-navy/40">Tip: read the numbers in the question carefully.</div>
+      <div className="mt-3 rounded-xl bg-navy/[.045] px-3 py-2 text-xs font-bold leading-relaxed text-navy/65">
+        {hint || 'Hint: identify what the question asks for, choose the matching operation, and enter only the final number.'}
+      </div>
     </div>
   )
 }
@@ -314,8 +336,12 @@ export function LateGameChallengePanel() {
     )
   }
 
-  const numeric = week === 6 ? [2, 3, 9, 11].includes(stepIndex) : [1, 2, 5, 6, 8, 10, 11].includes(stepIndex)
+  // Only true arithmetic questions should use a number-entry box. Conceptual
+  // W-2 and error-hunt questions stay as choice interactions instead of asking
+  // players to guess an arbitrary number hidden inside a text answer.
+  const numeric = week === 6 ? [2, 3, 9, 11].includes(stepIndex) : [2, 5, 6, 8, 10].includes(stepIndex)
   const accentHex = accent[week]
+  const numericHint = NUMERIC_HINTS[week]?.[stepIndex]
 
   return (
     <div
@@ -337,7 +363,7 @@ export function LateGameChallengePanel() {
         : week === 7 && stepIndex === 4
           ? <TaxSort onPick={pick} accentHex={accentHex} />
           : numeric
-            ? <NumericChallenge step={step} onPick={pick} accentHex={accentHex} />
+            ? <NumericChallenge step={step} onPick={pick} accentHex={accentHex} hint={numericHint} />
             : <PointerDragChoice step={step} onPick={pick} />}
       <ProgressBar index={stepIndex} total={steps.length} week={week} />
     </div>
