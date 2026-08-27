@@ -28,6 +28,7 @@ const TEAM = [
   { file: 'ayush_ranjan.png', name: 'Ayush Ranjan', role: 'Co-Founder, Lead Developer', li: 'https://linkedin.com/in/ayush-ranjan6285' },
   { file: 'austin_chen.png', name: 'Austin Chen', role: 'Co-Founder, Outreach', li: 'https://linkedin.com/in/austin-chen-56028731a' },
   { file: 'gaamaa_hishigsuren.png', name: 'Gaamaa Hishigsuren', role: 'Project Advisor', li: 'https://linkedin.com/in/gaamaa' },
+  { file: 'neil_patharkar.jpg', name: 'Neil Patharkar', role: 'App Development Intern' },
 ]
 
 const SPONSORS = [
@@ -231,9 +232,11 @@ export default function About() {
                   <TeamPhoto file={m.file} name={m.name} />
                   <div className="mt-3 font-display text-base font-extrabold text-navy">{m.name}</div>
                   <div className="text-sm font-bold text-electric">{m.role}</div>
-                  <a href={m.li} target="_blank" rel="noopener" className="mt-1 inline-block text-xs font-bold text-navy/60 underline underline-offset-2 hover:text-electric">
-                    LinkedIn
-                  </a>
+                  {m.li ? (
+                    <a href={m.li} target="_blank" rel="noopener" className="mt-1 inline-block text-xs font-bold text-navy/60 underline underline-offset-2 hover:text-electric">
+                      LinkedIn
+                    </a>
+                  ) : null}
                 </div>
               ))}
             </div>
