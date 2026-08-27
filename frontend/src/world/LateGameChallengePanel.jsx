@@ -294,6 +294,21 @@ const KEYFRAMES = `
 @keyframes lgcRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 `
 
+function retryHint(step, attempt) {
+  const correct = step?.choices?.find((choice) => choice.correct)
+  if (!correct) return null
+  if (attempt >= 2) {
+    return {
+      title: 'STEP-BY-STEP HELP',
+      action: `The correct choice for this step is “${correct.label}”. ${correct.feedback || ''} Use that result in the interaction on screen, then submit again.`,
+    }
+  }
+  return {
+    title: 'STRONGER HINT',
+    action: `${correct.feedback || `Focus on the choice that best matches “${correct.label}”.`} Try the step again using that idea.`,
+  }
+}
+
 export function LateGameChallengePanel() {
   const week = useGame((s) => s.week)
   const bondStep = useGame((s) => s.bondStep)
@@ -304,15 +319,29 @@ export function LateGameChallengePanel() {
   const card = cards[0]
   const isLate = week === 6 || week === 7
   const [instance, setInstance] = useState(0)
+  const [wrongAttempts, setWrongAttempts] = useState({})
   const stepIndex = week === 6 ? bondStep : taxStep
   const steps = week === 6 ? BOND_STEPS : TAX_STEPS
   const step = steps[stepIndex]
   const prefix = week === 6 ? 'bond' : 'tax'
+  const attemptKey = `${week}:${stepIndex}`
 
   // A pick MUST go through cardAct: it removes the current question card first,
   // then bondAct/taxAct pushes the feedback card. Calling the raw action here
   // was the "tap does nothing / never advances" bug.
-  const pick = (i) => { setInstance((x) => x + 1); cardAct(`${prefix}.pick:${i}`) }
+  const pick = (i) => {
+    setInstance((x) => x + 1)
+    const correct = Boolean(step?.choices?.[i]?.correct)
+    if (correct) {
+      setWrongAttempts((current) => ({ ...current, [attemptKey]: 0 }))
+    } else {
+      const nextAttempt = (wrongAttempts[attemptKey] || 0) + 1
+      setWrongAttempts((current) => ({ ...current, [attemptKey]: nextAttempt }))
+      const hint = retryHint(step, nextAttempt)
+      if (hint) useGame.setState({ guide: hint })
+    }
+    cardAct(`${prefix}.pick:${i}`)
+  }
 
   useEffect(() => { setInstance((x) => x + 1) }, [stepIndex, week])
 
