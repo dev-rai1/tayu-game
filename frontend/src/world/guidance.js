@@ -9,6 +9,52 @@ const marketReady = (bought = []) => {
 }
 const guide = (title, instruction, action) => ({ title, instruction, action })
 
+// Modules 6 and 7 use several different interaction styles. Keep the existing
+// persistent Hint card, but make it specific to the exact challenge on screen
+// so a player always knows both HOW to interact and WHAT idea to use.
+const LATE_CARD_HINTS = {
+  6: [
+    ['LEND OR OWN?', 'BOND = LENDING', 'A bond means you lend money to a borrower; stock means you own part of a company.', 'Drag the statement that says you are lending $100 into the answer basket.'],
+    ['BORROWER CHECK:', 'COMPARE CREDIT RISK', 'Think about who is least likely to miss repayment. U.S. Treasury debt is generally treated as the lowest-credit-risk choice of these three.', 'Drag Treasury into the answer basket.'],
+    ['COUPON MATH:', 'CALCULATE THE INTEREST', 'Change 4.5% to 0.045, then multiply the $200 principal by 0.045. The question wants interest only, not principal plus interest.', 'Type only the final number in the box, without a $ sign, then press Check.'],
+    ['TAX-EQUIVALENT YIELD:', 'USE THE TAX-EQUIVALENT FORMULA', 'First calculate 1 − 0.22 = 0.78. Then divide the 3.8% municipal yield by 0.78 to find the comparable taxable yield.', 'Type the percentage number only, such as 4.87, then press Check.'],
+    ['PROJECT DECISION:', 'FOCUS ON AFTER-TAX RETURN', 'The municipal bond can look lower before tax but still be attractive because qualifying municipal interest may be exempt from federal income tax in this lesson.', 'Drag the choice about keeping more interest after federal tax into the basket.'],
+    ['RISK VS RETURN:', 'WHY IS THE YIELD HIGHER?', 'A company usually has more credit/default risk than the U.S. Treasury, so lenders generally expect a higher potential return for taking that extra risk.', 'Drag the choice about compensating lenders for more credit risk into the basket.'],
+    ['RATE-SHOCK EVENT:', 'THINK LIKE A NEW BUYER', 'If new similar bonds pay 6%, an older bond paying only 3% is less attractive. Its market price usually has to move down to compete.', 'Drag “It falls” into the answer basket.'],
+    ['CREDIT-NEWS EVENT:', 'LOOK AT THE BORROWER', 'Weak earnings and a late coupon are warning signs that the company may have trouble making promised payments.', 'Drag Credit/default risk into the basket.'],
+    ['WHO GETS PAID FIRST?', 'REMEMBER THE CAPITAL STRUCTURE', 'Bondholders are lenders. In a collapse, lenders generally have a higher claim on company assets than common stockholders.', 'Drag Bondholders into the answer basket.'],
+    ['SIX-WEEK PAYOUT:', 'ADD INTEREST ONLY', 'Add the three coupon payments: 4.50 + 3.80 + 6.20. Do not include the $300 principal because the question asks only for interest received.', 'Type only the final dollar number, without a $ sign, then press Check.'],
+    ['DIVERSIFICATION CHALLENGE:', 'BUILD THE THREE-PART MIX', 'Use all $300 and spread it across all three borrowers. For this challenge, set Treasury to $150, Municipal to $90, and Corporate to $60 so the riskiest borrower gets the smallest share.', 'Move each slider to the target amount. Make sure Total says $300, then press Lock portfolio.'],
+    ['MATURITY MATH:', 'ADD PRINCIPAL BACK', 'At maturity, repaid principal comes back in addition to the interest earned. Add $300 principal + $14.50 interest.', 'Type only the total number, without a $ sign, then press Check.'],
+    ['STOCKS VS BONDS:', 'DIFFERENT ASSETS, DIFFERENT JOBS', 'Stocks can offer more growth potential while bonds can provide income and stability. A portfolio can combine both instead of choosing only one forever.', 'Drag the choice saying a portfolio can use both for different jobs into the basket.'],
+  ],
+  7: [
+    ['WHY TAXES?', 'LOOK FOR A SHARED PUBLIC SERVICE', 'Taxes pool money for things used by the community, such as roads, schools, clinics, and public safety.', 'Drag “Roads, schools, and public services” into the answer basket.'],
+    ['EVIDENCE FIRST:', 'READ THE W-2 CAREFULLY', '$1,200 is wage income. The $120 withholding is money already prepaid toward taxes; it is not the final tax calculation and it is not extra wages.', 'Drag the choice saying $120 was already prepaid toward tax into the basket.'],
+    ['GROSS-INCOME MATH:', 'ADD TAXABLE INCOME SOURCES', 'Gross income here is wages + lemonade profit + taxable corporate-bond interest: 1,200 + 300 + 20.', 'Type only the final number, without commas or a $ sign, then press Check.'],
+    ['BUSINESS CHECK:', 'NO W-2 DOES NOT MEAN NO TAX', 'The lemonade stand profit came from self-employment/business activity. Business income can still belong on a tax return even without a W-2.', 'Drag the self-employment/business income choice into the basket.'],
+    ['EXCLUSION SORT:', 'SORT EACH INTEREST PAYMENT', 'In this simplified lesson, the $40 municipal-bond interest is federally excluded, while the $20 corporate-bond interest is taxable.', 'Tap EXCLUDED under Municipal interest and TAXABLE under Corporate interest, then press Send to return.'],
+    ['DEDUCTION MATH:', 'SUBTRACT THE DEDUCTION', 'A deduction reduces taxable income. Start with $1,520 gross income and subtract the $500 practice deduction.', 'Type only the amount remaining, without a $ sign, then press Check.'],
+    ['PROGRESSIVE-BRACKET MATH:', 'TAX EACH BRACKET SEPARATELY', 'Calculate $500 × 10% = $50. Then calculate $520 × 20% = $104. Add those two tax amounts; do not tax every dollar at 20%.', 'Type only the total tax number, without a $ sign, then press Check.'],
+    ['MARGINAL-RATE CHECK:', 'ONLY THE NEXT DOLLARS MOVE UP', 'Entering a higher bracket does not retroactively change the rate on dollars already taxed in the lower bracket.', 'Drag the choice saying the earlier dollars keep their lower rate into the basket.'],
+    ['CAPITAL-GAIN MATH:', 'GAIN = SALE PRICE − COST BASIS', 'You sold for $110 and originally paid $80. Subtract what you paid from what you sold it for.', 'Type only the gain amount, without a $ sign, then press Check.'],
+    ['HOLDING-PERIOD DECISION:', 'HOLDING PERIOD CAN CHANGE TAX TREATMENT', 'Short-term gains can be treated like ordinary income, while qualifying long-term gains can use a different, often lower, federal rate schedule.', 'Drag the choice about a different long-term federal rate schedule into the basket.'],
+    ['REFUND OR DUE:', 'COMPARE TAX WITH PREPAYMENT', 'The final tax is $154 and $120 was already withheld. Because tax is larger than withholding, subtract 154 − 120 to find what is still due.', 'Type only the amount still due, without a $ sign, then press Check.'],
+    ['WITHHOLDING DECISION:', 'A REFUND IS RETURNED OVERPAYMENT', 'A very large refund can mean too much tax was prepaid during the year. Adjusting withholding can move prepayments closer to the final tax owed.', 'Drag the choice about aiming closer to the tax actually owed into the basket.'],
+    ['ERROR HUNT:', 'CHECK ALL THREE ERRORS', 'Fix every planted mistake: exclude the $40 municipal interest, include the $20 corporate interest, and change the stock gain from $40 to $30.', 'Drag the choice that contains all three fixes into the answer basket.'],
+    ['FINAL CHECK:', 'RECONCILE THE WHOLE RETURN', 'Follow the chain: $1,520 gross income − $500 deduction = $1,020 taxable income; bracket tax = $154; $120 withholding means $34 is still due.', 'Drag the summary showing $1,020 taxable income, $154 tax, and $34 due into the basket.'],
+  ],
+}
+
+function lateCardGuidance(st) {
+  if (![6, 7].includes(st.week) || !st.cards?.length) return null
+  const cardText = String(st.cards[0]?.text || '')
+  const match = LATE_CARD_HINTS[st.week]?.find(([prefix]) => cardText.startsWith(prefix))
+  if (!match) return null
+  const [, title, instruction, action] = match
+  return guide(title, instruction, action)
+}
+
 // One source of truth for the persistent NEXT STEP card. Every state answers:
 // what to do, where to do it, and which control completes the step.
 export function getGuidance(st, touch = false) {
@@ -17,7 +63,11 @@ export function getGuidance(st, touch = false) {
   if (st.helpOpen) return guide('HELP IS OPEN', 'Choose Controls, Modules, or Learning Resources.', 'Tap Got it when you are ready to return')
   if (st.dialog) return guide('FINISH THE CONVERSATION', 'Read what the character says.', 'Tap Next to continue')
   if (st.lessons?.length) return guide('READ THIS CARD', 'This short lesson explains your next decision.', 'Tap the large button at the bottom')
-  if (st.cards?.length) return guide('MAKE THE CHOICE ON SCREEN', 'Read the current card, then choose one of its large buttons.', 'Your next step starts automatically')
+  if (st.cards?.length) {
+    const lateHint = lateCardGuidance(st)
+    if (lateHint) return lateHint
+    return guide('MAKE THE CHOICE ON SCREEN', 'Read the current card, then choose one of its large buttons.', 'Your next step starts automatically')
+  }
   if (st.objective === 'bond') return guide('TALK TO BEAU', 'Walk up to Ben at Bond Street and talk to him to begin.', `${act} beside Ben`)
   if (st.objective === 'tax') return guide('TALK TO REX', 'Walk up to Rex at the Tax Office and talk to him to begin.', `${act} beside Rex`)
   if (st.panelJar) return guide('ADD TO THIS JAR', 'Choose how many dollars this jar should receive.', 'Confirm the amount or close the panel')
