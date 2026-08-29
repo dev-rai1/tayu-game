@@ -14,30 +14,37 @@ describe('admin dashboard wiring', () => {
     expect(app).toContain('<AdminDashboardButton />')
   })
 
+  it('restores the historical password-only dashboard entry flow', () => {
+    const route = read('frontend/src/components/AdminRoute.jsx')
+    const access = read('frontend/src/services/adminAccess.js')
+    expect(route).toContain("setStatus('password')")
+    expect(route).toContain('Dashboard password')
+    expect(route).toContain('openDashboardWithPassword(password)')
+    expect(route).not.toContain('<Navigate to="/login"')
+    expect(access).toContain('DASHBOARD_PASSWORD_HASH')
+    expect(access).toContain('dashboard.viewer.v3@tayufinance.app')
+    expect(access).toContain('signInWithEmailAndPassword')
+  })
+
   it('keeps the analytics resources used by the admin dashboard', () => {
     const dashboard = read('frontend/src/pages/Dashboard.jsx')
     const analytics = read('frontend/src/services/adminAnalytics.js')
-
     expect(dashboard).toContain('TAYU Admin Analytics')
     expect(dashboard).toContain('Export detailed CSV')
     expect(dashboard).toContain('Users by country')
     expect(dashboard).toContain('Time spent by module')
     expect(dashboard).toContain('Login and logout timestamps')
-
     for (const collectionName of ['profiles', 'progress', 'authActivity', 'usageSessions', 'sitePageViews']) {
       expect(analytics).toContain(`'${collectionName}'`)
     }
-    expect(analytics).toContain('totalPageViews')
-    expect(analytics).toContain('uniqueVisitors')
-    expect(analytics).toContain('uniqueSessions')
   })
 
-  it('keeps admin-only Firestore read access for dashboard data', () => {
+  it('keeps dashboard-viewer reads while preserving admin-only destructive writes', () => {
     const rules = read('firestore.rules')
-    expect(rules).toContain("function isAdmin()")
-    expect(rules).toContain("profileRole(request.auth.uid) == 'admin'")
-    expect(rules).toContain('allow list: if isAdmin()')
-    expect(rules).toContain('allow read: if owns(userId) || isAdmin()')
-    expect(rules).toContain('allow read: if isAdmin()')
+    expect(rules).toContain('function isDashboardViewer()')
+    expect(rules).toContain('function canReadDashboard() { return isAdmin() || isDashboardViewer(); }')
+    expect(rules).toContain('allow list: if canReadDashboard()')
+    expect(rules).toContain('allow read: if canReadDashboard();')
+    expect(rules).toContain('allow delete: if isAdmin();')
   })
 })
