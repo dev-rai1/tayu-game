@@ -22,7 +22,7 @@ describe('admin dashboard wiring', () => {
     expect(route).toContain('openDashboardWithPassword(password)')
     expect(route).not.toContain('<Navigate to="/login"')
     expect(access).toContain('DASHBOARD_PASSWORD_HASH')
-    expect(access).toContain('dashboard.viewer.v3@tayufinance.app')
+    expect(access).toContain('dashboard.viewer.v4@tayufinance.app')
     expect(access).toContain('signInWithEmailAndPassword')
   })
 
