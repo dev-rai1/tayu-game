@@ -1,33 +1,96 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { currentUser } from '../services/auth.js'
-import { verifyAdminAccess } from '../services/adminAccess.js'
+import {
+  ensureAdminAccess,
+  isAdminEmail,
+  isDashboardViewerEmail,
+  openDashboardWithPassword,
+} from '../services/adminAccess.js'
 
 export default function AdminRoute({ children }) {
-  const user = currentUser()
-  const [status, setStatus] = useState(user ? 'checking' : 'signed-out')
+  const [status, setStatus] = useState('checking')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
-    if (!user) return () => { active = false }
-    verifyAdminAccess(user).then((verified) => {
-      if (active) setStatus(verified ? 'allowed' : 'denied')
-    })
+    const checkAccess = async () => {
+      const user = currentUser()
+      if (!user) {
+        if (active) setStatus('password')
+        return
+      }
+
+      if (isDashboardViewerEmail(user.email) || isAdminEmail(user.email)) {
+        const promoted = await ensureAdminAccess(user)
+        if (active) setStatus(promoted?.role === 'admin' ? 'allowed' : 'password')
+        return
+      }
+
+      if (active) setStatus('password')
+    }
+
+    checkAccess()
     return () => { active = false }
-  }, [user?.id])
+  }, [])
 
-  if (status === 'signed-out') return <Navigate to="/login" replace />
-  if (status === 'checking') return <main className="grid min-h-screen place-items-center text-white/70" role="status">Checking administrator access...</main>
-  if (status === 'allowed') return children
+  const unlock = async (event) => {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await openDashboardWithPassword(password)
+      setPassword('')
+      setStatus('allowed')
+    } catch {
+      setPassword('')
+      setError('Incorrect dashboard password.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
-  return (
-    <main className="grid min-h-screen place-items-center px-6 py-10">
-      <section className="w-full max-w-md rounded-3xl bg-white/5 p-7 text-center shadow-2xl" aria-labelledby="admin-denied-title">
-        <img src="/assets/tayu-logo.webp" alt="TAYU" className="mx-auto h-12 w-12 rounded-xl" />
-        <h1 id="admin-denied-title" className="mt-4 font-display text-2xl font-extrabold">Administrator access required</h1>
-        <p className="mt-2 text-sm font-semibold text-white/70">This area is available only to accounts whose administrator role is authorized in TAYU&apos;s protected account data.</p>
-        <Link to="/" className="btn-primary mt-5 inline-flex min-h-[48px] items-center justify-center px-5">Back to TAYU</Link>
-      </section>
-    </main>
-  )
+  if (status === 'checking') {
+    return <main className="grid min-h-screen place-items-center text-white/60">Checking dashboard access...</main>
+  }
+
+  if (status === 'password') {
+    return (
+      <main className="grid min-h-screen place-items-center px-6 py-10">
+        <form onSubmit={unlock} className="w-full max-w-md rounded-3xl bg-white/5 p-6 shadow-2xl">
+          <Link to="/" className="mb-5 flex items-center gap-3">
+            <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
+            <span className="font-display text-2xl font-extrabold text-white">TAYU</span>
+          </Link>
+          <h1 className="font-display text-3xl font-extrabold">Admin Dashboard</h1>
+          <p className="mt-2 text-sm font-semibold text-white/65">Enter the shared dashboard password to view real account sessions, survey answers, module activity, and learning analytics.</p>
+
+          <label className="mt-6 block text-sm font-extrabold text-teal">
+            Dashboard password
+            <input
+              type="password"
+              required
+              autoFocus
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => { setPassword(event.target.value); setError('') }}
+              className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none focus:border-teal"
+              placeholder="Enter password"
+            />
+          </label>
+
+          {error && <p role="alert" className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-200">{error}</p>}
+
+          <button type="submit" disabled={busy} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">
+            {busy ? 'Checking password...' : 'Open dashboard'}
+          </button>
+          <Link to="/" className="mt-4 block text-center text-sm font-bold text-white/65 hover:text-white">Back to TAYU</Link>
+        </form>
+      </main>
+    )
+  }
+
+  return children
 }
