@@ -6,10 +6,12 @@ service cloud.firestore {
     function owns(userId) { return signedIn() && request.auth.uid == userId; }
     function profileExists(userId) { return exists(/databases/$(database)/documents/profiles/$(userId)); }
     function profileRole(userId) { return profileExists(userId) ? get(/databases/$(database)/documents/profiles/$(userId)).data.role : null; }
-    function isAdmin() { return signedIn() && profileRole(request.auth.uid) == 'admin'; }
+    function isDashboardViewer() { return signedIn() && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app'; }
+    function isAdmin() { return signedIn() && !isDashboardViewer() && profileRole(request.auth.uid) == 'admin'; }
     function isTeacher() { return signedIn() && profileRole(request.auth.uid) == 'teacher'; }
-    function canReadDashboard() { return isAdmin(); }
+    function canReadDashboard() { return isAdmin() || isDashboardViewer(); }
     function validPublicRole(role) { return role == 'student' || role == 'teacher' || role == 'other'; }
+    function validProfileRole(role) { return validPublicRole(role) || (isDashboardViewer() && role == 'admin'); }
     function validAuthActivityType(type) { return type == 'sign_up' || type == 'sign_in' || type == 'sign_out'; }
     function validGuestUsage() {
       return request.resource.data.guest == true
@@ -35,9 +37,9 @@ service cloud.firestore {
     match /profiles/{userId} {
       allow create: if owns(userId)
         && request.resource.data.email == request.auth.token.email
-        && validPublicRole(request.resource.data.role);
-      allow get: if owns(userId) || isAdmin() || teacherOwnsStudent(userId);
-      allow list: if isAdmin() || (isTeacher() && resource.data.teacherId == request.auth.uid);
+        && validProfileRole(request.resource.data.role);
+      allow get: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
+      allow list: if canReadDashboard() || (isTeacher() && resource.data.teacherId == request.auth.uid);
       allow update: if isAdmin() || (
         owns(userId)
         && request.resource.data.email == resource.data.email
@@ -47,7 +49,7 @@ service cloud.firestore {
     }
 
     match /progress/{userId} {
-      allow read: if owns(userId) || isAdmin() || teacherOwnsStudent(userId);
+      allow read: if owns(userId) || canReadDashboard() || teacherOwnsStudent(userId);
       allow create, update: if owns(userId) || isAdmin();
       allow delete: if isAdmin();
     }
@@ -65,8 +67,8 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
         && validAuthActivityType(request.resource.data.type);
-      allow get: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
-      allow list: if isAdmin() || (isTeacher() && teacherOwnsStudent(resource.data.uid));
+      allow get: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
+      allow list: if canReadDashboard() || (isTeacher() && teacherOwnsStudent(resource.data.uid));
       allow delete: if isAdmin();
       allow update: if false;
     }
@@ -76,7 +78,7 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email)
         || validGuestUsage();
-      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
+      allow read: if canReadDashboard() || (signedIn() && resource.data.uid == request.auth.uid) || teacherOwnsStudent(resource.data.uid);
       allow delete: if isAdmin();
     }
 
@@ -85,7 +87,7 @@ service cloud.firestore {
         && request.resource.data.sessionId is string
         && request.resource.data.path is string
         && request.resource.data.viewedAt is string;
-      allow read: if isAdmin();
+      allow read: if canReadDashboard();
       allow update: if false;
       allow delete: if isAdmin();
     }
