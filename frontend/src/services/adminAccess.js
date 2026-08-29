@@ -5,7 +5,7 @@ import { prepareFirebaseAuth } from './firebase.js'
 const SESSION_KEY = 'tayu-session-v1'
 const DASHBOARD_PASSWORD_HASH = 'faef517dac0d52529db44ce91f07a860efebc208abcf4c8e8530e85fa300e512'
 
-export const DASHBOARD_VIEWER_EMAIL = 'dashboard.viewer.v3@tayufinance.app'
+export const DASHBOARD_VIEWER_EMAIL = 'dashboard.viewer.v4@tayufinance.app'
 
 export const ADMIN_EMAILS = Object.freeze([
   'tayu.finance@gmail.com',

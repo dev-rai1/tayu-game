@@ -6,7 +6,7 @@ service cloud.firestore {
     function owns(userId) { return signedIn() && request.auth.uid == userId; }
     function profileExists(userId) { return exists(/databases/$(database)/documents/profiles/$(userId)); }
     function profileRole(userId) { return profileExists(userId) ? get(/databases/$(database)/documents/profiles/$(userId)).data.role : null; }
-    function isDashboardViewer() { return signedIn() && request.auth.token.email == 'dashboard.viewer.v3@tayufinance.app'; }
+    function isDashboardViewer() { return signedIn() && request.auth.token.email == 'dashboard.viewer.v4@tayufinance.app'; }
     function isAdmin() { return signedIn() && !isDashboardViewer() && profileRole(request.auth.uid) == 'admin'; }
     function isTeacher() { return signedIn() && profileRole(request.auth.uid) == 'teacher'; }
     function canReadDashboard() { return isAdmin() || isDashboardViewer(); }
