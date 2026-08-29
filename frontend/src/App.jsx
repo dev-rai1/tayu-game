@@ -9,6 +9,7 @@ import { celebrateWithMusic, initAutoplay } from './services/audio.js'
 import { startUsageHeartbeat, touchUsage } from './services/usageAnalytics.js'
 import { recordPageView } from './services/siteAnalytics.js'
 import AdminRoute from './components/AdminRoute.jsx'
+import AdminDashboardButton from './components/AdminDashboardButton.jsx'
 import DialogAccessibility from './components/DialogAccessibility.jsx'
 import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
@@ -211,6 +212,7 @@ export default function App() {
       <CertificateMusicTrigger />
       <PathCompletionWatcher />
       <AccountMusicControl />
+      <AdminDashboardButton />
       <PrivacyChoices />
       <SiteFooter />
     </div>
