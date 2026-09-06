@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { shouldHideObjectiveChip } from './ObjectiveChip.jsx'
 
 describe('ObjectiveChip contextual visibility', () => {
-  it('stays hidden while the player is still traveling', () => {
-    expect(shouldHideObjectiveChip({ week: 3, near: null, mg: null })).toBe(true)
-    expect(shouldHideObjectiveChip({ week: 5, near: null, mg: { phase: 'scenario' } })).toBe(true)
+  it('stays visible while the player is traveling so wayfinding is available', () => {
+    expect(shouldHideObjectiveChip({ week: 3, near: null, mg: null })).toBe(false)
+    expect(shouldHideObjectiveChip({ week: 5, near: null, mg: { phase: 'scenario' } })).toBe(false)
   })
 
   it('hides while the Investing lesson hint owns the screen', () => {

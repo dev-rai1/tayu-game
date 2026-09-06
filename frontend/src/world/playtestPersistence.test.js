@@ -18,11 +18,11 @@ describe('playtest persistence wiring', () => {
     expect(moduleSelect).toContain('if (!canPlay(moduleNumber)) return')
   })
 
-  it('lets individual users choose any module while preserving grade recommendations', () => {
-    expect(moduleSelect).toContain('if (context?.plain) return true')
+  it('gates individual users to their grade path while preserving recommendations', () => {
+    expect(moduleSelect).toContain('if (context?.plain) return required.includes(moduleNumber)')
     expect(moduleSelect).toContain('Recommended path')
     expect(moduleSelect).toContain('★ Play next')
-    expect(moduleSelect).toContain('Explore Module ${module.n}')
+    expect(moduleSelect).toContain('switch grade to play')
   })
 
   it('stores, clears, and completes the selected learning path', () => {

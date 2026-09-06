@@ -22,7 +22,7 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
 
   it('keeps Module 1 playable as the first required entry instead of self-locking', () => {
     const source = read('frontend/src/pages/ModuleSelect.jsx')
-    expect(source).toContain('if (context?.plain) return true')
+    expect(source).toContain('if (context?.plain) return required.includes(moduleNumber)')
     expect(source).toContain('moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)')
     expect(source).toContain('const firstIncompleteRequired = required.find')
   })

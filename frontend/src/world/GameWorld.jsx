@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { Component, Suspense } from 'react'
+import { Component, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Player } from './Player.jsx'
 import { Environment3D } from './Environment.jsx'
@@ -86,6 +86,9 @@ function settlePhysicalLaunchAfterCanvasMount() {
 }
 
 export function GameWorld({ avatar }) {
+  const [rendererGeneration, setRendererGeneration] = useState(0)
+  const [rendererStatus, setRendererStatus] = useState('loading')
+  const stallLogged = useRef(false)
   repairRuntimeState()
   const week = useGame((state) => state.week)
   const bondStep = useGame((state) => state.bondStep)
@@ -93,7 +96,7 @@ export function GameWorld({ avatar }) {
   const activeCard = useGame((state) => state.cards?.[0] || null)
   const physicalModule = readPhysicalModuleLaunch()
   const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()
-  const sceneKey = `week-${week ?? 0}`
+  const sceneKey = `week-${week ?? 0}-renderer-${rendererGeneration}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
@@ -103,6 +106,22 @@ export function GameWorld({ avatar }) {
   const choiceFeedback = activeCard?.id?.startsWith('bondfb') || activeCard?.id?.startsWith('taxfb')
     ? (feedbackAction.endsWith('.next') ? 'correct' : feedbackAction.endsWith('.reask') ? 'wrong' : null)
     : null
+
+  useEffect(() => {
+    let frame = 0
+    let previous = performance.now()
+    const watch = (now) => {
+      const gap = now - previous
+      previous = now
+      if (document.visibilityState === 'visible' && gap > 5000 && !stallLogged.current) {
+        stallLogged.current = true
+        logTayuError('renderer:stall', `${Math.round(gap)}ms between animation frames`)
+      }
+      frame = requestAnimationFrame(watch)
+    }
+    frame = requestAnimationFrame(watch)
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
@@ -125,11 +144,17 @@ export function GameWorld({ avatar }) {
                 canvas.addEventListener('webglcontextlost', (event) => {
                   event.preventDefault()
                   logTayuError('canvas:context-lost', 'webgl context lost')
+                  setRendererStatus('recovering')
                 }, false)
                 canvas.addEventListener('webglcontextrestored', () => {
                   logTayuError('canvas:context-restored', 'webgl context restored')
+                  setRendererStatus('loading')
+                  // Remounting rebuilds every geometry, material, texture, and
+                  // scene reference against the browser's restored context.
+                  requestAnimationFrame(() => setRendererGeneration((value) => value + 1))
                 }, false)
               }
+              setRendererStatus('ready')
               settlePhysicalLaunchAfterCanvasMount()
             } catch (error) {
               logTayuError('canvas:webgl-context', error?.message || error)
@@ -167,6 +192,14 @@ export function GameWorld({ avatar }) {
           </Suspense>
         </Canvas>
       </Boundary>
+      <div className="pointer-events-none absolute inset-0 z-[750] grid place-items-center" aria-live="polite" aria-atomic="true">
+        {rendererStatus !== 'ready' && (
+          <div role="status" className="rounded-2xl bg-navy/95 px-6 py-4 text-center font-extrabold text-white shadow-2xl">
+            <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-teal" aria-hidden="true" />
+            {rendererStatus === 'recovering' ? 'Rebuilding the world...' : 'Loading the world...'}
+          </div>
+        )}
+      </div>
       <WorldQuestionHelp />
     </div>
   )

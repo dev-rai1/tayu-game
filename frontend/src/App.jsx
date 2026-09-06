@@ -40,6 +40,7 @@ const Privacy = lazy(() => import('./pages/Privacy.jsx'))
 const Cookies = lazy(() => import('./pages/Cookies.jsx'))
 const Accessibility = lazy(() => import('./pages/Accessibility.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+const ExpansionMissions = lazy(() => import('./pages/ExpansionMissions.jsx'))
 
 export const FINALE_REQUIRED_BADGES = MODULE_CATALOG.map((module) => module.badge)
 
@@ -156,6 +157,7 @@ const TITLE_MAP = {
   '/settings': 'Settings | TAYU',
   '/teacher': 'Teacher Dashboard | TAYU',
   '/teacher-guide': 'Teacher Guide | TAYU',
+  '/missions': 'Expansion Missions | TAYU',
   '/dashboard': 'Admin Dashboard | TAYU',
 }
 
@@ -197,6 +199,7 @@ export default function App() {
               <Route path="/login" element={<Suspense fallback={<LoadingScreen />}><Auth /></Suspense>} />
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/settings" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening player settings..." />}><Settings /></Suspense></PreQuizGate>} />
+              <Route path="/missions" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening expansion missions..." />}><ExpansionMissions /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><TeacherDashboard /></TeacherGate>} />
               <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
               <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><><SiteTrafficSummary /><Dashboard /></></Suspense></AdminRoute>} />

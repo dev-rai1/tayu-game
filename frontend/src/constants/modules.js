@@ -7,6 +7,9 @@ export const MODULE_CATALOG = [
     minutes: '5–7 min',
     desc: 'Build your first money plan by choosing what to spend now, save for later, and give to others.',
     color: '#1464F0',
+    fcps: ['Unit 2', 'Unit 8'],
+    sol: ['EPF.1', 'EPF.16'],
+    objective: 'Explain opportunity cost and create a spending, saving, and giving plan.',
   },
   {
     n: 2,
@@ -16,6 +19,9 @@ export const MODULE_CATALOG = [
     minutes: '10–15 min',
     desc: 'Run a business by testing batches, price, open hours, the cost of your own work, demand, profit, and tax.',
     color: '#FFD700',
+    fcps: ['Unit 5', 'Unit 14'],
+    sol: ['EPF.2', 'EPF.3', 'EPF.4'],
+    objective: 'Use supply, demand, revenue, fixed and variable costs, and profit margin to run a business.',
   },
   {
     n: 3,
@@ -25,6 +31,9 @@ export const MODULE_CATALOG = [
     minutes: '7–10 min',
     desc: 'Cover needs, compare wants, build a food basket, and prepare for a surprise.',
     color: '#00DCA0',
+    fcps: ['Unit 2', 'Unit 8'],
+    sol: ['EPF.10', 'EPF.11', 'EPF.16'],
+    objective: 'Build a budget that separates needs and wants and prepares for an emergency.',
   },
   {
     n: 4,
@@ -34,6 +43,9 @@ export const MODULE_CATALOG = [
     minutes: '7–10 min',
     desc: 'Choose accounts, compare debit and credit, manage borrowing, and spot a scam.',
     color: '#7850F0',
+    fcps: ['Unit 7', 'Unit 9'],
+    sol: ['EPF.6', 'EPF.12', 'EPF.13'],
+    objective: 'Compare bank accounts, debit and credit, borrowing costs, and scam warning signs.',
   },
   {
     n: 5,
@@ -43,6 +55,9 @@ export const MODULE_CATALOG = [
     minutes: 'Two separate 6–8 min modules',
     desc: 'Module 5A — Investing Foundations: research businesses, diversify, and use evidence instead of price alone. Module 5B — Markets, Risk & Patience: handle surprises, warning signs, hype, patience, rebalancing, and the stock-versus-bond bridge.',
     color: '#00b37f',
+    fcps: ['Unit 13'],
+    sol: ['EPF.17'],
+    objective: 'Research investments, diversify a portfolio, evaluate risk, and rebalance using evidence.',
     parts: [
       { id: 'A', label: 'Module 5A', title: 'Investing Foundations', minutes: '6–8 min', desc: 'Research businesses, spread risk, and use evidence instead of price alone.', color: '#00b37f' },
       { id: 'B', label: 'Module 5B', title: 'Markets, Risk & Patience', minutes: '6–8 min', desc: 'Protect ready cash, react to warning signs, resist hype, practice patience, understand bond risk, and rebalance.', color: '#7850F0' },
@@ -57,6 +72,9 @@ export const MODULE_CATALOG = [
     minutes: '6–8 min',
     desc: 'Enter Bond Street directly from the main TAYU town, compare Treasury, municipal, and corporate bonds, and interact inside the building.',
     color: '#6FA44A',
+    fcps: ['Unit 13'],
+    sol: ['EPF.8', 'EPF.17'],
+    objective: 'Compare government and corporate bonds by issuer, maturity, return, and credit risk.',
     worldModule: 6,
   },
   {
@@ -67,11 +85,39 @@ export const MODULE_CATALOG = [
     minutes: '10–15 min',
     desc: 'Preview the separate physical TAYU Tax Office after Bond Street and work through the in-world tax stations before the Finale.',
     color: '#FF8A3D',
+    fcps: ['Unit 11'],
+    sol: ['EPF.8', 'EPF.15'],
+    objective: 'Read a W-2 and distinguish wages, withholding, deductions, credits, refunds, and tax due.',
     worldModule: 7,
     physicalDestination: true,
     underConstruction: true,
     leadsToFinale: true,
   },
+]
+
+export const CURRICULUM_COVERAGE = [
+  ['1. Identifying Interests Explorations', 'Expansion', 'First Paycheck'],
+  ['2. Goal Setting', 'Strong', 'Modules 1 and 3'],
+  ['3. Post-Secondary Financial Support', 'Gap', 'Future module'],
+  ['4. Exploring Post-Secondary Options', 'Expansion', 'First Paycheck'],
+  ['5. Career and Employment Options', 'Expansion', 'Module 2 + First Paycheck'],
+  ['6. Applying to a Job', 'Expansion', 'First Paycheck'],
+  ['7. Financial Institutions and Regulatory Agencies', 'Strong', 'Module 4'],
+  ['8. Budgeting and Consumer Skills', 'Strong', 'Modules 1 and 3'],
+  ['9. Credit', 'Partial', 'Module 4'],
+  ['10. Housing and Transportation', 'Partial', 'The Rainy Day'],
+  ['11. Taxes', 'Strong', 'Modules 2 and 7'],
+  ['12. Insurance', 'Expansion', 'The Rainy Day'],
+  ['13. Retirement and Investments', 'Strong', 'Modules 5 and 6'],
+  ['14. Business Background', 'Partial', 'Module 2'],
+  ['15. Macroeconomics', 'Expansion', 'The Big Picture'],
+  ['16. Capstone - Life Scenario', 'Strong', 'Certificate capstone'],
+]
+
+export const EXPANSION_MODULES = [
+  { id: 'first-paycheck', title: 'First Paycheck', grades: 'Grades 6-12', fcps: 'FCPS Units 1, 4, 5, 6', sol: 'EPF.4, EPF.15', summary: 'Choose a role, compare training and pay, complete a practice W-4, and reconcile gross and net pay.' },
+  { id: 'rainy-day', title: 'The Rainy Day', grades: 'Grades 6-12', fcps: 'FCPS Units 10, 12', sol: 'EPF.14', summary: 'Compare renting and owning, choose coverage, and experience the same emergency with and without insurance.' },
+  { id: 'big-picture', title: 'The Big Picture', grades: 'Grades 9-12', fcps: 'FCPS Unit 15', sol: 'EPF.5, EPF.7, EPF.9', summary: 'See inflation reduce buying power and connect interest-rate changes, jobs, trade, and bond values.' },
 ]
 
 export const MODULE_COUNT = MODULE_CATALOG.length

@@ -1,13 +1,14 @@
 // R10 v8 7.3: the kid-safe safety net. Any crash inside a page or the 3D
 // canvas shows a warm oops-and-retry screen - never a stack trace, never a
-// blank page. Errors are logged locally (last 20) so regressions get caught.
+// blank page. Keep enough local history to diagnose intermittent classroom
+// device failures without allowing the log to grow without bound.
 import { Component } from 'react'
 
 export function logTayuError(kind, detail) {
   try {
     const log = JSON.parse(localStorage.getItem('tayu-errlog') || '[]')
     log.push({ t: new Date().toISOString(), kind, detail: String(detail).slice(0, 400) })
-    localStorage.setItem('tayu-errlog', JSON.stringify(log.slice(-20)))
+    localStorage.setItem('tayu-errlog', JSON.stringify(log.slice(-100)))
   } catch { /* storage unavailable */ }
   // eslint-disable-next-line no-console
   console.error('[tayu]', kind, detail)

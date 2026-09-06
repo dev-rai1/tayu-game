@@ -11,6 +11,7 @@ const WORDS = {
       ['Spend', 'Use money to buy something now.'],
       ['Save', 'Keep money for later.'],
       ['Give', 'Use money to help another person, group, or cause.'],
+      ['Opportunity cost', 'The next-best thing you give up when you make a choice.'],
       ['Checkout', 'The place where you pay for the items you chose.'],
     ],
   },
@@ -22,6 +23,11 @@ const WORDS = {
       ['Sale', 'One item bought by a customer.'],
       ['Revenue', 'All the money customers paid before costs are removed.'],
       ['Profit', 'The money left after you subtract costs from revenue.'],
+      ['Supply', 'How much of a product sellers can offer.'],
+      ['Demand', 'How much customers want and can buy.'],
+      ['Fixed cost', 'A business cost that stays the same even when sales change.'],
+      ['Variable cost', 'A business cost that changes when the number of products changes.'],
+      ['Profit margin', 'Profit shown as a percentage of revenue.'],
       ['Supplies', 'The items you need to run the stand.'],
       ['Wage', 'Money paid for work.'],
     ],
@@ -111,7 +117,7 @@ function speakModule(module) {
 
 function MenuHelpTabs({ onSelect }) {
   return (
-    <nav aria-label="Module menu help" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[700] flex -translate-x-1/2 gap-2 rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl backdrop-blur-md">
+    <nav aria-label="Module menu help" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-4 z-[700] flex gap-2 rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl backdrop-blur-md">
       <button type="button" onClick={() => onSelect('instructions')} className="min-h-[44px] whitespace-nowrap rounded-xl bg-navy px-4 text-sm font-extrabold text-white">How to Play</button>
       <button type="button" onClick={() => onSelect('resources')} className="min-h-[44px] whitespace-nowrap rounded-xl border border-navy/10 bg-[#eef8ff] px-4 text-sm font-extrabold text-navy">Learning Resources</button>
     </nav>
