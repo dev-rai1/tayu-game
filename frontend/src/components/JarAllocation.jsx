@@ -88,8 +88,8 @@ export default function JarAllocation({ playerName, onConfirm }) {
             <div className="text-xs text-white/50">{jar.help}</div>
             <div className="text-3xl font-extrabold" aria-live="polite">${jars[jar.key]}</div>
             <div className="flex gap-2">
-              <button type="button" className="h-9 w-9 rounded-full bg-white/15 text-xl font-bold hover:bg-white/25" onClick={() => sub(jar.key)} disabled={jars[jar.key] <= 0} aria-label={`Remove one dollar from ${jar.label}`}>−</button>
-              <button type="button" className="h-9 w-9 rounded-full bg-electric text-xl font-bold text-white hover:bg-teal hover:text-navy disabled:opacity-30" onClick={() => add(jar.key)} disabled={remaining <= 0} aria-label={`Add one dollar to ${jar.label}`}>+</button>
+              <button type="button" className="h-11 w-11 rounded-full border-2 border-white bg-navy text-2xl font-bold text-white hover:bg-white hover:text-navy disabled:opacity-40" onClick={() => sub(jar.key)} disabled={jars[jar.key] <= 0} aria-label={`Remove one dollar from ${jar.label}`}>−</button>
+              <button type="button" className="h-11 w-11 rounded-full border-2 border-white bg-electric text-2xl font-bold text-white hover:bg-teal hover:text-navy disabled:opacity-40" onClick={() => add(jar.key)} disabled={remaining <= 0} aria-label={`Add one dollar to ${jar.label}`}>+</button>
             </div>
           </div>
         ))}

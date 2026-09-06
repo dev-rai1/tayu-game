@@ -41,6 +41,7 @@ const Cookies = lazy(() => import('./pages/Cookies.jsx'))
 const Accessibility = lazy(() => import('./pages/Accessibility.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 const ExpansionMissions = lazy(() => import('./pages/ExpansionMissions.jsx'))
+const AccessibleModules = lazy(() => import('./pages/AccessibleModules.jsx'))
 
 export const FINALE_REQUIRED_BADGES = MODULE_CATALOG.map((module) => module.badge)
 
@@ -145,6 +146,7 @@ function CertificateMusicTrigger() {
 const TITLE_MAP = {
   '/': 'TAYU | Learn Money by Playing',
   '/about': 'About TAYU',
+  '/educators': 'Educator Standards Map | TAYU',
   '/privacy': 'Privacy | TAYU',
   '/cookies': 'Cookies & Storage | TAYU',
   '/accessibility': 'Accessibility | TAYU',
@@ -158,6 +160,7 @@ const TITLE_MAP = {
   '/teacher': 'Teacher Dashboard | TAYU',
   '/teacher-guide': 'Teacher Guide | TAYU',
   '/missions': 'Expansion Missions | TAYU',
+  '/accessible-modules': 'Accessible Learning Modules | TAYU',
   '/dashboard': 'Admin Dashboard | TAYU',
 }
 
@@ -187,6 +190,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<><div className="relative z-20 bg-[#eef8ff] px-4 py-2"><MediaCoverage compact /></div><Welcome /></>} />
               <Route path="/about" element={<><div className="relative z-20 bg-[#eef8ff] px-4 py-2"><MediaCoverage compact about /></div><About /></>} />
+              <Route path="/educators" element={<Suspense fallback={<LoadingScreen label="Opening the educator standards map..." />}><TeacherGuide /></Suspense>} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/accessibility" element={<Accessibility />} />
@@ -200,6 +204,7 @@ export default function App() {
               <Route path="/modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen />}><ModuleSelect /></Suspense></PreQuizGate>} />
               <Route path="/settings" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening player settings..." />}><Settings /></Suspense></PreQuizGate>} />
               <Route path="/missions" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening expansion missions..." />}><ExpansionMissions /></Suspense></PreQuizGate>} />
+              <Route path="/accessible-modules" element={<PreQuizGate><Suspense fallback={<LoadingScreen label="Opening accessible modules..." />}><AccessibleModules /></Suspense></PreQuizGate>} />
               <Route path="/teacher" element={<TeacherGate><TeacherDashboard /></TeacherGate>} />
               <Route path="/teacher-guide" element={<TeacherGate><Suspense fallback={<LoadingScreen label="Opening the teacher guide..." />}><TeacherGuide /></Suspense></TeacherGate>} />
               <Route path="/dashboard" element={<AdminRoute><Suspense fallback={<LoadingScreen />}><><SiteTrafficSummary /><Dashboard /></></Suspense></AdminRoute>} />

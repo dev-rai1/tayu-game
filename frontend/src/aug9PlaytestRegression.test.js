@@ -29,9 +29,9 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
 
   it('keeps Module 6 enabled in teacher defaults and persistence', () => {
     const source = read('frontend/src/services/classroom.js')
-    expect(source).toContain('export const DEFAULT_MODULES = [1, 2, 3, 4, 5, 6]')
-    expect(source).toMatch(/filter\(\(n\) => n >= 1 && n <= 6\)/)
-    expect(source).toContain('amountDone: `${badges.length}/6`')
+    expect(source).toContain('export const DEFAULT_MODULES = [1, 2, 3, 4, 5, 6, 7]')
+    expect(source).toMatch(/filter\(\(n\) => n >= 1 && n <= 7\)/)
+    expect(source).toContain('assignedTotal')
   })
 
   it('keeps teacher CSV analytics wired across all six modules', () => {
@@ -87,7 +87,7 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     const hud = read('frontend/src/world/Hud.jsx')
     const skip = read('frontend/src/world/OverlayEscapeControls.jsx')
     const admin = read('frontend/src/components/AdminPanel.jsx')
-    expect(hud).toContain('absolute left-4 top-[4.5rem]')
+    expect(hud).toContain('absolute left-4 top-[5rem]')
     expect(skip).toContain('fixed right-4 top-[5.5rem]')
     expect(admin).toContain('right-[calc(0.75rem+env(safe-area-inset-right,0px))]')
     expect(admin).toContain('bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]')

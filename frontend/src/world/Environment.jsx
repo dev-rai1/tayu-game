@@ -101,7 +101,7 @@ const TREE_SPOTS = [
 ].map((t, i) => {
   const [x, z] = worldScale([t.x, t.z])
   return { ...t, x, z, c: i }
-}).filter((t) => isClearOfPaths([t.x, t.z], 1.5) && isClearOfModuleGates([t.x, t.z], 1)) // keep every module gateway readable
+}).filter((t) => isClearOfPaths([t.x, t.z], 2) && isClearOfModuleGates([t.x, t.z], 1)) // keep every module gateway readable
 
 const PALM_SPOTS = [
   [21, -9, 1], [39, -10.5, 1.05], [21.5, -2, 0.95], [38.5, -0.5, 1],
@@ -141,7 +141,17 @@ const GROVE_TREE_SPOTS = SCENERY_ZONES.flatMap((zone, i) => {
     s: 0.82 + ((i * 2 + n) % 4) * 0.13,
     c: i * 3 + n,
   }))
-}).filter((item) => isClearOfPaths([item.x, item.z], 1.5) && isClearOfModuleGates([item.x, item.z], 1.5))
+}).filter((item) => isClearOfPaths([item.x, item.z], 2) && isClearOfModuleGates([item.x, item.z], 1.5))
+
+// Trees are visual obstacles, so they must also participate in player
+// collision. Register every rendered trunk—not only the original seven—while
+// retaining enough clearance for the breadcrumb route.
+;[...TREE_SPOTS, ...GROVE_TREE_SPOTS].forEach((tree, index) => {
+  const id = `tree-${index}`
+  if (!BLOCKERS.some((item) => item.id === id)) {
+    BLOCKERS.push({ id, x: tree.x, z: tree.z, r: Math.max(0.7, tree.s * 0.72) })
+  }
+})
 
 const TRANSITION_BUSHES = SCENERY_ZONES.flatMap((zone, i) => {
   const count = zone.theme === 'rock-garden' || zone.theme === 'sculpture-garden' ? 2 : zone.density + 2

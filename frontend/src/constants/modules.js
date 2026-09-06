@@ -10,6 +10,7 @@ export const MODULE_CATALOG = [
     fcps: ['Unit 2', 'Unit 8'],
     sol: ['EPF.1', 'EPF.16'],
     objective: 'Explain opportunity cost and create a spending, saving, and giving plan.',
+    k2: { title: 'Money Jars', desc: 'You get some money. Choose some for now, some for later, and some to help.', objective: 'Tell why one choice means waiting for another choice.' },
   },
   {
     n: 2,
@@ -22,6 +23,7 @@ export const MODULE_CATALOG = [
     fcps: ['Unit 5', 'Unit 14'],
     sol: ['EPF.2', 'EPF.3', 'EPF.4'],
     objective: 'Use supply, demand, revenue, fixed and variable costs, and profit margin to run a business.',
+    k2: { title: 'Lemonade Stand', desc: 'Make lemonade, choose a price, and see what your stand earns.', objective: 'Count money in and money out, then tell if the stand earned money.' },
   },
   {
     n: 3,

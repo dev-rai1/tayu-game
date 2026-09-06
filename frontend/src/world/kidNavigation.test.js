@@ -26,7 +26,7 @@ describe('kid navigation support', () => {
     expect(coachSource).toContain('coachVisibility')
     expect(coachSource).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coachSource).toContain('coachMessageFromTransient')
-    expect(coachSource).toContain('advanceDialog')
+    expect(coachSource).toContain('closeDialog')
     expect(coachSource).toContain('Read aloud')
     expect(coachSource).toContain("queue.length > 1 ? 'Next' : 'Got it'")
     expect(coachSource).toContain('pointer-events-none fixed')
