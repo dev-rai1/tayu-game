@@ -334,14 +334,8 @@ export function Player({ avatar }) {
     }
     if (root.current) root.current.position.set(playerPos.x, 0, playerPos.z)
 
-    // R10 v8 1.4: gentle auto-follow - if the child has not steered the
-    // camera for 3 seconds and is walking, drift the view behind them
-    if (moving && Date.now() - (cameraRig.lastLook || 0) > 3000) {
-      const want = Math.atan2(wx ?? 0, wz ?? 0) + Math.PI
-      let diff = want - cameraRig.azimuth
-      diff = Math.atan2(Math.sin(diff), Math.cos(diff))
-      if (Math.abs(diff) > 0.05) cameraRig.azimuth += diff * Math.min(1, 0.8 * delta)
-    }
+    // Camera direction changes only when the learner deliberately looks. This
+    // keeps navigation arrows stable and avoids motion caused by auto-follow.
     // --- orbit follow camera (azimuth from cameraRig) ---
     const ox = Math.sin(az) * cameraRig.dist
     const oz = Math.cos(az) * cameraRig.dist

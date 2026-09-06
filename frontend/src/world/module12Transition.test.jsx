@@ -132,7 +132,7 @@ describe('Module 1 to Module 2 transition', () => {
     // Stage 1 rebuild: Bond/Tax now render in the SAME week-keyed scene as every
     // other module, so entering them never remounts the Canvas / makes a 2nd
     // WebGL context (the blue-screen cause). One key family for all modules.
-    expect(source).toContain('const sceneKey = `week-${week ?? 0}`')
+    expect(source).toContain('const sceneKey = `week-${week ?? 0}-renderer-${rendererGeneration}`')
     expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
     expect(source).toContain('key={sceneKey}')
   })

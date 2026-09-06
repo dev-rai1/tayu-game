@@ -147,7 +147,7 @@ export default function ModuleSelect() {
 
   const canPlay = (moduleNumber) => {
     if (teacherPreview) return teacherEnabled.includes(moduleNumber)
-    if (context?.plain) return true
+    if (context?.plain) return required.includes(moduleNumber)
     if (!required.includes(moduleNumber)) return false
     if (context?.settings?.allowSkip) return true
     return moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)
@@ -185,21 +185,13 @@ export default function ModuleSelect() {
 
   const play = (moduleNumber) => {
     if (!canPlay(moduleNumber)) return
-    const olderOptional = Boolean(!teacherPreview && context?.plain && gradePath && !required.includes(moduleNumber))
-    if (olderOptional) {
-      setPendingPart(null)
-      setPendingModule(moduleNumber)
-    } else launchModule(moduleNumber)
+    launchModule(moduleNumber)
   }
 
   const playGardenPart = (partId) => {
     if (!canPlay(5)) return
     if (partId === 'B' && !gardenPartAComplete) return
-    const olderOptional = Boolean(!teacherPreview && context?.plain && gradePath && !required.includes(5))
-    if (olderOptional) {
-      setPendingPart(partId)
-      setPendingModule(5)
-    } else launchModule(5, partId)
+    launchModule(5, partId)
   }
 
   if (!context) {
@@ -283,7 +275,6 @@ export default function ModuleSelect() {
               const done = badges.includes(module.badge)
               const accessible = canPlay(module.n)
               const requiredForPath = required.includes(module.n)
-              const olderOptional = Boolean(context.plain && gradePath && !requiredForPath)
               const isNext = accessible && !done && module.n === firstIncompleteRequired
 
               if (module.parts?.length) {
@@ -294,6 +285,8 @@ export default function ModuleSelect() {
                         <div className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: module.color }}>Module 5 · Investing</div>
                         <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>Money Garden</h2>
                         <p className="mt-1 max-w-2xl text-sm font-semibold leading-relaxed text-slate-700">Two connected parts. Finish 5A, then 5B unlocks using the same portfolio.</p>
+                        <p className="mt-2 text-xs font-extrabold text-[#08785d]">{module.fcps.join(' · ')} · {module.sol.join(', ')}</p>
+                        <p className="mt-2 max-w-2xl text-sm font-semibold text-slate-800"><strong>Students can:</strong> {module.objective}</p>
                       </div>
                       <StatusPill done={done} inProgress={gardenPartAInProgress || gardenPartBInProgress} accessible={accessible} recommended={isNext} />
                     </div>
@@ -328,9 +321,7 @@ export default function ModuleSelect() {
                     ? 'Go to Module 7 · Tax Office'
                     : isNext
                       ? `Play Module ${module.n} now`
-                      : olderOptional
-                        ? `Explore Module ${module.n}`
-                        : `Play Module ${module.n}`
+                      : `Play Module ${module.n}`
               return (
                 <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`} style={{ borderColor: module.color }}>
                   <div className="flex items-center justify-between gap-3">
@@ -342,12 +333,16 @@ export default function ModuleSelect() {
                   {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Teleport to entrance · walk inside · press E to start</div>}
                   {finalModule && <div className="mt-2 ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-700">Final module · Tax Office</div>}
                   <div className="mt-2 text-xs font-bold text-slate-500">{module.grades} · {module.minutes}</div>
+                  <div className="mt-2 text-xs font-extrabold text-[#08785d]">{module.fcps.join(' · ')} · {module.sol.join(', ')}</div>
                   <p className="mt-3 min-h-[3rem] text-sm font-semibold leading-relaxed text-slate-700">{module.desc}</p>
-                  <div className={`mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold ${accessible ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-500'}`}>{accessible ? action : `Complete Module ${firstIncompleteRequired} first`} →</div>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800"><strong>Students can:</strong> {module.objective}</p>
+                  <div className={`mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold ${accessible ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-600'}`}>{accessible ? action : `${module.grades} - switch grade to play`} →</div>
                 </button>
               )
             })}
           </section>
+
+          <section className="mt-5 rounded-3xl border border-white/80 bg-white/95 p-5 text-slate-950 shadow-lg"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-extrabold">My TAYU passport</h2><p className="text-sm font-semibold text-slate-600">Each earned module badge fills your persistent learning passport.</p></div><div className="flex flex-wrap gap-2">{MODULE_CARDS.map((module) => <span key={module.badge} className={`rounded-full px-3 py-2 text-xs font-extrabold ${badges.includes(module.badge) ? 'bg-teal text-navy' : 'bg-slate-100 text-slate-500'}`}>{badges.includes(module.badge) ? '✓' : '○'} {module.title.replace(/ —.*/, '')}</span>)}</div></div><Link to="/missions" className="mt-4 inline-flex min-h-[44px] items-center rounded-xl bg-slate-950 px-4 font-extrabold text-white">Play FCPS expansion missions →</Link></section>
 
           <div className="mt-5 rounded-2xl border border-white/80 bg-white/95 p-4 text-center text-sm font-semibold text-slate-700 shadow-md backdrop-blur-md">
             <strong className="text-slate-950">Journey:</strong> Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale. Modules 6 and 7 teleport you to separate labeled 3D buildings, where you press E to begin.

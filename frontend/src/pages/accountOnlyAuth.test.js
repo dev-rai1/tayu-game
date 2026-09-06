@@ -11,8 +11,9 @@ describe('account-only entry flow', () => {
   it('keeps login, sign-up, and password reset as the only account entry options', () => {
     expect(authPage).toContain("['signin', 'Log In']")
     expect(authPage).toContain("['signup', 'Sign Up']")
-    expect(authPage).toContain("['reset', 'Forgot?']")
-    expect(authPage).not.toMatch(/guest mode|GuestModeButton|startGuestSession/i)
+    expect(authPage).not.toContain("['reset', 'Forgot?']")
+    expect(authPage).toContain('startGuestSession')
+    expect(authPage).toContain('Try Module 1 without an account')
   })
 
   it('requires authentication before assessments, modules, avatar creation, and the world', () => {

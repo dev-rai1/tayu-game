@@ -118,7 +118,7 @@ export default function Welcome() {
           </Link>
         </nav>
 
-        <a href="#grade-bands" className="absolute bottom-5 text-sm font-bold text-navy/70 hover:text-electric">
+        <a href="#grade-bands" className="mt-2 inline-flex min-h-[44px] items-center rounded-full bg-sun px-5 text-sm font-extrabold text-navy shadow-md hover:bg-white">
           Explore the K-12 learning path <span aria-hidden="true">↓</span>
         </a>
       </main>

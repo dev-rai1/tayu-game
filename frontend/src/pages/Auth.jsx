@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { currentUser, signUp, signIn, syncUp } from '../services/auth.js'
+import { currentUser, signUp, signIn, startGuestSession, syncUp } from '../services/auth.js'
 import { recoverLogin } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
@@ -59,6 +59,11 @@ export default function Auth() {
     return nav('/modules')
   }
 
+  const tryAsGuest = () => {
+    startGuestSession()
+    nav('/modules')
+  }
+
   const submit = async (event) => {
     event?.preventDefault(); setErr(null); setOk(null); setBusy(true)
     try {
@@ -107,7 +112,7 @@ export default function Auth() {
       <form className="rounded-3xl bg-white/5 p-6" onSubmit={submit}>
         <h1 className="font-display text-2xl font-extrabold">{mode === 'signup' ? 'Create your TAYU account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</h1>
         <p className="mt-1 text-sm font-semibold text-white/75">{mode === 'signup' ? 'Choose Playing on my own when you are testing independently. School students use their teacher’s class code.' : mode === 'reset' ? 'Enter your account email, then check Inbox, Spam, Junk, and Promotions.' : 'Log in to continue your money adventure.'}</p>
-        <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">{[['signin', 'Log In'], ['signup', 'Sign Up'], ['reset', 'Forgot?']].map(([tabMode, label]) => <button id={`auth-tab-${tabMode}`} key={tabMode} type="button" role="tab" aria-selected={mode === tabMode} aria-controls="auth-panel" tabIndex={mode === tabMode ? 0 : -1} onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
+        <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Account options">{[['signin', 'Log In'], ['signup', 'Sign Up']].map(([tabMode, label]) => <button id={`auth-tab-${tabMode}`} key={tabMode} type="button" role="tab" aria-selected={mode === tabMode} aria-controls="auth-panel" tabIndex={mode === tabMode ? 0 : -1} onClick={() => changeMode(tabMode)} className={`min-h-[44px] flex-1 rounded-xl text-sm font-extrabold ${mode === tabMode ? 'bg-teal text-navy' : 'bg-white/10 text-white'}`}>{label}</button>)}</div>
 
         <div id="auth-panel" role="tabpanel" aria-labelledby={`auth-tab-${mode}`}>
           <label className={LABEL}>Email {mode === 'signup' ? REQUIRED : null}<input className={FIELD} required type="email" inputMode="email" autoCapitalize="none" spellCheck="false" autoComplete="email" value={f.email} onChange={set('email')} /></label>
@@ -132,6 +137,7 @@ export default function Auth() {
         <div aria-live="polite" aria-atomic="true">{err && <p role="alert" className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-200">{err}</p>}{ok && <p role="status" className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}</div>
         {mode === 'reset' && recovery && <div className="mt-3 rounded-2xl bg-white/5 p-4 text-sm font-semibold text-white/75"><p>Use the newest reset email.</p><p className="mt-2 font-extrabold text-amber-200">Check Spam, Junk, or Promotions if it is not in your inbox.</p>{recovery.legacyActivationAvailable && <button type="button" onClick={activateOlderAccount} className="mt-3 min-h-[44px] w-full rounded-xl bg-amber-300 px-3 font-extrabold text-navy">Activate older account</button>}</div>}
         <button type="submit" disabled={busy} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">{busy ? 'One moment...' : mode === 'signup' ? 'Create my account' : mode === 'signin' ? 'Log in' : recovery ? 'Send reset link again' : 'Send reset link'}</button>
+        {mode === 'signin' && <button type="button" onClick={tryAsGuest} className="mt-3 min-h-[52px] w-full rounded-2xl border-2 border-teal bg-white/5 px-4 font-extrabold text-teal hover:bg-white/10">Try Module 1 without an account</button>}
         {mode === 'signin' && <button type="button" onClick={() => changeMode('reset')} className="mt-3 w-full text-sm font-bold text-white/75">Forgot password?</button>}
         {mode === 'reset' && <button type="button" onClick={() => changeMode('signin')} className="mt-3 w-full text-sm font-bold text-white/75">Back to login</button>}
       </form>
