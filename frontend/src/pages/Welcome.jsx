@@ -12,6 +12,7 @@ import { EDUCATOR_GRADE_BANDS } from '../constants/modules.js'
 // picture of the complete K-12 learning path.
 
 const LOGO = '/assets/tayu-logo.webp'
+const JUMPSTART_URL = 'https://jumpstartclearinghouse.org/resource/tayu-financial-literacy-app/'
 
 // ---------- bubble wordmark (SVG: brand gradient + granite noise, bopping) ----------
 function Wordmark() {
@@ -100,6 +101,10 @@ export default function Welcome() {
           Learn money by playing it.
         </p>
 
+        <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="rounded-full border border-teal/40 bg-white/90 px-4 py-2 text-sm font-extrabold text-navy shadow-md transition hover:-translate-y-0.5 hover:bg-white">
+          Featured in the Jump$tart Clearinghouse
+        </a>
+
         {/* the single call to action */}
         <div className="relative mt-2">
           <Peeker side="left" shirt="#00DCA0" delay="0s" />
@@ -167,7 +172,7 @@ export default function Welcome() {
               <div className="inline-flex rounded-full bg-teal/15 px-4 py-2 text-sm font-extrabold text-teal">Built for classrooms • Free to play</div>
               <h2 className="mt-4 font-display text-3xl font-extrabold">Bring TAYU to your school</h2>
               <p className="mt-3 max-w-2xl text-lg leading-relaxed text-white/75">Explore short, playable modules, classroom-ready guidance, read-aloud support, and automatic progress saving. We also offer free live or virtual demos for schools and community programs.</p>
-              <p className="mt-4 font-bold text-white">Designed around the CEE/Jump$tart National Standards for Personal Financial Education.</p>
+              <p className="mt-4 font-bold text-white">Designed around the CEE/Jump$tart National Standards for Personal Financial Education and listed in the Jump$tart Clearinghouse.</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a href="https://calendly.com/tayu-finance/30min" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-teal px-6 py-3 font-extrabold text-navy hover:bg-white">Book a Free Demo</a>
                 <Link to="/about" className="rounded-2xl border-2 border-white/30 px-6 py-3 font-extrabold text-white hover:bg-white/10">Educator Overview</Link>
