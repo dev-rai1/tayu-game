@@ -9,6 +9,7 @@ const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
 const FCPS_URL = 'https://www.fcps.edu/news/superintendents-weekly-reflections-199'
+const JUMPSTART_URL = 'https://jumpstartclearinghouse.org/resource/tayu-financial-literacy-app/'
 
 export function MediaCoverage({ compact = false, about = false }) {
   const sectionClass = about && !compact
@@ -23,6 +24,10 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span id={titleId} className="shrink-0 font-display text-[11px] font-extrabold uppercase tracking-[0.18em] text-navy/65">
             Featured
           </span>
+          <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-teal/15 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/25">
+            Jump$tart Clearinghouse
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={FOX_PAGE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#d71920]/10 px-3 py-1.5 text-xs font-extrabold text-[#b51219] transition hover:bg-[#d71920]/15">
             🔴 FOX 5 DC Live
           </a>
@@ -76,6 +81,14 @@ export function MediaCoverage({ compact = false, about = false }) {
           <p className="mx-auto mt-2 max-w-2xl text-navy/70">Explore coverage of our student-led financial-literacy project, children&rsquo;s book, classroom outreach, and the next phase with TAYU.</p>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-4 transition hover:-translate-y-1 hover:shadow-md md:col-span-2 lg:col-span-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">JUMP$TART CLEARINGHOUSE</span>
+              <span className="text-sm font-extrabold text-navy">View official listing →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">TAYU Financial Literacy App featured as a learning resource</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">TAYU is listed in the Jump$tart Clearinghouse as a free, interactive financial-literacy game and simulation for students from early elementary through high school.</p>
+          </a>
           <div className="rounded-2xl border-2 border-[#d71920]/20 bg-[#fff5f5] p-4 md:col-span-2 lg:col-span-2">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(280px,1.2fr)] lg:items-center">
               <div>
