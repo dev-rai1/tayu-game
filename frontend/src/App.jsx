@@ -14,6 +14,7 @@ import DialogAccessibility from './components/DialogAccessibility.jsx'
 import PathCompletionWatcher from './components/PathCompletionWatcher.jsx'
 import SiteTrafficSummary from './components/SiteTrafficSummary.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
+import JumpstartRecognition from './components/JumpstartRecognition.jsx'
 import { MuteButton } from './components/MuteButton.jsx'
 import WorldUtilityDock from './components/WorldUtilityDock.jsx'
 import { Boundary, LoadingScreen } from './components/Boundary.jsx'
@@ -180,6 +181,7 @@ export default function App() {
   return (
     <div className="tayu-app-viewport bg-navy text-white font-body">
       <PageMetadata />
+      <JumpstartRecognition />
       <DialogAccessibility />
       <div id="app-content" tabIndex="-1">
         <Boundary name="routes" hard>
