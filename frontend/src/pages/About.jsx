@@ -15,6 +15,7 @@ const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
 const FCPS_URL = 'https://www.fcps.edu/news/superintendents-weekly-reflections-199'
+const JUMPSTART_URL = 'https://jumpstartclearinghouse.org/resource/tayu-financial-literacy-app/'
 
 const CONTACTS = [
   { label: 'Email', href: 'mailto:tayu.finance@gmail.com' },
@@ -63,6 +64,14 @@ const STATS = [
 ]
 
 const FEATURED = [
+  {
+    label: 'Jump$tart',
+    title: 'Clearinghouse listing',
+    note: 'Featured financial-literacy resource.',
+    href: JUMPSTART_URL,
+    badge: 'bg-teal text-navy',
+    card: 'border-teal/30 bg-teal/5',
+  },
   {
     label: 'FOX 5 DC',
     title: 'Live TV feature',
@@ -212,6 +221,9 @@ export default function About() {
             <p className="mt-3 text-lg font-semibold leading-relaxed text-navy">
               We build strong money habits early, then expand into more advanced, gamified content for older students.
             </p>
+            <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex rounded-2xl border-2 border-teal/40 bg-teal/10 px-4 py-3 font-display text-sm font-extrabold text-navy transition hover:-translate-y-0.5 hover:bg-teal/20">
+              Featured in the Jump$tart Clearinghouse · View official listing →
+            </a>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {STATS.map((s) => (
                 <div key={s.big} className="rounded-3xl bg-white p-5 shadow-md">
