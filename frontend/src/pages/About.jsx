@@ -7,6 +7,8 @@ import { MODULE_CATALOG } from '../constants/modules.js'
 const LOGO = '/assets/tayu-logo.webp'
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
 const NBC4_URL = 'https://www.nbcwashington.com/video/news/local/northern-virginia/fairfax-county-students-write-kids-book-about-financial-literacy/4145741/'
+const WJLA_URL = 'https://wjla.com/good-morning-washington/lack-of-money-lessons-sparks-students-to-launch-the-cash-classroom-and-tayu-app'
+const JUMPSTART_URL = 'https://jumpstartclearinghouse.org/resource/tayu-financial-literacy-app/'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
@@ -78,6 +80,22 @@ const FEATURED = [
     href: NBC4_URL,
     badge: 'bg-[#1f4e8c] text-white',
     card: 'border-[#1f4e8c]/20 bg-[#1f4e8c]/5',
+  },
+  {
+    label: 'WJLA 7News',
+    title: 'Good Morning Washington',
+    note: 'Feature on The Cash Classroom, our book, and the TAYU app.',
+    href: WJLA_URL,
+    badge: 'bg-[#7a1732] text-white',
+    card: 'border-[#7a1732]/20 bg-[#7a1732]/5',
+  },
+  {
+    label: 'Jump$tart',
+    title: 'Clearinghouse resource',
+    note: 'TAYU listed as a financial-literacy resource for students and educators.',
+    href: JUMPSTART_URL,
+    badge: 'bg-teal text-navy',
+    card: 'border-teal/30 bg-teal/5',
   },
   {
     label: 'White House',
