@@ -1,6 +1,8 @@
 const FOX_PAGE_URL = 'https://www.fox5dc.com/video/fmc-nsz4uh655jl7z59n'
 const FOX_EMBED_URL = 'https://www.youtube.com/embed/HjfuUGCowW4?rel=0'
 const NBC4_URL = 'https://www.nbcwashington.com/video/news/local/northern-virginia/fairfax-county-students-write-kids-book-about-financial-literacy/4145741/'
+const WJLA_URL = 'https://wjla.com/good-morning-washington/lack-of-money-lessons-sparks-students-to-launch-the-cash-classroom-and-tayu-app'
+const JUMPSTART_URL = 'https://jumpstartclearinghouse.org/resource/tayu-financial-literacy-app/'
 const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
@@ -29,6 +31,14 @@ export function MediaCoverage({ compact = false, about = false }) {
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={NBC4_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#1f4e8c]/10 px-3 py-1.5 text-xs font-extrabold text-[#1f4e8c] transition hover:bg-[#1f4e8c]/15">
             🔴 NBC4 Washington Live
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={WJLA_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-[#7a1732]/10 px-3 py-1.5 text-xs font-extrabold text-[#7a1732] transition hover:bg-[#7a1732]/15">
+            🔴 WJLA 7News
+          </a>
+          <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
+          <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-teal/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-teal/20">
+            Jump$tart Clearinghouse
           </a>
           <span className="hidden h-4 w-px shrink-0 bg-navy/15 sm:block" aria-hidden="true" />
           <a href={WHITE_HOUSE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-xl bg-navy/10 px-3 py-1.5 text-xs font-extrabold text-navy transition hover:bg-navy/15">
@@ -110,6 +120,23 @@ export function MediaCoverage({ compact = false, about = false }) {
             <p className="mt-3 font-display text-lg font-extrabold text-navy">The Seed That Grew</p>
             <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch our NBC4 Washington studio feature and book talk on <em>The Seed That Grew</em>, its inspiration, and our work introducing financial literacy to young students.</p>
             <div className="mt-4 inline-flex rounded-xl bg-[#1f4e8c] px-3 py-2 text-sm font-extrabold text-white">Watch NBC4 feature →</div>
+          </a>
+          <a href={WJLA_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-[#7a1732]/20 bg-[#7a1732]/5 p-4 transition hover:-translate-y-1 hover:shadow-md md:col-span-2 lg:col-span-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-[#7a1732] px-3 py-1 font-display text-sm font-extrabold text-white">WJLA 7NEWS</span>
+              <span className="text-sm font-extrabold text-[#7a1732]">Good Morning Washington →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">The Cash Classroom and TAYU app</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">Watch WJLA highlight how our children&rsquo;s book and interactive TAYU app make financial literacy more engaging and accessible for young students.</p>
+            <div className="mt-4 inline-flex rounded-xl bg-[#7a1732] px-3 py-2 text-sm font-extrabold text-white">Watch WJLA feature →</div>
+          </a>
+          <a href={JUMPSTART_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-teal/30 bg-teal/5 p-4 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-lg bg-teal px-3 py-1 font-display text-sm font-extrabold text-navy">JUMP$TART</span>
+              <span className="text-sm font-extrabold text-navy">View resource →</span>
+            </div>
+            <p className="mt-3 font-display text-lg font-extrabold text-navy">TAYU Financial Literacy App</p>
+            <p className="mt-1 text-sm leading-relaxed text-navy/65">Explore TAYU&rsquo;s listing in the Jump$tart Clearinghouse as a financial-literacy resource for students and educators.</p>
           </a>
           <a href={WTOP_URL} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border-2 border-electric/20 bg-[#f2f7ff] p-4 transition hover:-translate-y-1 hover:shadow-md">
             <div className="flex items-center justify-between gap-3">
