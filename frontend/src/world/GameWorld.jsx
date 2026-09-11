@@ -1,4 +1,4 @@
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { Component, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Player } from './Player.jsx'
@@ -37,6 +37,42 @@ class SceneBoundary extends Component {
   render() {
     return this.state.failed ? null : this.props.children
   }
+}
+
+function disposeMaterial(material) {
+  if (!material) return
+  for (const value of Object.values(material)) {
+    if (value?.isTexture) value.dispose()
+  }
+  material.dispose?.()
+}
+
+// R3F normally disposes declarative objects, but module jumps and context
+// recovery are unusually abrupt. Explicit cleanup keeps abandoned GPU buffers
+// and canvas textures from accumulating across a long classroom session.
+export function RendererLifecycle() {
+  const { gl, scene } = useThree()
+  useEffect(() => {
+    const sample = () => {
+      const memory = gl.info?.memory || {}
+      const render = gl.info?.render || {}
+      if ((memory.geometries || 0) > 420 || (memory.textures || 0) > 180 || (render.calls || 0) > 520) {
+        logTayuError('renderer:pressure', JSON.stringify({ ...memory, calls: render.calls || 0 }))
+      }
+    }
+    const timer = window.setInterval(sample, 10000)
+    return () => {
+      window.clearInterval(timer)
+      scene.traverse((object) => {
+        object.geometry?.dispose?.()
+        if (Array.isArray(object.material)) object.material.forEach(disposeMaterial)
+        else disposeMaterial(object.material)
+      })
+      gl.renderLists?.dispose?.()
+      gl.info?.reset?.()
+    }
+  }, [gl, scene])
+  return null
 }
 
 export function repairRuntimeState() {
@@ -162,6 +198,7 @@ export function GameWorld({ avatar }) {
             }
           }}
         >
+          <RendererLifecycle />
           <CanvasViewportGuard />
           <Suspense fallback={null}>
             <color attach="background" args={[paycheckWorld ? '#f4efe3' : '#cfe6f2']} />

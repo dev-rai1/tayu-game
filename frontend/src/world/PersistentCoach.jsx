@@ -55,7 +55,7 @@ export function PersistentCoach({ paycheckMode = false }) {
   const lessons = useGame((s) => s.lessons)
   const dismissLesson = useGame((s) => s.dismissLesson)
   const dialog = useGame((s) => s.dialog)
-  const advanceDialog = useGame((s) => s.advanceDialog)
+  const closeDialog = useGame((s) => s.closeDialog)
   const panelJar = useGame((s) => s.panelJar)
   const panelItem = useGame((s) => s.panelItem)
   const btPanel = useGame((s) => s.btPanel)
@@ -121,7 +121,15 @@ export function PersistentCoach({ paycheckMode = false }) {
           signatures.add(signature)
           return true
         })
-        return [...current, ...additions].slice(0, MAX_QUEUE)
+        if (!additions.length) return current
+        const combined = additions.length === 1 ? additions[0] : {
+          ...additions[0],
+          id: `combined-${messageCounter.current}`,
+          label: 'What changed',
+          title: additions.map((item) => item.title).filter(Boolean).join(' · '),
+          action: additions.map((item) => item.action).filter(Boolean).join(' '),
+        }
+        return [...current, combined].slice(0, MAX_QUEUE)
       })
     }
 
@@ -146,20 +154,12 @@ export function PersistentCoach({ paycheckMode = false }) {
     queuedFocus.current.add(storageKey)
     markSeen(storageKey)
     setQueue((current) => {
-      const additions = steps.map((step, index) => {
-        messageCounter.current += 1
-        return {
-          id: `lemonade-focus-${messageCounter.current}`,
-          kind: 'guide',
-          label: 'Hint',
-          title: step.title,
-          action: step.text,
-          helper: 'learn',
-          step: index + 1,
-          total: steps.length,
-        }
-      })
-      return [...current, ...additions].slice(0, MAX_QUEUE)
+      messageCounter.current += 1
+      return [...current, {
+        id: `lemonade-focus-${messageCounter.current}`,
+        kind: 'guide', label: 'Plan', title: steps.map((item) => item.title).join(' · '),
+        action: steps.map((item) => item.text).join(' '), helper: 'learn',
+      }].slice(0, MAX_QUEUE)
     })
   }, [lemPhase, week])
 
@@ -171,13 +171,13 @@ export function PersistentCoach({ paycheckMode = false }) {
     : null
   const queuedMessage = queue[0]
   const lessonMessage = activeLesson ? coachMessageFromTransient('lesson', activeLesson) : null
-  const dialogLine = dialog?.lines?.[dialog.index]
-  const dialogMessage = dialogLine
+  const dialogText = dialog?.lines?.slice(dialog.index).filter(Boolean).join(' ')
+  const dialogMessage = dialogText
     ? {
         kind: 'actor',
         label: `${dialog.name || 'TAYU friend'} says`,
         title: dialog.name || 'TAYU friend',
-        action: dialogLine,
+        action: dialogText,
       }
     : null
   const generatedGuidance = gardenGuide
@@ -211,9 +211,7 @@ export function PersistentCoach({ paycheckMode = false }) {
   const diagnosis = improvement?.diagnosis
   const action = dialogMessage?.action || lessonMessage?.action || queuedMessage?.action || improvement?.action || generatedGuidance?.action || generatedGuidance?.instruction
   const spoken = [title, diagnosis, action].filter(Boolean).join('. ')
-  const queueProgress = dialogMessage
-    ? `${dialog.index + 1} of ${dialog.lines.length}`
-    : lessonMessage && lessons.length > 1
+  const queueProgress = lessonMessage && lessons.length > 1
       ? `1 of ${lessons.length}`
       : queuedMessage?.total
         ? `${queuedMessage.step} of ${queuedMessage.total}`
@@ -288,7 +286,7 @@ export function PersistentCoach({ paycheckMode = false }) {
                   href={learnResource.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="pointer-events-auto mt-2 block rounded-xl bg-electric/10 px-3 py-2 text-center text-xs font-extrabold text-electric active:scale-95"
+                  className="pointer-events-auto mt-2 block rounded-xl bg-navy px-3 py-2 text-center text-xs font-extrabold text-white active:scale-95"
                 >
                   Learn more: {learnResource.label}
                 </a>
@@ -297,12 +295,12 @@ export function PersistentCoach({ paycheckMode = false }) {
           </div>
 
           <div className="mt-3 flex gap-2">
-            <button type="button" onClick={() => say(spoken)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric/10 px-3 text-xs font-extrabold text-electric active:scale-95">
+            <button type="button" onClick={() => say(spoken)} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl border-2 border-navy bg-white px-3 text-xs font-extrabold text-navy active:scale-95">
               Read aloud
             </button>
             {dialogMessage ? (
-              <button type="button" onClick={advanceDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
-                {dialog.index + 1 >= dialog.lines.length ? 'Got it' : 'Next'}
+              <button type="button" onClick={closeDialog} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">
+                Got it
               </button>
             ) : lessonMessage ? (
               <button type="button" onClick={dismissLesson} className="pointer-events-auto min-h-[44px] flex-1 rounded-xl bg-electric px-3 text-sm font-extrabold text-white active:scale-95">

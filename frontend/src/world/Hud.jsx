@@ -111,7 +111,7 @@ function JarHud() {
     ['GIVE', give, JAR_HEX.give],
   ]
   return (
-    <div className="absolute left-4 top-[4.5rem] flex flex-col gap-1.5">
+    <div className="absolute left-4 top-[5rem] flex flex-col gap-1.5">
       {chips.map(([label, val, hex]) => (
         <div key={label} className="glass--navy flex items-center gap-2 rounded-xl px-3 py-1.5" style={{ borderColor: hex }}>
           <span className="text-xs font-extrabold tracking-wide" style={{ color: hex }}>{label}</span>
@@ -1339,7 +1339,7 @@ export function Hud({ playerName, onContinue }) {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] select-none font-body">
-      <div className="absolute left-4 top-4 flex items-center gap-2">
+      <div className="tayu-primary-hud absolute left-4 top-4 flex items-center gap-2">
         <button
           aria-label="TAYU"
           className="glass--navy pointer-events-auto grid h-11 w-11 place-items-center rounded-2xl"
@@ -1355,6 +1355,7 @@ export function Hud({ playerName, onContinue }) {
           <img src={LOGO} alt="" className="h-8 w-8 rounded-lg logo-breathe" />
         </button>
         <MuteButton />
+        <HelpButton />
         {week === 1 && wallet > 0 && (
           <div key={hudShakeKey} className={`glass--navy rounded-2xl px-4 py-2 text-2xl font-extrabold ${hudShakeKey > 0 ? 'hud-shake' : ''}`} style={{ color: '#FFD700' }}>
             ${fmt(shownWallet)}
@@ -1372,12 +1373,7 @@ export function Hud({ playerName, onContinue }) {
       <TrustMeter />
       <WeekDots />
 
-      {/* E: hidden on phones - it collided with the objective chip */}
-      <div className="glass--navy absolute left-1/2 top-4 hidden -translate-x-1/2 rounded-2xl px-4 py-2 text-sm font-bold text-white text-legible sm:block">
-        Module {week} of {MODULES.length}
-      </div>
-
-      <div className="absolute right-4 top-4 flex items-start gap-2">
+      <div className="absolute right-4 top-[4.75rem] flex items-start gap-2">
         <div aria-live="polite" className="glass max-w-[min(64vw,28rem)] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
           <div className="flex items-center justify-end gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-electric">
             <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-electric" />
@@ -1386,7 +1382,6 @@ export function Hud({ playerName, onContinue }) {
           <div className="mt-0.5 leading-snug">{guidance.instruction}</div>
           <div className="mt-1 text-[11px] font-extrabold text-electric">{guidance.action}</div>
         </div>
-        <HelpButton />
       </div>
 
       {objective === 'kitchen' && attempt > 0 && !weekComplete && (

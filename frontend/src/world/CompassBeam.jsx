@@ -108,11 +108,11 @@ export function CompassBeam() {
         <group ref={pulse}>
           <mesh position={[0, 0, 0.58]} rotation={[Math.PI / 2, 0, 0]} renderOrder={1000}>
             <cylinderGeometry args={[0.065, 0.065, 0.78, 10]} />
-            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest={false} />
+            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest />
           </mesh>
           <mesh position={[0, 0, 1.2]} rotation={[Math.PI / 2, 0, 0]} renderOrder={1000}>
             <coneGeometry args={[0.22, 0.48, 12]} />
-            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest={false} />
+            <meshBasicMaterial color={TAYU.teal} transparent opacity={0.98} toneMapped={false} depthTest />
           </mesh>
           <mesh position={[0, 0, 0.86]} rotation={[Math.PI / 2, 0, 0]} renderOrder={999}>
             <coneGeometry args={[0.34, 1.05, 12]} />
@@ -142,7 +142,7 @@ export function CompassBeam() {
       {Array.from({ length: DOTS }).map((_, i) => (
         <mesh key={i} ref={(el) => (dots.current[i] = el)} visible={false} rotation={[-Math.PI / 2, 0, 0]} renderOrder={998}>
           <circleGeometry args={[1, 20]} />
-          <meshBasicMaterial color={TAYU.teal} transparent opacity={0.65} toneMapped={false} depthTest={false} depthWrite={false} />
+          <meshBasicMaterial color={TAYU.teal} transparent opacity={0.65} toneMapped={false} depthTest depthWrite={false} />
         </mesh>
       ))}
     </>

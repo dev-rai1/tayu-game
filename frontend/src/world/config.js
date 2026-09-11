@@ -169,10 +169,10 @@ export function isClearOfModuleGates(point, extraDegrees = 0) {
 
 export const PLAY_BOUNDS = 120
 export const BOUNDS = { xMin: sc([-24, 0])[0], xMax: sc([92, 0])[0], zMin: sc([0, -62])[1], zMax: sc([0, 48])[1] }
-export const INTERACT_RADIUS = 2.6
-export const JAR_RADIUS = 2.4
-export const ITEM_RADIUS = 2.0
-export const NPC_RADIUS = 2.6
+export const INTERACT_RADIUS = 3.6
+export const JAR_RADIUS = 3.2
+export const ITEM_RADIUS = 3.0
+export const NPC_RADIUS = 3.6
 
 export const LAKE = { x: 30, z: -6, r: 5.2 }
 export const CENTER_BUILDINGS = [

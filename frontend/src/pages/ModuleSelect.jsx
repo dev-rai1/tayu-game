@@ -272,6 +272,7 @@ export default function ModuleSelect() {
 
           <section className="mt-5 grid gap-4 lg:grid-cols-2">
             {MODULE_CARDS.map((module) => {
+              const learnerCopy = gradePath?.id === 'early-elementary' && module.k2 ? { ...module, ...module.k2 } : module
               const done = badges.includes(module.badge)
               const accessible = canPlay(module.n)
               const requiredForPath = required.includes(module.n)
@@ -323,26 +324,26 @@ export default function ModuleSelect() {
                       ? `Play Module ${module.n} now`
                       : `Play Module ${module.n}`
               return (
-                <button key={module.n} type="button" disabled={!accessible} onClick={() => play(module.n)} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl active:scale-[0.99]' : 'cursor-not-allowed opacity-60'}`} style={{ borderColor: module.color }}>
+                <article key={module.n} aria-labelledby={`module-${module.n}-title`} className={`group rounded-[2rem] border bg-white p-5 text-left text-slate-950 shadow-lg transition sm:p-6 ${accessible ? 'hover:-translate-y-1 hover:shadow-xl' : 'opacity-60'}`} style={{ borderColor: module.color }}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="grid h-11 w-11 place-items-center rounded-2xl text-lg font-extrabold text-white shadow-sm" style={{ backgroundColor: module.color }}>{module.n}</div>
                     <StatusPill done={done} accessible={accessible} recommended={isNext} />
                   </div>
                   <div className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: module.color }}>{physicalDestination ? `Module ${module.n} · Separate 3D destination` : `Module ${module.n}`}</div>
-                  <h2 className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>{module.title}</h2>
+                  <h2 id={`module-${module.n}-title`} className="mt-1 font-display text-2xl font-extrabold" style={{ color: module.color }}>{learnerCopy.title}</h2>
                   {physicalDestination && <div className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-800">Teleport to entrance · walk inside · press E to start</div>}
                   {finalModule && <div className="mt-2 ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-700">Final module · Tax Office</div>}
                   <div className="mt-2 text-xs font-bold text-slate-500">{module.grades} · {module.minutes}</div>
                   <div className="mt-2 text-xs font-extrabold text-[#08785d]">{module.fcps.join(' · ')} · {module.sol.join(', ')}</div>
-                  <p className="mt-3 min-h-[3rem] text-sm font-semibold leading-relaxed text-slate-700">{module.desc}</p>
-                  <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800"><strong>Students can:</strong> {module.objective}</p>
-                  <div className={`mt-5 rounded-xl px-4 py-3 text-center text-sm font-extrabold ${accessible ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-600'}`}>{accessible ? action : `${module.grades} - switch grade to play`} →</div>
-                </button>
+                  <p className="mt-3 min-h-[3rem] text-sm font-semibold leading-relaxed text-slate-700">{learnerCopy.desc}</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800"><strong>You can:</strong> {learnerCopy.objective}</p>
+                  <button type="button" disabled={!accessible} onClick={() => play(module.n)} aria-label={`${accessible ? action : 'Locked'}: ${learnerCopy.title}`} className={`mt-5 min-h-[48px] w-full rounded-xl px-4 py-3 text-center text-sm font-extrabold ${accessible ? 'bg-slate-950 text-white' : 'cursor-not-allowed bg-slate-200 text-slate-600'}`}>{accessible ? action : `${module.grades} - switch grade to play`} →</button>
+                </article>
               )
             })}
           </section>
 
-          <section className="mt-5 rounded-3xl border border-white/80 bg-white/95 p-5 text-slate-950 shadow-lg"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-extrabold">My TAYU passport</h2><p className="text-sm font-semibold text-slate-600">Each earned module badge fills your persistent learning passport.</p></div><div className="flex flex-wrap gap-2">{MODULE_CARDS.map((module) => <span key={module.badge} className={`rounded-full px-3 py-2 text-xs font-extrabold ${badges.includes(module.badge) ? 'bg-teal text-navy' : 'bg-slate-100 text-slate-500'}`}>{badges.includes(module.badge) ? '✓' : '○'} {module.title.replace(/ —.*/, '')}</span>)}</div></div><Link to="/missions" className="mt-4 inline-flex min-h-[44px] items-center rounded-xl bg-slate-950 px-4 font-extrabold text-white">Play FCPS expansion missions →</Link></section>
+          <section className="mt-5 rounded-3xl border border-white/80 bg-white/95 p-5 pb-28 text-slate-950 shadow-lg"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-extrabold">My TAYU passport</h2><p className="text-sm font-semibold text-slate-600">Each earned module badge fills your persistent learning passport.</p></div><div className="flex flex-wrap gap-2">{MODULE_CARDS.map((module) => <span key={module.badge} className={`rounded-full px-3 py-2 text-xs font-extrabold ${badges.includes(module.badge) ? 'bg-teal text-navy' : 'bg-slate-100 text-slate-500'}`}>{badges.includes(module.badge) ? '✓' : '○'} {module.title.replace(/ —.*/, '')}</span>)}</div></div><div className="mt-4 flex flex-wrap gap-2"><Link to="/missions" className="inline-flex min-h-[44px] items-center rounded-xl bg-slate-950 px-4 font-extrabold text-white">Play FCPS expansion missions →</Link><Link to="/accessible-modules" className="inline-flex min-h-[44px] items-center rounded-xl border-2 border-slate-950 bg-white px-4 font-extrabold text-slate-950">Use the accessible 2D path →</Link></div></section>
 
           <div className="mt-5 rounded-2xl border border-white/80 bg-white/95 p-4 text-center text-sm font-semibold text-slate-700 shadow-md backdrop-blur-md">
             <strong className="text-slate-950">Journey:</strong> Market → Lemonade Stand → Budget Town → Bank → Money Garden → Bond Street → Tax Office → Finale. Modules 6 and 7 teleport you to separate labeled 3D buildings, where you press E to begin.

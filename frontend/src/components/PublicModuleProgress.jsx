@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useGame } from '../world/store.js'
 import { isPaycheckWorldActive, PAYCHECK_MODE_EVENT } from '../world/paycheckMode.js'
+import { loadActiveLearningPath } from '../constants/learningPaths.js'
 
 const TITLES = {
   1: 'The Market & Jars',
@@ -14,6 +15,10 @@ export function PublicModuleProgress() {
   const { pathname } = useLocation()
   const week = useGame((state) => state.week)
   const [paycheckActive, setPaycheckActive] = useState(() => isPaycheckWorldActive())
+  const path = loadActiveLearningPath()
+  const modules = path?.modules?.length ? path.modules : [1, 2, 3, 4, 5, 6, 7]
+  const position = Math.max(1, modules.indexOf(Number(week)) + 1)
+  const total = modules.length
 
   useEffect(() => {
     const sync = (event) => setPaycheckActive(event?.detail?.active ?? isPaycheckWorldActive())
@@ -27,8 +32,8 @@ export function PublicModuleProgress() {
   return (
     <div className="pointer-events-none fixed left-1/2 top-2 z-[215] w-auto max-w-[calc(100vw-7.5rem)] -translate-x-1/2 rounded-xl border border-white/20 bg-navy/90 px-3 py-1.5 text-center text-white shadow-lg backdrop-blur-sm sm:top-3 sm:w-[min(82vw,30rem)] sm:max-w-none sm:rounded-2xl sm:px-4 sm:py-2 sm:shadow-xl">
       <div className="flex items-center justify-center gap-1.5 whitespace-nowrap text-[11px] font-extrabold sm:block sm:text-[10px] sm:uppercase sm:tracking-[0.18em] sm:text-sun">
-        <span className="text-sun sm:hidden">{week}/6</span>
-        <span className="hidden sm:inline">Module {week} of 6</span>
+        <span className="text-sun sm:hidden">{position}/{total}</span>
+        <span className="hidden sm:inline">Module {position} of {total}</span>
         <span className="text-white sm:mt-0.5 sm:block sm:text-sm sm:normal-case sm:tracking-normal sm:text-white md:text-base">{TITLES[week]}</span>
       </div>
     </div>

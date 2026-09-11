@@ -20,7 +20,7 @@ describe('final middle-school playtest audit', () => {
     expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
     expect(coach).toContain('data-important-message-scrim="true"')
     expect(coach).toContain('activeFeedbackKey')
-    expect(coach).toContain('advanceDialog')
+    expect(coach).toContain('closeDialog')
   })
 
   it('keeps retry clues directional instead of revealing exact answers', () => {
