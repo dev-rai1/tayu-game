@@ -13,7 +13,7 @@ const WTOP_URL = 'https://wtop.com/fairfax-county/2026/07/fairfax-co-students-wr
 const VIENNA_LEDGER_URL = 'https://viennaledger.com/articles/oakton-high-students-financial-literacy-book-reaches-12-fairfax-county-schools-and-four-countries-ms24rg90'
 const CONNECTION_URL = 'https://connectionarchives.com/PDF/2026/071526/FxCo%20071526.pdf#page=7'
 const VISION_TIMES_URL = 'https://www.secretchina.com/news/b5/2026/08/10/1103211.html'
-const WHITE_HOUSE_URL = 'https://lnkd.in/p/epru8TyC'
+const WHITE_HOUSE_URL = 'https://lnkd.in/p/eRz2BfSC'
 const NJCFE_URL = 'https://njcfe.org/8-11-26-fairfax-co-students-write-book-to-help-elementary-kids-learn-about-financial-literacy/'
 const VA_DECA_IG_URL = 'https://www.instagram.com/p/Da5-8l1jyOR/?img_index=1'
 const FCPS_URL = 'https://www.fcps.edu/news/superintendents-weekly-reflections-199'
