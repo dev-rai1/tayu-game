@@ -8,11 +8,27 @@ import {
   setAnalyticsChoice,
 } from '../services/privacyPreferences.js'
 
-const storageRows = [
-  ['Account session', 'Session storage', 'Keeps a signed-in account active during the current browser session.'],
-  ['Game progress and profile', 'Local storage and Firebase when available', 'Restores modules, badges, avatar, settings, and learning-path progress.'],
-  ['Accessibility and reading preferences', 'Local storage', 'Remembers reading band, audio choices, tutorials, and interface settings.'],
-  ['Optional site analytics', 'Local or session storage and Firebase', 'Creates visitor and session identifiers and records page, device, time, and learning activity only for an authorized educator or administrator who allows it.'],
+const storageItems = [
+  {
+    title: 'Account session',
+    where: 'Session storage',
+    purpose: 'Keeps a signed-in account active during the current browser session.',
+  },
+  {
+    title: 'Game progress and profile',
+    where: 'Local storage and Firebase when available',
+    purpose: 'Restores modules, badges, avatar, settings, and learning-path progress.',
+  },
+  {
+    title: 'Reading and accessibility settings',
+    where: 'Local storage',
+    purpose: 'Remembers reading, audio, tutorial, and interface preferences.',
+  },
+  {
+    title: 'Optional analytics',
+    where: 'Browser storage and Firebase',
+    purpose: 'Records page, device, session-time, and limited learning activity only when an authorized educator or administrator allows optional analytics.',
+  },
 ]
 
 export default function Cookies() {
@@ -33,55 +49,77 @@ export default function Cookies() {
   const status = optionalAnalyticsAllowed()
     ? 'Optional analytics allowed'
     : choice === ANALYTICS_CHOICES.NECESSARY_ONLY
-      ? 'Necessary browser storage only'
+      ? 'Necessary storage only'
       : canAllowAnalytics
-        ? 'Not chosen yet'
+        ? 'No analytics choice yet'
         : 'Optional analytics unavailable for this account'
 
   return (
-    <main className="min-h-screen bg-[#eef8ff] px-5 py-10 text-navy sm:px-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <main className="min-h-screen bg-[#eef8ff] px-5 py-8 text-navy sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-3xl">
+        <header className="flex flex-wrap items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-12 w-12 rounded-xl" />
+            <img src="/assets/tayu-logo.webp" alt="TAYU" className="h-11 w-11 rounded-xl" />
             <span className="font-display text-2xl font-extrabold">TAYU</span>
           </Link>
-          <div className="flex flex-wrap gap-2">
-            <Link to="/privacy" className="rounded-xl border-2 border-navy/15 bg-white px-4 py-2 text-sm font-extrabold text-navy">Privacy notice</Link>
-            <Link to="/" className="rounded-xl bg-navy px-4 py-2 text-sm font-extrabold text-white">Back to TAYU home</Link>
-          </div>
-        </div>
+          <nav className="flex flex-wrap gap-3 text-sm font-extrabold">
+            <Link to="/privacy" className="underline underline-offset-4">Privacy</Link>
+            <Link to="/" className="underline underline-offset-4">Back home</Link>
+          </nav>
+        </header>
 
-        <section className="mt-8 rounded-3xl bg-white p-6 shadow-xl sm:p-8">
-          <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-electric">Cookie and browser-storage notice</div>
-          <h1 className="mt-2 font-display text-4xl font-extrabold">Cookies and browser storage</h1>
-          <p className="mt-3 max-w-3xl font-semibold leading-relaxed text-navy/70">TAYU mainly uses local storage and session storage to keep the app working. Firebase services may also use technical cookies or browser storage needed for authentication and security.</p>
+        <article className="mt-8 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-electric">Cookies & browser storage</p>
+          <h1 className="mt-2 font-display text-4xl font-extrabold">How TAYU stores information</h1>
+          <p className="mt-4 font-semibold leading-relaxed text-navy/75">
+            TAYU mainly uses local storage and session storage so accounts, settings, and saved progress work correctly. Firebase may also use technical browser storage needed for authentication and security.
+          </p>
+          <p className="mt-3 text-sm font-bold text-navy/55">Last updated: September 24, 2026</p>
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-navy/10">
-            <div className="hidden grid-cols-[1fr_0.8fr_1.5fr] gap-3 bg-navy px-4 py-3 text-sm font-extrabold text-white sm:grid">
-              <div>Category</div><div>Where</div><div>Purpose</div>
-            </div>
-            {storageRows.map(([category, where, purpose]) => (
-              <div key={category} className="grid gap-1 border-t border-navy/10 px-4 py-4 first:border-t-0 sm:grid-cols-[1fr_0.8fr_1.5fr] sm:gap-3">
-                <div className="font-extrabold">{category}</div>
-                <div className="text-sm font-bold text-navy/60">{where}</div>
-                <div className="text-sm font-semibold leading-relaxed text-navy/70">{purpose}</div>
-              </div>
+          <div className="mt-8 divide-y divide-navy/10 border-y border-navy/10">
+            {storageItems.map((item) => (
+              <section key={item.title} className="py-5">
+                <div className="font-display text-lg font-extrabold">{item.title}</div>
+                <div className="mt-1 text-sm font-bold text-navy/55">{item.where}</div>
+                <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/75">{item.purpose}</p>
+              </section>
             ))}
           </div>
 
-          <section className="mt-6 rounded-2xl bg-navy p-5 text-white">
+          <section className="mt-8 border-t border-navy/10 pt-6">
             <h2 className="font-display text-xl font-extrabold">Your analytics choice</h2>
-            <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">Current status: <span className="font-extrabold text-teal">{status}</span></p>
-            {!canAllowAnalytics && <p className="mt-2 text-sm font-semibold leading-relaxed text-white/70">Student, guest, and unverified individual accounts use necessary browser storage only while TAYU completes its parent and school authorization workflow.</p>}
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 font-extrabold">Use necessary storage only</button>
-              {canAllowAnalytics && <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 font-extrabold text-navy">Allow optional analytics</button>}
+            <p className="mt-2 text-sm font-semibold text-navy/70">
+              Current status: <span className="font-extrabold text-navy">{status}</span>
+            </p>
+            {!canAllowAnalytics && (
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-navy/65">
+                Student, guest, and unverified individual accounts use necessary storage only.
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)}
+                className="min-h-[46px] rounded-xl border-2 border-navy/20 px-4 text-sm font-extrabold"
+              >
+                Use necessary storage only
+              </button>
+              {canAllowAnalytics && (
+                <button
+                  type="button"
+                  onClick={() => choose(ANALYTICS_CHOICES.ALLOW)}
+                  className="min-h-[46px] rounded-xl bg-navy px-4 text-sm font-extrabold text-white"
+                >
+                  Allow optional analytics
+                </button>
+              )}
             </div>
           </section>
 
-          <p className="mt-6 text-sm font-semibold leading-relaxed text-navy/65">Blocking necessary browser storage may prevent login, saved progress, accessibility settings, and classroom features from working correctly. Last updated August 6, 2026.</p>
-        </section>
+          <p className="mt-7 text-sm font-semibold leading-relaxed text-navy/60">
+            Blocking necessary browser storage may prevent sign-in, saved progress, reading or accessibility settings, and classroom features from working correctly.
+          </p>
+        </article>
       </div>
     </main>
   )
