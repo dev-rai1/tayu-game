@@ -14,7 +14,6 @@ import { say } from '../services/speech.js'
 import { BudgetPanel } from './BudgetPanels.jsx'
 import { TrustMeter } from './BankPanels.jsx'
 import { shouldShowInteractionPrompt } from './interactionPrompt.js'
-import { getGuidance } from './guidance.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { PAYCHECK_MODE_EVENT, isPaycheckWorldActive } from './paycheckMode.js'
 
@@ -1328,12 +1327,6 @@ export function Hud({ playerName, onContinue }) {
   const shownWallet = useCountUp(wallet)
 
   const gameComplete = useGame((s) => s.gameComplete)
-  const guidance = getGuidance({
-    week, objective, scenarioLocked, scenario, gameComplete, lemPhase, bramTalked,
-    bought, mg, bt, bk, weekComplete,
-    cards, lessons, dialog, panelJar, panelItem,
-    btPanel, bkPanel, panelPortfolio, helpOpen,
-  }, USES_TOUCH_CONTROLS)
 
   const promptOpen = shouldShowInteractionPrompt(near) && !panelJar && !panelItem && !dialog && !weekComplete && !scenarioLocked && lessons.length === 0 && cards.length === 0
 
@@ -1373,16 +1366,6 @@ export function Hud({ playerName, onContinue }) {
       <TrustMeter />
       <WeekDots />
 
-      <div className="absolute right-4 top-[4.75rem] flex items-start gap-2">
-        <div aria-live="polite" className="glass max-w-[min(64vw,28rem)] rounded-2xl px-4 py-2 text-right text-sm font-bold text-navy">
-          <div className="flex items-center justify-end gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-electric">
-            <span aria-hidden="true" className="h-2 w-2 animate-pulse rounded-full bg-electric" />
-            {guidance.title}
-          </div>
-          <div className="mt-0.5 leading-snug">{guidance.instruction}</div>
-          <div className="mt-1 text-[11px] font-extrabold text-electric">{guidance.action}</div>
-        </div>
-      </div>
 
       {objective === 'kitchen' && attempt > 0 && !weekComplete && (
         <div className="glass absolute left-1/2 top-16 -translate-x-1/2 rounded-xl px-3 py-1 text-xs font-bold text-navy">
