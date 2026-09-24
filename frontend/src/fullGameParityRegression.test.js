@@ -27,10 +27,11 @@ describe('full Aug. 9 game-test closure and 3D-only runtime', () => {
     expect(source).toMatch(/return true\s*\n}/)
   })
 
-  it('enforces the report cognitive-load rule: one surface and <=25 words before expansion', () => {
+  it('keeps full story copy visible while allowing only one modal surface at a time', () => {
     const source = read('frontend/src/components/PlaytestUxParity.jsx')
-    expect(source).toContain('const MAX_CARD_WORDS = 25')
-    expect(source).toContain("toggle.textContent = 'Tell me more'")
+    expect(source).not.toContain('MAX_CARD_WORDS')
+    expect(source).not.toContain('Tell me more')
+    expect(source).not.toContain('Show less')
     expect(source).toContain('queueModalSurfaces()')
     expect(source).toContain("node.style.visibility = 'hidden'")
     expect(source).toContain("node.style.pointerEvents = 'none'")
