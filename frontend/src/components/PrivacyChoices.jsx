@@ -13,7 +13,6 @@ export function PrivacyChoices() {
   const { pathname } = useLocation()
   const [choice, setChoice] = useState(() => getAnalyticsChoice())
   const canAllowAnalytics = analyticsRoleAllowed()
-  const effectiveChoice = canAllowAnalytics || choice === ANALYTICS_CHOICES.NECESSARY_ONLY ? choice : null
   const isImmersive = IMMERSIVE_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
   useEffect(() => {
@@ -22,9 +21,10 @@ export function PrivacyChoices() {
     return () => window.removeEventListener('tayu-analytics-choice-changed', onChange)
   }, [])
 
-  // Keep this off gameplay screens so it never competes with directions or controls.
-  // Until a choice is made, optional analytics remain off.
-  if (effectiveChoice || isImmersive || pathname === '/privacy' || pathname === '/cookies') return null
+  // Student, guest, and unverified accounts cannot enable optional analytics,
+  // so do not interrupt them with a consent banner for necessary-only storage.
+  // Authorized educator/admin accounts see this choice outside immersive gameplay.
+  if (!canAllowAnalytics || choice || isImmersive || pathname === '/privacy' || pathname === '/cookies') return null
 
   const choose = (next) => {
     setAnalyticsChoice(next)
@@ -40,7 +40,7 @@ export function PrivacyChoices() {
         <div className="min-w-0">
           <div className="font-display text-base font-extrabold">Privacy choices</div>
           <p className="mt-0.5 text-sm font-semibold leading-relaxed text-white/75">
-            TAYU uses necessary browser storage for sign-in, settings, and saved progress. Optional analytics stay off unless an authorized educator or administrator allows them.
+            TAYU uses necessary browser storage for sign-in, settings, and saved progress. Optional analytics are off unless you choose to allow them.
           </p>
           <div className="mt-1.5 flex gap-4 text-xs font-bold">
             <Link to="/privacy" className="text-teal underline underline-offset-4">Privacy</Link>
