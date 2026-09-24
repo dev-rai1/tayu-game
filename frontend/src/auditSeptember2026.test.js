@@ -20,11 +20,12 @@ describe('September 2026 audit remediations', () => {
     expect(boundary).toContain('slice(-100)')
   })
 
-  it('gates modules by grade and publishes standards metadata', () => {
+  it('uses grade paths as recommendations for individual learners and publishes standards metadata', () => {
     const selector = read('./pages/ModuleSelect.jsx')
     const modules = read('./constants/modules.js')
-    expect(selector).toContain('return required.includes(moduleNumber)')
-    expect(selector).toContain('switch grade to play')
+    expect(selector).toContain('if (context?.plain) return true')
+    expect(selector).toContain('needsGradeWarning')
+    expect(selector).toContain('Outside your recommended path')
     expect(modules).toContain("sol: ['EPF.1', 'EPF.16']")
     expect(modules).toContain('CURRICULUM_COVERAGE')
   })
