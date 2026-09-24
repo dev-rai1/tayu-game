@@ -20,11 +20,13 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     }
   })
 
-  it('keeps Module 1 playable as the first required entry instead of self-locking', () => {
+  it('keeps individual modules playable while preserving classroom sequencing', () => {
     const source = read('frontend/src/pages/ModuleSelect.jsx')
-    expect(source).toContain('if (context?.plain) return required.includes(moduleNumber)')
+    expect(source).toContain('if (context?.plain) return true')
+    expect(source).toContain('if (!required.includes(moduleNumber)) return false')
     expect(source).toContain('moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)')
     expect(source).toContain('const firstIncompleteRequired = required.find')
+    expect(source).toContain('needsGradeWarning')
   })
 
   it('keeps Module 6 enabled in teacher defaults and persistence', () => {
@@ -104,10 +106,13 @@ describe('Aug. 9 comprehensive playtest regressions', () => {
     expect(budget).toContain('disabled:cursor-not-allowed')
   })
 
-  it('keeps the desktop cookie prompt away from centered landing controls', () => {
+  it('keeps privacy choices compact and completely off immersive gameplay screens', () => {
     const source = read('frontend/src/components/PrivacyChoices.jsx')
-    expect(source).toContain('sm:right-[calc(1rem+env(safe-area-inset-right,0px))]')
-    expect(source).toContain('sm:w-[min(28rem,calc(100vw-2rem))]')
+    expect(source).toContain("const IMMERSIVE_PATHS = ['/avatar', '/world', '/guru', '/path-complete']")
+    expect(source).toContain('fixed inset-x-0 bottom-0')
+    expect(source).toContain('Optional analytics stay off')
+    expect(source).not.toContain('Learn more')
+    expect(source).not.toContain('setExpanded')
   })
 
   it('waits for cloud auth rehydration before protected-route redirects', () => {
