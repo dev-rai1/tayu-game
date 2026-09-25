@@ -5,45 +5,8 @@ import {
   PRICE_MIN, PRICE_MAX, PRICE_STEP, PRICE_STEP_BIG,
 } from '../scenarios/lemonade.js'
 
-const MAX_CARD_WORDS = 25
-
-function words(text) {
-  return String(text || '').trim().split(/\s+/).filter(Boolean)
-}
-
-function shortenStoryCopy(root = document) {
-  const candidates = [...root.querySelectorAll('div')].filter((node) => {
-    if (!(node instanceof HTMLElement)) return false
-    const text = node.textContent || ''
-    return text.includes('STORY QUEST') || text.includes('READ THIS')
-  })
-
-  candidates.forEach((surface) => {
-    const paragraph = surface.querySelector('p')
-    if (!(paragraph instanceof HTMLElement) || paragraph.dataset.tayuStoryGuard === 'true') return
-    const original = paragraph.textContent || ''
-    const all = words(original)
-    if (all.length <= MAX_CARD_WORDS) return
-
-    paragraph.dataset.tayuStoryGuard = 'true'
-    paragraph.dataset.tayuFullCopy = original
-    paragraph.textContent = `${all.slice(0, MAX_CARD_WORDS).join(' ')}…`
-
-    const toggle = document.createElement('button')
-    toggle.type = 'button'
-    toggle.textContent = 'Tell me more'
-    toggle.className = 'mt-2 min-h-[44px] rounded-xl bg-navy/10 px-3 py-2 text-sm font-extrabold text-navy'
-    toggle.dataset.tayuStoryToggle = 'true'
-    toggle.addEventListener('click', () => {
-      const expanded = toggle.dataset.expanded === 'true'
-      toggle.dataset.expanded = expanded ? 'false' : 'true'
-      paragraph.textContent = expanded ? `${all.slice(0, MAX_CARD_WORDS).join(' ')}…` : original
-      toggle.textContent = expanded ? 'Tell me more' : 'Show less'
-    })
-    paragraph.insertAdjacentElement('afterend', toggle)
-  })
-}
-
+// Keep story and dialogue copy fully visible. The modal queue below still
+// prevents overlapping blocking surfaces without adding an extra expand/collapse step.
 function modalSurface(node) {
   if (!(node instanceof HTMLElement)) return false
   if (node.matches('[role="dialog"][aria-modal="true"]')) return true
@@ -96,7 +59,6 @@ function queueModalSurfaces() {
 function PlaytestDomGuard() {
   useEffect(() => {
     const refresh = () => {
-      shortenStoryCopy()
       queueModalSurfaces()
     }
     refresh()

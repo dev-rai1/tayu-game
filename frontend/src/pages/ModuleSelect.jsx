@@ -147,11 +147,15 @@ export default function ModuleSelect() {
 
   const canPlay = (moduleNumber) => {
     if (teacherPreview) return teacherEnabled.includes(moduleNumber)
-    if (context?.plain) return required.includes(moduleNumber)
+    if (context?.plain) return true
     if (!required.includes(moduleNumber)) return false
     if (context?.settings?.allowSkip) return true
     return moduleNumber === firstIncompleteRequired || completedNumbers.includes(moduleNumber)
   }
+
+  const needsGradeWarning = (moduleNumber) => Boolean(
+    !teacherPreview && context?.plain && !required.includes(moduleNumber)
+  )
 
   const launchModule = (moduleNumber, gardenPart = null) => {
     const target = MODULE_CARDS.find((module) => module.n === moduleNumber)
@@ -185,12 +189,22 @@ export default function ModuleSelect() {
 
   const play = (moduleNumber) => {
     if (!canPlay(moduleNumber)) return
+    if (needsGradeWarning(moduleNumber)) {
+      setPendingModule(moduleNumber)
+      setPendingPart(null)
+      return
+    }
     launchModule(moduleNumber)
   }
 
   const playGardenPart = (partId) => {
     if (!canPlay(5)) return
     if (partId === 'B' && !gardenPartAComplete) return
+    if (needsGradeWarning(5)) {
+      setPendingModule(5)
+      setPendingPart(partId)
+      return
+    }
     launchModule(5, partId)
   }
 
@@ -354,8 +368,8 @@ export default function ModuleSelect() {
       {pendingCard && (
         <div className="fixed inset-0 z-[600] grid place-items-center bg-slate-950/70 p-5 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="older-module-title" className="w-full max-w-md rounded-3xl bg-white p-6 text-center text-slate-950 shadow-2xl">
-            <h2 id="older-module-title" className="font-display text-2xl font-extrabold">You can still explore this module</h2>
-            <p className="mt-3 font-semibold leading-relaxed text-slate-700"><span className="font-extrabold text-slate-950">{pendingPartCard ? `${pendingPartCard.label}: ${pendingPartCard.title}` : pendingCard.title}</span> is usually recommended for {pendingCard.grades.toLowerCase()}.</p>
+            <h2 id="older-module-title" className="font-display text-2xl font-extrabold">Outside your recommended path</h2>
+            <p className="mt-3 font-semibold leading-relaxed text-slate-700"><span className="font-extrabold text-slate-950">{pendingPartCard ? `${pendingPartCard.label}: ${pendingPartCard.title}` : pendingCard.title}</span> is usually recommended for {pendingCard.grades.toLowerCase()}. You can still play it, but some topics may be more advanced than your selected grade path.</p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={() => { setPendingModule(null); setPendingPart(null) }} className="min-h-[54px] rounded-2xl bg-slate-100 px-4 font-extrabold text-slate-900">Choose another</button>
               <button type="button" onClick={() => { const number = pendingModule; const part = pendingPart; setPendingModule(null); setPendingPart(null); launchModule(number, part) }} className="min-h-[54px] rounded-2xl bg-slate-950 px-4 font-extrabold text-white">Explore anyway →</button>

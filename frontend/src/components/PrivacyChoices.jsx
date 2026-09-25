@@ -12,9 +12,7 @@ const IMMERSIVE_PATHS = ['/avatar', '/world', '/guru', '/path-complete']
 export function PrivacyChoices() {
   const { pathname } = useLocation()
   const [choice, setChoice] = useState(() => getAnalyticsChoice())
-  const [expanded, setExpanded] = useState(false)
   const canAllowAnalytics = analyticsRoleAllowed()
-  const effectiveChoice = canAllowAnalytics || choice === ANALYTICS_CHOICES.NECESSARY_ONLY ? choice : null
   const isImmersive = IMMERSIVE_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
   useEffect(() => {
@@ -23,9 +21,10 @@ export function PrivacyChoices() {
     return () => window.removeEventListener('tayu-analytics-choice-changed', onChange)
   }, [])
 
-  // Never cover directions, controls, or the live avatar preview. Until a choice
-  // is made, optional analytics remain off and the prompt returns on a non-game page.
-  if (effectiveChoice || isImmersive || pathname === '/privacy' || pathname === '/cookies') return null
+  // Student, guest, and unverified accounts cannot enable optional analytics,
+  // so do not interrupt them with a consent banner for necessary-only storage.
+  // Authorized educator/admin accounts see this choice outside immersive gameplay.
+  if (!canAllowAnalytics || choice || isImmersive || pathname === '/privacy' || pathname === '/cookies') return null
 
   const choose = (next) => {
     setAnalyticsChoice(next)
@@ -34,34 +33,36 @@ export function PrivacyChoices() {
 
   return (
     <aside
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="privacy-choice-title"
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] z-[950] mx-auto max-w-3xl rounded-2xl border-2 border-white/20 bg-navy p-3 text-white shadow-2xl sm:inset-x-auto sm:bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:right-[calc(1rem+env(safe-area-inset-right,0px))] sm:mx-0 sm:w-[min(28rem,calc(100vw-2rem))] sm:max-w-none sm:p-4"
+      aria-label="Privacy choices"
+      className="fixed inset-x-0 bottom-0 z-[450] border-t border-white/15 bg-navy/95 px-4 py-3 text-white shadow-2xl backdrop-blur-md"
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <div id="privacy-choice-title" className="font-display text-base font-extrabold sm:text-lg">Cookie consent</div>
-          <p className="mt-1 text-sm font-semibold leading-relaxed text-white/75">
-            Necessary cookies and browser storage keep accounts, settings, and progress working. Optional analytics are off unless an authorized adult allows them.
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="font-display text-base font-extrabold">Privacy choices</div>
+          <p className="mt-0.5 text-sm font-semibold leading-relaxed text-white/75">
+            TAYU uses necessary browser storage for sign-in, settings, and saved progress. Optional analytics are off unless you choose to allow them.
           </p>
-          {expanded && (
-            <p className="mt-2 text-xs font-semibold leading-relaxed text-white/65">
-              Optional analytics can record page visits, device type, session time, and learning activity. Student and guest accounts use necessary storage only while the child-privacy workflow is under legal review.
-            </p>
-          )}
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm font-bold">
-            <button type="button" onClick={() => setExpanded((value) => !value)} className="text-teal underline underline-offset-4">
-              {expanded ? 'Show less' : 'Learn more'}
-            </button>
-            <Link to="/privacy" className="text-teal underline underline-offset-4">Privacy notice</Link>
-            <Link to="/cookies" className="text-teal underline underline-offset-4">Cookie notice</Link>
+          <div className="mt-1.5 flex gap-4 text-xs font-bold">
+            <Link to="/privacy" className="text-teal underline underline-offset-4">Privacy</Link>
+            <Link to="/cookies" className="text-teal underline underline-offset-4">Cookies & storage</Link>
           </div>
         </div>
-        <div className="grid w-full gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)} className="min-h-[48px] rounded-xl border-2 border-white/25 px-4 text-sm font-extrabold">Necessary only</button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => choose(ANALYTICS_CHOICES.NECESSARY_ONLY)}
+            className="min-h-[44px] rounded-xl border border-white/30 px-4 text-sm font-extrabold"
+          >
+            Necessary only
+          </button>
           {canAllowAnalytics && (
-            <button type="button" onClick={() => choose(ANALYTICS_CHOICES.ALLOW)} className="min-h-[48px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy">Allow analytics</button>
+            <button
+              type="button"
+              onClick={() => choose(ANALYTICS_CHOICES.ALLOW)}
+              className="min-h-[44px] rounded-xl bg-teal px-4 text-sm font-extrabold text-navy"
+            >
+              Allow optional analytics
+            </button>
           )}
         </div>
       </div>
