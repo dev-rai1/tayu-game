@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { currentUser, signUp, signIn, startGuestSession, syncUp } from '../services/auth.js'
+import { currentUser, signUp, signIn, syncUp } from '../services/auth.js'
 import { recoverLogin } from '../services/loginRecovery.js'
 import { requestPasswordReset } from '../services/passwordRecovery.js'
 import { loadProfile, saveProfile } from '../services/walletStore.js'
@@ -57,11 +57,6 @@ export default function Auth() {
     if (user.role === 'teacher') return nav('/teacher')
     if (!loadProfile()?.assessment?.pre) return nav('/assessment/pre')
     return nav('/modules')
-  }
-
-  const tryAsGuest = () => {
-    startGuestSession()
-    nav('/modules')
   }
 
   const submit = async (event) => {
@@ -137,7 +132,6 @@ export default function Auth() {
         <div aria-live="polite" aria-atomic="true">{err && <p role="alert" className="mt-3 rounded-xl bg-red-500/15 px-3 py-2 text-sm font-bold text-red-200">{err}</p>}{ok && <p role="status" className="mt-3 rounded-xl bg-teal/15 px-3 py-2 text-sm font-bold text-teal">{ok}</p>}</div>
         {mode === 'reset' && recovery && <div className="mt-3 rounded-2xl bg-white/5 p-4 text-sm font-semibold text-white/75"><p>Use the newest reset email.</p><p className="mt-2 font-extrabold text-amber-200">Check Spam, Junk, or Promotions if it is not in your inbox.</p>{recovery.legacyActivationAvailable && <button type="button" onClick={activateOlderAccount} className="mt-3 min-h-[44px] w-full rounded-xl bg-amber-300 px-3 font-extrabold text-navy">Activate older account</button>}</div>}
         <button type="submit" disabled={busy} className="btn-primary mt-5 min-h-[56px] w-full text-lg disabled:opacity-50">{busy ? 'One moment...' : mode === 'signup' ? 'Create my account' : mode === 'signin' ? 'Log in' : recovery ? 'Send reset link again' : 'Send reset link'}</button>
-        {mode === 'signin' && <button type="button" onClick={tryAsGuest} className="mt-3 min-h-[52px] w-full rounded-2xl border-2 border-teal bg-white/5 px-4 font-extrabold text-teal hover:bg-white/10">Try Module 1 without an account</button>}
         {mode === 'signin' && <button type="button" onClick={() => changeMode('reset')} className="mt-3 w-full text-sm font-bold text-white/75">Forgot password?</button>}
         {mode === 'reset' && <button type="button" onClick={() => changeMode('signin')} className="mt-3 w-full text-sm font-bold text-white/75">Back to login</button>}
       </form>
