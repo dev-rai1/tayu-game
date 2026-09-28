@@ -12,8 +12,8 @@ describe('account-only entry flow', () => {
     expect(authPage).toContain("['signin', 'Log In']")
     expect(authPage).toContain("['signup', 'Sign Up']")
     expect(authPage).not.toContain("['reset', 'Forgot?']")
-    expect(authPage).toContain('startGuestSession')
-    expect(authPage).toContain('Try Module 1 without an account')
+    expect(authPage).not.toContain('startGuestSession')
+    expect(authPage).not.toContain('Try Module 1 without an account')
   })
 
   it('requires authentication before assessments, modules, avatar creation, and the world', () => {
