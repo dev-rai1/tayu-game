@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { loadProfile, loadWallet } from '../services/walletStore.js'
 import { currentUser } from '../services/auth.js'
-import { loadCurrentClassContext } from '../services/classroom.js'
+import { loadCurrentClassContext, readCachedClassContext } from '../services/classroom.js'
 import { setDefaultReadingBandForGrade } from '../services/readingPreferences.js'
 import { MODULE_CATALOG } from '../constants/modules.js'
 import { ModuleGlossary } from '../components/ModuleGlossary.jsx'
@@ -81,7 +81,7 @@ function GradeCard({ path, onChoose }) {
 export default function ModuleSelect() {
   const nav = useNavigate()
   const [params] = useSearchParams()
-  const [context, setContext] = useState(null)
+  const [context, setContext] = useState(() => readCachedClassContext())
   const [glossaryOpen, setGlossaryOpen] = useState(false)
   const [pendingModule, setPendingModule] = useState(null)
   const [pendingPart, setPendingPart] = useState(null)
@@ -96,7 +96,11 @@ export default function ModuleSelect() {
   const pathAccent = GRADE_ACCENT[gradePath?.id] || '#1464F0'
 
   useEffect(() => {
-    loadCurrentClassContext().then((value) => setContext(value || DEFAULT_CONTEXT)).catch(() => setContext(DEFAULT_CONTEXT))
+    let active = true
+    loadCurrentClassContext()
+      .then((value) => { if (active) setContext(value || DEFAULT_CONTEXT) })
+      .catch(() => { if (active) setContext(DEFAULT_CONTEXT) })
+    return () => { active = false }
   }, [])
 
   useEffect(() => {

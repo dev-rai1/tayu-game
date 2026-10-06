@@ -6,11 +6,24 @@ export const DEFAULT_MODULES = [1, 2, 3, 4, 5, 6, 7]
 export const DEFAULT_CLASS_SETTINGS = Object.freeze({ enabledModules: DEFAULT_MODULES, allowSkip: false })
 
 const CACHE_PREFIX = 'tayu-teacher-class-v1:'
+const CONTEXT_CACHE_PREFIX = 'tayu-class-context-v1:'
+const CONTEXT_TIMEOUT_MS = 5000
 const normalizeCode = (value) => String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
-const timeout = (promise, milliseconds) => Promise.race([
-  promise,
-  new Promise((_, reject) => window.setTimeout(() => reject(new Error('timeout')), milliseconds)),
-])
+const timeout = (promise, milliseconds) => {
+  let timer
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => { timer = window.setTimeout(() => reject(new Error('timeout')), milliseconds) }),
+  ]).finally(() => window.clearTimeout(timer))
+}
+
+export function readCachedClassContext(user = currentUser()) {
+  if (!user?.id || user.guest) return null
+  try {
+    const value = JSON.parse(localStorage.getItem(`${CONTEXT_CACHE_PREFIX}${user.id}`) || 'null')
+    return Array.isArray(value?.settings?.enabledModules) ? value : null
+  } catch { return null }
+}
 
 export function generateClassCode() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -136,14 +149,28 @@ export async function joinStudentToClass(rawCode) {
 export async function loadCurrentClassContext() {
   const user = currentUser()
   if (!user?.id || user.guest) return null
-  if (user.role === 'teacher') return createOrLoadTeacherClass()
-  const db = await firestore()
-  const profile = await getDoc(doc(db, 'profiles', user.id))
-  const profileData = profile.exists() ? profile.data() : {}
-  if (!profileData.classId) return { plain: true, settings: DEFAULT_CLASS_SETTINGS }
-  const classDoc = await getDoc(doc(db, 'classes', profileData.classId))
-  if (!classDoc.exists()) return { plain: true, settings: DEFAULT_CLASS_SETTINGS }
-  return { id: classDoc.id, ...classDoc.data(), profile: profileData }
+  const readContext = async () => {
+    if (user.role === 'teacher') return { ...await createOrLoadTeacherClass(), plain: false }
+    const db = await firestore()
+    const profile = await getDoc(doc(db, 'profiles', user.id))
+    const profileData = profile.exists() ? profile.data() : {}
+    if (!profileData.classId) return { plain: true, settings: DEFAULT_CLASS_SETTINGS }
+    const classDoc = await getDoc(doc(db, 'classes', profileData.classId))
+    if (!classDoc.exists()) return { plain: true, settings: DEFAULT_CLASS_SETTINGS }
+    return { id: classDoc.id, ...classDoc.data(), profile: profileData, plain: false }
+  }
+
+  // Firestore reads can remain pending while offline. Bound the entire lookup,
+  // including both profile and classroom reads, so the menu can always open.
+  try {
+    const context = await timeout(readContext(), CONTEXT_TIMEOUT_MS)
+    try { localStorage.setItem(`${CONTEXT_CACHE_PREFIX}${user.id}`, JSON.stringify(context)) } catch { /* cache is optional */ }
+    return context
+  } catch (error) {
+    const cached = readCachedClassContext(user)
+    if (cached) return cached
+    throw error
+  }
 }
 
 export async function loadTeacherStudents() {
