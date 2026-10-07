@@ -85,6 +85,7 @@ export function Player({ avatar }) {
   const walk = useRef(0)
   const t = useRef(0)
   const limbs = useRef(null)
+  const cameraTarget = useRef(new THREE.Vector3())
   const rotKey = useRef(0) // -1 left, +1 right (comma/period held)
 
   const setNear = useGame((s) => s.setNear)
@@ -339,7 +340,8 @@ export function Player({ avatar }) {
     // --- orbit follow camera (azimuth from cameraRig) ---
     const ox = Math.sin(az) * cameraRig.dist
     const oz = Math.cos(az) * cameraRig.dist
-    camera.position.lerp(new THREE.Vector3(playerPos.x + ox, cameraRig.height, playerPos.z + oz), 0.12)
+    cameraTarget.current.set(playerPos.x + ox, cameraRig.height, playerPos.z + oz)
+    camera.position.lerp(cameraTarget.current, 1 - Math.exp(-7.67 * delta))
     camera.lookAt(playerPos.x, 1.2, playerPos.z)
 
     // --- nearest active interactable ---

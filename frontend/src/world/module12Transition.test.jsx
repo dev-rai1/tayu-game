@@ -124,16 +124,15 @@ describe('Module 1 to Module 2 transition', () => {
     })
   })
 
-  it('restarts the 3D canvas and its error boundary for every module', () => {
+  it('restarts module scenes while reserving renderer recreation for context recovery', () => {
     const source = readFileSync(join(process.cwd(), 'src/world/GameWorld.jsx'), 'utf8')
 
     expect(source).toContain('const physicalModule = readPhysicalModuleLaunch()')
     expect(source).toContain('const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()')
-    // Stage 1 rebuild: Bond/Tax now render in the SAME week-keyed scene as every
-    // other module, so entering them never remounts the Canvas / makes a 2nd
-    // WebGL context (the blue-screen cause). One key family for all modules.
-    expect(source).toContain('const sceneKey = `week-${week ?? 0}-renderer-${rendererGeneration}`')
-    expect(source).toContain('<Boundary key={sceneKey} name="canvas" hard>')
-    expect(source).toContain('key={sceneKey}')
+    expect(source).toContain('const rendererKey = `renderer-${rendererGeneration}`')
+    expect(source).toContain('const sceneKey = `week-${week ?? 0}`')
+    expect(source).toContain('<Boundary key={rendererKey} name="canvas" hard>')
+    expect(source).toContain('<group key={sceneKey}>')
+    expect(source).toContain('key={rendererKey}')
   })
 })

@@ -51,7 +51,7 @@ const PLAN_STEPS_OLDER = [
   },
   {
     title: '2. Value your work',
-    text: '“My pay” is a business cost for your labor, not an outside fee. A rate of $0.50 per hour adds 50 cents of labor cost for each hour you work. Teachers may describe this as fixed or variable depending on the lesson setup.',
+    text: '“My pay” is a business cost for your labor, not an outside fee. A rate of $0.50 per hour adds 50 cents of labor cost for each hour you work. For a 4-hour plan, $0.50 per hour means $2 of labor cost. Changing hours changes that cost.',
   },
   {
     title: '3. Make your business sign',

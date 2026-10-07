@@ -132,7 +132,9 @@ export function GameWorld({ avatar }) {
   const activeCard = useGame((state) => state.cards?.[0] || null)
   const physicalModule = readPhysicalModuleLaunch()
   const paycheckWorld = physicalModule === 7 || isPaycheckWorldActive()
-  const sceneKey = `week-${week ?? 0}-renderer-${rendererGeneration}`
+  // Keep the GPU context across sequential modules; reset scene-local refs only.
+  const rendererKey = `renderer-${rendererGeneration}`
+  const sceneKey = `week-${week ?? 0}`
   const safeAvatar = avatar && typeof avatar === 'object'
     ? { ...avatar, accessories: Array.isArray(avatar.accessories) ? avatar.accessories : [] }
     : {}
@@ -161,9 +163,9 @@ export function GameWorld({ avatar }) {
 
   return (
     <div className="tayu-world-canvas" role="region" aria-label="TAYU 3D town game world. Use the on-screen objective and help controls for directions.">
-      <Boundary key={sceneKey} name="canvas" hard>
+      <Boundary key={rendererKey} name="canvas" hard>
         <Canvas
-          key={sceneKey}
+          key={rendererKey}
           role="application"
           aria-label="Interactive TAYU 3D learning world. Move through the town to the highlighted learning destination."
           camera={{ position: [0, 7, 11], fov: 52 }}
@@ -203,29 +205,31 @@ export function GameWorld({ avatar }) {
           <Suspense fallback={null}>
             <color attach="background" args={[paycheckWorld ? '#f4efe3' : '#cfe6f2']} />
             <fog attach="fog" args={[paycheckWorld ? '#e9e3d6' : '#d6e9f0', 26, 74]} />
-            <hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} />
-            <ambientLight intensity={0.28} />
-            <directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" />
-            <directionalLight position={[-8, 6, -6]} intensity={0.4} color="#bcd4ff" />
+            <group key={sceneKey}>
+              <hemisphereLight args={['#fdf3e3', '#7ca35e', 0.75]} />
+              <ambientLight intensity={0.28} />
+              <directionalLight position={[16, 22, 10]} intensity={2.0} color="#fff2dc" />
+              <directionalLight position={[-8, 6, -6]} intensity={0.4} color="#bcd4ff" />
 
-            <SceneBoundary name="environment"><Environment3D /></SceneBoundary>
-            <SceneBoundary name="ambient"><Ambient /></SceneBoundary>
-            <SceneBoundary name="bank"><Bank /></SceneBoundary>
-            <SceneBoundary name="jars"><KitchenTable /></SceneBoundary>
-            <SceneBoundary name="store"><Store /></SceneBoundary>
-            <SceneBoundary name="lemonade"><LemonadeStand /></SceneBoundary>
-            <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
-            <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
-            <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
-            <SceneBoundary name="bond-tax"><BondTaxBuildings week={week} bondStep={bondStep} taxStep={taxStep} choiceFeedback={choiceFeedback} /></SceneBoundary>
-            <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
-            <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
-            <SceneBoundary name="party"><PartyHouse /></SceneBoundary>
-            <SceneBoundary name="guidance"><GuidanceArrow /></SceneBoundary>
-            <SceneBoundary name="compass"><CompassBeam /></SceneBoundary>
-            <SceneBoundary name="coins"><CoinLayer /></SceneBoundary>
-            <Player avatar={safeAvatar} />
-            <SceneBoundary name="world-boundary"><WorldBoundaryGuard /></SceneBoundary>
+              <SceneBoundary name="environment"><Environment3D /></SceneBoundary>
+              <SceneBoundary name="ambient"><Ambient /></SceneBoundary>
+              <SceneBoundary name="bank"><Bank /></SceneBoundary>
+              <SceneBoundary name="jars"><KitchenTable /></SceneBoundary>
+              <SceneBoundary name="store"><Store /></SceneBoundary>
+              <SceneBoundary name="lemonade"><LemonadeStand /></SceneBoundary>
+              <SceneBoundary name="budget"><BudgetTown /></SceneBoundary>
+              <SceneBoundary name="bank-district"><BankDistrict /></SceneBoundary>
+              <SceneBoundary name="landmarks"><ModuleLandmarks /></SceneBoundary>
+              <SceneBoundary name="bond-tax"><BondTaxBuildings week={week} bondStep={bondStep} taxStep={taxStep} choiceFeedback={choiceFeedback} /></SceneBoundary>
+              <SceneBoundary name="garden"><MoneyGarden /></SceneBoundary>
+              <SceneBoundary name="consequence"><ConsequenceStage /></SceneBoundary>
+              <SceneBoundary name="party"><PartyHouse /></SceneBoundary>
+              <SceneBoundary name="guidance"><GuidanceArrow /></SceneBoundary>
+              <SceneBoundary name="compass"><CompassBeam /></SceneBoundary>
+              <SceneBoundary name="coins"><CoinLayer /></SceneBoundary>
+              <Player avatar={safeAvatar} />
+              <SceneBoundary name="world-boundary"><WorldBoundaryGuard /></SceneBoundary>
+            </group>
           </Suspense>
         </Canvas>
       </Boundary>

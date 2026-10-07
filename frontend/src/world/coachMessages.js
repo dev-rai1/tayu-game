@@ -49,7 +49,7 @@ export function coachMessageFromTransient(kind, value) {
     return {
       kind,
       label: 'Learn this',
-      title: firstText(value, ['title', 'heading']) || 'Quick lesson',
+      title: (typeof value === 'object' ? firstText(value, ['title', 'heading']) : '') || 'Quick lesson',
       action,
       helper: 'learn',
     }
@@ -61,7 +61,7 @@ export function coachMessageFromTransient(kind, value) {
     return {
       kind,
       label: 'Next step',
-      title: firstText(value, ['title', 'heading']) || 'Do this next',
+      title: (typeof value === 'object' ? firstText(value, ['title', 'heading']) : '') || 'Do this next',
       action,
       helper: 'guide',
     }
@@ -73,7 +73,7 @@ export function coachMessageFromTransient(kind, value) {
     return {
       kind,
       label: 'Game update',
-      title: firstText(value, ['title', 'heading']) || 'Something changed',
+      title: (typeof value === 'object' ? firstText(value, ['title', 'heading']) : '') || 'Something changed',
       action,
       helper: 'update',
     }
@@ -84,7 +84,7 @@ export function coachMessageFromTransient(kind, value) {
   return {
     kind: 'toast',
     label: 'Feedback',
-    title: firstText(value, ['title', 'heading']) || 'Check this',
+    title: (typeof value === 'object' ? firstText(value, ['title', 'heading']) : '') || 'Check this',
     action,
     helper: 'feedback',
   }

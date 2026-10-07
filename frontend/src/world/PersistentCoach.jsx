@@ -15,7 +15,7 @@ const MAX_QUEUE = 16
 
 function hintKey(type, value, week, objective) {
   if (!value) return ''
-  if (type === 'improvement') return `${type}:${week}:${objective}:${value.sourceKey || value.title}`
+  if (type === 'improvement') return `${type}:${week}:${value.sourceKey || value.title}`
   return `${type}:${week}:${objective}:${value.title}:${value.action}`
 }
 
@@ -71,6 +71,13 @@ export function PersistentCoach({ paycheckMode = false }) {
   const [dismissedKey, setDismissedKey] = useState('')
   const messageCounter = useRef(0)
   const queuedFocus = useRef(new Set())
+  const seenMessages = useRef(new Set())
+
+  useLayoutEffect(() => {
+    setQueue([])
+    seenMessages.current.clear()
+    setDismissedKey('')
+  }, [week])
   const bankWatching = week === 4 && scenarioLocked
 
   const activeLesson = lessons[0]
@@ -117,8 +124,9 @@ export function PersistentCoach({ paycheckMode = false }) {
         const signatures = new Set(current.map(coachMessageSignature))
         const additions = incoming.filter((message) => {
           const signature = coachMessageSignature(message)
-          if (!signature || signatures.has(signature)) return false
+          if (!signature || signatures.has(signature) || seenMessages.current.has(signature)) return false
           signatures.add(signature)
+          seenMessages.current.add(signature)
           return true
         })
         if (!additions.length) return current
@@ -149,7 +157,7 @@ export function PersistentCoach({ paycheckMode = false }) {
     const storageKey = LEMONADE_FOCUS_KEYS[lemPhase]
     if (!storageKey || wasSeen(storageKey) || queuedFocus.current.has(storageKey)) return
 
-    const steps = focusStepsFor(lemPhase, getReadingBand())
+    const steps = focusStepsFor(lemPhase, getReadingBand(), useGame.getState().lemFeatures)
     if (!steps.length) return
     queuedFocus.current.add(storageKey)
     markSeen(storageKey)
@@ -196,7 +204,8 @@ export function PersistentCoach({ paycheckMode = false }) {
   const content = dialogMessage || lessonMessage || queuedMessage || improvement || (!paycheckMode ? generatedGuidance : null)
   const key = queuedMessage?.id || activeLesson?.id || hintKey(type, content, week, objective)
   const canShow = Boolean(
-    content && (['queued', 'dialog', 'lesson', 'improvement'].includes(type) || visibility.showGuidance) &&
+    content && (['dialog', 'lesson'].includes(type) || visibility.showSavedMessage) &&
+    (['queued', 'dialog', 'lesson', 'improvement'].includes(type) || visibility.showGuidance) &&
     (['queued', 'dialog', 'lesson'].includes(type) || dismissedKey !== key)
   )
 
@@ -219,10 +228,9 @@ export function PersistentCoach({ paycheckMode = false }) {
           ? `1 of ${queue.length}`
           : ''
 
-  // Whole-game rule: decisions, lessons, corrections, and story dialogue are
-  // important and appear in front. Ordinary guidance, reminders, and requested
-  // hints stay out of the gameplay area in a compact side lane.
-  const important = bankWatching || ['dialog', 'lesson', 'improvement'].includes(type) || queuedMessage?.kind === 'actor'
+  // Lessons and live dialogue own the center. Retry clues and queued updates
+  // stay beside the controls so a choice never needs an extra dismissal.
+  const important = bankWatching || ['dialog', 'lesson'].includes(type)
   const positionClass = important
     ? 'left-1/2 top-1/2 w-[min(92vw,34rem)] -translate-x-1/2 -translate-y-1/2'
     : usesTouchControls

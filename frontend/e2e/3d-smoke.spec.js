@@ -15,3 +15,22 @@ test('real TAYU 3D world starts, creates WebGL, and never falls back to 2D', asy
   expect(smokeError).toBeNull()
   expect(pageErrors).toEqual([])
 })
+
+test('sequential module handoffs keep one WebGL canvas and render without errors', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('http://127.0.0.1:4173/3d-smoke.html', { waitUntil: 'networkidle' })
+  await expect.poll(() => page.locator('html').getAttribute('data-tayu3d-ready')).toBe('true')
+  await page.evaluate(() => { window.__playtestCanvas = document.querySelector('canvas') })
+  for (const method of ['startWeek2', 'startBudget', 'startBank', 'startGarden', 'startBond', 'startTax']) {
+    await page.evaluate(async (action) => {
+      const { useGame } = await import('/src/world/store.js')
+      useGame.getState()[action]()
+    }, method)
+    await page.waitForTimeout(400)
+    expect(await page.evaluate(() => document.querySelector('canvas') === window.__playtestCanvas)).toBe(true)
+    await expect(page.getByText('Oops! Something got tangled.')).toHaveCount(0)
+    await expect(page.getByText('Loading the world...')).toHaveCount(0)
+  }
+  expect(errors).toEqual([])
+})

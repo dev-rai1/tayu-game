@@ -145,6 +145,7 @@ function GroceryPanel() {
           <h2 id="grocery-title" className="text-sm font-extrabold uppercase tracking-wide text-electric">Fill the basket</h2>
           <div className="rounded-full bg-navy px-3 py-1 text-xs font-extrabold text-white">${cost} of ${FOOD_BUDGET}</div>
         </div>
+        <p className="mt-2 text-sm font-semibold text-navy/75">Cover food and other essentials first. If you are over budget, remove treats or choose a cheaper food. Tap a selected item to remove it.</p>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {GROCERY_ITEMS.map((it) => {
             const on = picked.includes(it.id)
