@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { PersistentCoach } from './PersistentCoach.jsx'
@@ -37,7 +38,7 @@ describe('October tester regressions', () => {
 
   it('keeps queued Budget feedback behind decision cards and does not repeat dismissed text', () => {
     useGame.setState({ week: 3, objective: 'keeper', bt: { stage: 'house' }, toast: 'The lights came on.' })
-    const { container } = render(<PersistentCoach />)
+    const { container } = render(<StrictMode><PersistentCoach /></StrictMode>)
     expect(screen.getByText('The lights came on.')).toBeInTheDocument()
     act(() => useGame.setState({ cards: [{ id: 'bt-grocery', text: 'Choose groceries' }] }))
     expect(container.querySelector('aside')).toBeNull()
@@ -49,7 +50,7 @@ describe('October tester regressions', () => {
 
   it('drops previous-module feedback on a handoff', () => {
     useGame.setState({ week: 4, objective: 'banker', toast: 'Your bank plan is ready.' })
-    render(<PersistentCoach />)
+    render(<StrictMode><PersistentCoach /></StrictMode>)
     expect(screen.getByText('Your bank plan is ready.')).toBeInTheDocument()
     act(() => useGame.setState({ week: 5, objective: 'sprout', mg: null }))
     expect(screen.queryByText('Your bank plan is ready.')).not.toBeInTheDocument()

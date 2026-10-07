@@ -120,15 +120,13 @@ export function PersistentCoach({ paycheckMode = false }) {
     if (guide) add('guide', guide)
 
     if (incoming.length) {
+      const additions = incoming.filter((message) => {
+        const signature = coachMessageSignature(message)
+        if (!signature || seenMessages.current.has(signature)) return false
+        seenMessages.current.add(signature)
+        return true
+      })
       setQueue((current) => {
-        const signatures = new Set(current.map(coachMessageSignature))
-        const additions = incoming.filter((message) => {
-          const signature = coachMessageSignature(message)
-          if (!signature || signatures.has(signature) || seenMessages.current.has(signature)) return false
-          signatures.add(signature)
-          seenMessages.current.add(signature)
-          return true
-        })
         if (!additions.length) return current
         const combined = additions.length === 1 ? additions[0] : {
           ...additions[0],
