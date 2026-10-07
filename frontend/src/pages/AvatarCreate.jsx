@@ -61,8 +61,8 @@ export default function AvatarCreate() {
           className="card order-3 !p-4 xl:order-1 xl:max-h-[calc(var(--tayu-viewport-height)-7.5rem)] xl:overflow-y-auto"
           style={{ background: 'rgba(7,23,72,0.92)' }}
         >
-          <h2 className="mb-1 font-display text-xl font-extrabold text-white">Customize more</h2>
-          <p className="mb-4 text-sm font-semibold leading-relaxed text-white/70">These choices only change how your character looks. You can skip all of them.</p>
+          <h2 className="mb-1 font-display text-xl font-extrabold text-white">Hair, outfits & accessories</h2>
+          <p className="mb-4 text-sm font-semibold leading-relaxed text-white/70">Try a new hairstyle, outfit, colors, or accessories in the live preview. Shuffle the Look gives you a new combination. These choices are optional.</p>
           <AvatarCustomizer avatar={avatar} onChange={patch} />
           <AvatarRewards onApply={patch} />
         </section>

@@ -1211,9 +1211,7 @@ function HelpCard() {
     localStorage.setItem('tayu-3d-controls-seen', '1')
     if (!localStorage.getItem('tayu-intro-seen')) {
       localStorage.setItem('tayu-intro-seen', '1')
-      showLesson('Confused about the controls? Tap the question mark (?) any time to see them again.', null, true)
-      showLesson("Up top in that menu you'll also find MODULES (where you are in the journey) and LEARNING RESOURCES (extra things to learn).", null, true)
-      showLesson('Whenever you want to learn more about something, look for a LEARN MORE button. There is lots more waiting if you are curious!', null, true)
+      showLesson('Need help? Open ? for controls, MODULES to choose a lesson, or LEARNING RESOURCES for more information.', 'intro-help', true)
     }
   }
   useEffect(() => { if (open) { setSel(null); setTab('controls') } }, [open])

@@ -5,6 +5,7 @@ import { GameWorld } from '../world/GameWorld.jsx'
 import { TaxWorkbenchOverlay } from '../world/TaxWorkbenchOverlay.jsx'
 import { TaxWorldInteractionBridge } from '../world/TaxWorldInteractionBridge.jsx'
 import { TaxActionPrompt } from '../world/TaxActionPrompt.jsx'
+import { MoneyWordHelp } from '../components/MoneyWordHelp.jsx'
 import { Hud } from '../world/Hud.jsx'
 import { MobileControls } from '../world/MobileControls.jsx'
 import { usesTouchControls } from '../world/controlMode.js'
@@ -374,6 +375,7 @@ export default function World() {
       {!moduleEntry && <FirstTimeMovementTutorial enabled={!taxMode} />}
       {!moduleEntry && !taxMode && <WorldModuleLearningRecap />}
       {!moduleEntry && <AdminPanel />}
+      {!moduleEntry && <MoneyWordHelp moduleNumber={taxMode ? 7 : week} />}
 
       {moduleEntry && (
         <div className="absolute inset-0 z-[1200] flex items-end justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="module-entry-title">

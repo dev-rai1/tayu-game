@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { say } from '../services/speech.js'
 import { LEARN, LEARNING_RESOURCES } from '../scenarios/learnLinks.js'
 
-const WORDS = {
+export const WORDS = {
   1: {
     title: 'Market and Three Jars',
     terms: [
@@ -50,6 +50,8 @@ const WORDS = {
       ['Debit card', 'A card that uses money already in your bank account.'],
       ['Credit card', 'A card that lets you borrow money and pay it back.'],
       ['Interest', 'Money paid for saving, or money charged for borrowing.'],
+      ['Borrowing cost', 'What you repay beyond the money borrowed. Borrow $10 and repay $12: the extra $2 is a borrowing cost. Compare interest and fees together.'],
+      ['CD', 'A certificate of deposit keeps savings at a bank for a set time. Taking money out early can mean a penalty.'],
       ['Scam', 'A trick used to steal money or information.'],
     ],
   },

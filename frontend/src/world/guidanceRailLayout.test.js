@@ -11,7 +11,7 @@ const HUD = fs.readFileSync(path.resolve('src/world/Hud.jsx'), 'utf8')
 describe('shared guidance layout', () => {
   it('separates important popups from ordinary side hints', () => {
     expect(coach).toContain("data-guidance-lane={important ? 'important-popup' : 'side-hint'}")
-    expect(coach).toContain("['dialog', 'lesson', 'improvement'].includes(type)")
+    expect(coach).toContain("bankWatching || ['dialog', 'lesson'].includes(type)")
     expect(coach).toContain('data-important-message-scrim="true"')
     expect(coach).toContain("queue.length > 1 ? 'Next' : 'Got it'")
   })

@@ -242,18 +242,18 @@ function AllocationChallenge({ onPick, accentHex }) {
 function TaxSort({ onPick, accentHex }) {
   const [muni, setMuni] = useState(null), [corp, setCorp] = useState(null)
   const cell = (title, amount, val, set) => (
-    <div className="rounded-2xl bg-white p-3 shadow-sm">
+    <div className="rounded-2xl bg-white p-3 text-navy shadow-sm">
       <b>{title}</b><div className="text-2xl font-black">${amount}</div>
       <div className="mt-2 flex gap-2">
-        <button onClick={() => set('taxable')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black transition ${val === 'taxable' ? 'border-navy bg-navy text-white' : 'border-navy/15 hover:border-navy/35'}`}>TAXABLE</button>
-        <button onClick={() => set('excluded')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black transition ${val === 'excluded' ? 'border-navy bg-navy text-white' : 'border-navy/15 hover:border-navy/35'}`}>EXCLUDED</button>
+        <button type="button" aria-label={`${title}: Taxable`} aria-pressed={val === 'taxable'} onClick={() => set('taxable')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black transition ${val === 'taxable' ? 'border-navy bg-navy text-white' : 'border-navy/15 bg-white text-navy hover:border-navy/35'}`}>TAXABLE</button>
+        <button type="button" aria-label={`${title}: Excluded`} aria-pressed={val === 'excluded'} onClick={() => set('excluded')} className={`flex-1 rounded-xl border-2 p-2 text-xs font-black transition ${val === 'excluded' ? 'border-navy bg-navy text-white' : 'border-navy/15 bg-white text-navy hover:border-navy/35'}`}>EXCLUDED</button>
       </div>
     </div>
   )
   return (
     <div className="mt-5 rounded-[26px] border-2 border-navy/10 bg-[#f9f5ec] p-5">
-      <div className="mb-3 text-sm font-extrabold text-navy/60">🗂️ Drop each income into the right pile.</div>
-      <div className="grid grid-cols-2 gap-3">{cell('Municipal interest', 40, muni, setMuni)}{cell('Corporate interest', 20, corp, setCorp)}</div>
+      <div className="mb-3 text-sm font-extrabold text-navy/60">🗂️ Choose Taxable or Excluded for each payment.</div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{cell('Municipal interest', 40, muni, setMuni)}{cell('Corporate interest', 20, corp, setCorp)}</div>
       <button onClick={() => onPick(muni === 'excluded' && corp === 'taxable' ? 0 : 1)} disabled={!muni || !corp} className="mt-4 w-full rounded-2xl px-5 py-3 font-black text-white shadow-lg transition hover:-translate-y-0.5 active:scale-95 disabled:opacity-35 sm:w-auto" style={{ background: accentHex }}>Send to return</button>
     </div>
   )
