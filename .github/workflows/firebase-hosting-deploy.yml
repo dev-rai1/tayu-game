@@ -116,7 +116,9 @@ jobs:
                 echo "Route ${host}${route} was temporarily unreachable; retrying host."
                 return 1
               fi
-              if ! printf '%s' "$body" | grep -Fq '<div id="root"></div>'; then
+              # Prerendered pages populate the React mount element.
+              if ! grep -Fq '<div id="root">' <<< "$body" ||
+                 ! grep -Eq '<script type="module"[^>]* src="/assets/[^"]+\.js"' <<< "$body"; then
                 echo "Route ${host}${route} did not return the SPA shell yet; retrying host."
                 return 1
               fi
