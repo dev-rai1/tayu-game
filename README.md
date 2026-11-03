@@ -7,6 +7,11 @@ paychecks, and investing — with a printable certificate at the end.
 
 **Live:** https://tayufinance.app (also on Firebase: https://tayu-financial-literacy.firebaseapp.com)
 
+## Learning resources and classroom integration
+
+- **For families.** [TAYU Money Skills for Families](https://www.udemy.com/course/tayu-money-skills-for-families/) is a companion course on Udemy.
+- **For Fairfax County Public Schools (FCPS) educators.** The [TAYU educator standards map](https://tayufinance.app/educators/) shows how game lessons align with FCPS Economics and Personal Finance (EPF) units and Virginia EPF Standards of Learning. TAYU has proposed a classroom pilot at Oakton High School that would use the game and companion workbook to supplement EPF lessons.
+
 ## The six modules
 
 | # | Module | Best for | Teaches |
